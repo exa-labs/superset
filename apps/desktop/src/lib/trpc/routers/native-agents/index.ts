@@ -98,7 +98,7 @@ function hasCapyCreatorIdentity(thread: Record<string, unknown>): boolean {
 	);
 }
 
-function isCapyThreadCreatedByUser(
+export function isCapyThreadCreatedByUser(
 	thread: CapyClientThread,
 	userEmail: string,
 ): boolean {

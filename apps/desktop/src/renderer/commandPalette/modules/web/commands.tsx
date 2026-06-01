@@ -11,6 +11,23 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type { Command, CommandProvider } from "../../core/types";
 
+function dispatchNativeAgentAction(
+	action:
+		| "hide"
+		| "new"
+		| "pin"
+		| "refresh"
+		| "show"
+		| "toggle-browser"
+		| "unpin",
+) {
+	window.dispatchEvent(
+		new CustomEvent("dashboard-native-agent-current-action", {
+			detail: { action },
+		}),
+	);
+}
+
 export const webProvider: CommandProvider = {
 	id: "web",
 	provide: () => {
@@ -104,6 +121,72 @@ export const webProvider: CommandProvider = {
 						);
 					}, 0);
 				},
+			},
+		);
+
+		commands.push(
+			{
+				id: "native.current.refresh",
+				title: "Refresh current native agent",
+				section: "web",
+				description: "Refresh Capy or Devin data for the current view",
+				keywords: ["capy", "devin", "refresh", "reload", "native"],
+				when: (context) => context.route.pathname.startsWith("/native/"),
+				run: () => dispatchNativeAgentAction("refresh"),
+			},
+			{
+				id: "native.current.pin",
+				title: "Pin current native session",
+				section: "web",
+				description: "Keep the current Capy/Devin conversation in the sidebar",
+				keywords: ["capy", "devin", "pin", "sidebar", "native"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: () => dispatchNativeAgentAction("pin"),
+			},
+			{
+				id: "native.current.unpin",
+				title: "Unpin current native session",
+				section: "web",
+				description:
+					"Let the current conversation leave the sidebar automatically",
+				keywords: ["capy", "devin", "unpin", "sidebar", "native"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: () => dispatchNativeAgentAction("unpin"),
+			},
+			{
+				id: "native.current.hide",
+				title: "Move current native session to overview",
+				section: "web",
+				description:
+					"Hide the current Capy/Devin conversation from the sidebar",
+				keywords: ["capy", "devin", "hide", "overview", "sidebar"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: () => dispatchNativeAgentAction("hide"),
+			},
+			{
+				id: "native.current.show",
+				title: "Show current native session in sidebar",
+				section: "web",
+				description:
+					"Move the current Capy/Devin conversation back to the sidebar",
+				keywords: ["capy", "devin", "show", "overview", "sidebar"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: () => dispatchNativeAgentAction("show"),
+			},
+			{
+				id: "native.current.toggleBrowser",
+				title: "Toggle native/browser view",
+				section: "web",
+				description:
+					"Switch the current native session between chat and browser",
+				keywords: ["capy", "devin", "browser", "native", "toggle"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: () => dispatchNativeAgentAction("toggle-browser"),
 			},
 		);
 

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
+import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import { SYSTEM_THEME_ID, useThemeStore } from "renderer/stores/theme/store";
@@ -52,6 +53,17 @@ export const actionsProvider: CommandProvider = {
 				hotkeyId: "NEW_WORKSPACE",
 				keywords: ["local", "session", "workspace", "repo", "project"],
 				run: () => useNewWorkspaceModalStore.getState().openModal(),
+			},
+			{
+				id: "actions.toggleDashboardVimMode",
+				title: "Toggle Vim mode",
+				section: "actions",
+				icon: KeyboardIcon,
+				keywords: ["vim", "keyboard", "j", "k", "navigation", "dashboard"],
+				run: () => {
+					const enabled = toggleDashboardVimMode();
+					toast.success(enabled ? "Vim mode enabled" : "Vim mode disabled");
+				},
 			},
 			{
 				id: "actions.toggleTheme",

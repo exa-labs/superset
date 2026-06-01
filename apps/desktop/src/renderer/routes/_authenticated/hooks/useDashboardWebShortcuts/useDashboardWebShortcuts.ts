@@ -3,6 +3,11 @@ import { useCallback, useEffect, useRef } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
+import {
+	dashboardVimKey,
+	nextDashboardVimSequence,
+	shouldHandleDashboardVimKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages";
 import {
 	createDashboardWebTab,
@@ -87,6 +92,7 @@ export function useDashboardWebShortcuts() {
 		provider: NativeAgentProvider;
 		timeoutId: number;
 	} | null>(null);
+	const pendingVimPrefixRef = useRef<string | null>(null);
 
 	const clearPendingNativeProvider = useCallback(() => {
 		const pending = pendingNativeProviderRef.current;
@@ -236,6 +242,22 @@ export function useDashboardWebShortcuts() {
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (shouldHandleDashboardVimKey(event)) {
+				const parsed = nextDashboardVimSequence(
+					pendingVimPrefixRef.current,
+					dashboardVimKey(event),
+				);
+				pendingVimPrefixRef.current = parsed.pendingPrefix;
+				if (parsed.pendingPrefix || parsed.sequence) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+				if (parsed.sequence === "g c") openNativeProvider("capy");
+				if (parsed.sequence === "g d") openNativeProvider("devin");
+				if (parsed.sequence === "g g") openChrome();
+				if (parsed.sequence) return;
+			}
+
 			const pending = pendingNativeProviderRef.current;
 			if (!pending) return;
 			if (event.isComposing || event.keyCode === 229) return;
@@ -256,5 +278,10 @@ export function useDashboardWebShortcuts() {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 			clearPendingNativeProvider();
 		};
-	}, [clearPendingNativeProvider, openNativeProviderAtIndex]);
+	}, [
+		clearPendingNativeProvider,
+		openChrome,
+		openNativeProvider,
+		openNativeProviderAtIndex,
+	]);
 }

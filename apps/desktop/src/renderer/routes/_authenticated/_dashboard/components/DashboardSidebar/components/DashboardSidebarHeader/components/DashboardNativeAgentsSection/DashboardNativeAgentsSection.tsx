@@ -44,6 +44,10 @@ import {
 	nativeAgentTimestampMs,
 	normalizeNativeAgentRole,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
+import {
+	dashboardVimKey,
+	shouldHandleDashboardVimKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {
@@ -484,6 +488,9 @@ export function DashboardNativeAgentsSection({
 	const [sessionFolders, setSessionFolders] = useState(() =>
 		readSessionFolders(),
 	);
+	const [optimisticMetadata, setOptimisticMetadata] = useState<
+		Record<string, { hidden?: boolean; pinned?: boolean }>
+	>({});
 	const [readState, setReadState] = useState(() => readReadState());
 	const [createProvider, setCreateProvider] =
 		useState<NativeAgentProvider | null>(null);
@@ -564,8 +571,12 @@ export function DashboardNativeAgentsSection({
 							}
 						: null,
 					provider: "capy" as const,
-					sidebarHidden: thread.nativeAgentMetadata?.hiddenFromSidebar === true,
-					sidebarPinned: thread.nativeAgentMetadata?.pinned === true,
+					sidebarHidden:
+						optimisticMetadata[`capy:${thread.id}`]?.hidden ??
+						thread.nativeAgentMetadata?.hiddenFromSidebar === true,
+					sidebarPinned:
+						optimisticMetadata[`capy:${thread.id}`]?.pinned ??
+						thread.nativeAgentMetadata?.pinned === true,
 					status: thread.runState ?? thread.status ?? null,
 					subtitle:
 						thread.tasks?.[0]?.identifier ??
@@ -583,8 +594,12 @@ export function DashboardNativeAgentsSection({
 			id: session.id,
 			latestMessage: session.latestMessage ?? null,
 			provider: "devin" as const,
-			sidebarHidden: session.nativeAgentMetadata?.hiddenFromSidebar === true,
-			sidebarPinned: session.nativeAgentMetadata?.pinned === true,
+			sidebarHidden:
+				optimisticMetadata[`devin:${session.id}`]?.hidden ??
+				session.nativeAgentMetadata?.hiddenFromSidebar === true,
+			sidebarPinned:
+				optimisticMetadata[`devin:${session.id}`]?.pinned ??
+				session.nativeAgentMetadata?.pinned === true,
 			status: session.status,
 			subtitle: session.pullRequestUrl ?? session.id,
 			title: session.title ?? session.id,
@@ -598,6 +613,7 @@ export function DashboardNativeAgentsSection({
 		capyActiveThreadsQuery.data?.items,
 		capyThreadsQuery.data?.items,
 		devinSessionsQuery.data?.items,
+		optimisticMetadata,
 	]);
 
 	const setProviderCollapsed = (
@@ -739,6 +755,11 @@ export function DashboardNativeAgentsSection({
 	};
 
 	const handlePin = async (item: NativeAgentItem, pinned: boolean) => {
+		const key = sessionFolderKey(item.provider, item.id);
+		setOptimisticMetadata((current) => ({
+			...current,
+			[key]: { ...current[key], hidden: false, pinned },
+		}));
 		try {
 			await setPinned.mutateAsync({
 				id: item.id,
@@ -752,6 +773,10 @@ export function DashboardNativeAgentsSection({
 			]);
 			toast.success(pinned ? "Pinned to sidebar" : "Removed from sidebar");
 		} catch (error) {
+			setOptimisticMetadata((current) => ({
+				...current,
+				[key]: { ...current[key], pinned: item.sidebarPinned },
+			}));
 			toast.error(error instanceof Error ? error.message : String(error));
 		}
 	};
@@ -760,6 +785,11 @@ export function DashboardNativeAgentsSection({
 		item: NativeAgentItem,
 		visible: boolean,
 	) => {
+		const key = sessionFolderKey(item.provider, item.id);
+		setOptimisticMetadata((current) => ({
+			...current,
+			[key]: { ...current[key], hidden: !visible, pinned: visible },
+		}));
 		try {
 			await setSidebarVisible.mutateAsync({
 				id: item.id,
@@ -773,6 +803,14 @@ export function DashboardNativeAgentsSection({
 			]);
 			toast.success(visible ? "Shown in sidebar" : "Moved to overview");
 		} catch (error) {
+			setOptimisticMetadata((current) => ({
+				...current,
+				[key]: {
+					...current[key],
+					hidden: item.sidebarHidden,
+					pinned: item.sidebarPinned,
+				},
+			}));
 			toast.error(error instanceof Error ? error.message : String(error));
 		}
 	};
@@ -873,7 +911,19 @@ export function DashboardNativeAgentsSection({
 			(target instanceof HTMLElement && target.isContentEditable);
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+			const vimKey = shouldHandleDashboardVimKey(event)
+				? dashboardVimKey(event)
+				: null;
+			if (
+				event.key !== "ArrowDown" &&
+				event.key !== "ArrowUp" &&
+				vimKey !== "j" &&
+				vimKey !== "k" &&
+				vimKey !== "enter" &&
+				vimKey !== "o"
+			) {
+				return;
+			}
 			if (!activeRoute.provider || isEditableTarget(event.target)) return;
 
 			const rows = Array.from(
@@ -891,8 +941,16 @@ export function DashboardNativeAgentsSection({
 					? rows.indexOf(document.activeElement)
 					: -1;
 			const currentIndex = activeIndex >= 0 ? activeIndex : focusedIndex;
+			if (vimKey === "enter" || vimKey === "o") {
+				const row = rows[currentIndex];
+				if (!row) return;
+				event.preventDefault();
+				event.stopPropagation();
+				row.click();
+				return;
+			}
 			const nextIndex =
-				event.key === "ArrowDown"
+				event.key === "ArrowDown" || vimKey === "j"
 					? Math.min(rows.length - 1, currentIndex + 1)
 					: Math.max(0, currentIndex - 1);
 			const row = rows[nextIndex];
