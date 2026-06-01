@@ -75,6 +75,98 @@ export const HOTKEYS_REGISTRY = {
 		description: "Search and open files in the current workspace",
 	},
 
+	// Web pages
+	OPEN_WEB_PAGE_1: {
+		key: {
+			mac: L("alt+1"),
+			windows: L("ctrl+alt+1"),
+			linux: L("ctrl+alt+1"),
+		},
+		label: "Open Overseer",
+		category: "Web Pages",
+		description: "Open the pinned Overseer page",
+	},
+	OPEN_WEB_PAGE_2: {
+		key: {
+			mac: L("alt+2"),
+			windows: L("ctrl+alt+2"),
+			linux: L("ctrl+alt+2"),
+		},
+		label: "Open Sulis",
+		category: "Web Pages",
+		description: "Open the pinned Sulis page",
+	},
+	OPEN_WEB_PAGE_3: {
+		key: {
+			mac: L("alt+3"),
+			windows: L("ctrl+alt+3"),
+			linux: L("ctrl+alt+3"),
+		},
+		label: "Open Inference Overview",
+		category: "Web Pages",
+		description: "Open the pinned inference Grafana dashboard",
+	},
+	OPEN_WEB_PAGE_4: {
+		key: {
+			mac: L("alt+4"),
+			windows: L("ctrl+alt+4"),
+			linux: L("ctrl+alt+4"),
+		},
+		label: "Open Canonical",
+		category: "Web Pages",
+		description: "Open the pinned canonical search latency dashboard",
+	},
+	OPEN_WEB_PAGE_5: {
+		key: {
+			mac: L("alt+5"),
+			windows: L("ctrl+alt+5"),
+			linux: L("ctrl+alt+5"),
+		},
+		label: "Open PR",
+		category: "Web Pages",
+		description: "Open the pinned GitHub pull requests page",
+	},
+	OPEN_WEB_PAGE_6: {
+		key: {
+			mac: L("alt+6"),
+			windows: L("ctrl+alt+6"),
+			linux: L("ctrl+alt+6"),
+		},
+		label: "Open Linear",
+		category: "Web Pages",
+		description: "Open the pinned Linear initiative page",
+	},
+	OPEN_CAPY: {
+		key: {
+			mac: L("alt+c"),
+			windows: L("ctrl+alt+c"),
+			linux: L("ctrl+alt+c"),
+		},
+		label: "Open Capy",
+		category: "Web Pages",
+		description: "Open Capy threads; press a number next to choose a thread",
+	},
+	OPEN_DEVIN: {
+		key: {
+			mac: L("alt+d"),
+			windows: L("ctrl+alt+d"),
+			linux: L("ctrl+alt+d"),
+		},
+		label: "Open Devin",
+		category: "Web Pages",
+		description: "Open Devin sessions; press a number next to choose a session",
+	},
+	OPEN_CHROME: {
+		key: {
+			mac: L("alt+g"),
+			windows: L("ctrl+alt+g"),
+			linux: L("ctrl+alt+g"),
+		},
+		label: "Open Chrome",
+		category: "Web Pages",
+		description: "Open the embedded Chrome tab set",
+	},
+
 	// Workspace switching
 	JUMP_TO_WORKSPACE_1: {
 		key: {
@@ -709,6 +801,16 @@ export const HOTKEYS_REGISTRY = {
 		label: "Open Command Palette",
 		category: "Help",
 		description: "Open the global command palette",
+	},
+	OPEN_CONTROL_PLANE: {
+		key: {
+			mac: L("alt+k"),
+			windows: L("ctrl+alt+k"),
+			linux: L("ctrl+alt+k"),
+		},
+		label: "Open Control Plane",
+		category: "Help",
+		description: "Open the dashboard control plane",
 	},
 } as const satisfies Record<string, HotkeyRegistryDefinition>;
 

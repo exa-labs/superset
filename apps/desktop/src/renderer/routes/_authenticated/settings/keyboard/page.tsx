@@ -31,6 +31,7 @@ import {
 const CATEGORY_ORDER: HotkeyCategory[] = [
 	"Navigation",
 	"Workspace",
+	"Web Pages",
 	"Terminal",
 	"Layout",
 	"Window",
@@ -110,6 +111,7 @@ function getHotkeysByCategory(): Record<
 	> = {
 		Navigation: [],
 		Workspace: [],
+		"Web Pages": [],
 		Layout: [],
 		Terminal: [],
 		Window: [],

@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { app, session } from "electron";
+import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 
-const PARTITION = "persist:superset";
+const PARTITION = DESKTOP_BROWSER_PARTITION;
 const CURRENT_FILE = "current.json";
 const SESSION_PREFIX = "session-";
 const SESSION_SUFFIX = ".json";

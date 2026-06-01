@@ -12,7 +12,7 @@ export const PROTOCOL_SCHEMES = {
 
 // Company
 export const COMPANY = {
-	NAME: "Superset",
+	NAME: "Clankee",
 	DOMAIN: "superset.sh",
 	EMAIL_DOMAIN: "@superset.sh",
 	GITHUB_URL: "https://github.com/superset-sh/superset",

@@ -299,8 +299,8 @@ function AutomationsPage() {
 								CLI
 							</p>
 							<p className="text-sm leading-relaxed text-muted-foreground">
-								It&apos;s available in every Superset terminal. Tell the agent
-								to use it to spin up workspaces, run tasks, or manage other
+								It&apos;s available in every Clankee terminal. Tell the agent to
+								use it to spin up workspaces, run tasks, or manage other
 								automations.{" "}
 								<a
 									href={`${COMPANY.DOCS_URL}/cli/getting-started`}

@@ -6,11 +6,13 @@ import {
 	Navigate,
 	Outlet,
 	useLocation,
+	useMatchRoute,
 	useNavigate,
 } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { DndProvider } from "react-dnd";
 import { HiOutlineWifi } from "react-icons/hi2";
+import { CommandPaletteHost } from "renderer/commandPalette";
 import { NewWorkspaceModal } from "renderer/components/NewWorkspaceModal";
 import { Paywall } from "renderer/components/Paywall";
 import { useUpdateListener } from "renderer/components/UpdateToast";
@@ -22,6 +24,7 @@ import { dragDropManager } from "renderer/lib/dnd";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { showWorkspaceAutoNameWarningToast } from "renderer/lib/workspaces/showWorkspaceAutoNameWarningToast";
 import { InitGitDialog } from "renderer/react-query/projects/InitGitDialog";
+import { DashboardWebViewDeck } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebViewDeck";
 import { DaemonAutoUpdateFailureDialog } from "renderer/routes/_authenticated/components/DaemonAutoUpdateFailureDialog";
 import { DashboardNewWorkspaceModal } from "renderer/routes/_authenticated/components/DashboardNewWorkspaceModal";
 import { V1ImportModal } from "renderer/routes/_authenticated/components/V1ImportModal";
@@ -37,6 +40,8 @@ import { FileMenuListener } from "./components/FileMenuListener";
 import { GlobalBrowserLifecycle } from "./components/GlobalBrowserLifecycle";
 import { TeardownLogsDialog } from "./components/TeardownLogsDialog";
 import { V2NotificationController } from "./components/V2NotificationController";
+import { useDashboardWebShortcuts } from "./hooks/useDashboardWebShortcuts";
+import { resolveDashboardWebRouteActivation } from "./lib/dashboardWebRouteActivation";
 import { createPierreWorker } from "./lib/pierreWorker";
 import { CollectionsProvider } from "./providers/CollectionsProvider";
 import { DeletingWorkspacesProvider } from "./providers/DeletingWorkspacesProvider";
@@ -56,6 +61,7 @@ function AuthenticatedLayout() {
 	const hasLocalToken = !!getAuthToken();
 	const isOnline = useOnlineStatus();
 	const navigate = useNavigate();
+	const matchRoute = useMatchRoute();
 	const location = useLocation();
 	const setOriginRoute = useSettingsStore((s) => s.setOriginRoute);
 	const utils = electronTrpc.useUtils();
@@ -66,8 +72,17 @@ function AuthenticatedLayout() {
 	const activeOrganizationId = env.SKIP_ENV_VALIDATION
 		? MOCK_ORG_ID
 		: session?.session?.activeOrganizationId;
+	const webPageMatch = matchRoute({ to: "/web/$pageId", fuzzy: true });
+	const webTabMatch = matchRoute({ to: "/web-tabs/$tabId", fuzzy: true });
+	const { activeWebPageId, activeWebTabId } =
+		resolveDashboardWebRouteActivation({
+			pathname: location.pathname,
+			webPageMatch,
+			webTabMatch,
+		});
 
 	useAgentHookListener();
+	useDashboardWebShortcuts();
 	useUpdateListener();
 
 	// Update workspace-run pane state on terminal exit
@@ -220,7 +235,12 @@ function AuthenticatedLayout() {
 							<FileMenuListener />
 							<V2NotificationController />
 							<DaemonAutoUpdateFailureDialog />
+							<CommandPaletteHost />
 							<Outlet />
+							<DashboardWebViewDeck
+								activePageId={activeWebPageId}
+								activeTabId={activeWebTabId}
+							/>
 							<V1ImportModal />
 							<WorkspaceInitEffects />
 							{isV2CloudEnabled ? (

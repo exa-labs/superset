@@ -10,6 +10,8 @@ const ERROR_MESSAGES: Record<string, string> = {
 	invalid_state: "Invalid state parameter. Please try again.",
 	installation_fetch_failed:
 		"Failed to fetch installation details. Please try again.",
+	not_configured:
+		"GitHub App credentials are not configured for this local workspace.",
 	save_failed: "Failed to save installation. Please try again.",
 	already_connected:
 		"This GitHub installation is already connected to another Superset organization. Disconnect it there, or uninstall the Superset GitHub App, then try again.",

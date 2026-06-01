@@ -91,10 +91,10 @@ async function confirmAndQuitCompletely(): Promise<void> {
 			buttons: ["Quit Completely", "Cancel"],
 			defaultId: 1,
 			cancelId: 1,
-			title: "Quit Superset Completely",
-			message: "Quit Superset and stop all background services?",
+			title: "Quit Clankee Completely",
+			message: "Quit Clankee and stop all background services?",
 			detail:
-				"All open terminal sessions will be killed and any running host-services will be stopped. Use “Close Superset” instead if you want services to keep running for the next launch.",
+				"All open terminal sessions will be killed and any running host-services will be stopped. Use “Close Clankee” instead if you want services to keep running for the next launch.",
 		});
 		if (response === 0) {
 			quitAppCompletely();
@@ -236,7 +236,7 @@ async function updateTrayMenu(): Promise<void> {
 		},
 		{ type: "separator" },
 		{
-			label: "Open Superset",
+			label: "Open Clankee",
 			click: focusMainWindow,
 		},
 		{
@@ -253,12 +253,12 @@ async function updateTrayMenu(): Promise<void> {
 		},
 		{ type: "separator" },
 		{
-			label: "Close Superset",
+			label: "Close Clankee",
 			click: () => quitApp(),
 		},
 		{ type: "separator" },
 		{
-			label: "Quit Superset Completely",
+			label: "Quit Clankee Completely",
 			click: () => {
 				void confirmAndQuitCompletely();
 			},
@@ -287,7 +287,7 @@ export function initTray(): void {
 		}
 
 		tray = new Tray(icon);
-		tray.setToolTip("Superset");
+		tray.setToolTip("Clankee");
 
 		void updateTrayMenu();
 

@@ -77,7 +77,7 @@ If it runs in a terminal, it runs on Superset
 | **Runtime** | [Bun](https://bun.sh/) v1.0+ |
 | **Version Control** | Git 2.20+ |
 | **GitHub CLI** | [gh](https://cli.github.com/) |
-| **Caddy** | [caddy](https://caddyserver.com/docs/install) (for dev server) |
+| **Caddy** | Optional, for testing the HTTPS/HTTP2 Electric proxy |
 
 ## Install
 
@@ -98,7 +98,15 @@ bun run dev
 
 No Neon account or third-party credentials needed — `setup.local.sh` brings up a local Postgres + Electric stack via Docker and seeds a dev account. Sign in with the **"Sign in as dev"** button (or `admin@local.test` / `supersetdev`).
 
-Prereqs: `bun`, `docker`, `jq`, `caddy` (`brew install jq caddy && caddy trust`).
+Prereqs: `bun`, `docker`, `jq`. Caddy is optional for HTTPS/HTTP2 Electric proxy testing.
+
+Prefer a checkout-managed toolchain? Use the included `devenv.nix`:
+
+```bash
+nix run nixpkgs#devenv -- shell
+superset-setup
+superset-dev
+```
 
 See [**DEVELOPMENT.md**](./DEVELOPMENT.md) for the full guide — what the setup script does, manual setup against real services, common commands, troubleshooting, and how to build the desktop app. Contribution process lives in [**CONTRIBUTING.md**](./CONTRIBUTING.md).
 

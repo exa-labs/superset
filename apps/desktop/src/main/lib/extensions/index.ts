@@ -4,8 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { app, session } from "electron";
 import { env } from "main/env.main";
+import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 
-const APP_PARTITION = "persist:superset";
+const APP_PARTITION = DESKTOP_BROWSER_PARTITION;
 const REACT_DEVTOOLS_EXTENSION_ID = "fmkadmapgofadopljbjfkapdkoienihi";
 
 function safeReadDir(pathname: string): string[] {

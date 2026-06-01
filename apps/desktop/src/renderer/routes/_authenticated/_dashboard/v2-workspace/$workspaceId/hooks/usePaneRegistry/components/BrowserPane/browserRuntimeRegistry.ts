@@ -1,4 +1,5 @@
 import { electronTrpcClient } from "renderer/lib/trpc-client";
+import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 import type { BrowserLoadError } from "shared/tabs-types";
 import { sanitizeUrl } from "./sanitizeUrl";
 
@@ -27,6 +28,7 @@ interface RegistryEntry {
 	placeholder: HTMLElement | null;
 	resizeObserver: ResizeObserver | null;
 	visible: boolean;
+	isReady: boolean;
 }
 
 const EMPTY_STATE: BrowserRuntimeState = Object.freeze({
@@ -40,6 +42,39 @@ const EMPTY_STATE: BrowserRuntimeState = Object.freeze({
 });
 
 const ROOT_CONTAINER_ID = "browser-runtime-root";
+
+function safeGetWebContentsId(webview: Electron.WebviewTag): number | null {
+	try {
+		const webContentsId = webview.getWebContentsId();
+		return Number.isFinite(webContentsId) && webContentsId > 0
+			? webContentsId
+			: null;
+	} catch {
+		return null;
+	}
+}
+
+function safeGetWebviewUrl(
+	webview: Electron.WebviewTag,
+	fallbackUrl = "",
+): string {
+	try {
+		return webview.getURL() || fallbackUrl;
+	} catch {
+		return fallbackUrl;
+	}
+}
+
+function safeGetWebviewTitle(
+	webview: Electron.WebviewTag,
+	fallbackTitle = "",
+): string {
+	try {
+		return webview.getTitle() || fallbackTitle;
+	} catch {
+		return fallbackTitle;
+	}
+}
 
 class BrowserRuntimeRegistryImpl {
 	private entries = new Map<string, RegistryEntry>();
@@ -177,7 +212,7 @@ class BrowserRuntimeRegistryImpl {
 
 	private refreshNavState(paneId: string) {
 		const entry = this.entries.get(paneId);
-		if (!entry) return;
+		if (!entry || !entry.isReady) return;
 		let canGoBack = false;
 		let canGoForward = false;
 		try {
@@ -189,7 +224,7 @@ class BrowserRuntimeRegistryImpl {
 
 	private createEntry(paneId: string, initialUrl: string): RegistryEntry {
 		const webview = document.createElement("webview") as Electron.WebviewTag;
-		webview.setAttribute("partition", "persist:superset");
+		webview.setAttribute("partition", DESKTOP_BROWSER_PARTITION);
 		webview.setAttribute("allowpopups", "");
 		webview.style.position = "fixed";
 		webview.style.top = "0";
@@ -212,6 +247,7 @@ class BrowserRuntimeRegistryImpl {
 			placeholder: null,
 			resizeObserver: null,
 			visible: false,
+			isReady: false,
 		};
 
 		const firePersist = () => {
@@ -223,7 +259,9 @@ class BrowserRuntimeRegistryImpl {
 		};
 
 		const handleDomReady = () => {
-			const webContentsId = webview.getWebContentsId();
+			entry.isReady = true;
+			const webContentsId = safeGetWebContentsId(webview);
+			if (webContentsId === null) return;
 			if (entry.webContentsId !== webContentsId) {
 				entry.webContentsId = webContentsId;
 				electronTrpcClient.browser.register
@@ -243,8 +281,8 @@ class BrowserRuntimeRegistryImpl {
 		};
 
 		const handleDidStopLoading = () => {
-			const url = webview.getURL() ?? "";
-			const title = webview.getTitle() ?? "";
+			const url = safeGetWebviewUrl(webview, entry.state.currentUrl);
+			const title = safeGetWebviewTitle(webview, entry.state.pageTitle);
 			this.setState(paneId, {
 				isLoading: false,
 				currentUrl: url,
@@ -263,7 +301,7 @@ class BrowserRuntimeRegistryImpl {
 
 		const handleDidNavigate = (e: Electron.DidNavigateEvent) => {
 			const url = e.url ?? "";
-			const title = webview.getTitle() ?? "";
+			const title = safeGetWebviewTitle(webview, entry.state.pageTitle);
 			this.setState(paneId, {
 				currentUrl: url,
 				pageTitle: title,
@@ -274,7 +312,7 @@ class BrowserRuntimeRegistryImpl {
 
 		const handleDidNavigateInPage = (e: Electron.DidNavigateInPageEvent) => {
 			const url = e.url ?? "";
-			const title = webview.getTitle() ?? "";
+			const title = safeGetWebviewTitle(webview, entry.state.pageTitle);
 			this.setState(paneId, { currentUrl: url, pageTitle: title });
 			this.refreshNavState(paneId);
 		};
@@ -309,6 +347,20 @@ class BrowserRuntimeRegistryImpl {
 				},
 			});
 		};
+		const handleRenderProcessGone = (event: Event) => {
+			const gone = event as Event & { reason?: string };
+			entry.isReady = false;
+			this.setState(paneId, {
+				isLoading: false,
+				error: {
+					code: 0,
+					description: gone.reason
+						? `Renderer process gone: ${gone.reason}`
+						: "Renderer process gone",
+					url: entry.state.currentUrl,
+				},
+			});
+		};
 
 		webview.addEventListener("dom-ready", handleDomReady);
 		webview.addEventListener("did-start-loading", handleDidStartLoading);
@@ -332,6 +384,10 @@ class BrowserRuntimeRegistryImpl {
 		webview.addEventListener(
 			"did-fail-load",
 			handleDidFailLoad as EventListener,
+		);
+		webview.addEventListener(
+			"render-process-gone",
+			handleRenderProcessGone as EventListener,
 		);
 
 		entry.detachHandlers = () => {
@@ -357,6 +413,10 @@ class BrowserRuntimeRegistryImpl {
 			webview.removeEventListener(
 				"did-fail-load",
 				handleDidFailLoad as EventListener,
+			);
+			webview.removeEventListener(
+				"render-process-gone",
+				handleRenderProcessGone as EventListener,
 			);
 		};
 
@@ -419,24 +479,49 @@ class BrowserRuntimeRegistryImpl {
 	navigate(paneId: string, url: string): void {
 		const entry = this.entries.get(paneId);
 		if (!entry) return;
-		entry.webview.loadURL(sanitizeUrl(url)).catch((err) => {
+		const nextUrl = sanitizeUrl(url);
+		if (!entry.isReady) {
+			entry.webview.setAttribute("src", nextUrl);
+			this.setState(paneId, {
+				currentUrl: nextUrl,
+				error: null,
+				isLoading: true,
+			});
+			return;
+		}
+		try {
+			entry.webview.loadURL(nextUrl).catch((err) => {
+				console.error("[browserRuntimeRegistry] loadURL failed:", err);
+			});
+		} catch (err) {
 			console.error("[browserRuntimeRegistry] loadURL failed:", err);
-		});
+		}
 	}
 
 	goBack(paneId: string): void {
 		const entry = this.entries.get(paneId);
-		if (entry?.webview.canGoBack()) entry.webview.goBack();
+		if (!entry || !entry.isReady) return;
+		try {
+			if (entry.webview.canGoBack()) entry.webview.goBack();
+		} catch {}
 	}
 
 	goForward(paneId: string): void {
 		const entry = this.entries.get(paneId);
-		if (entry?.webview.canGoForward()) entry.webview.goForward();
+		if (!entry || !entry.isReady) return;
+		try {
+			if (entry.webview.canGoForward()) entry.webview.goForward();
+		} catch {}
 	}
 
 	reload(paneId: string): void {
 		const entry = this.entries.get(paneId);
-		entry?.webview.reload();
+		if (!entry || !entry.isReady) return;
+		try {
+			entry.webview.reload();
+		} catch (err) {
+			console.error("[browserRuntimeRegistry] reload failed:", err);
+		}
 	}
 
 	getState(paneId: string): BrowserRuntimeState {

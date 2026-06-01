@@ -31,7 +31,7 @@ export const PRO_FEATURES: ProFeature[] = [
 		id: "remote-workspaces",
 		title: "Remote Workspaces",
 		description:
-			"Reach this Mac from anywhere via the Superset relay, or spin up cloud workspaces. Connect from any client.",
+			"Reach this Mac from anywhere via the Clankee relay, or spin up cloud workspaces. Connect from any client.",
 		icon: HiOutlineSignal,
 		iconColor: "text-pink-500",
 		gradientColors: ["#be185d", "#9d174d", "#831843", "#1a1a2e"],

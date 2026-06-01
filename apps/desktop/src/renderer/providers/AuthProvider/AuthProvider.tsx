@@ -18,30 +18,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 		let cancelled = false;
 
+		async function refreshSessionAndJwt(context: string) {
+			try {
+				await refetchSession();
+			} catch (err) {
+				console.warn(`[AuthProvider] session refetch failed ${context}`, err);
+			}
+			try {
+				const res = await authClient.token();
+				if (res.data?.token) {
+					setJwt(res.data.token);
+				}
+			} catch (err) {
+				console.warn(`[AuthProvider] JWT fetch failed ${context}`, err);
+			}
+		}
+
 		async function hydrate() {
 			if (storedToken?.token && storedToken?.expiresAt) {
 				const isExpired = new Date(storedToken.expiresAt) < new Date();
 				if (!isExpired) {
 					setAuthToken(storedToken.token);
-					try {
-						await refetchSession();
-					} catch (err) {
-						console.warn(
-							"[AuthProvider] session refetch failed during hydration",
-							err,
-						);
-					}
-					try {
-						const res = await authClient.token();
-						if (res.data?.token) {
-							setJwt(res.data.token);
-						}
-					} catch (err) {
-						console.warn(
-							"[AuthProvider] JWT fetch failed during hydration",
-							err,
-						);
-					}
+					void refreshSessionAndJwt("during hydration");
 				}
 			}
 			if (!cancelled) {

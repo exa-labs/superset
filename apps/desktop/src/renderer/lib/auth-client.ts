@@ -8,6 +8,7 @@ import {
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 import { env } from "renderer/env.renderer";
+import { authFetchWithTimeout } from "./auth-fetch";
 
 let authToken: string | null = null;
 
@@ -54,6 +55,7 @@ export const authClient = createAuthClient({
 		jwtClient(),
 	],
 	fetchOptions: {
+		customFetchImpl: authFetchWithTimeout,
 		credentials: "include",
 		onRequest: async (context) => {
 			const token = getAuthToken();

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { requestPaneClose } from "renderer/stores/editor-state/editorCoordinator";
 import { useTabsStore } from "renderer/stores/tabs/store";
+import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 
 // ---------------------------------------------------------------------------
 // Module-level singletons
@@ -10,6 +11,7 @@ import { useTabsStore } from "renderer/stores/tabs/store";
 const webviewRegistry = new Map<string, Electron.WebviewTag>();
 /** Tracks paneId → last-registered webContentsId so we can re-register if it changes. */
 const registeredWebContentsIds = new Map<string, number>();
+const readyWebviewIds = new Set<string>();
 let hiddenContainer: HTMLDivElement | null = null;
 
 function getHiddenContainer(): HTMLDivElement {
@@ -65,6 +67,7 @@ export function destroyPersistentWebview(paneId: string): void {
 		webviewRegistry.delete(paneId);
 	}
 	registeredWebContentsIds.delete(paneId);
+	readyWebviewIds.delete(paneId);
 }
 
 // ---------------------------------------------------------------------------
@@ -82,6 +85,50 @@ function sanitizeUrl(url: string): string {
 		return `https://${url}`;
 	}
 	return `https://www.google.com/search?q=${encodeURIComponent(url)}`;
+}
+
+function safeGetWebContentsId(webview: Electron.WebviewTag): number | null {
+	try {
+		const webContentsId = webview.getWebContentsId();
+		return Number.isFinite(webContentsId) && webContentsId > 0
+			? webContentsId
+			: null;
+	} catch {
+		return null;
+	}
+}
+
+function safeGetWebviewUrl(
+	webview: Electron.WebviewTag,
+	fallbackUrl = "",
+): string {
+	try {
+		return webview.getURL() || fallbackUrl;
+	} catch {
+		return fallbackUrl;
+	}
+}
+
+function safeGetWebviewTitle(
+	webview: Electron.WebviewTag,
+	fallbackTitle = "",
+): string {
+	try {
+		return webview.getTitle() || fallbackTitle;
+	} catch {
+		return fallbackTitle;
+	}
+}
+
+function safeLoadWebviewUrl(webview: Electron.WebviewTag, url: string) {
+	const nextUrl = sanitizeUrl(url);
+	try {
+		webview.loadURL(nextUrl).catch((error) => {
+			console.error("[usePersistentWebview] loadURL failed:", error);
+		});
+	} catch (error) {
+		console.error("[usePersistentWebview] loadURL failed:", error);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +209,13 @@ export function usePersistentWebview({
 		{ paneId },
 		{
 			onData: () => {
-				webviewRegistry.get(paneId)?.reload();
+				const webview = webviewRegistry.get(paneId);
+				if (!webview || !readyWebviewIds.has(paneId)) return;
+				try {
+					webview.reload();
+				} catch (error) {
+					console.error("[usePersistentWebview] reload failed:", error);
+				}
 			},
 		},
 	);
@@ -171,8 +224,8 @@ export function usePersistentWebview({
 	const syncStoreFromWebview = useCallback(
 		(webview: Electron.WebviewTag) => {
 			try {
-				const url = webview.getURL();
-				const title = webview.getTitle();
+				const url = safeGetWebviewUrl(webview);
+				const title = safeGetWebviewTitle(webview);
 				if (url) {
 					const store = useTabsStore.getState();
 					const currentUrl = store.panes[paneId]?.browser?.currentUrl;
@@ -206,7 +259,7 @@ export function usePersistentWebview({
 		} else {
 			// Create new webview
 			webview = document.createElement("webview") as Electron.WebviewTag;
-			webview.setAttribute("partition", "persist:superset");
+			webview.setAttribute("partition", DESKTOP_BROWSER_PARTITION);
 			webview.setAttribute("allowpopups", "");
 			webview.style.display = "flex";
 			webview.style.flex = "1";
@@ -226,7 +279,9 @@ export function usePersistentWebview({
 		// -- Event handlers ------------------------------------------------
 
 		const handleDomReady = () => {
-			const webContentsId = wv.getWebContentsId();
+			readyWebviewIds.add(paneId);
+			const webContentsId = safeGetWebContentsId(wv);
+			if (webContentsId === null) return;
 			const previousId = registeredWebContentsIds.get(paneId);
 			// Register on first load, or re-register if webContentsId changed (e.g. after DOM reparenting)
 			if (previousId !== webContentsId) {
@@ -251,8 +306,8 @@ export function usePersistentWebview({
 				return;
 			}
 
-			const url = wv.getURL();
-			const title = wv.getTitle();
+			const url = safeGetWebviewUrl(wv);
+			const title = safeGetWebviewTitle(wv);
 			store.updateBrowserUrl(
 				paneId,
 				url ?? "",
@@ -278,7 +333,7 @@ export function usePersistentWebview({
 			store.updateBrowserUrl(
 				paneId,
 				e.url ?? "",
-				wv.getTitle() ?? "",
+				safeGetWebviewTitle(wv),
 				faviconUrlRef.current,
 			);
 			store.updateBrowserLoading(paneId, false);
@@ -293,7 +348,7 @@ export function usePersistentWebview({
 			store.updateBrowserUrl(
 				paneId,
 				e.url ?? "",
-				wv.getTitle() ?? "",
+				safeGetWebviewTitle(wv),
 				faviconUrlRef.current,
 			);
 		};
@@ -340,6 +395,19 @@ export function usePersistentWebview({
 				url: e.validatedURL ?? "",
 			});
 		};
+		const handleRenderProcessGone = (event: Event) => {
+			const gone = event as Event & { reason?: string };
+			readyWebviewIds.delete(paneId);
+			const store = useTabsStore.getState();
+			store.updateBrowserLoading(paneId, false);
+			store.setBrowserError(paneId, {
+				code: 0,
+				description: gone.reason
+					? `Renderer process gone: ${gone.reason}`
+					: "Renderer process gone",
+				url: store.panes[paneId]?.browser?.currentUrl ?? "",
+			});
+		};
 
 		// -- Attach listeners ----------------------------------------------
 
@@ -360,6 +428,10 @@ export function usePersistentWebview({
 			handlePageFaviconUpdated as EventListener,
 		);
 		wv.addEventListener("did-fail-load", handleDidFailLoad as EventListener);
+		wv.addEventListener(
+			"render-process-gone",
+			handleRenderProcessGone as EventListener,
+		);
 
 		// -- Cleanup: park in hidden container -----------------------------
 
@@ -387,6 +459,10 @@ export function usePersistentWebview({
 				"did-fail-load",
 				handleDidFailLoad as EventListener,
 			);
+			wv.removeEventListener(
+				"render-process-gone",
+				handleRenderProcessGone as EventListener,
+			);
 
 			getHiddenContainer().appendChild(wv);
 		};
@@ -400,7 +476,13 @@ export function usePersistentWebview({
 		if (url) {
 			isHistoryNavigation.current = true;
 			const webview = webviewRegistry.get(paneId);
-			if (webview) webview.loadURL(sanitizeUrl(url));
+			if (webview) {
+				if (readyWebviewIds.has(paneId)) {
+					safeLoadWebviewUrl(webview, url);
+				} else {
+					webview.setAttribute("src", sanitizeUrl(url));
+				}
+			}
 		}
 	}, [paneId, navigateBrowserHistory]);
 
@@ -409,19 +491,35 @@ export function usePersistentWebview({
 		if (url) {
 			isHistoryNavigation.current = true;
 			const webview = webviewRegistry.get(paneId);
-			if (webview) webview.loadURL(sanitizeUrl(url));
+			if (webview) {
+				if (readyWebviewIds.has(paneId)) {
+					safeLoadWebviewUrl(webview, url);
+				} else {
+					webview.setAttribute("src", sanitizeUrl(url));
+				}
+			}
 		}
 	}, [paneId, navigateBrowserHistory]);
 
 	const reload = useCallback(() => {
 		const webview = webviewRegistry.get(paneId);
-		if (webview) webview.reload();
+		if (!webview || !readyWebviewIds.has(paneId)) return;
+		try {
+			webview.reload();
+		} catch (error) {
+			console.error("[usePersistentWebview] reload failed:", error);
+		}
 	}, [paneId]);
 
 	const navigateTo = useCallback(
 		(url: string) => {
 			const webview = webviewRegistry.get(paneId);
-			if (webview) webview.loadURL(sanitizeUrl(url));
+			if (!webview) return;
+			if (readyWebviewIds.has(paneId)) {
+				safeLoadWebviewUrl(webview, url);
+			} else {
+				webview.setAttribute("src", sanitizeUrl(url));
+			}
 		},
 		[paneId],
 	);

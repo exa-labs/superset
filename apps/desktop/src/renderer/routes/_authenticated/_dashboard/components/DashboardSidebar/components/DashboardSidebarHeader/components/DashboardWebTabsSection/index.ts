@@ -1,0 +1,1 @@
+export { DashboardWebTabsSection } from "./DashboardWebTabsSection";

@@ -14,6 +14,7 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 		Boolean(command.hotkeyId) && display.text && display.text !== "Unassigned";
 	return (
 		<CommandItem
+			data-command-palette-command-id={command.id}
 			value={`${command.id} ${command.title} ${(command.keywords ?? []).join(" ")}`}
 			onSelect={() => onSelect(command)}
 		>
@@ -26,7 +27,14 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 			) : Icon ? (
 				<Icon />
 			) : null}
-			<span>{command.title}</span>
+			<span className="flex min-w-0 flex-1 flex-col">
+				<span className="truncate">{command.title}</span>
+				{command.description ? (
+					<span className="truncate text-muted-foreground text-xs">
+						{command.description}
+					</span>
+				) : null}
+			</span>
 			{hasShortcut ? <CommandShortcut>{display.text}</CommandShortcut> : null}
 		</CommandItem>
 	);

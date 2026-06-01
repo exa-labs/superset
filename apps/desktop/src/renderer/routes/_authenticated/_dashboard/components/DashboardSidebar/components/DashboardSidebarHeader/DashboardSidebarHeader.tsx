@@ -22,22 +22,32 @@ import { electronTrpc } from "renderer/lib/electron-trpc";
 import { useFolderFirstImport } from "renderer/routes/_authenticated/_dashboard/components/AddRepositoryModals/hooks/useFolderFirstImport";
 import { NavigationControls } from "renderer/routes/_authenticated/_dashboard/components/NavigationControls";
 import { SidebarToggle } from "renderer/routes/_authenticated/_dashboard/components/SidebarToggle";
-import { OrganizationDropdown } from "renderer/routes/_authenticated/_dashboard/components/TopBar/components/OrganizationDropdown";
 import { ResourceConsumption } from "renderer/routes/_authenticated/_dashboard/components/TopBar/components/ResourceConsumption";
 import {
 	tasksSearchFromFilters,
 	useTasksFilterStore,
 } from "renderer/routes/_authenticated/_dashboard/tasks/stores/tasks-filter-state";
+import {
+	closeDashboardWebTab,
+	createDashboardWebTab,
+	type DashboardWebTabAppId,
+	getFirstDashboardWebTabForApp,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import { STROKE_WIDTH_THICK } from "renderer/screens/main/components/WorkspaceSidebar/constants";
 import { useOpenNewProjectModal } from "renderer/stores/add-repository-modal";
 import { useOpenNewWorkspaceModal } from "renderer/stores/new-workspace-modal";
+import { DashboardNativeAgentsSection } from "./components/DashboardNativeAgentsSection";
+import { DashboardWebPagesGrid } from "./components/DashboardWebPagesGrid";
+import { DashboardWebTabsSection } from "./components/DashboardWebTabsSection";
 
 interface DashboardSidebarHeaderProps {
 	isCollapsed?: boolean;
+	showExtraNav?: boolean;
 }
 
 export function DashboardSidebarHeader({
 	isCollapsed = false,
+	showExtraNav = false,
 }: DashboardSidebarHeaderProps) {
 	const openModal = useOpenNewWorkspaceModal();
 	const openNewProject = useOpenNewProjectModal();
@@ -73,6 +83,10 @@ export function DashboardSidebarHeader({
 	const isWorkspacesListOpen = !!matchRoute({ to: "/v2-workspaces" });
 	const isTasksOpen = !!matchRoute({ to: "/tasks", fuzzy: true });
 	const isAutomationsOpen = !!matchRoute({ to: "/automations", fuzzy: true });
+	const webPageMatch = matchRoute({ to: "/web/$pageId", fuzzy: true });
+	const activeWebPageId = webPageMatch !== false ? webPageMatch.pageId : null;
+	const webTabMatch = matchRoute({ to: "/web-tabs/$tabId", fuzzy: true });
+	const activeWebTabId = webTabMatch !== false ? webTabMatch.tabId : null;
 
 	const {
 		tab: lastTab,
@@ -105,64 +119,124 @@ export function DashboardSidebarHeader({
 		});
 	};
 
+	const handleWebPageClick = (pageId: string) => {
+		navigate({
+			to: "/web/$pageId",
+			params: { pageId },
+		});
+	};
+
+	const handleWebTabClick = (tabId: string) => {
+		navigate({
+			to: "/web-tabs/$tabId",
+			params: { tabId },
+		});
+	};
+
+	const handleWebTabAppClick = (appId: DashboardWebTabAppId) => {
+		const tab =
+			getFirstDashboardWebTabForApp(appId) ?? createDashboardWebTab(appId);
+		handleWebTabClick(tab.id);
+	};
+
+	const handleCreateWebTab = (appId: DashboardWebTabAppId) => {
+		const tab = createDashboardWebTab(appId);
+		handleWebTabClick(tab.id);
+	};
+
+	const handleCloseWebTab = (tabId: string) => {
+		const nextTab = closeDashboardWebTab(tabId);
+		if (activeWebTabId !== tabId) return;
+
+		if (nextTab) {
+			navigate({
+				to: "/web-tabs/$tabId",
+				params: { tabId: nextTab.id },
+				replace: true,
+			});
+			return;
+		}
+
+		navigate({ to: "/v2-workspaces", replace: true });
+	};
+
 	if (isCollapsed) {
 		return (
 			<div className="flex flex-col items-center gap-2 border-b border-border py-2">
-				<OrganizationDropdown variant="collapsed" />
+				<DashboardWebPagesGrid
+					activePageId={activeWebPageId}
+					variant="collapsed"
+					onOpenPage={handleWebPageClick}
+				/>
 
-				<Tooltip delayDuration={300}>
-					<TooltipTrigger asChild>
-						<button
-							type="button"
-							onClick={handleWorkspacesClick}
-							className={cn(
-								"flex size-8 items-center justify-center rounded-md transition-colors",
-								isWorkspacesListOpen
-									? "bg-accent text-foreground"
-									: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-							)}
-						>
-							<LuLayers className="size-4" />
-						</button>
-					</TooltipTrigger>
-					<TooltipContent side="right">Workspaces</TooltipContent>
-				</Tooltip>
+				{showExtraNav && (
+					<>
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									onClick={handleWorkspacesClick}
+									className={cn(
+										"flex size-8 items-center justify-center rounded-md transition-colors",
+										isWorkspacesListOpen
+											? "bg-accent text-foreground"
+											: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+									)}
+								>
+									<LuLayers className="size-4" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right">Workspaces</TooltipContent>
+						</Tooltip>
 
-				<Tooltip delayDuration={300}>
-					<TooltipTrigger asChild>
-						<button
-							type="button"
-							onClick={handleAutomationsClick}
-							className={cn(
-								"flex size-8 items-center justify-center rounded-md transition-colors",
-								isAutomationsOpen
-									? "bg-accent text-foreground"
-									: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-							)}
-						>
-							<LuClock className="size-4" />
-						</button>
-					</TooltipTrigger>
-					<TooltipContent side="right">Automations</TooltipContent>
-				</Tooltip>
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									onClick={handleAutomationsClick}
+									className={cn(
+										"flex size-8 items-center justify-center rounded-md transition-colors",
+										isAutomationsOpen
+											? "bg-accent text-foreground"
+											: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+									)}
+								>
+									<LuClock className="size-4" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right">Automations</TooltipContent>
+						</Tooltip>
 
-				<Tooltip delayDuration={300}>
-					<TooltipTrigger asChild>
-						<button
-							type="button"
-							onClick={handleTasksClick}
-							className={cn(
-								"flex size-8 items-center justify-center rounded-md transition-colors",
-								isTasksOpen
-									? "bg-accent text-foreground"
-									: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-							)}
-						>
-							<HiOutlineClipboardDocumentList className="size-4" />
-						</button>
-					</TooltipTrigger>
-					<TooltipContent side="right">Tasks & PRs</TooltipContent>
-				</Tooltip>
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									onClick={handleTasksClick}
+									className={cn(
+										"flex size-8 items-center justify-center rounded-md transition-colors",
+										isTasksOpen
+											? "bg-accent text-foreground"
+											: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+									)}
+								>
+									<HiOutlineClipboardDocumentList className="size-4" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent side="right">Tasks & PRs</TooltipContent>
+						</Tooltip>
+					</>
+				)}
+
+				<DashboardWebTabsSection
+					activeTabId={activeWebTabId}
+					variant="collapsed"
+					onOpenApp={handleWebTabAppClick}
+					onCreateTab={handleCreateWebTab}
+					onOpenTab={handleWebTabClick}
+					onCloseTab={handleCloseWebTab}
+				/>
+
+				<DashboardNativeAgentsSection variant="collapsed" />
 
 				<Tooltip delayDuration={300}>
 					<TooltipTrigger asChild>
@@ -225,49 +299,69 @@ export function DashboardSidebarHeader({
 				<NavigationControls />
 				<ResourceConsumption surface="v2" className="ml-auto" />
 			</div>
-			<OrganizationDropdown variant="expanded" />
 
-			<button
-				type="button"
-				onClick={handleWorkspacesClick}
-				className={cn(
-					"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-					isWorkspacesListOpen
-						? "bg-accent text-foreground"
-						: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-				)}
-			>
-				<LuLayers className="size-4 shrink-0" />
-				<span className="flex-1 text-left">Workspaces</span>
-			</button>
+			<DashboardWebPagesGrid
+				activePageId={activeWebPageId}
+				variant="expanded"
+				onOpenPage={handleWebPageClick}
+			/>
 
-			<button
-				type="button"
-				onClick={handleAutomationsClick}
-				className={cn(
-					"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-					isAutomationsOpen
-						? "bg-accent text-foreground"
-						: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-				)}
-			>
-				<LuClock className="size-4 shrink-0" />
-				<span className="flex-1 text-left">Automations</span>
-			</button>
+			{showExtraNav && (
+				<>
+					<button
+						type="button"
+						onClick={handleWorkspacesClick}
+						className={cn(
+							"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+							isWorkspacesListOpen
+								? "bg-accent text-foreground"
+								: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+						)}
+					>
+						<LuLayers className="size-4 shrink-0" />
+						<span className="flex-1 text-left">Workspaces</span>
+					</button>
 
-			<button
-				type="button"
-				onClick={handleTasksClick}
-				className={cn(
-					"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-					isTasksOpen
-						? "bg-accent text-foreground"
-						: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-				)}
-			>
-				<HiOutlineClipboardDocumentList className="size-4 shrink-0" />
-				<span className="flex-1 text-left">Tasks & PRs</span>
-			</button>
+					<button
+						type="button"
+						onClick={handleAutomationsClick}
+						className={cn(
+							"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+							isAutomationsOpen
+								? "bg-accent text-foreground"
+								: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+						)}
+					>
+						<LuClock className="size-4 shrink-0" />
+						<span className="flex-1 text-left">Automations</span>
+					</button>
+
+					<button
+						type="button"
+						onClick={handleTasksClick}
+						className={cn(
+							"flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+							isTasksOpen
+								? "bg-accent text-foreground"
+								: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+						)}
+					>
+						<HiOutlineClipboardDocumentList className="size-4 shrink-0" />
+						<span className="flex-1 text-left">Tasks & PRs</span>
+					</button>
+				</>
+			)}
+
+			<DashboardWebTabsSection
+				activeTabId={activeWebTabId}
+				variant="expanded"
+				onOpenApp={handleWebTabAppClick}
+				onCreateTab={handleCreateWebTab}
+				onOpenTab={handleWebTabClick}
+				onCloseTab={handleCloseWebTab}
+			/>
+
+			<DashboardNativeAgentsSection variant="expanded" />
 
 			<div className="flex items-center gap-0">
 				<button

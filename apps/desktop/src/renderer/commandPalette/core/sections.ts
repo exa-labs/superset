@@ -1,8 +1,9 @@
 import type { CommandContext, SectionId } from "./types";
 
-const BASE: SectionId[] = ["actions", "navigation"];
+const BASE: SectionId[] = ["web", "actions", "navigation"];
 
 export const SECTION_LABELS: Record<SectionId, string> = {
+	web: "Control plane",
 	workspace: "Workspace actions",
 	actions: "Actions",
 	navigation: "Navigation",

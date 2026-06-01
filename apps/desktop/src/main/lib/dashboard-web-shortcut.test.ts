@@ -1,0 +1,67 @@
+import { describe, expect, it } from "bun:test";
+import {
+	dashboardWebDigitIndexFromInput,
+	dashboardWebIndexedShortcut,
+	dashboardWebShortcutFromInput,
+} from "./dashboard-web-shortcut";
+
+function input(
+	overrides: Partial<Parameters<typeof dashboardWebShortcutFromInput>[0]>,
+) {
+	return {
+		alt: true,
+		code: "Digit1",
+		control: false,
+		isAutoRepeat: false,
+		key: "1",
+		meta: false,
+		shift: false,
+		type: "keyDown",
+		...overrides,
+	} satisfies Parameters<typeof dashboardWebShortcutFromInput>[0];
+}
+
+describe("dashboardWebShortcutFromInput", () => {
+	it("matches Option+number shortcuts by physical digit code", () => {
+		expect(dashboardWebShortcutFromInput(input({ code: "Digit1" }))).toBe(
+			"OPEN_WEB_PAGE_1",
+		);
+		expect(dashboardWebShortcutFromInput(input({ code: "Numpad6" }))).toBe(
+			"OPEN_WEB_PAGE_6",
+		);
+	});
+
+	it("matches Option+C, Option+D, and Option+G by physical code", () => {
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyC", key: "Dead" })),
+		).toBe("OPEN_CAPY");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyD", key: "Dead" })),
+		).toBe("OPEN_DEVIN");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyG", key: "Dead" })),
+		).toBe("OPEN_CHROME");
+	});
+
+	it("ignores repeats, non-alt chords, and unsupported digits", () => {
+		expect(dashboardWebShortcutFromInput(input({ isAutoRepeat: true }))).toBe(
+			null,
+		);
+		expect(dashboardWebShortcutFromInput(input({ alt: false }))).toBe(null);
+		expect(dashboardWebShortcutFromInput(input({ code: "Digit7" }))).toBe(null);
+		expect(dashboardWebShortcutFromInput(input({ meta: true }))).toBe(null);
+	});
+
+	it("maps C/D prefix digits to app-specific indexed shortcuts", () => {
+		expect(dashboardWebIndexedShortcut("OPEN_CAPY", 0)).toBe("OPEN_CAPY_1");
+		expect(dashboardWebIndexedShortcut("OPEN_CAPY", 8)).toBe("OPEN_CAPY_9");
+		expect(dashboardWebIndexedShortcut("OPEN_DEVIN", 2)).toBe("OPEN_DEVIN_3");
+		expect(dashboardWebIndexedShortcut("OPEN_WEB_PAGE_1", 0)).toBe(null);
+		expect(dashboardWebIndexedShortcut("OPEN_CAPY", 9)).toBe(null);
+	});
+
+	it("exposes Option+digit indices beyond fixed top-page shortcuts for C/D chains", () => {
+		expect(dashboardWebDigitIndexFromInput(input({ code: "Digit7" }))).toBe(6);
+		expect(dashboardWebShortcutFromInput(input({ code: "Digit7" }))).toBe(null);
+	});
+});

@@ -1,5 +1,11 @@
 import { EventEmitter } from "node:events";
 import { clipboard, Menu, webContents } from "electron";
+import {
+	type DashboardWebShortcut,
+	dashboardWebDigitIndexFromInput,
+	dashboardWebIndexedShortcut,
+	dashboardWebShortcutFromInput,
+} from "main/lib/dashboard-web-shortcut";
 import { safeOpenExternal } from "main/lib/safe-url";
 
 interface ConsoleEntry {
@@ -29,6 +35,10 @@ class BrowserManager extends EventEmitter {
 	private consoleListeners = new Map<string, () => void>();
 	private contextMenuListeners = new Map<string, () => void>();
 	private beforeInputListeners = new Map<string, () => void>();
+	private pendingDashboardWebAppShortcut: {
+		shortcut: DashboardWebShortcut;
+		timeout: NodeJS.Timeout;
+	} | null = null;
 
 	register(paneId: string, webContentsId: number): void {
 		// Clean even when prevId === webContentsId so BrowserManager owns
@@ -85,6 +95,55 @@ class BrowserManager extends EventEmitter {
 		for (const paneId of [...this.paneWebContentsIds.keys()]) {
 			this.unregister(paneId);
 		}
+	}
+
+	openControlPlane(): void {
+		this.emit("open-control-plane");
+	}
+
+	openDashboardWebShortcut(shortcut: DashboardWebShortcut): void {
+		this.emit("dashboard-web-shortcut", shortcut);
+	}
+
+	private clearPendingDashboardWebAppShortcut(): void {
+		const pending = this.pendingDashboardWebAppShortcut;
+		if (!pending) return;
+		clearTimeout(pending.timeout);
+		this.pendingDashboardWebAppShortcut = null;
+	}
+
+	private armPendingDashboardWebAppShortcut(
+		shortcut: DashboardWebShortcut,
+	): void {
+		this.clearPendingDashboardWebAppShortcut();
+		this.pendingDashboardWebAppShortcut = {
+			shortcut,
+			timeout: setTimeout(() => {
+				this.pendingDashboardWebAppShortcut = null;
+			}, 1500),
+		};
+	}
+
+	private dashboardWebShortcutFromInput(
+		input: Electron.Input,
+	): DashboardWebShortcut | null {
+		const pending = this.pendingDashboardWebAppShortcut;
+		if (pending) {
+			const digitIndex = dashboardWebDigitIndexFromInput(input);
+			if (digitIndex !== null) {
+				this.clearPendingDashboardWebAppShortcut();
+				return dashboardWebIndexedShortcut(pending.shortcut, digitIndex);
+			}
+		}
+
+		const digitShortcut = dashboardWebShortcutFromInput(input);
+		if (digitShortcut === "OPEN_CAPY" || digitShortcut === "OPEN_DEVIN") {
+			this.armPendingDashboardWebAppShortcut(digitShortcut);
+			return digitShortcut;
+		}
+
+		if (digitShortcut) this.clearPendingDashboardWebAppShortcut();
+		return digitShortcut;
 	}
 
 	getWebContents(paneId: string): Electron.WebContents | null {
@@ -247,6 +306,14 @@ class BrowserManager extends EventEmitter {
 	private setupBeforeInput(paneId: string, wc: Electron.WebContents): void {
 		const handler = (event: Electron.Event, input: Electron.Input): void => {
 			if (input.type !== "keyDown") return;
+
+			const dashboardWebShortcut = this.dashboardWebShortcutFromInput(input);
+			if (dashboardWebShortcut) {
+				event.preventDefault();
+				this.openDashboardWebShortcut(dashboardWebShortcut);
+				return;
+			}
+
 			if (input.shift || input.alt) return;
 			if (!(input.meta || input.control)) return;
 

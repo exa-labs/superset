@@ -188,7 +188,7 @@ export function main() {
 	}
 
 	const PROTOCOL_SCHEME = `superset-${workspaceName}`;
-	const BUNDLE_ID = `com.superset.desktop.${workspaceName}`;
+	const BUNDLE_ID = `com.clankee.desktop.${workspaceName}`;
 	const ELECTRON_DIST_DIR = resolve(
 		import.meta.dirname,
 		"../node_modules/electron/dist",
@@ -201,7 +201,7 @@ export function main() {
 		process.exit(0);
 	}
 
-	const DISPLAY_NAME = `Superset (${bundleDisplayWorkspaceName})`;
+	const DISPLAY_NAME = `Clankee (${bundleDisplayWorkspaceName})`;
 
 	try {
 		const currentBundleId = execSync(
@@ -280,7 +280,7 @@ export function main() {
 	const commands = [
 		`Add :CFBundleURLTypes array`,
 		`Add :CFBundleURLTypes:0 dict`,
-		`Add :CFBundleURLTypes:0:CFBundleURLName string 'Superset Dev'`,
+		`Add :CFBundleURLTypes:0:CFBundleURLName string 'Clankee Dev'`,
 		`Add :CFBundleURLTypes:0:CFBundleURLSchemes array`,
 		`Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string '${PROTOCOL_SCHEME}'`,
 		`Add :CFBundleURLTypes:0:CFBundleTypeRole string 'Editor'`,

@@ -9,6 +9,7 @@ export type PlatformKey = {
 export type HotkeyCategory =
 	| "Navigation"
 	| "Workspace"
+	| "Web Pages"
 	| "Layout"
 	| "Terminal"
 	| "Window"

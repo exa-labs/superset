@@ -2,6 +2,10 @@ import { auth } from "@superset/auth/server";
 import { findOrgMembership } from "@superset/db/utils";
 
 import { env } from "@/env";
+import {
+	isSlackConfigured,
+	resolveIntegrationPublicApiUrl,
+} from "@/lib/integration-config";
 import { createSignedState } from "@/lib/oauth-state";
 
 const SLACK_SCOPES = [
@@ -50,12 +54,27 @@ export async function GET(request: Request) {
 		);
 	}
 
+	if (
+		!isSlackConfigured({
+			clientId: env.SLACK_CLIENT_ID,
+			clientSecret: env.SLACK_CLIENT_SECRET,
+		})
+	) {
+		return Response.redirect(
+			`${env.NEXT_PUBLIC_WEB_URL}/integrations/slack?error=not_configured`,
+		);
+	}
+
 	const state = createSignedState({
 		organizationId,
 		userId,
 	});
 
-	const redirectUri = `${env.NEXT_PUBLIC_API_URL}/api/integrations/slack/callback`;
+	const publicApiUrl = resolveIntegrationPublicApiUrl({
+		integrationsPublicApiUrl: env.INTEGRATIONS_PUBLIC_API_URL,
+		nextPublicApiUrl: env.NEXT_PUBLIC_API_URL,
+	});
+	const redirectUri = `${publicApiUrl}/api/integrations/slack/callback`;
 
 	const slackAuthUrl = new URL("https://slack.com/oauth/v2/authorize");
 	slackAuthUrl.searchParams.set("client_id", env.SLACK_CLIENT_ID);

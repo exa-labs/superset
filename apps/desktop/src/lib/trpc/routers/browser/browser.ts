@@ -1,6 +1,8 @@
 import { observable } from "@trpc/server/observable";
 import { session } from "electron";
 import { browserManager } from "main/lib/browser/browser-manager";
+import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
+import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 import { z } from "zod";
 import { publicProcedure, router } from "../..";
 
@@ -157,6 +159,30 @@ export const createBrowserRouter = () => {
 				});
 			}),
 
+		onOpenControlPlane: publicProcedure.subscription(() => {
+			return observable<void>((emit) => {
+				const handler = () => {
+					emit.next();
+				};
+				browserManager.on("open-control-plane", handler);
+				return () => {
+					browserManager.off("open-control-plane", handler);
+				};
+			});
+		}),
+
+		onDashboardWebShortcut: publicProcedure.subscription(() => {
+			return observable<{ shortcut: DashboardWebShortcut }>((emit) => {
+				const handler = (shortcut: DashboardWebShortcut) => {
+					emit.next({ shortcut });
+				};
+				browserManager.on("dashboard-web-shortcut", handler);
+				return () => {
+					browserManager.off("dashboard-web-shortcut", handler);
+				};
+			});
+		}),
+
 		openDevTools: publicProcedure
 			.input(z.object({ paneId: z.string() }))
 			.mutation(({ input }) => {
@@ -185,7 +211,7 @@ export const createBrowserRouter = () => {
 				}),
 			)
 			.mutation(async ({ input }) => {
-				const ses = session.fromPartition("persist:superset");
+				const ses = session.fromPartition(DESKTOP_BROWSER_PARTITION);
 				switch (input.type) {
 					case "cookies":
 						await ses.clearStorageData({ storages: ["cookies"] });

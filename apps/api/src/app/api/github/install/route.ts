@@ -2,6 +2,10 @@ import { auth } from "@superset/auth/server";
 import { findOrgMembership } from "@superset/db/utils";
 
 import { env } from "@/env";
+import {
+	isGitHubAppConfigured,
+	resolveIntegrationPublicApiUrl,
+} from "@/lib/integration-config";
 import { createSignedState } from "@/lib/oauth-state";
 
 export async function GET(request: Request) {
@@ -33,10 +37,15 @@ export async function GET(request: Request) {
 		);
 	}
 
-	if (!env.GH_APP_ID) {
-		return Response.json(
-			{ error: "GitHub App not configured" },
-			{ status: 500 },
+	if (
+		!isGitHubAppConfigured({
+			appId: env.GH_APP_ID,
+			privateKey: env.GH_APP_PRIVATE_KEY,
+			appSlug: env.GH_APP_SLUG,
+		})
+	) {
+		return Response.redirect(
+			`${env.NEXT_PUBLIC_WEB_URL}/integrations/github?error=not_configured`,
 		);
 	}
 
@@ -46,12 +55,16 @@ export async function GET(request: Request) {
 	});
 
 	const installUrl = new URL(
-		"https://github.com/apps/superset-app/installations/new",
+		`https://github.com/apps/${env.GH_APP_SLUG}/installations/new`,
 	);
+	const publicApiUrl = resolveIntegrationPublicApiUrl({
+		integrationsPublicApiUrl: env.INTEGRATIONS_PUBLIC_API_URL,
+		nextPublicApiUrl: env.NEXT_PUBLIC_API_URL,
+	});
 	installUrl.searchParams.set("state", state);
 	installUrl.searchParams.set(
 		"redirect_url",
-		`${env.NEXT_PUBLIC_API_URL}/api/github/callback`,
+		`${publicApiUrl}/api/github/callback`,
 	);
 
 	return Response.redirect(installUrl.toString());

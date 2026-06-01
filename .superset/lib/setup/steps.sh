@@ -43,7 +43,7 @@ step_check_dependencies() {
   fi
 
   if ! command -v caddy &> /dev/null; then
-    warn "caddy not found — HTTP/2 proxy for Electric won't work (Run: brew install caddy && caddy trust)"
+    warn "caddy not found — optional HTTP/2 proxy for Electric won't work (Run: brew install caddy)"
   fi
 
   if [ ${#missing[@]} -gt 0 ]; then
@@ -354,6 +354,24 @@ port_base_is_safe() {
   return 0
 }
 
+port_base_has_listener() {
+  local base=$1
+  local range=$2
+  local offset
+
+  if ! command -v lsof &> /dev/null; then
+    return 1
+  fi
+
+  for offset in $(seq 0 $((range - 1))); do
+    if lsof -nP -iTCP:"$((base + offset))" -sTCP:LISTEN &> /dev/null; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 allocate_port_base() {
   local alloc_file="$HOME/.superset/port-allocations.json"
   local lock_dir="$HOME/.superset/port-allocations.lock"
@@ -379,12 +397,12 @@ allocate_port_base() {
   fi
 
   if [ -n "$existing" ]; then
-    if port_base_is_safe "$existing" "$range"; then
+    if port_base_is_safe "$existing" "$range" && { [ -f ".superset/ports.json" ] || ! port_base_has_listener "$existing" "$range"; }; then
       export SUPERSET_PORT_BASE="$existing"
       release_port_alloc_lock "$lock_dir"
       return 0
     fi
-    echo "  Existing port base $existing overlaps a reserved port (${SUPERSET_RESERVED_PORTS}); reallocating..."
+    echo "  Existing port base $existing is unavailable; reallocating..."
     local tmp_file="${alloc_file}.tmp.$$"
     if ! jq --arg k "$key" 'del(.[$k])' "$alloc_file" > "$tmp_file"; then
       error "Failed to release stale port allocation"
@@ -411,7 +429,8 @@ allocate_port_base() {
   # Find first available slot, skipping any window that overlaps a reserved port
   local candidate=$start
   while echo "$used" | grep -qx "$candidate" 2>/dev/null \
-    || ! port_base_is_safe "$candidate" "$range"; do
+    || ! port_base_is_safe "$candidate" "$range" \
+    || port_base_has_listener "$candidate" "$range"; do
     candidate=$((candidate + range))
   done
 
@@ -526,6 +545,7 @@ step_write_env() {
     echo ""
     echo "# Cross-app URLs (overrides from root .env)"
     write_env_var "NEXT_PUBLIC_API_URL" "http://localhost:$API_PORT"
+    write_env_var "INTEGRATIONS_PUBLIC_API_URL" ""
     write_env_var "NEXT_PUBLIC_WEB_URL" "http://localhost:$WEB_PORT"
     write_env_var "NEXT_PUBLIC_MARKETING_URL" "http://localhost:$MARKETING_PORT"
     write_env_var "NEXT_PUBLIC_ADMIN_URL" "http://localhost:$ADMIN_PORT"
@@ -547,14 +567,15 @@ step_write_env() {
     echo ""
     echo "# Electric URLs (overrides from root .env)"
     write_env_var "ELECTRIC_URL" "http://localhost:$ELECTRIC_PORT/v1/shape"
-    echo "# Caddy HTTPS proxy for HTTP/2 (avoids browser 6-connection limit with Electric SSE streams)"
-    write_env_var "NEXT_PUBLIC_ELECTRIC_URL" "https://localhost:$CADDY_ELECTRIC_PORT"
-    write_env_var "NEXT_PUBLIC_ELECTRIC_PROXY_URL" "https://localhost:$CADDY_ELECTRIC_PORT"
+    echo "# Wrangler HTTP proxy for authenticated Electric shapes"
+    write_env_var "NEXT_PUBLIC_ELECTRIC_URL" "http://localhost:$WRANGLER_PORT"
+    write_env_var "NEXT_PUBLIC_ELECTRIC_PROXY_URL" "http://localhost:$WRANGLER_PORT"
   } >> .env
 
   success "Workspace .env written"
 
-  # Generate Caddyfile for HTTP/2 reverse proxy (avoids browser 6-connection limit with Electric SSE streams)
+  # Generate an optional Caddy HTTP/2 reverse proxy (avoids browser 6-connection limit with Electric SSE streams).
+  # Trust Caddy's local CA before pointing NEXT_PUBLIC_ELECTRIC_URL at this proxy.
   # Caddy proxies to the local Wrangler worker, which handles auth and forwards upstream appropriately.
   # auto_https disable_redirects keeps Caddy off port 80 — we only need HTTPS on the allocated port.
   cat > Caddyfile <<-CADDYEOF

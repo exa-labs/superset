@@ -6,10 +6,12 @@ import {
 	PaletteIcon,
 	PanelLeftIcon,
 	PanelRightIcon,
+	PlusIcon,
 	RefreshCwIcon,
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
+import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import { SYSTEM_THEME_ID, useThemeStore } from "renderer/stores/theme/store";
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
@@ -42,6 +44,15 @@ export const actionsProvider: CommandProvider = {
 	id: "actions",
 	provide: (context) => {
 		const commands: Command[] = [
+			{
+				id: "actions.newWorkspace",
+				title: "New workspace",
+				section: "actions",
+				icon: PlusIcon,
+				hotkeyId: "NEW_WORKSPACE",
+				keywords: ["local", "session", "workspace", "repo", "project"],
+				run: () => useNewWorkspaceModalStore.getState().openModal(),
+			},
 			{
 				id: "actions.toggleTheme",
 				title: "Toggle theme",

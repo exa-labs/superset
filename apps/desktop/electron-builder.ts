@@ -24,7 +24,7 @@ const dmgBackgroundPath = join(
 );
 
 const config: Configuration = {
-	appId: "com.superset.desktop",
+	appId: "com.clankee.desktop",
 	productName,
 	copyright: `Copyright © ${currentYear} — ${author}`,
 	electronVersion: pkg.devDependencies.electron.replace(/^\^/, ""),
@@ -122,15 +122,15 @@ const config: Configuration = {
 			CFBundleDisplayName: productName,
 			// Required for macOS microphone permission prompt
 			NSMicrophoneUsageDescription:
-				"Superset needs microphone access so voice-enabled tools like Codex transcription can capture audio input.",
+				"Clankee needs microphone access so voice-enabled tools like Codex transcription can capture audio input.",
 			// Required for macOS local network permission prompt
 			NSLocalNetworkUsageDescription:
-				"Superset needs access to your local network to discover and connect to development servers running on your network.",
+				"Clankee needs access to your local network to discover and connect to development servers running on your network.",
 			// Bonjour service types to browse for (triggers the permission prompt)
 			NSBonjourServices: ["_http._tcp", "_https._tcp"],
 			// Required for Apple Events / Automation permission prompt
 			NSAppleEventsUsageDescription:
-				"Superset needs to interact with other applications to run terminal commands and development tools.",
+				"Clankee needs to interact with other applications to run terminal commands and development tools.",
 		},
 	},
 
@@ -146,7 +146,7 @@ const config: Configuration = {
 		category: "Utility",
 		synopsis: pkg.description,
 		target: ["AppImage"],
-		artifactName: `superset-\${version}-\${arch}.\${ext}`,
+		artifactName: `clankee-\${version}-\${arch}.\${ext}`,
 	},
 
 	// Windows

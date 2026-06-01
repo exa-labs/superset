@@ -5,6 +5,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 } from "react";
 import { env } from "renderer/env.renderer";
 import { authClient } from "renderer/lib/auth-client";
@@ -38,22 +39,45 @@ export function LocalHostServiceProvider({
 	const activeOrganizationId = env.SKIP_ENV_VALIDATION
 		? MOCK_ORG_ID
 		: (session?.session?.activeOrganizationId ?? null);
+	const attemptedStartsRef = useRef(new Set<string>());
 
 	const { data: organizations } = useLiveQuery(
 		(q) => q.from({ organizations: collections.organizations }),
 		[collections],
 	);
 
-	const organizationIds = useMemo(
-		() => organizations?.map((organization) => organization.id) ?? [],
-		[organizations],
-	);
+	const organizationIdsToStartKey = useMemo(() => {
+		const ids = new Set<string>();
+		if (activeOrganizationId) ids.add(activeOrganizationId);
+		for (const organization of organizations ?? []) {
+			ids.add(organization.id);
+		}
+		return [...ids].sort().join("\0");
+	}, [activeOrganizationId, organizations]);
 
 	useEffect(() => {
+		const organizationIds =
+			organizationIdsToStartKey === ""
+				? []
+				: organizationIdsToStartKey.split("\0");
+
 		for (const organizationId of organizationIds) {
-			startHostService({ organizationId });
+			if (attemptedStartsRef.current.has(organizationId)) continue;
+			attemptedStartsRef.current.add(organizationId);
+			startHostService(
+				{ organizationId },
+				{
+					onError: (error) => {
+						attemptedStartsRef.current.delete(organizationId);
+						console.error(
+							`[LocalHostServiceProvider] Failed to start host service for organization ${organizationId}:`,
+							error,
+						);
+					},
+				},
+			);
 		}
-	}, [organizationIds, startHostService]);
+	}, [organizationIdsToStartKey, startHostService]);
 
 	const { data: machineIdData } = electronTrpc.device.getMachineId.useQuery(
 		undefined,

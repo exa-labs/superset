@@ -1,6 +1,6 @@
 {
 	"name": "@superset/desktop",
-	"productName": "Superset",
+	"productName": "Clankee",
 	"description": "The last developer tool you'll ever need",
 	"version": "1.12.1",
 	"main": "./dist/main/index.js",
@@ -10,7 +10,7 @@
 		"url": "https://github.com/superset-sh/superset.git"
 	},
 	"author": {
-		"name": "Superset",
+		"name": "Clankee",
 		"email": "hi@superset.sh"
 	},
 	"scripts": {
@@ -19,7 +19,7 @@
 		"generate:icons": "bun run scripts/generate-file-icons.ts",
 		"bundle:cli": "bun run scripts/build-bundled-cli.ts",
 		"predev": "cross-env NODE_ENV=development bun run clean:dev && bun run generate:icons && bun run bundle:cli && cross-env NODE_ENV=development bun run scripts/clean-launch-services.ts && cross-env NODE_ENV=development bun run scripts/patch-dev-protocol.ts",
-		"dev": "cross-env NODE_ENV=development NODE_OPTIONS=--max-old-space-size=8192 electron-vite dev --watch",
+		"dev": "cross-env NODE_ENV=development RENDERER_REMOTE_DEBUG_PORT=9222 NODE_OPTIONS=--max-old-space-size=8192 electron-vite dev --watch",
 		"compile:app": "cross-env NODE_OPTIONS=--max-old-space-size=8192 electron-vite build && bun run bundle:cli && bun run scripts/check-pty-daemon-bundle.ts",
 		"check:pty-daemon-bundle": "bun run scripts/check-pty-daemon-bundle.ts",
 		"copy:native-modules": "bun run scripts/copy-native-modules.ts",
@@ -34,6 +34,8 @@
 		"generate:routes": "tsr generate",
 		"pretypecheck": "bun run generate:icons && bun run generate:routes",
 		"typecheck": "tsc --noEmit",
+		"smoke:dashboard-browser": "bun run scripts/smoke-dashboard-browser.ts",
+		"smoke:dashboard-browser:cookies": "bun run scripts/smoke-dashboard-browser-cookie-restart.ts",
 		"test": "bun test"
 	},
 	"dependencies": {

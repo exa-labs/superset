@@ -1,0 +1,1 @@
+export { useDashboardWebShortcuts } from "./useDashboardWebShortcuts";

@@ -18,6 +18,7 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Switch } from "@superset/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
@@ -42,6 +43,26 @@ import type { DashboardSidebarProject } from "./types";
 
 interface DashboardSidebarProps {
 	isCollapsed?: boolean;
+}
+
+const EXTRA_NAV_STORAGE_KEY = "dashboard-sidebar-extra-nav-visible-v1";
+
+function readExtraNavVisible(): boolean {
+	if (typeof localStorage === "undefined") return false;
+
+	try {
+		return localStorage.getItem(EXTRA_NAV_STORAGE_KEY) === "true";
+	} catch {
+		return false;
+	}
+}
+
+function writeExtraNavVisible(isVisible: boolean) {
+	if (typeof localStorage === "undefined") return;
+
+	try {
+		localStorage.setItem(EXTRA_NAV_STORAGE_KEY, String(isVisible));
+	} catch {}
 }
 
 interface SortableProjectWrapperProps {
@@ -106,6 +127,7 @@ export function DashboardSidebar({
 	const { activeHostUrl } = useLocalHostService();
 	const v2RouteMatch = matchRoute({ to: "/v2-workspace/$workspaceId" });
 	const activeV2WorkspaceId = v2RouteMatch ? v2RouteMatch.workspaceId : null;
+	const [showExtraNav, setShowExtraNav] = useState(readExtraNavVisible);
 
 	const sensors = useSensors(
 		useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -119,6 +141,11 @@ export function DashboardSidebar({
 
 	const [activeProject, setActiveProject] =
 		useState<DashboardSidebarProject | null>(null);
+
+	const handleExtraNavChange = useCallback((isVisible: boolean) => {
+		setShowExtraNav(isVisible);
+		writeExtraNavVisible(isVisible);
+	}, []);
 
 	// Local project order — syncs from groups, updated on drag end
 	const [projectOrder, setProjectOrder] = useState(() =>
@@ -177,10 +204,13 @@ export function DashboardSidebar({
 		<DashboardSidebarSectionRenameProvider>
 			<DashboardSidebarHoverProvider>
 				<DashboardSidebarHoverCardOverlay>
-					<div className="flex h-full flex-col border-r border-border bg-muted/45 dark:bg-muted/35">
-						<DashboardSidebarHeader isCollapsed={isCollapsed} />
+					<div className="flex h-full min-h-0 flex-col border-r border-border bg-muted/45 dark:bg-muted/35">
+						<div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar">
+							<DashboardSidebarHeader
+								isCollapsed={isCollapsed}
+								showExtraNav={showExtraNav}
+							/>
 
-						<div className="flex-1 overflow-y-auto hide-scrollbar">
 							<DndContext
 								sensors={sensors}
 								collisionDetection={closestCenter}
@@ -248,48 +278,72 @@ export function DashboardSidebar({
 							)}
 						>
 							{isCollapsed ? (
-								<Tooltip delayDuration={300}>
-									<TooltipTrigger asChild>
-										<button
-											type="button"
-											aria-label="Settings"
-											onClick={() => navigate({ to: "/settings/account" })}
-											className={cn(
-												"flex size-8 items-center justify-center rounded-md transition-colors",
-												isSettingsOpen
-													? "bg-accent text-foreground"
-													: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-											)}
-										>
-											<HiOutlineCog6Tooth className="size-4" />
-										</button>
-									</TooltipTrigger>
-									<TooltipContent side="right">Settings</TooltipContent>
-								</Tooltip>
+								<>
+									<Tooltip delayDuration={300}>
+										<TooltipTrigger asChild>
+											<Switch
+												checked={showExtraNav}
+												onCheckedChange={handleExtraNavChange}
+												aria-label="Show extra sidebar items"
+											/>
+										</TooltipTrigger>
+										<TooltipContent side="right">Extra</TooltipContent>
+									</Tooltip>
+
+									<Tooltip delayDuration={300}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
+												aria-label="Settings"
+												onClick={() => navigate({ to: "/settings/account" })}
+												className={cn(
+													"flex size-8 items-center justify-center rounded-md transition-colors",
+													isSettingsOpen
+														? "bg-accent text-foreground"
+														: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+												)}
+											>
+												<HiOutlineCog6Tooth className="size-4" />
+											</button>
+										</TooltipTrigger>
+										<TooltipContent side="right">Settings</TooltipContent>
+									</Tooltip>
+								</>
 							) : (
-								<button
-									type="button"
-									onClick={() => navigate({ to: "/settings/account" })}
-									className={cn(
-										"group flex flex-1 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-										isSettingsOpen
-											? "bg-accent text-foreground"
-											: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-									)}
-								>
-									<HiOutlineCog6Tooth className="size-4 shrink-0" />
-									<span className="flex-1 text-left">Settings</span>
-									{settingsHotkey !== "Unassigned" && (
-										<span
-											className={cn(
-												"shrink-0 text-[10px] font-mono tabular-nums text-muted-foreground/60",
-												"opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
-											)}
-										>
-											{settingsHotkey}
-										</span>
-									)}
-								</button>
+								<>
+									<div className="flex h-8 items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground">
+										<span className="min-w-0 flex-1 truncate">Extra</span>
+										<Switch
+											checked={showExtraNav}
+											onCheckedChange={handleExtraNavChange}
+											aria-label="Show extra sidebar items"
+										/>
+									</div>
+
+									<button
+										type="button"
+										onClick={() => navigate({ to: "/settings/account" })}
+										className={cn(
+											"group flex flex-1 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+											isSettingsOpen
+												? "bg-accent text-foreground"
+												: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+										)}
+									>
+										<HiOutlineCog6Tooth className="size-4 shrink-0" />
+										<span className="flex-1 text-left">Settings</span>
+										{settingsHotkey !== "Unassigned" && (
+											<span
+												className={cn(
+													"shrink-0 text-[10px] font-mono tabular-nums text-muted-foreground/60",
+													"opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
+												)}
+											>
+												{settingsHotkey}
+											</span>
+										)}
+									</button>
+								</>
 							)}
 
 							<DashboardSidebarHelpMenu isCollapsed={isCollapsed} />

@@ -1,0 +1,10 @@
+if command -v devenv >/dev/null 2>&1; then
+  eval "$(devenv direnvrc)"
+else
+  devenv() {
+    nix run nixpkgs#devenv -- "$@"
+  }
+  eval "$(devenv direnvrc)"
+fi
+
+use devenv

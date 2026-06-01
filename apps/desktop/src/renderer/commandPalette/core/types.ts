@@ -3,7 +3,7 @@ import type { ElementType } from "react";
 import type { HotkeyId } from "renderer/hotkeys/registry";
 import type { HostServiceAvailabilityStatus } from "renderer/lib/host-service-unavailable";
 
-export type SectionId = "workspace" | "actions" | "navigation";
+export type SectionId = "web" | "workspace" | "actions" | "navigation";
 
 export interface CommandContext {
 	route: {
@@ -32,6 +32,7 @@ export interface Command {
 	id: string;
 	title: string;
 	section: SectionId;
+	description?: string;
 	icon?: ElementType<{ className?: string }>;
 	iconUrl?: string;
 	keywords?: string[];

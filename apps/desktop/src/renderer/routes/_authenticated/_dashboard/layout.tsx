@@ -5,9 +5,9 @@ import {
 	Outlet,
 	useMatchRoute,
 	useNavigate,
+	useRouterState,
 } from "@tanstack/react-router";
 import { useState } from "react";
-import { CommandPaletteHost } from "renderer/commandPalette";
 import { useIsV2CloudEnabled } from "renderer/hooks/useIsV2CloudEnabled";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
@@ -57,6 +57,9 @@ function DashboardLayout() {
 	useDevSeedV2Sidebar();
 	// Get current workspace from route to pre-select project in new workspace modal
 	const matchRoute = useMatchRoute();
+	const currentPathname = useRouterState({
+		select: (state) => state.location.pathname,
+	});
 	const currentWorkspaceMatch = matchRoute({
 		to: "/workspace/$workspaceId",
 		fuzzy: true,
@@ -69,8 +72,12 @@ function DashboardLayout() {
 	});
 	const currentV2WorkspaceId =
 		v2WorkspaceMatch !== false ? v2WorkspaceMatch.workspaceId : null;
-	const onV1WorkspaceRoute = currentWorkspaceMatch !== false;
-	const onV2WorkspaceRoute = v2WorkspaceMatch !== false;
+	const onV1WorkspaceRoute =
+		currentPathname === "/workspace" ||
+		currentPathname.startsWith("/workspace/");
+	const onV2WorkspaceRoute =
+		currentPathname === "/v2-workspace" ||
+		currentPathname.startsWith("/v2-workspace/");
 	const versionMismatch =
 		(isV2CloudEnabled && onV1WorkspaceRoute) ||
 		(!isV2CloudEnabled && onV2WorkspaceRoute);
@@ -189,13 +196,15 @@ function DashboardLayout() {
 
 	return (
 		<div className="flex h-full w-full overflow-hidden">
-			<CommandPaletteHost />
 			{sidebarOutsideColumn && sidebarPanel}
 			<div className="flex flex-1 flex-col min-w-0 min-h-0">
 				<TopBar />
 				<div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
 					{!sidebarOutsideColumn && sidebarPanel}
-					<div className="flex flex-1 min-h-0 min-w-0">
+					<div
+						data-dashboard-web-view-deck-anchor=""
+						className="relative flex flex-1 min-h-0 min-w-0"
+					>
 						{versionMismatch ? <CrossVersionMismatchState /> : <Outlet />}
 					</div>
 				</div>

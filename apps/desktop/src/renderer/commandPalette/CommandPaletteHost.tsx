@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect } from "react";
 import { useHotkey } from "renderer/hotkeys";
+import { electronTrpc } from "renderer/lib/electron-trpc";
 import { CommandContextProvider } from "./core/ContextProvider";
 import { useFrameStackStore } from "./core/frames";
 import { registerAllModules } from "./modules";
@@ -29,5 +30,9 @@ export function CommandPaletteHost({ children }: { children?: ReactNode }) {
 function CommandPaletteTrigger() {
 	const setOpen = useFrameStackStore((s) => s.setOpen);
 	useHotkey("OPEN_COMMAND_PALETTE", () => setOpen(true));
+	useHotkey("OPEN_CONTROL_PLANE", () => setOpen(true));
+	electronTrpc.browser.onOpenControlPlane.useSubscription(undefined, {
+		onData: () => setOpen(true),
+	});
 	return null;
 }

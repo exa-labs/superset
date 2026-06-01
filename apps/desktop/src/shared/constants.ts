@@ -14,6 +14,10 @@ export const SUPERSET_DIR_NAME = workspace
 export const PROTOCOL_SCHEME = workspace
 	? `superset-${workspace}`
 	: PROTOCOL_SCHEMES.PROD;
+// Keep the legacy Superset partition name so Chromium cookies, IndexedDB,
+// service workers, and OAuth sessions survive the Clankee rebrand.
+export const DESKTOP_BROWSER_PARTITION = "persist:superset";
+export const NATIVE_AGENT_ASSET_PROTOCOL_SCHEME = "superset-native-agent-asset";
 // Project-level directory name (always .superset, not conditional)
 export const PROJECT_SUPERSET_DIR_NAME = ".superset";
 export const WORKTREES_DIR_NAME = "worktrees";

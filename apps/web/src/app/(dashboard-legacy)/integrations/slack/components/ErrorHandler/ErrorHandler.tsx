@@ -8,6 +8,8 @@ const ERROR_MESSAGES: Record<string, string> = {
 	oauth_denied: "Authorization was denied. Please try again.",
 	missing_params: "Invalid OAuth response. Please try again.",
 	invalid_state: "Invalid state parameter. Please try again.",
+	not_configured:
+		"Slack OAuth credentials are not configured for this local workspace.",
 	token_exchange_failed: "Failed to connect to Slack. Please try again.",
 	slack_api_error: "Slack API error occurred. Please try again.",
 	unauthorized: "You are not authorized to perform this action.",

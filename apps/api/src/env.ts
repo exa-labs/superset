@@ -21,6 +21,7 @@ export const env = createEnv({
 		LINEAR_WEBHOOK_SECRET: z.string().min(1),
 		GH_APP_ID: z.string().min(1),
 		GH_APP_PRIVATE_KEY: z.string().min(1),
+		GH_APP_SLUG: z.string().min(1).default("superset-app"),
 		GH_WEBHOOK_SECRET: z.string().min(1),
 		SLACK_CLIENT_ID: z.string().min(1),
 		SLACK_CLIENT_SECRET: z.string().min(1),
@@ -45,6 +46,7 @@ export const env = createEnv({
 		DURABLE_STREAMS_SECRET: z.string().min(1),
 		TAVILY_API_KEY: z.string().optional(),
 		RELAY_URL: z.string().url(),
+		INTEGRATIONS_PUBLIC_API_URL: z.string().url().optional(),
 	},
 	client: {
 		NEXT_PUBLIC_API_URL: z.string().url(),

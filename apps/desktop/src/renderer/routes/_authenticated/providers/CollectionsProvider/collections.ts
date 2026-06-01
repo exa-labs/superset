@@ -73,6 +73,7 @@ import {
 	type WorkspacesCreateInput,
 	workspaceLocalStateSchema,
 } from "./dashboardSidebarLocal";
+import { getShellPreloadCollections } from "./preloadPolicy";
 import { withReadHeal } from "./withReadHeal";
 
 const columnMapper = snakeCamelMapper();
@@ -913,17 +914,18 @@ function createOrgCollections(organizationId: string): OrgCollections {
 }
 
 /**
- * Preload collections for an organization by starting Electric sync.
+ * Preload shell-critical collections for an organization by starting Electric sync.
  * Collections are lazy — they don't fetch data until subscribed or preloaded.
- * Call this eagerly so data is ready when the user switches orgs.
+ *
+ * Keep this list intentionally small. Each Electric collection can hold a
+ * long-polling HTTP request, and the Electron renderer only gets a small local
+ * HTTP/1.1 connection pool for the Wrangler Electric proxy.
  */
 export async function preloadCollections(
 	organizationId: string,
 ): Promise<void> {
 	const collections = getCollections(organizationId);
-	const collectionsToPreload = Object.entries(collections)
-		.filter(([name]) => name !== "organizations")
-		.map(([, collection]) => collection as Collection<object>);
+	const collectionsToPreload = getShellPreloadCollections(collections);
 
 	await Promise.allSettled(
 		collectionsToPreload.map((c) => (c as Collection<object>).preload()),

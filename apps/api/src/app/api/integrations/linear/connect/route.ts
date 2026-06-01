@@ -2,6 +2,10 @@ import { auth } from "@superset/auth/server";
 import { findOrgMembership } from "@superset/db/utils";
 
 import { env } from "@/env";
+import {
+	isLinearConfigured,
+	resolveIntegrationPublicApiUrl,
+} from "@/lib/integration-config";
 import { createSignedState } from "@/lib/oauth-state";
 
 export async function GET(request: Request) {
@@ -35,16 +39,31 @@ export async function GET(request: Request) {
 		);
 	}
 
+	if (
+		!isLinearConfigured({
+			clientId: env.LINEAR_CLIENT_ID,
+			clientSecret: env.LINEAR_CLIENT_SECRET,
+		})
+	) {
+		return Response.redirect(
+			`${env.NEXT_PUBLIC_WEB_URL}/integrations/linear?error=not_configured`,
+		);
+	}
+
 	const state = createSignedState({
 		organizationId,
 		userId: session.user.id,
 	});
 
 	const linearAuthUrl = new URL("https://linear.app/oauth/authorize");
+	const publicApiUrl = resolveIntegrationPublicApiUrl({
+		integrationsPublicApiUrl: env.INTEGRATIONS_PUBLIC_API_URL,
+		nextPublicApiUrl: env.NEXT_PUBLIC_API_URL,
+	});
 	linearAuthUrl.searchParams.set("client_id", env.LINEAR_CLIENT_ID);
 	linearAuthUrl.searchParams.set(
 		"redirect_uri",
-		`${env.NEXT_PUBLIC_API_URL}/api/integrations/linear/callback`,
+		`${publicApiUrl}/api/integrations/linear/callback`,
 	);
 	linearAuthUrl.searchParams.set("response_type", "code");
 	linearAuthUrl.searchParams.set("scope", "read,write,issues:create");

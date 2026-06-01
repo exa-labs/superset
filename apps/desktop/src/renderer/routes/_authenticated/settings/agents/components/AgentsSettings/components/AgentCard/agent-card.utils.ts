@@ -23,7 +23,7 @@ export function getPreviewPrompt(preset: ResolvedAgentConfig): string {
 
 export function getPreviewNoPromptCommand(preset: ResolvedAgentConfig): string {
 	if (preset.kind !== "terminal") {
-		return "Superset opens a chat pane without a shell command.";
+		return "Clankee opens a chat pane without a shell command.";
 	}
 
 	return preset.command.trim() || "No command configured.";
@@ -32,8 +32,8 @@ export function getPreviewNoPromptCommand(preset: ResolvedAgentConfig): string {
 export function getPreviewTaskCommand(preset: ResolvedAgentConfig): string {
 	if (preset.kind !== "terminal") {
 		return preset.model
-			? `Superset opens with model ${preset.model}.`
-			: "Superset opens with the rendered task prompt.";
+			? `Clankee opens with model ${preset.model}.`
+			: "Clankee opens with the rendered task prompt.";
 	}
 
 	return (

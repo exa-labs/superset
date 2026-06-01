@@ -13,6 +13,7 @@ import { FcGoogle } from "react-icons/fc";
 import { env } from "renderer/env.renderer";
 import { track } from "renderer/lib/analytics";
 import { setAuthToken } from "renderer/lib/auth-client";
+import { authFetchWithTimeout } from "renderer/lib/auth-fetch";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { SupersetLogo } from "./components/SupersetLogo";
 import { useSessionRecovery } from "./hooks/useSessionRecovery";
@@ -58,12 +59,23 @@ function SignInPage() {
 		setDevError(null);
 
 		const postAuth = async (path: string, body: Record<string, unknown>) => {
-			const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${path}`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				credentials: "omit",
-				body: JSON.stringify(body),
-			});
+			let response: Response;
+			try {
+				response = await authFetchWithTimeout(
+					`${env.NEXT_PUBLIC_API_URL}${path}`,
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						credentials: "omit",
+						body: JSON.stringify(body),
+					},
+				);
+			} catch (error) {
+				throw new Error(
+					`Cannot reach the local API at ${env.NEXT_PUBLIC_API_URL}. Start the local dev graph with superset-dev, then retry.`,
+					{ cause: error },
+				);
+			}
 			const data = (await response.json().catch(() => ({}))) as {
 				token?: string;
 				code?: string;
@@ -126,7 +138,7 @@ function SignInPage() {
 
 					<div className="text-center mb-8">
 						<h1 className="text-xl font-semibold text-foreground mb-2">
-							Welcome to Superset
+							Welcome to Clankee
 						</h1>
 						<p className="text-sm text-muted-foreground">
 							{hasLocalToken

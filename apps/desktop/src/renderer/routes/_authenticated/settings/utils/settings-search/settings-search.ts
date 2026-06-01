@@ -864,7 +864,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
 	{
 		id: SETTING_ITEM_ID.EXPERIMENTAL_SUPERSET_V2,
 		section: "experimental",
-		title: "Try Superset Version 2 (Early Access)",
+		title: "Try Clankee Version 2 (Early Access)",
 		description: "Switch between Superset V1 and the new V2 experience",
 		keywords: [
 			"experimental",
@@ -1261,7 +1261,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
 		section: "security",
 		title: "Allow remote workspaces to access this device via relay",
 		description:
-			"Controls whether remote workspaces can reach your local host service through the Superset relay",
+			"Controls whether remote workspaces can reach your local host service through the Clankee relay",
 		keywords: [
 			"security",
 			"relay",

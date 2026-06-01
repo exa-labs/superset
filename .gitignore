@@ -42,6 +42,8 @@ mise.toml
 
 # Temporary files
 .tmp/
+.devenv/
+.direnv/
 
 # Turbo
 .turbo

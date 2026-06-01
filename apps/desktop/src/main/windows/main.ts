@@ -7,7 +7,11 @@ import log from "electron-log/main";
 import { createWindow } from "lib/electron-app/factories/windows/create";
 import { createAppRouter } from "lib/trpc/routers";
 import { localDb } from "main/lib/local-db";
-import { NOTIFICATION_EVENTS, PLATFORM } from "shared/constants";
+import {
+	DESKTOP_BROWSER_PARTITION,
+	NOTIFICATION_EVENTS,
+	PLATFORM,
+} from "shared/constants";
 import {
 	env,
 	getWorkspaceName as getEnvWorkspaceName,
@@ -17,6 +21,7 @@ import { createIPCHandler } from "trpc-electron/main";
 import { productName } from "~/package.json";
 import { appState } from "../lib/app-state";
 import { browserManager } from "../lib/browser/browser-manager";
+import { installControlPlaneShortcutBridge } from "../lib/control-plane-shortcut-bridge";
 import { createApplicationMenu } from "../lib/menu";
 import { playNotificationSound } from "../lib/notification-sound";
 import { NotificationManager } from "../lib/notifications/notification-manager";
@@ -123,11 +128,14 @@ export async function MainWindow() {
 			webviewTag: true,
 			// Isolate Electron session from system browser cookies
 			// This ensures desktop uses bearer token auth, not web cookies
-			partition: "persist:superset",
+			partition: DESKTOP_BROWSER_PARTITION,
 		},
 	});
 
 	createApplicationMenu();
+	installControlPlaneShortcutBridge(() => {
+		browserManager.openControlPlane();
+	});
 
 	currentWindow = window;
 

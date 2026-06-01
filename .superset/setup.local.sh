@@ -49,7 +49,7 @@ local_check_dependencies() {
   command -v bun &> /dev/null || missing+=("bun (https://bun.sh)")
   command -v docker &> /dev/null || missing+=("docker (https://docker.com)")
   command -v jq &> /dev/null || missing+=("jq (brew install jq)")
-  command -v caddy &> /dev/null || warn "caddy not found — Electric HTTPS proxy won't work (brew install caddy && caddy trust)"
+  command -v caddy &> /dev/null || warn "caddy not found — optional Electric HTTPS/HTTP2 proxy won't work (brew install caddy)"
   if [ ${#missing[@]} -gt 0 ]; then
     error "Missing dependencies:"
     for dep in "${missing[@]}"; do echo "  - $dep"; done
@@ -206,6 +206,7 @@ local_write_env() {
     echo ""
     echo "# Cross-app URLs (allocated ports)"
     write_env_var "NEXT_PUBLIC_API_URL" "http://localhost:$API_PORT"
+    write_env_var "INTEGRATIONS_PUBLIC_API_URL" ""
     write_env_var "NEXT_PUBLIC_WEB_URL" "http://localhost:$WEB_PORT"
     write_env_var "NEXT_PUBLIC_MARKETING_URL" "http://localhost:$MARKETING_PORT"
     write_env_var "NEXT_PUBLIC_ADMIN_URL" "http://localhost:$ADMIN_PORT"
@@ -221,12 +222,14 @@ local_write_env() {
     write_env_var "NEXT_PUBLIC_STREAMS_URL" "http://localhost:$STREAMS_PORT"
     write_env_var "STREAMS_INTERNAL_URL" "http://127.0.0.1:$STREAMS_INTERNAL_PORT"
     echo ""
-    echo "# Electric URLs (per-workspace Electric :$LOCAL_ELECTRIC_PORT, fronted by Caddy)"
+    echo "# Electric URLs (per-workspace Electric :$LOCAL_ELECTRIC_PORT, proxied by Wrangler)"
     write_env_var "ELECTRIC_URL" "http://localhost:$LOCAL_ELECTRIC_PORT/v1/shape"
-    write_env_var "NEXT_PUBLIC_ELECTRIC_URL" "https://localhost:$CADDY_ELECTRIC_PORT"
-    write_env_var "NEXT_PUBLIC_ELECTRIC_PROXY_URL" "https://localhost:$CADDY_ELECTRIC_PORT"
+    write_env_var "NEXT_PUBLIC_ELECTRIC_URL" "http://localhost:$WRANGLER_PORT"
+    write_env_var "NEXT_PUBLIC_ELECTRIC_PROXY_URL" "http://localhost:$WRANGLER_PORT"
   } >> .env
 
+  # Optional HTTPS/HTTP/2 proxy for Electric. If you need to exercise this path locally,
+  # run `caddy trust` or `superset-trust-caddy`, then point NEXT_PUBLIC_ELECTRIC_URL at it.
   cat > Caddyfile <<-CADDYEOF
 	{
 		auto_https disable_redirects

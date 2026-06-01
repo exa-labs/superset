@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { settings } from "@superset/local-db";
@@ -20,6 +21,8 @@ import { applyShellEnvToProcess } from "lib/trpc/routers/workspaces/utils/shell-
 import { env as mainEnv } from "main/env.main";
 import {
 	DEFAULT_CONFIRM_ON_QUIT,
+	DESKTOP_BROWSER_PARTITION,
+	NATIVE_AGENT_ASSET_PROTOCOL_SCHEME,
 	PLATFORM,
 	PROTOCOL_SCHEME,
 } from "shared/constants";
@@ -55,17 +58,41 @@ import { MainWindow } from "./windows/main";
 console.log("[main] Local database ready:", !!localDb);
 const IS_DEV = process.env.NODE_ENV === "development";
 
+function configureUserDataProfile(devWorkspaceName?: string): void {
+	const legacyProfileName = devWorkspaceName
+		? `Superset (${devWorkspaceName})`
+		: "Superset";
+	const legacyUserDataPath = path.join(
+		app.getPath("appData"),
+		legacyProfileName,
+	);
+
+	if (!existsSync(legacyUserDataPath)) return;
+
+	const currentUserDataPath = app.getPath("userData");
+	if (currentUserDataPath === legacyUserDataPath) return;
+
+	// Keep the rebranded app on the existing Chromium profile so cookies,
+	// IndexedDB, service workers, and OAuth sessions survive the rename.
+	app.setPath("userData", legacyUserDataPath);
+	console.log(
+		`[main] Reusing legacy Superset user data profile for Clankee: ${legacyUserDataPath}`,
+	);
+}
+
 void applyShellEnvToProcess().catch((error) => {
 	console.error("[main] Failed to apply shell environment:", error);
 });
 
 // Dev mode: label the app with the workspace name so multiple worktrees are distinguishable
+let devWorkspaceName: string | undefined;
 if (IS_DEV) {
-	const workspaceName = resolveDevWorkspaceName();
-	if (workspaceName) {
-		app.setName(`Superset (${workspaceName})`);
+	devWorkspaceName = resolveDevWorkspaceName();
+	if (devWorkspaceName) {
+		app.setName(`Clankee (${devWorkspaceName})`);
 	}
 }
+configureUserDataProfile(devWorkspaceName);
 
 // Dev mode: register with execPath + app script so macOS launches Electron with our entry point
 if (process.defaultApp) {
@@ -197,6 +224,17 @@ function getConfirmOnQuitSetting(): boolean {
 	}
 }
 
+async function flushDesktopBrowserSession(reason: string): Promise<void> {
+	try {
+		await session.fromPartition(DESKTOP_BROWSER_PARTITION).cookies.flushStore();
+	} catch (error) {
+		console.warn(
+			`[main] Failed to flush browser cookies during ${reason}:`,
+			error,
+		);
+	}
+}
+
 app.on("before-quit", async (event) => {
 	if (isQuitting) return;
 
@@ -210,7 +248,7 @@ app.on("before-quit", async (event) => {
 				buttons: ["Quit", "Cancel"],
 				defaultId: 0,
 				cancelId: 1,
-				title: "Quit Superset",
+				title: "Quit Clankee",
 				message: "Are you sure you want to quit?",
 			});
 
@@ -224,6 +262,7 @@ app.on("before-quit", async (event) => {
 
 	isQuitting = true;
 	try {
+		await flushDesktopBrowserSession("quit");
 		getHostServiceCoordinator().stopAll();
 		if (isDev || forceFullCleanup) {
 			await teardownTerminalHost();
@@ -273,6 +312,7 @@ if (process.env.NODE_ENV === "development") {
 		console.log(`[main] Received ${signal}, quitting...`);
 		getHostServiceCoordinator().stopAll();
 		void Promise.allSettled([
+			flushDesktopBrowserSession(signal),
 			teardownTerminalHost(),
 			stopNetworkLogger(),
 		]).finally(() => app.exit(0));
@@ -321,6 +361,15 @@ protocol.registerSchemesAsPrivileged([
 			supportFetchAPI: true,
 		},
 	},
+	{
+		scheme: NATIVE_AGENT_ASSET_PROTOCOL_SCHEME,
+		privileges: {
+			standard: true,
+			secure: true,
+			bypassCSP: true,
+			supportFetchAPI: true,
+		},
+	},
 ]);
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -355,8 +404,74 @@ if (!gotTheLock) {
 		};
 		protocol.handle("superset-icon", iconProtocolHandler);
 		session
-			.fromPartition("persist:superset")
+			.fromPartition(DESKTOP_BROWSER_PARTITION)
 			.protocol.handle("superset-icon", iconProtocolHandler);
+
+		const nativeAgentAssetProtocolHandler = async (request: Request) => {
+			const url = new URL(request.url);
+			const rawAssetUrl = url.searchParams.get("url")?.trim();
+			if (!rawAssetUrl) {
+				return new Response("Missing asset URL", { status: 400 });
+			}
+
+			let assetUrl: URL;
+			try {
+				assetUrl = new URL(rawAssetUrl);
+			} catch {
+				return new Response("Invalid asset URL", { status: 400 });
+			}
+
+			const allowedHosts = new Set(["app.devin.ai", "capy.ai", "www.capy.ai"]);
+			if (assetUrl.protocol !== "https:" || !allowedHosts.has(assetUrl.host)) {
+				return new Response("Unsupported asset URL", { status: 400 });
+			}
+
+			try {
+				const browserSession = session.fromPartition(DESKTOP_BROWSER_PARTITION);
+				const response = await browserSession.fetch(assetUrl.toString(), {
+					headers: {
+						accept:
+							"image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+					},
+				});
+				const headers = new Headers(response.headers);
+				headers.delete("content-encoding");
+				headers.delete("content-length");
+				headers.set("access-control-allow-origin", "*");
+				headers.set("cache-control", "private, max-age=300");
+				if (!headers.get("content-type")) {
+					const pathname = assetUrl.pathname.toLowerCase();
+					if (pathname.endsWith(".png")) {
+						headers.set("content-type", "image/png");
+					} else if (pathname.endsWith(".jpg") || pathname.endsWith(".jpeg")) {
+						headers.set("content-type", "image/jpeg");
+					} else if (pathname.endsWith(".gif")) {
+						headers.set("content-type", "image/gif");
+					} else if (pathname.endsWith(".webp")) {
+						headers.set("content-type", "image/webp");
+					} else if (pathname.endsWith(".svg")) {
+						headers.set("content-type", "image/svg+xml");
+					}
+				}
+				const body = await response.arrayBuffer();
+				return new Response(body, {
+					headers,
+					status: response.status,
+					statusText: response.statusText,
+				});
+			} catch (error) {
+				console.warn(
+					"[native-agent-asset] Failed to fetch asset",
+					assetUrl.toString(),
+					error,
+				);
+				return new Response("Failed to fetch asset", { status: 502 });
+			}
+		};
+		protocol.handle(
+			NATIVE_AGENT_ASSET_PROTOCOL_SCHEME,
+			nativeAgentAssetProtocolHandler,
+		);
 
 		// Serve system fonts (e.g. SF Mono on macOS) via custom protocol
 		// so the renderer can use @font-face with font-src 'self' CSP
@@ -384,7 +499,7 @@ if (!gotTheLock) {
 			};
 			protocol.handle("superset-font", fontProtocolHandler);
 			session
-				.fromPartition("persist:superset")
+				.fromPartition(DESKTOP_BROWSER_PARTITION)
 				.protocol.handle("superset-font", fontProtocolHandler);
 		}
 

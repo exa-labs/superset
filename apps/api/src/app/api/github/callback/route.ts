@@ -140,16 +140,28 @@ export async function GET(request: Request) {
 			);
 		}
 
-		// Queue initial sync job
+		const syncUrl = `${env.NEXT_PUBLIC_API_URL}/api/github/jobs/initial-sync`;
+		const syncBody = {
+			installationDbId: savedInstallation.id,
+			organizationId,
+		};
+
+		// Queue initial sync job. In development, QStash cannot reach localhost,
+		// so call the same route directly.
 		try {
-			await qstash.publishJSON({
-				url: `${env.NEXT_PUBLIC_API_URL}/api/github/jobs/initial-sync`,
-				body: {
-					installationDbId: savedInstallation.id,
-					organizationId,
-				},
-				retries: 3,
-			});
+			if (env.NODE_ENV === "development") {
+				await fetch(syncUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(syncBody),
+				});
+			} else {
+				await qstash.publishJSON({
+					url: syncUrl,
+					body: syncBody,
+					retries: 3,
+				});
+			}
 		} catch (error) {
 			console.error(
 				"[github/callback] Failed to queue initial sync job:",

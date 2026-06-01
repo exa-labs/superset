@@ -6,6 +6,7 @@ import { Client } from "@upstash/qstash";
 import { and, eq } from "drizzle-orm";
 
 import { env } from "@/env";
+import { resolveIntegrationPublicApiUrl } from "@/lib/integration-config";
 import { verifySignedState } from "@/lib/oauth-state";
 
 const qstash = new Client({ token: env.QSTASH_TOKEN });
@@ -56,6 +57,11 @@ export async function GET(request: Request) {
 		);
 	}
 
+	const publicApiUrl = resolveIntegrationPublicApiUrl({
+		integrationsPublicApiUrl: env.INTEGRATIONS_PUBLIC_API_URL,
+		nextPublicApiUrl: env.NEXT_PUBLIC_API_URL,
+	});
+
 	const tokenResponse = await fetch("https://api.linear.app/oauth/token", {
 		method: "POST",
 		headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -63,7 +69,7 @@ export async function GET(request: Request) {
 			grant_type: "authorization_code",
 			client_id: env.LINEAR_CLIENT_ID,
 			client_secret: env.LINEAR_CLIENT_SECRET,
-			redirect_uri: `${env.NEXT_PUBLIC_API_URL}/api/integrations/linear/callback`,
+			redirect_uri: `${publicApiUrl}/api/integrations/linear/callback`,
 			code,
 		}),
 	});
@@ -114,12 +120,23 @@ export async function GET(request: Request) {
 			},
 		});
 
+	const syncUrl = `${env.NEXT_PUBLIC_API_URL}/api/integrations/linear/jobs/initial-sync`;
+	const syncBody = { organizationId, creatorUserId: userId };
+
 	try {
-		await qstash.publishJSON({
-			url: `${env.NEXT_PUBLIC_API_URL}/api/integrations/linear/jobs/initial-sync`,
-			body: { organizationId, creatorUserId: userId },
-			retries: 3,
-		});
+		if (env.NODE_ENV === "development") {
+			await fetch(syncUrl, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(syncBody),
+			});
+		} else {
+			await qstash.publishJSON({
+				url: syncUrl,
+				body: syncBody,
+				retries: 3,
+			});
+		}
 	} catch (error) {
 		console.error("Failed to queue initial sync job:", error);
 		return Response.redirect(
