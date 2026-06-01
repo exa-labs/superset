@@ -156,6 +156,35 @@ export function nativeAgentStatusTone(status: string | null): string {
 	return "border-border bg-background text-muted-foreground";
 }
 
+export function nativeAgentStatusBadgeLabel(status: string | null): string {
+	const normalized = status?.trim().toLowerCase() ?? "";
+	if (!normalized) return "";
+	const labels: Record<string, string> = {
+		active: "active",
+		archived: "arch",
+		blocked: "block",
+		claimed: "live",
+		completed: "done",
+		done: "done",
+		error: "error",
+		exit: "done",
+		expired: "error",
+		finished: "done",
+		idle: "idle",
+		new: "new",
+		queued: "queue",
+		ready: "ready",
+		resuming: "resume",
+		running: "run",
+		suspended: "suspend",
+		waiting: "wait",
+		working: "work",
+	};
+	return (
+		labels[normalized] ?? normalized.replaceAll("_", " ").slice(0, 8).trim()
+	);
+}
+
 export function nativeAgentStatusDotTone(status: string | null): string {
 	const normalized = status?.toLowerCase() ?? "";
 	if (
@@ -184,11 +213,13 @@ export function isNativeAgentLiveStatus(status: string | null): boolean {
 	const normalized = status?.toLowerCase() ?? "";
 	return [
 		"active",
+		"blocked",
 		"claimed",
 		"new",
 		"queued",
 		"resuming",
 		"running",
+		"suspended",
 		"waiting",
 		"working",
 	].includes(normalized);

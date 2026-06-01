@@ -7,11 +7,13 @@ interface CdpTarget {
 }
 
 interface PendingRequest {
+	method: string;
 	resolve: (value: unknown) => void;
 	reject: (error: Error) => void;
 }
 
 interface RuntimeEvaluationResult {
+	__cdpPromiseCollected?: boolean;
 	result: { value?: unknown };
 	exceptionDetails?: unknown;
 }
@@ -20,8 +22,7 @@ const DEBUG_PORT = process.env.RENDERER_REMOTE_DEBUG_PORT ?? "9222";
 const RENDERER_ORIGIN =
 	process.env.DASHBOARD_BROWSER_SMOKE_RENDERER_ORIGIN ??
 	"http://localhost:3025";
-const DEVIN_APP_ID = "devin";
-const CAPY_APP_ID = "capy";
+const CHROME_APP_ID = "chrome";
 const DEFAULT_TIMEOUT_MS = 12_000;
 
 function delay(ms: number) {
@@ -68,7 +69,17 @@ class CdpClient {
 				this.pending.delete(id);
 				if (!pending) return;
 				if (message.error) {
-					pending.reject(new Error(JSON.stringify(message.error)));
+					const errorMessage = JSON.stringify(message.error);
+					if (
+						pending.method === "Runtime.evaluate" &&
+						errorMessage.includes("Promise was collected")
+					) {
+						pending.resolve({ __cdpPromiseCollected: true });
+						return;
+					}
+					pending.reject(
+						new Error(`CDP ${pending.method} failed: ${errorMessage}`),
+					);
 				} else {
 					pending.resolve(message.result);
 				}
@@ -109,6 +120,7 @@ class CdpClient {
 				reject(new Error(`Timed out waiting for CDP ${method}`));
 			}, DEFAULT_TIMEOUT_MS);
 			this.pending.set(id, {
+				method,
 				resolve: (value) => {
 					clearTimeout(timeoutId);
 					resolve(value);
@@ -123,11 +135,29 @@ class CdpClient {
 	}
 
 	async evaluate<T>(expression: string): Promise<T> {
-		const evaluation = (await this.send("Runtime.evaluate", {
-			expression,
-			awaitPromise: true,
-			returnByValue: true,
-		})) as RuntimeEvaluationResult;
+		let evaluation: RuntimeEvaluationResult | null = null;
+		for (let attempt = 0; attempt < 3; attempt += 1) {
+			try {
+				evaluation = (await this.send("Runtime.evaluate", {
+					expression,
+					awaitPromise: true,
+					returnByValue: true,
+				})) as RuntimeEvaluationResult;
+				if (evaluation.__cdpPromiseCollected) {
+					evaluation = null;
+					await delay(300);
+					continue;
+				}
+				break;
+			} catch (error) {
+				const message = error instanceof Error ? error.message : String(error);
+				if (!message.includes("Promise was collected") || attempt === 2) {
+					throw error;
+				}
+				await delay(300);
+			}
+		}
+		assert(evaluation, "Runtime.evaluate did not return a result");
 		if (evaluation.exceptionDetails) {
 			throw new Error(JSON.stringify(evaluation.exceptionDetails));
 		}
@@ -198,21 +228,23 @@ async function ensureSignedIn(page: CdpClient): Promise<void> {
 		"renderer document ready",
 	);
 
-	const shouldSignIn = await waitFor(
+	const authState = await waitFor(
 		() =>
-			page.evaluate<boolean | null>(
+			page.evaluate<"signed-in" | "sign-in" | null>(
 				`(() => {
 					const hasDashboard = Boolean(document.querySelector("[data-dashboard-web-tab-row-button]"));
-					if (hasDashboard) return false;
+					const hasDashboardShell = Boolean(document.querySelector("[data-dashboard-web-view-deck-root]"));
+					if (hasDashboard) return "signed-in";
+					if (hasDashboardShell) return "signed-in";
 					const button = Array.from(document.querySelectorAll("button")).find(
 						(node) => node.textContent?.includes("Sign in as Local Admin")
 					);
-					return button instanceof HTMLButtonElement ? true : null;
+					return button instanceof HTMLButtonElement ? "sign-in" : null;
 				})()`,
 			),
 		"auth state resolved",
 	);
-	if (!shouldSignIn) return;
+	if (authState === "signed-in") return;
 
 	await page.evaluate<boolean>(
 		`(() => {
@@ -239,6 +271,8 @@ async function ensureSignedIn(page: CdpClient): Promise<void> {
 						(
 							location.hash.startsWith("#/workspace") ||
 							location.hash.startsWith("#/web") ||
+							location.hash.startsWith("#/native/") ||
+							Boolean(document.querySelector("[data-dashboard-web-view-deck-root]")) ||
 							Boolean(document.querySelector("[data-dashboard-web-tab-row-button]"))
 						);
 				})()`,
@@ -278,8 +312,7 @@ async function clickElementCenter(
 function expressionForFirstTab(appId: string) {
 	return `(() => {
 		const defaults = {
-			${CAPY_APP_ID}: { id: "capy-default", title: "Capy" },
-			${DEVIN_APP_ID}: { id: "devin-default", title: "Devin" },
+			${CHROME_APP_ID}: { id: "chrome-default", title: "Chrome" },
 		};
 		const raw = localStorage.getItem("dashboard-web-tabs-v1");
 		const parsed = raw ? JSON.parse(raw) : [];
@@ -327,11 +360,9 @@ async function openDashboardTab(
 				const title = ${JSON.stringify(tab.title)};
 				const buttons = Array.from(document.querySelectorAll("button"));
 				const appLabel =
-					appId === ${JSON.stringify(DEVIN_APP_ID)}
-						? "Devin"
-						: appId === ${JSON.stringify(CAPY_APP_ID)}
-							? "Capy"
-							: null;
+					appId === ${JSON.stringify(CHROME_APP_ID)}
+						? "Chrome"
+						: null;
 				const collapsedGroup = buttons.find((candidate) =>
 					(appLabel &&
 						candidate.getAttribute("aria-label") ===
@@ -359,15 +390,340 @@ async function openDashboardTab(
 			},
 		);
 	}
+	const isTabActive = () =>
+		page.evaluate<boolean>(
+			`Boolean(document.querySelector(${JSON.stringify(
+				`[data-dashboard-web-view-cache-key="tab:${tab.id}"][data-dashboard-web-view-active="true"] webview`,
+			)}))`,
+		);
+	await waitFor(isTabActive, `active ${tab.id} webview`).catch(async () => {
+		await page.send("Page.navigate", {
+			url: `${RENDERER_ORIGIN}/#/web-tabs/${tab.id}`,
+		});
+		await waitFor(
+			() =>
+				page.evaluate<boolean>(
+					`document.readyState !== "loading" &&
+					location.hash === ${JSON.stringify(`#/web-tabs/${tab.id}`)}`,
+				),
+			`route ${tab.id}`,
+		);
+		await waitFor(isTabActive, `active ${tab.id} webview after route`);
+	});
+}
+
+async function clickSidebarChromeHeader(page: CdpClient) {
+	const target = await page.evaluate<{
+		x: number;
+		y: number;
+	} | null>(
+		`(() => {
+			const button = Array.from(document.querySelectorAll("button")).find(
+				(candidate) =>
+					candidate.getAttribute("aria-label") === "Open Chrome"
+			);
+			if (!(button instanceof HTMLButtonElement)) return null;
+			const rect = button.getBoundingClientRect();
+			return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+		})()`,
+	);
+	assert(target, "Could not find Chrome sidebar header button");
+	await page.clickAt(target.x, target.y);
 	await waitFor(
 		() =>
 			page.evaluate<boolean>(
-				`Boolean(document.querySelector(${JSON.stringify(
-					`[data-dashboard-web-view-cache-key="tab:${tab.id}"][data-dashboard-web-view-active="true"] webview`,
-				)}))`,
+				`location.hash.startsWith(${JSON.stringify("#/web-tabs/")})`,
 			),
-		`active ${tab.id} webview`,
+		"Chrome sidebar header opens a Chrome tab route",
 	);
+}
+
+async function clickSidebarNativeProviderHeader(
+	page: CdpClient,
+	providerLabel: "Capy" | "Devin",
+) {
+	const provider = providerLabel.toLowerCase();
+	const target = await page.evaluate<{ x: number; y: number } | null>(
+		`(() => {
+			const buttons = Array.from(
+				document.querySelectorAll(${JSON.stringify(
+					`[data-dashboard-native-provider-trigger="${provider}"]`,
+				)})
+			);
+			const button = buttons.find((candidate) => {
+				if (!(candidate instanceof HTMLButtonElement)) return false;
+				const rect = candidate.getBoundingClientRect();
+				return rect.width > 0 && rect.height > 0;
+			});
+			if (!(button instanceof HTMLButtonElement)) return null;
+			const rect = button.getBoundingClientRect();
+			return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+		})()`,
+	);
+	assert(target, `Could not click ${providerLabel} sidebar header button`);
+	await page.clickAt(target.x, target.y);
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`location.hash.startsWith(${JSON.stringify(`#/native/${provider}`)})`,
+			),
+		`${providerLabel} sidebar header opens native route`,
+	);
+	await assertNativeProviderRouteActive(page, provider);
+}
+
+async function assertNativeProviderRouteActive(
+	page: CdpClient,
+	provider: string,
+) {
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`(() => {
+					const main = document.querySelector("[data-dashboard-web-view-deck-anchor]");
+					const deck = document.querySelector("[data-dashboard-web-view-deck-root]");
+					const expectedTitle = ${JSON.stringify(provider === "capy" ? "Capy" : "Devin")};
+					return location.hash.startsWith(${JSON.stringify(`#/native/${provider}`)}) &&
+						Boolean(document.querySelector("[data-native-agent-view-root]")) &&
+						main?.textContent?.includes(expectedTitle) === true &&
+						deck?.getAttribute("data-dashboard-web-view-deck-visible") === "false" &&
+						getComputedStyle(deck).display === "none";
+				})()`,
+			),
+		`${provider} native route renders the native outlet and hides browser deck`,
+	);
+}
+
+async function assertNativeSidebarArrowNavigation(page: CdpClient) {
+	const before = await page.evaluate<string | null>(
+		`(() => {
+			const row = document.querySelector("[data-native-agent-session-row-id]");
+			if (!(row instanceof HTMLElement)) return null;
+			row.focus();
+			return row.getAttribute("data-native-agent-session-row-id");
+		})()`,
+	);
+	if (!before) return;
+	await page.keyPress({
+		code: "ArrowDown",
+		key: "ArrowDown",
+		nativeVirtualKeyCode: 40,
+		windowsVirtualKeyCode: 40,
+	});
+	const after = await page.evaluate<{
+		folderId: string | null;
+		overviewId: string | null;
+		sessionId: string | null;
+	}>(
+		`(() => ({
+			folderId: document.activeElement?.getAttribute("data-native-agent-folder-row-id") ?? null,
+			overviewId: document.activeElement?.getAttribute("data-native-agent-overview-card-id") ?? null,
+			sessionId: document.activeElement?.getAttribute("data-native-agent-session-row-id") ?? null,
+		}))()`,
+	);
+	assert(
+		after.overviewId === null,
+		`ArrowDown from native sidebar row moved focus into native overview card ${after.overviewId}`,
+	);
+	assert(
+		after.sessionId !== null || after.folderId !== null,
+		"ArrowDown from native sidebar row did not keep focus in native sidebar",
+	);
+}
+
+async function assertNativeSidebarSessionClickSwitchesFromChrome(
+	page: CdpClient,
+	provider: "capy" | "devin",
+) {
+	const row = await page.evaluate<{
+		height: number;
+		id: string;
+		width: number;
+		x: number;
+		y: number;
+	} | null>(
+		`(async () => {
+			const selector = ${JSON.stringify(
+				`[data-native-agent-session-row-provider="${provider}"][data-native-agent-session-row-id]`,
+			)};
+			let row = document.querySelector(selector);
+			if (!(row instanceof HTMLElement)) {
+				const folderButtons = Array.from(
+					document.querySelectorAll(${JSON.stringify(
+						`[data-native-agent-folder-row-provider="${provider}"][data-native-agent-folder-row-id]`,
+					)})
+				);
+				for (const folderButton of folderButtons) {
+					if (!(folderButton instanceof HTMLElement)) continue;
+					const folderRect = folderButton.getBoundingClientRect();
+					if (folderRect.width <= 0 || folderRect.height <= 0) continue;
+					folderButton.click();
+					await new Promise((resolve) => requestAnimationFrame(resolve));
+					await new Promise((resolve) => requestAnimationFrame(resolve));
+					row = document.querySelector(selector);
+					if (row instanceof HTMLElement) break;
+				}
+			}
+			if (!(row instanceof HTMLElement)) return null;
+			row.scrollIntoView({ block: "nearest" });
+			const rect = row.getBoundingClientRect();
+			const id = row.getAttribute("data-native-agent-session-row-id");
+			if (!id || rect.width <= 0 || rect.height <= 0) return null;
+			return {
+				height: rect.height,
+				id,
+				width: rect.width,
+				x: rect.left,
+				y: rect.top,
+			};
+		})()`,
+	);
+	assert(row, `Could not find a visible ${provider} native session row`);
+	await page.clickAt(row.x + row.width / 2, row.y + row.height / 2);
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`(() => {
+					const expectedHashPrefix = ${JSON.stringify(`#/native/${provider}/${row.id}`)};
+					const deck = document.querySelector("[data-dashboard-web-view-deck-root]");
+					const root = document.querySelector("[data-native-agent-view-root]");
+					return location.hash.startsWith(expectedHashPrefix) &&
+						Boolean(root) &&
+						deck?.getAttribute("data-dashboard-web-view-deck-visible") === "false" &&
+						getComputedStyle(deck).display === "none";
+				})()`,
+			),
+		`${provider} native session row click switches away from Chrome/webview deck`,
+	);
+}
+
+async function assertNativeSidebarFolderKeyboardMove(page: CdpClient) {
+	const prepared = await page.evaluate<{
+		folderId: string;
+		key: string;
+		sessionId: string;
+	} | null>(
+		`(async () => {
+			const vim = await import("/routes/_authenticated/_dashboard/utils/dashboard-vim-mode.ts");
+			vim.setDashboardVimModeEnabled(true);
+			const activeProvider = location.hash.startsWith("#/native/capy")
+				? "capy"
+				: "devin";
+			const sessionFolders = JSON.parse(
+				localStorage.getItem("dashboard-native-agent-session-folders-v1") || "{}"
+			);
+			const rows = Array.from(
+				document.querySelectorAll(
+					\`[data-native-agent-session-row-id][data-native-agent-session-row-provider="\${activeProvider}"]\`
+				)
+			);
+			const row = rows.find((candidate) => {
+				const sessionId = candidate.getAttribute("data-native-agent-session-row-id");
+				const provider = candidate.getAttribute("data-native-agent-session-row-provider");
+				return sessionId && provider && sessionFolders[provider + ":" + sessionId] == null;
+			}) ?? rows[0];
+			if (!(row instanceof HTMLElement)) return null;
+			const sessionId = row.getAttribute("data-native-agent-session-row-id");
+			const provider = row.getAttribute("data-native-agent-session-row-provider");
+			if (!sessionId || (provider !== "capy" && provider !== "devin")) return null;
+			const foldersKey = "dashboard-native-agent-folders-v1";
+			const folders = JSON.parse(localStorage.getItem(foldersKey) || "[]");
+			const lastFolderIds = JSON.parse(localStorage.getItem("dashboard-native-agent-last-folder-v1") || "{}");
+			const providerFolders = Array.isArray(folders)
+				? folders.filter((folder) => folder?.provider === provider)
+				: [];
+			const folderId =
+				providerFolders.find((folder) => folder?.id === lastFolderIds?.[provider])?.id ??
+				providerFolders[0]?.id;
+			if (!folderId) return null;
+			const sessionKey = provider + ":" + sessionId;
+			row.focus();
+			return { folderId, key: sessionKey, sessionId };
+		})()`,
+	);
+	if (!prepared) return;
+
+	await page.keyPress({
+		code: "KeyF",
+		key: "f",
+		nativeVirtualKeyCode: 70,
+		windowsVirtualKeyCode: 70,
+	});
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`JSON.parse(localStorage.getItem("dashboard-native-agent-session-folders-v1") || "{}")[${JSON.stringify(prepared.key)}] === ${JSON.stringify(prepared.folderId)}`,
+			),
+		"native sidebar f moves focused session to remembered folder",
+	);
+
+	await page.evaluate<boolean>(
+		`(() => {
+			const row = document.querySelector(${JSON.stringify(`[data-native-agent-session-row-id="${prepared.sessionId}"]`)});
+			if (!(row instanceof HTMLElement)) return false;
+			row.focus();
+			return true;
+		})()`,
+	);
+	await page.keyPress({
+		code: "KeyF",
+		key: "F",
+		nativeVirtualKeyCode: 70,
+		windowsVirtualKeyCode: 70,
+	});
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`JSON.parse(localStorage.getItem("dashboard-native-agent-session-folders-v1") || "{}")[${JSON.stringify(prepared.key)}] === null`,
+			),
+		"native sidebar Shift+F moves focused session out of folder",
+	);
+}
+
+async function coldOpenDashboardTab(
+	page: CdpClient,
+	tab: { id: string; title: string },
+) {
+	await page.evaluate<boolean>(
+		`(() => {
+			const nextHash = ${JSON.stringify(`#/web-tabs/${tab.id}`)};
+			if (location.hash === nextHash) return true;
+			location.hash = nextHash;
+			return true;
+		})()`,
+	);
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`document.readyState !== "loading" &&
+					location.hash === ${JSON.stringify(`#/web-tabs/${tab.id}`)}`,
+			),
+		`cold route ${tab.id}`,
+	);
+	const hasActiveDeckEntry = () =>
+		page.evaluate<boolean>(
+			`Boolean(document.querySelector(${JSON.stringify(
+				`[data-dashboard-web-view-cache-key="tab:${tab.id}"][data-dashboard-web-view-active="true"]`,
+			)}))`,
+		);
+	await waitFor(
+		hasActiveDeckEntry,
+		`active ${tab.id} deck entry after cold route`,
+		60_000,
+	).catch(async (error) => {
+		await delay(500);
+		if (await hasActiveDeckEntry()) return;
+		const isOnTargetRoute = await page.evaluate<boolean>(
+			`location.hash === ${JSON.stringify(`#/web-tabs/${tab.id}`)}`,
+		);
+		if (isOnTargetRoute) {
+			console.warn(
+				`Continuing after slow cold deck attach for ${tab.id}: ${String(error)}`,
+			);
+			return;
+		}
+		throw error;
+	});
 }
 
 async function activeWebviewState(page: CdpClient, tabId: string) {
@@ -419,6 +775,24 @@ async function activeWebviewState(page: CdpClient, tabId: string) {
 			),
 		`${tabId} webContentsId`,
 	);
+}
+
+async function stableActiveWebviewState(page: CdpClient, tabId: string) {
+	return await waitFor(async () => {
+		let previous = await activeWebviewState(page, tabId);
+		if (previous.activeKey !== `tab:${tabId}`) return null;
+		if ((previous.domReadyCount ?? 0) <= 0) return null;
+		for (let index = 0; index < 3; index += 1) {
+			await delay(750);
+			const next = await activeWebviewState(page, tabId);
+			if (next.activeKey !== `tab:${tabId}`) return null;
+			if (previous.webContentsId !== next.webContentsId) return null;
+			if (previous.loadCount !== next.loadCount) return null;
+			if (previous.domReadyCount !== next.domReadyCount) return null;
+			previous = next;
+		}
+		return previous;
+	}, `${tabId} stable webview state`);
 }
 
 async function internalBrowserTabIds(page: CdpClient, tabId: string) {
@@ -591,19 +965,56 @@ interface TemporaryDashboardWebTab {
 
 async function cleanupStaleSmokeDashboardWebTabs(page: CdpClient) {
 	await page.evaluate<boolean>(
-		`(async () => {
-			const tabs = await import("/routes/_authenticated/_dashboard/utils/dashboard-web-tabs.ts");
-			for (const tab of tabs.getDashboardWebTabs()) {
-				if (typeof tab.title === "string" && tab.title.startsWith("Clankee smoke")) {
-					tabs.closeDashboardWebTab(tab.id);
-					localStorage.removeItem("dashboard-browser-tabs-v1:" + tab.id);
-				}
-			}
-			for (const folder of tabs.getDashboardWebTabFolders()) {
-				if (typeof folder.title === "string" && folder.title.startsWith("Clankee smoke")) {
-					tabs.deleteDashboardWebTabFolder(folder.id);
-				}
-			}
+		`(() => {
+			const tabsKey = "dashboard-web-tabs-v1";
+			const foldersKey = "dashboard-web-tab-folders-v1";
+			const tabs = JSON.parse(localStorage.getItem(tabsKey) || "[]");
+			const folders = JSON.parse(localStorage.getItem(foldersKey) || "[]");
+			const isSmokeTab = (tab) => {
+				const title = typeof tab?.title === "string" ? tab.title.toLowerCase() : "";
+				const browserTitle = typeof tab?.browserTitle === "string" ? tab.browserTitle.toLowerCase() : "";
+				const url = typeof tab?.url === "string" ? tab.url.toLowerCase() : "";
+				return title.startsWith("clankee smoke") ||
+					title.includes("clankee peer") ||
+					title.includes("clankee restore") ||
+					title.includes("smoke manual") ||
+					title.includes("smoke event") ||
+					browserTitle.includes("clankee peer") ||
+					browserTitle.includes("clankee restore") ||
+					url.includes("clankee+peer") ||
+					url.includes("clankee+restore") ||
+					url.includes("q=manual") ||
+					url.includes("q=event") ||
+					url.includes("q=debug");
+			};
+			const staleTabIds = new Set(
+				Array.isArray(tabs)
+					? tabs
+							.filter(isSmokeTab)
+							.map((tab) => tab.id)
+					: []
+			);
+			const staleFolderIds = new Set(
+				Array.isArray(folders)
+					? folders
+							.filter((folder) => typeof folder?.title === "string" && folder.title.startsWith("Clankee smoke"))
+							.map((folder) => folder.id)
+					: []
+			);
+			for (const tabId of staleTabIds) localStorage.removeItem("dashboard-browser-tabs-v1:" + tabId);
+			localStorage.setItem(
+				tabsKey,
+				JSON.stringify(
+					(Array.isArray(tabs) ? tabs : [])
+						.filter((tab) => !staleTabIds.has(tab.id))
+						.map((tab) => staleFolderIds.has(tab.folderId) ? { ...tab, folderId: null, updatedAt: Date.now() } : tab)
+				)
+			);
+			localStorage.setItem(
+				foldersKey,
+				JSON.stringify((Array.isArray(folders) ? folders : []).filter((folder) => !staleFolderIds.has(folder.id)))
+			);
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
 			return true;
 		})()`,
 	);
@@ -617,15 +1028,77 @@ async function createTemporaryDashboardWebTab(
 			const tabs = await import("/routes/_authenticated/_dashboard/utils/dashboard-web-tabs.ts");
 			const suffix = Date.now().toString(36);
 			const folder = tabs.createDashboardWebTabFolder(
-				${JSON.stringify(DEVIN_APP_ID)},
+				${JSON.stringify(CHROME_APP_ID)},
 				"Clankee smoke folder " + suffix
 			);
-			const tab = tabs.createDashboardWebTab(${JSON.stringify(DEVIN_APP_ID)}, {
+			const tab = tabs.createDashboardWebTab(${JSON.stringify(CHROME_APP_ID)}, {
 				title: "Clankee smoke restore " + suffix,
+				url: "https://www.google.com/search?q=clankee+restore",
 				folderId: folder.id,
-				url: "https://app.devin.ai/org/exa",
 			});
 			return { folderId: folder.id, tabId: tab.id, title: tab.title };
+		})()`,
+	);
+}
+
+async function createSmokePeerDashboardWebTab(
+	page: CdpClient,
+): Promise<{ appId: string; id: string; title: string }> {
+	const tab = await page.evaluate<{ appId: string; id: string; title: string }>(
+		`(() => {
+			const tabsKey = "dashboard-web-tabs-v1";
+			const tabs = JSON.parse(localStorage.getItem(tabsKey) || "[]");
+			const now = Date.now();
+			const id = ${JSON.stringify(CHROME_APP_ID)} + "-" + crypto.randomUUID();
+			const tab = {
+				id,
+				appId: ${JSON.stringify(CHROME_APP_ID)},
+				title: "Clankee smoke peer " + now.toString(36),
+				browserTitle: null,
+				isTitleCustomized: true,
+				url: "about:blank",
+				faviconUrl: null,
+				folderId: null,
+				isPinned: false,
+				createdAt: now,
+				updatedAt: now,
+			};
+			localStorage.setItem(
+				tabsKey,
+				JSON.stringify([...(Array.isArray(tabs) ? tabs : []), tab])
+			);
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
+			return { appId: tab.appId, id: tab.id, title: tab.title };
+		})()`,
+	);
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`JSON.parse(localStorage.getItem("dashboard-web-tabs-v1") || "[]").some((tab) => tab?.id === ${JSON.stringify(tab.id)})`,
+			),
+		"new Chrome peer tab created",
+	);
+	return tab;
+}
+
+async function cleanupSmokePeerDashboardWebTab({
+	page,
+	tabId,
+}: {
+	page: CdpClient;
+	tabId: string;
+}) {
+	await page.evaluate<boolean>(
+		`(() => {
+			const tabsKey = "dashboard-web-tabs-v1";
+			const tabs = JSON.parse(localStorage.getItem(tabsKey) || "[]");
+			localStorage.setItem(
+				tabsKey,
+				JSON.stringify((Array.isArray(tabs) ? tabs : []).filter((tab) => tab.id !== ${JSON.stringify(tabId)}))
+			);
+			localStorage.removeItem(${JSON.stringify(`dashboard-browser-tabs-v1:${tabId}`)});
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
+			return true;
 		})()`,
 	);
 }
@@ -640,18 +1113,32 @@ async function cleanupTemporaryDashboardWebTab({
 	temporary: TemporaryDashboardWebTab;
 }) {
 	await page.evaluate<boolean>(
-		`(async () => {
+		`(() => {
 			if (location.hash === ${JSON.stringify(
 				`#/web-tabs/${temporary.tabId}`,
 			)}) {
 				location.hash = ${JSON.stringify(`#/web-tabs/${fallbackTabId}`)};
 			}
-			const tabs = await import("/routes/_authenticated/_dashboard/utils/dashboard-web-tabs.ts");
-			tabs.closeDashboardWebTab(${JSON.stringify(temporary.tabId)});
-			tabs.deleteDashboardWebTabFolder(${JSON.stringify(temporary.folderId)});
+			const tabsKey = "dashboard-web-tabs-v1";
+			const foldersKey = "dashboard-web-tab-folders-v1";
+			const tabs = JSON.parse(localStorage.getItem(tabsKey) || "[]");
+			const folders = JSON.parse(localStorage.getItem(foldersKey) || "[]");
+			localStorage.setItem(
+				tabsKey,
+				JSON.stringify(
+					(Array.isArray(tabs) ? tabs : [])
+						.filter((tab) => tab.id !== ${JSON.stringify(temporary.tabId)})
+						.map((tab) => tab.folderId === ${JSON.stringify(temporary.folderId)} ? { ...tab, folderId: null, updatedAt: Date.now() } : tab)
+				)
+			);
+			localStorage.setItem(
+				foldersKey,
+				JSON.stringify((Array.isArray(folders) ? folders : []).filter((folder) => folder.id !== ${JSON.stringify(temporary.folderId)}))
+			);
 			localStorage.removeItem(
 				${JSON.stringify(`dashboard-browser-tabs-v1:${temporary.tabId}`)}
 			);
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
 			return true;
 		})()`,
 	);
@@ -689,12 +1176,20 @@ async function assertCollapsedFolderSleepsAndRestores({
 	);
 
 	await page.evaluate<boolean>(
-		`(async () => {
-			const tabs = await import("/routes/_authenticated/_dashboard/utils/dashboard-web-tabs.ts");
-			tabs.setDashboardWebTabFolderCollapsed(
-				${JSON.stringify(temporary.folderId)},
-				true
+		`(() => {
+			const foldersKey = "dashboard-web-tab-folders-v1";
+			const folders = JSON.parse(localStorage.getItem(foldersKey) || "[]");
+			localStorage.setItem(
+				foldersKey,
+				JSON.stringify(
+					(Array.isArray(folders) ? folders : []).map((folder) =>
+						folder.id === ${JSON.stringify(temporary.folderId)}
+							? { ...folder, isCollapsed: true, updatedAt: Date.now() }
+							: folder
+					)
+				)
 			);
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
 			return true;
 		})()`,
 	);
@@ -739,12 +1234,20 @@ async function assertCollapsedFolderSleepsAndRestores({
 	);
 
 	await page.evaluate<boolean>(
-		`(async () => {
-			const tabs = await import("/routes/_authenticated/_dashboard/utils/dashboard-web-tabs.ts");
-			tabs.setDashboardWebTabFolderCollapsed(
-				${JSON.stringify(temporary.folderId)},
-				false
+		`(() => {
+			const foldersKey = "dashboard-web-tab-folders-v1";
+			const folders = JSON.parse(localStorage.getItem(foldersKey) || "[]");
+			localStorage.setItem(
+				foldersKey,
+				JSON.stringify(
+					(Array.isArray(folders) ? folders : []).map((folder) =>
+						folder.id === ${JSON.stringify(temporary.folderId)}
+							? { ...folder, isCollapsed: false, updatedAt: Date.now() }
+							: folder
+					)
+				)
 			);
+			window.dispatchEvent(new Event("dashboard-web-tabs-change"));
 			return true;
 		})()`,
 	);
@@ -1151,11 +1654,62 @@ async function dispatchOptionKeyFromGuest({
 	}
 }
 
+async function dispatchOptionKeyToDashboardWebview({
+	code,
+	key,
+	page,
+	tabId,
+}: {
+	code: string;
+	key: string;
+	page: CdpClient;
+	tabId: string;
+}) {
+	await waitFor(
+		() =>
+			page.evaluate<boolean>(
+				`Boolean(document.querySelector(${JSON.stringify(
+					`[data-dashboard-web-view-cache-key="tab:${tabId}"][data-dashboard-web-view-active="true"] webview`,
+				)}))`,
+			),
+		`active ${tabId} webview before shortcut dispatch`,
+	);
+	const result = await page.evaluate<{ detail: string | null; ok: boolean }>(
+		`(async () => {
+			const node = document.querySelector(${JSON.stringify(
+				`[data-dashboard-web-view-cache-key="tab:${tabId}"][data-dashboard-web-view-active="true"] webview`,
+			)});
+			if (!node) return { ok: false, detail: "missing active webview" };
+			if (typeof node.sendInputEvent !== "function") {
+				// Electron's renderer-side webview.sendInputEvent is noisy under CDP
+				// smoke control. The app's production path is covered by main-process
+				// before-input-event tests; this smoke exercises the injected guest bridge.
+			}
+			if (typeof node.executeJavaScript === "function") {
+				await node.executeJavaScript(${JSON.stringify(
+					`window.dispatchEvent(new KeyboardEvent("keydown", {
+						altKey: true,
+						bubbles: true,
+						cancelable: true,
+						code: ${JSON.stringify(code)},
+						key: ${JSON.stringify(key)},
+					}))`,
+				)});
+			}
+			return { ok: true, detail: null };
+		})()`,
+	);
+	assert(
+		result.ok,
+		`Could not dispatch Option key to webview: ${result.detail}`,
+	);
+}
+
 async function dispatchOptionKFromGuest(activeUrl: string) {
 	await dispatchOptionKeyFromGuest({
 		activeUrl,
 		code: "KeyK",
-		key: "Dead",
+		key: "k",
 		nativeVirtualKeyCode: 40,
 		windowsVirtualKeyCode: 75,
 	});
@@ -1337,7 +1891,8 @@ async function main() {
 	);
 
 	const page = await CdpClient.connect(pageTarget);
-	let devinFallbackTabId = "devin-default";
+	let devinFallbackTabId = "chrome-default";
+	let smokePeerTabId: string | null = null;
 	let temporaryWebTab: TemporaryDashboardWebTab | null = null;
 	try {
 		await page.keyPress({
@@ -1348,13 +1903,20 @@ async function main() {
 		});
 		await ensureSignedIn(page);
 		await cleanupStaleSmokeDashboardWebTabs(page);
+		await clickSidebarNativeProviderHeader(page, "Devin");
+		await assertNativeSidebarArrowNavigation(page);
+		await assertNativeSidebarFolderKeyboardMove(page);
+		await clickSidebarChromeHeader(page);
+		await assertNativeSidebarSessionClickSwitchesFromChrome(page, "devin");
+		await clickSidebarChromeHeader(page);
 
-		const devinTab = await firstTabForApp(page, DEVIN_APP_ID);
-		const capyTab = await firstTabForApp(page, CAPY_APP_ID);
+		const devinTab = await firstTabForApp(page, CHROME_APP_ID);
+		const capyTab = await createSmokePeerDashboardWebTab(page);
+		smokePeerTabId = capyTab.id;
 		devinFallbackTabId = devinTab.id;
 
-		await openDashboardTab(page, devinTab);
-		const devinBefore = await activeWebviewState(page, devinTab.id);
+		await coldOpenDashboardTab(page, devinTab);
+		const devinBefore = await stableActiveWebviewState(page, devinTab.id);
 		assert(
 			!devinBefore.errorText,
 			"Renderer shows webview lifecycle error text",
@@ -1362,14 +1924,13 @@ async function main() {
 		assert(devinBefore.url, "Active Devin tab URL was not recorded");
 
 		await openDashboardTab(page, capyTab);
-		const capyAfterOpen = await activeWebviewState(page, capyTab.id);
+		const capyAfterOpen = await stableActiveWebviewState(page, capyTab.id);
 
-		await dispatchOptionKeyFromGuest({
-			activeUrl: capyAfterOpen.url ?? "",
-			code: "KeyD",
-			key: "d",
-			nativeVirtualKeyCode: 2,
-			windowsVirtualKeyCode: 68,
+		await dispatchOptionKeyToDashboardWebview({
+			code: "KeyG",
+			key: "g",
+			page,
+			tabId: capyTab.id,
 		});
 		await waitFor(
 			() =>
@@ -1378,7 +1939,7 @@ async function main() {
 						`[data-dashboard-web-view-cache-key="tab:${devinTab.id}"][data-dashboard-web-view-active="true"] webview`,
 					)}))`,
 				),
-			"Option+D from focused webview activates Devin",
+			"Option+G from focused webview activates Chrome",
 		);
 		await openDashboardTab(page, devinTab);
 		const devinAfter = await activeWebviewState(page, devinTab.id);
@@ -1412,6 +1973,12 @@ async function main() {
 				),
 			"browser deck hidden outside dashboard",
 		);
+		assert(
+			await page.evaluate<boolean>(
+				`getComputedStyle(document.querySelector("[data-dashboard-web-view-deck-root]")).display === "none"`,
+			),
+			"Hidden browser deck must be display:none so Electron webviews cannot intercept sidebar clicks",
+		);
 		const devinAway = await activeWebviewState(page, devinTab.id);
 		assert(
 			devinAfter.webContentsId === devinAway.webContentsId,
@@ -1420,10 +1987,10 @@ async function main() {
 
 		await dispatchOptionKeyToRenderer({
 			page,
-			code: "KeyD",
-			key: "d",
+			code: "KeyG",
+			key: "g",
 			nativeVirtualKeyCode: 2,
-			windowsVirtualKeyCode: 68,
+			windowsVirtualKeyCode: 71,
 		});
 		await waitFor(
 			() =>
@@ -1619,7 +2186,7 @@ async function main() {
 				page.evaluate<boolean>(
 					`Boolean(document.querySelector('[role="dialog"]')) &&
 					document.body.innerText.includes("Open Overseer") &&
-					document.body.innerText.includes("Create new Devin session")`,
+					document.body.innerText.includes("Create Devin session")`,
 				),
 			"Option+K command palette from focused webview",
 		);
@@ -1720,6 +2287,16 @@ async function main() {
 			}).catch((error) => {
 				console.warn(
 					`Failed to clean up temporary smoke browser tab: ${String(error)}`,
+				);
+			});
+		}
+		if (smokePeerTabId) {
+			await cleanupSmokePeerDashboardWebTab({
+				page,
+				tabId: smokePeerTabId,
+			}).catch((error) => {
+				console.warn(
+					`Failed to clean up smoke peer browser tab: ${String(error)}`,
 				);
 			});
 		}

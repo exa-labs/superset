@@ -144,6 +144,7 @@ export function CommandPalette({
 						<div className="flex h-12 items-center gap-2 border-b px-3">
 							<SearchIcon className="size-5 shrink-0 opacity-50" />
 							<CommandPrimitive.Input
+								data-command-palette-input="true"
 								ref={inputRef}
 								placeholder="Search files..."
 								value={query}

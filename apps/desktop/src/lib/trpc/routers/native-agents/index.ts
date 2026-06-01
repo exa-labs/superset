@@ -8,6 +8,7 @@ import {
 	getNativeAgentCredentialStatus,
 	listNativeAgentSessionMetadata,
 	markNativeAgentSessionSeen,
+	type NativeAgentSessionMetadata,
 	saveNativeAgentCredentials,
 	setNativeAgentSessionSidebarVisible,
 } from "main/lib/native-agents";
@@ -27,6 +28,8 @@ const CAPY_LOCAL_USER_IDS = new Set([
 	"user_3CPOt2D9tBk4PVimoQaDhBkf6Wn",
 ]);
 const CAPY_MINE_SCAN_PAGE_LIMIT = 25;
+export const CAPY_MINE_DEFAULT_SCAN_PAGE_LIMIT = 8;
+const CAPY_METADATA_BACKFILL_LIMIT = 25;
 
 function normalizeEmail(value: unknown): string | null {
 	return typeof value === "string" && value.includes("@")
@@ -69,7 +72,6 @@ function capyThreadEmails(thread: Record<string, unknown>): string[] {
 		thread.createdByEmail,
 		thread.creatorEmail,
 		thread.ownerEmail,
-		thread.userEmail,
 		...emailsFromUnknown(thread.createdBy),
 		...emailsFromUnknown(thread.creator),
 		...emailsFromUnknown(thread.owner),
@@ -98,6 +100,46 @@ function hasCapyCreatorIdentity(thread: Record<string, unknown>): boolean {
 	);
 }
 
+function normalizeTimeMs(value: unknown): number | null {
+	if (typeof value !== "string" && typeof value !== "number") return null;
+	const date =
+		typeof value === "number"
+			? new Date(value > 10_000_000_000 ? value : value * 1000)
+			: new Date(value);
+	const time = date.getTime();
+	return Number.isNaN(time) ? null : time;
+}
+
+function isSameCapyTimestamp(left: unknown, right: unknown): boolean {
+	const leftTime = normalizeTimeMs(left);
+	const rightTime = normalizeTimeMs(right);
+	if (leftTime == null || rightTime == null) return false;
+	return Math.abs(leftTime - rightTime) < 1_000;
+}
+
+function isCapyThreadStartedByLocalParticipant(
+	thread: Record<string, unknown>,
+): boolean {
+	if (!Array.isArray(thread.participants)) return false;
+	let hasLocalStartingParticipant = false;
+	for (const participant of thread.participants) {
+		if (!participant || typeof participant !== "object") continue;
+		const record = participant as Record<string, unknown>;
+		const userId = typeof record.userId === "string" ? record.userId : null;
+		const userType =
+			typeof record.userType === "string" ? record.userType : null;
+		if (
+			userType !== "human" ||
+			!isSameCapyTimestamp(record.firstParticipatedAt, thread.createdAt)
+		) {
+			continue;
+		}
+		if (!userId || !CAPY_LOCAL_USER_IDS.has(userId)) return false;
+		hasLocalStartingParticipant = true;
+	}
+	return hasLocalStartingParticipant;
+}
+
 export function isCapyThreadCreatedByUser(
 	thread: CapyClientThread,
 	userEmail: string,
@@ -106,7 +148,61 @@ export function isCapyThreadCreatedByUser(
 	const emails = capyThreadEmails(record);
 	if (emails.includes(userEmail)) return true;
 	const creatorUserIds = capyThreadCreatorUserIds(record);
-	return creatorUserIds.some((userId) => CAPY_LOCAL_USER_IDS.has(userId));
+	if (creatorUserIds.some((userId) => CAPY_LOCAL_USER_IDS.has(userId))) {
+		return true;
+	}
+	return (
+		!hasCapyCreatorIdentity(record) &&
+		isCapyThreadStartedByLocalParticipant(record)
+	);
+}
+
+export function selectCapyMetadataBackfillIds(input: {
+	existingThreadIds: Iterable<string>;
+	includeArchived?: boolean;
+	limit?: number;
+	metadataById: Record<string, NativeAgentSessionMetadata>;
+}): string[] {
+	const existingThreadIds = new Set(input.existingThreadIds);
+	const limit = input.limit ?? CAPY_METADATA_BACKFILL_LIMIT;
+	return Object.values(input.metadataById)
+		.filter((metadata) => {
+			if (metadata.provider !== "capy") return false;
+			if (existingThreadIds.has(metadata.id)) return false;
+			if (!input.includeArchived && metadata.archivedLocally) return false;
+			return (
+				metadata.createdLocally === true ||
+				metadata.pinned === true ||
+				metadata.ownershipVerified === true
+			);
+		})
+		.toSorted((a, b) => {
+			const aTime = normalizeTimeMs(a.updatedAt) ?? 0;
+			const bTime = normalizeTimeMs(b.updatedAt) ?? 0;
+			return bTime - aTime;
+		})
+		.slice(0, limit)
+		.map((metadata) => metadata.id);
+}
+
+async function mapWithConcurrency<T, R>(
+	items: readonly T[],
+	limit: number,
+	mapper: (item: T) => Promise<R>,
+): Promise<R[]> {
+	const results: R[] = new Array(items.length);
+	let nextIndex = 0;
+	const workerCount = Math.min(limit, items.length);
+	await Promise.all(
+		Array.from({ length: workerCount }, async () => {
+			while (nextIndex < items.length) {
+				const currentIndex = nextIndex;
+				nextIndex += 1;
+				results[currentIndex] = await mapper(items[currentIndex]);
+			}
+		}),
+	);
+	return results;
 }
 
 type CapyClientThread = Awaited<
@@ -189,6 +285,7 @@ export const createNativeAgentsRouter = () =>
 						mineOnly: z.boolean().optional(),
 						userEmail: z.string().trim().optional().nullable(),
 						includeArchived: z.boolean().optional(),
+						scanPageLimit: z.number().int().min(1).max(25).optional(),
 					}),
 				)
 				.query(async ({ input }) => {
@@ -204,15 +301,7 @@ export const createNativeAgentsRouter = () =>
 						if (!input.mineOnly) return true;
 						if (metadata?.createdLocally) return true;
 						if (isCapyThreadCreatedByUser(thread, userEmail)) return true;
-						const threadRecord = thread as unknown as Record<string, unknown>;
-						if (hasCapyCreatorIdentity(threadRecord)) return false;
-						if (input.status !== "active") return false;
-						try {
-							const detailedThread = await client.getThread(thread.id);
-							return isCapyThreadCreatedByUser(detailedThread, userEmail);
-						} catch {
-							return false;
-						}
+						return false;
 					};
 					if (!input.mineOnly) {
 						const result = await client.listThreads(input);
@@ -229,6 +318,9 @@ export const createNativeAgentsRouter = () =>
 						};
 					}
 					const requestedLimit = input.limit ?? 50;
+					const scanPageLimit =
+						input.scanPageLimit ?? CAPY_MINE_DEFAULT_SCAN_PAGE_LIMIT;
+					const scanPageSize = Math.min(Math.max(requestedLimit, 20), 50);
 					const filteredItems: Awaited<
 						ReturnType<CapyClient["listThreads"]>
 					>["items"] = [];
@@ -240,10 +332,13 @@ export const createNativeAgentsRouter = () =>
 						const result = await client.listThreads({
 							...input,
 							cursor: nextCursor,
-							limit: 100,
+							limit: scanPageSize,
 						});
-						for (const thread of result.items) {
-							if (await shouldIncludeThread(thread)) filteredItems.push(thread);
+						const shouldIncludeByIndex = await Promise.all(
+							result.items.map((thread) => shouldIncludeThread(thread)),
+						);
+						for (const [index, thread] of result.items.entries()) {
+							if (shouldIncludeByIndex[index]) filteredItems.push(thread);
 							if (filteredItems.length >= requestedLimit) break;
 						}
 						nextCursor = result.nextCursor;
@@ -254,16 +349,116 @@ export const createNativeAgentsRouter = () =>
 						hasMore &&
 						nextCursor &&
 						filteredItems.length < requestedLimit &&
-						pagesRead < CAPY_MINE_SCAN_PAGE_LIMIT
+						pagesRead < Math.min(scanPageLimit, CAPY_MINE_SCAN_PAGE_LIMIT)
 					);
+
+					const existingThreadIds = new Set(
+						filteredItems.map((thread) => thread.id),
+					);
+					const backfillIds = selectCapyMetadataBackfillIds({
+						existingThreadIds,
+						includeArchived: input.includeArchived,
+						metadataById,
+					});
+					const backfillThreads = await mapWithConcurrency(
+						backfillIds,
+						5,
+						async (threadId) => {
+							const metadata = metadataById[`capy:${threadId}`];
+							if (
+								metadata?.discoveredFromProvider &&
+								!metadata.createdLocally &&
+								!metadata.pinned
+							) {
+								return {
+									createdAt: metadata.createdAt,
+									id: threadId,
+									projectId: input.projectId,
+									title: metadata.title ?? "Untitled thread",
+									updatedAt: metadata.updatedAt,
+								} satisfies CapyClientThread;
+							}
+							try {
+								const thread = await client.getThread(threadId);
+								if (thread.projectId !== input.projectId) return null;
+								if (!(await shouldIncludeThread(thread))) return null;
+								return thread;
+							} catch {
+								return null;
+							}
+						},
+					);
+					for (const thread of backfillThreads) {
+						if (!thread || existingThreadIds.has(thread.id)) continue;
+						existingThreadIds.add(thread.id);
+						filteredItems.push(thread);
+					}
 
 					return {
 						hasMore,
 						nextCursor,
-						items: filteredItems.slice(0, requestedLimit).map((thread) => ({
+						items: filteredItems.map((thread) => ({
 							...thread,
 							nativeAgentMetadata: metadataById[`capy:${thread.id}`] ?? null,
 						})),
+					};
+				}),
+			syncMine: publicProcedure
+				.input(
+					z.object({
+						projectId: nonEmptyString,
+						userEmail: z.string().trim().optional().nullable(),
+						scanPageLimit: z.number().int().min(1).max(25).optional(),
+						limit: z.number().int().min(1).max(100).optional(),
+					}),
+				)
+				.mutation(async ({ input }) => {
+					const client = await getCapyClient();
+					const userEmail =
+						normalizeEmail(input.userEmail) ?? CAPY_LOCAL_USER_EMAIL;
+					const scanPageLimit =
+						input.scanPageLimit ?? CAPY_MINE_DEFAULT_SCAN_PAGE_LIMIT;
+					const pageSize = input.limit ?? 50;
+					let nextCursor: string | null = null;
+					let hasMore = false;
+					let pagesRead = 0;
+					let scanned = 0;
+					const discoveredIds: string[] = [];
+
+					do {
+						const result = await client.listThreads({
+							cursor: nextCursor,
+							limit: pageSize,
+							projectId: input.projectId,
+						});
+						for (const thread of result.items) {
+							scanned += 1;
+							if (!isCapyThreadCreatedByUser(thread, userEmail)) continue;
+							discoveredIds.push(thread.id);
+							await markNativeAgentSessionSeen({
+								discoveredFromProvider: true,
+								id: thread.id,
+								ownershipVerified: true,
+								provider: "capy",
+								title: thread.title,
+							});
+						}
+						nextCursor = result.nextCursor;
+						hasMore = result.hasMore;
+						pagesRead += 1;
+					} while (
+						hasMore &&
+						nextCursor &&
+						pagesRead < Math.min(scanPageLimit, CAPY_MINE_SCAN_PAGE_LIMIT)
+					);
+
+					return {
+						discovered: discoveredIds.length,
+						discoveredIds,
+						hasMore,
+						nextCursor,
+						pagesRead,
+						scanned,
 					};
 				}),
 			getThread: publicProcedure

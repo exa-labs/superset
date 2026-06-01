@@ -166,6 +166,27 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Open the embedded Chrome tab set",
 	},
+	TOGGLE_NATIVE_BROWSER_VIEW: {
+		key: {
+			mac: L("alt+b"),
+			windows: L("ctrl+alt+b"),
+			linux: L("ctrl+alt+b"),
+		},
+		label: "Toggle Native Browser View",
+		category: "Web Pages",
+		description:
+			"Switch the current Capy/Devin session between native chat and browser",
+	},
+	TOGGLE_NATIVE_SPLIT_VIEW: {
+		key: {
+			mac: L("alt+s"),
+			windows: L("ctrl+alt+s"),
+			linux: L("ctrl+alt+s"),
+		},
+		label: "Toggle Native Split View",
+		category: "Web Pages",
+		description: "Show or hide the side-by-side native chat/browser view",
+	},
 
 	// Workspace switching
 	JUMP_TO_WORKSPACE_1: {

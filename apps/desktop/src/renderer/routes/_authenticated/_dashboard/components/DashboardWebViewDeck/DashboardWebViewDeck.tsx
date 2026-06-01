@@ -77,6 +77,17 @@ function getTabCacheKey(tabId: string): string {
 	return `tab:${tabId}`;
 }
 
+function replaceDashboardWebTabHash(tabId: string) {
+	const nextHash = `#/web-tabs/${encodeURIComponent(tabId)}`;
+	if (window.location.hash === nextHash) return;
+	window.history.replaceState(
+		null,
+		"",
+		`${window.location.pathname}${window.location.search}${nextHash}`,
+	);
+	window.dispatchEvent(new HashChangeEvent("hashchange"));
+}
+
 function targetToEntry(target: WebViewTarget, now: number): RetainedEntry {
 	if (target.kind === "page") {
 		return {
@@ -201,6 +212,17 @@ export function DashboardWebViewDeck({
 	}, [activePageId, activeTabId, pages, tabs]);
 	const activeCacheKey = activeTarget?.cacheKey ?? null;
 	const [anchorRect, setAnchorRect] = useState<DeckRect | null>(null);
+
+	useEffect(() => {
+		if (!activeTabId || activeTarget) return;
+
+		const appPrefix = activeTabId.split("-")[0] ?? "";
+		const fallbackTab =
+			tabs.find((tab) => tab.appId === appPrefix) ?? tabs[0] ?? null;
+		if (!fallbackTab) return;
+
+		replaceDashboardWebTabHash(fallbackTab.id);
+	}, [activeTabId, activeTarget, tabs]);
 
 	useLayoutEffect(() => {
 		const previousActiveCacheKey = previousActiveCacheKeyRef.current;
@@ -333,6 +355,7 @@ export function DashboardWebViewDeck({
 	useEffect(() => {
 		recordDashboardBrowserDeckState({
 			activeCacheKey,
+			bounds: anchorRect,
 			keepAliveTtlMs: DASHBOARD_WEB_VIEW_KEEPALIVE_TTL_MS,
 			retainedEntries: retainedEntries.map((entry) => ({
 				...entry,
@@ -340,7 +363,7 @@ export function DashboardWebViewDeck({
 			})),
 			sweepIntervalMs: DASHBOARD_WEB_VIEW_TTL_SWEEP_MS,
 		});
-	}, [activeCacheKey, retainedEntries, tabs]);
+	}, [activeCacheKey, anchorRect, retainedEntries, tabs]);
 
 	if (retainedTargets.length === 0) return null;
 
@@ -351,6 +374,7 @@ export function DashboardWebViewDeck({
 		<div
 			data-dashboard-web-view-deck-root=""
 			data-dashboard-web-view-deck-visible={isVisible ? "true" : "false"}
+			aria-hidden={isVisible ? undefined : true}
 			style={{
 				height: deckRect?.height ?? 0,
 				left: deckRect?.left ?? 0,
@@ -361,7 +385,7 @@ export function DashboardWebViewDeck({
 				"fixed min-h-0 min-w-0",
 				isVisible
 					? "pointer-events-auto z-20 opacity-100"
-					: "pointer-events-none z-0 opacity-0",
+					: "hidden pointer-events-none z-0 opacity-0",
 			)}
 		>
 			{retainedTargets.map((target) => {
@@ -371,6 +395,8 @@ export function DashboardWebViewDeck({
 						key={target.cacheKey}
 						data-dashboard-web-view-cache-key={target.cacheKey}
 						data-dashboard-web-view-active={isActive ? "true" : "false"}
+						aria-hidden={isActive ? undefined : true}
+						style={{ visibility: isActive ? "visible" : "hidden" }}
 						className={cn(
 							"absolute inset-0 flex min-h-0 min-w-0",
 							isActive

@@ -10,6 +10,8 @@ export type DashboardWebShortcut =
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
 	| "OPEN_CHROME"
+	| "TOGGLE_NATIVE_BROWSER_VIEW"
+	| "TOGGLE_NATIVE_SPLIT_VIEW"
 	| "OPEN_CAPY_1"
 	| "OPEN_CAPY_2"
 	| "OPEN_CAPY_3"
@@ -78,10 +80,14 @@ function digitIndexFromCode(code: string): number | null {
 	return Number.parseInt(match[1], 10) - 1;
 }
 
+function isShortcutKeyDownType(type: string): boolean {
+	return type === "keyDown" || type === "rawKeyDown" || type === "char";
+}
+
 export function dashboardWebDigitIndexFromInput(
 	input: DashboardWebShortcutInput,
 ): number | null {
-	if (input.type !== "keyDown") return null;
+	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
 	if (!input.alt || input.control || input.meta || input.shift) return null;
 	return digitIndexFromCode(input.code);
@@ -100,7 +106,7 @@ export function dashboardWebIndexedShortcut(
 export function dashboardWebShortcutFromInput(
 	input: DashboardWebShortcutInput,
 ): DashboardWebShortcut | null {
-	if (input.type !== "keyDown") return null;
+	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
 	if (!input.alt || input.control || input.meta || input.shift) return null;
 
@@ -113,11 +119,15 @@ export function dashboardWebShortcutFromInput(
 	if (code === "keyc") return "OPEN_CAPY";
 	if (code === "keyd") return "OPEN_DEVIN";
 	if (code === "keyg") return "OPEN_CHROME";
+	if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
+	if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
 
 	const key = input.key.toLowerCase();
 	if (key === "c") return "OPEN_CAPY";
 	if (key === "d") return "OPEN_DEVIN";
 	if (key === "g") return "OPEN_CHROME";
+	if (key === "b") return "TOGGLE_NATIVE_BROWSER_VIEW";
+	if (key === "s") return "TOGGLE_NATIVE_SPLIT_VIEW";
 
 	return null;
 }

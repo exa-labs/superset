@@ -3,8 +3,53 @@ import { useCallback, useEffect, useRef } from "react";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { recordDashboardBrowserPaneEvent } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-diagnostics";
 import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
+import {
+	type DashboardBrowserWebViewPlacement,
+	shouldDashboardBrowserWebViewReceivePointerEvents,
+} from "./dashboard-browser-webview-interaction";
 
 const FAVICON_CAPTURE_SIZE = 64;
+const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
+(() => {
+	if (window.__clankeeDashboardWebShortcutBridgeInstalled) return;
+	window.__clankeeDashboardWebShortcutBridgeInstalled = true;
+	const prefix = "__CLANKEE_DASHBOARD_WEB_SHORTCUT__:";
+	const invokeShortcut = (shortcut) => {
+		console.info(prefix + shortcut);
+	};
+	const digitShortcuts = [
+		"OPEN_WEB_PAGE_1",
+		"OPEN_WEB_PAGE_2",
+		"OPEN_WEB_PAGE_3",
+		"OPEN_WEB_PAGE_4",
+		"OPEN_WEB_PAGE_5",
+		"OPEN_WEB_PAGE_6",
+	];
+	const shortcutFromEvent = (event) => {
+		if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return null;
+		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
+		if (digit) return digitShortcuts[Number.parseInt(digit[1], 10) - 1] || null;
+		const code = String(event.code || "").toLowerCase();
+		if (code === "keyc") return "OPEN_CAPY";
+		if (code === "keyd") return "OPEN_DEVIN";
+		if (code === "keyg") return "OPEN_CHROME";
+		if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
+		if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
+		return null;
+	};
+	window.addEventListener(
+		"keydown",
+		(event) => {
+			const shortcut = shortcutFromEvent(event);
+			if (!shortcut) return;
+			event.preventDefault();
+			event.stopPropagation();
+			invokeShortcut(shortcut);
+		},
+		true,
+	);
+})();
+`;
 
 export interface DashboardBrowserWebViewState {
 	url: string;
@@ -21,7 +66,8 @@ interface DashboardBrowserWebViewProps {
 	src: string;
 	label: string;
 	isActive: boolean;
-	placement: "full" | "hidden" | "left" | "right";
+	isViewActive: boolean;
+	placement: DashboardBrowserWebViewPlacement;
 	onStateChange: (
 		tabId: string,
 		state: Partial<DashboardBrowserWebViewState>,
@@ -139,6 +185,7 @@ export function DashboardBrowserWebView({
 	src,
 	label,
 	isActive,
+	isViewActive,
 	placement,
 	onStateChange,
 	onFaviconCaptured,
@@ -161,6 +208,11 @@ export function DashboardBrowserWebView({
 		electronTrpc.browser.unregister.useMutation();
 	const registerBrowserRef = useRef(registerBrowser);
 	const unregisterBrowserRef = useRef(unregisterBrowser);
+	const shouldReceivePointerEvents =
+		shouldDashboardBrowserWebViewReceivePointerEvents({
+			isViewActive,
+			placement,
+		});
 
 	useEffect(() => {
 		srcRef.current = src;
@@ -387,6 +439,9 @@ export function DashboardBrowserWebView({
 		const handleDomReady = () => {
 			isReadyRef.current = true;
 			registerWebview();
+			void webview
+				.executeJavaScript(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT)
+				.catch(() => undefined);
 			recordDashboardBrowserPaneEvent({
 				paneId,
 				tabId,
@@ -510,6 +565,7 @@ export function DashboardBrowserWebView({
 
 	return (
 		<div
+			data-dashboard-browser-view=""
 			data-dashboard-browser-tab-id={tabId}
 			data-dashboard-browser-tab-active={isActive ? "true" : "false"}
 			data-dashboard-browser-tab-visible={
@@ -522,15 +578,21 @@ export function DashboardBrowserWebView({
 				placement === "left" &&
 					"inset-y-0 left-0 right-1/2 border-r border-border",
 				placement === "right" && "inset-y-0 left-1/2 right-0",
+				shouldReceivePointerEvents
+					? "pointer-events-auto z-10 opacity-100"
+					: "pointer-events-none z-0",
 				placement === "hidden"
 					? "pointer-events-none inset-0 z-0 opacity-0"
-					: "pointer-events-auto z-10 opacity-100",
+					: "opacity-100",
 			)}
 		>
 			<webview
 				ref={setWebviewRef}
 				partition={DESKTOP_BROWSER_PARTITION}
 				className="min-h-0 min-w-0 flex-1 border-0"
+				style={{
+					pointerEvents: shouldReceivePointerEvents ? "auto" : "none",
+				}}
 			/>
 		</div>
 	);

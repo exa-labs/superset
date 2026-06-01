@@ -4,7 +4,9 @@ import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import {
+	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
+	dashboardVimNavigationActionFromSequence,
 	nextDashboardVimSequence,
 	shouldHandleDashboardVimKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
@@ -13,6 +15,7 @@ import {
 	createDashboardWebTab,
 	getDashboardWebTabs,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
+import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 
 type DashboardWebShortcut =
 	| "OPEN_WEB_PAGE_1"
@@ -24,6 +27,8 @@ type DashboardWebShortcut =
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
 	| "OPEN_CHROME"
+	| "TOGGLE_NATIVE_BROWSER_VIEW"
+	| "TOGGLE_NATIVE_SPLIT_VIEW"
 	| "OPEN_CAPY_1"
 	| "OPEN_CAPY_2"
 	| "OPEN_CAPY_3"
@@ -199,6 +204,22 @@ export function useDashboardWebShortcuts() {
 				openChrome();
 				return;
 			}
+			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {
+				window.dispatchEvent(
+					new CustomEvent("dashboard-native-agent-current-action", {
+						detail: { action: "toggle-browser" },
+					}),
+				);
+				return;
+			}
+			if (shortcut === "TOGGLE_NATIVE_SPLIT_VIEW") {
+				window.dispatchEvent(
+					new CustomEvent("dashboard-native-agent-current-action", {
+						detail: { action: "toggle-split" },
+					}),
+				);
+				return;
+			}
 
 			const capyIndex = CAPY_INDEX_SHORTCUTS.indexOf(shortcut);
 			if (capyIndex !== -1) {
@@ -243,19 +264,34 @@ export function useDashboardWebShortcuts() {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (shouldHandleDashboardVimKey(event)) {
+				const key = dashboardVimKey(event);
+				const globalAction = dashboardVimGlobalActionFromKey(key);
+				if (globalAction === "toggle-sidebar") {
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					useWorkspaceSidebarStore.getState().toggleOpen();
+					return;
+				}
+
 				const parsed = nextDashboardVimSequence(
 					pendingVimPrefixRef.current,
-					dashboardVimKey(event),
+					key,
 				);
 				pendingVimPrefixRef.current = parsed.pendingPrefix;
 				if (parsed.pendingPrefix || parsed.sequence) {
 					event.preventDefault();
 					event.stopPropagation();
+					event.stopImmediatePropagation();
 				}
-				if (parsed.sequence === "g c") openNativeProvider("capy");
-				if (parsed.sequence === "g d") openNativeProvider("devin");
-				if (parsed.sequence === "g g") openChrome();
-				if (parsed.sequence) return;
+				if (parsed.pendingPrefix) return;
+				const navigationAction = dashboardVimNavigationActionFromSequence(
+					parsed.sequence,
+				);
+				if (navigationAction === "open-capy") openNativeProvider("capy");
+				if (navigationAction === "open-devin") openNativeProvider("devin");
+				if (navigationAction === "open-chrome") openChrome();
+				if (navigationAction !== "none") return;
 			}
 
 			const pending = pendingNativeProviderRef.current;

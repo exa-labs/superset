@@ -86,6 +86,7 @@ export interface DashboardBrowserMemoryPressureDiagnostics {
 
 export interface DashboardBrowserDeckDiagnostics {
 	activeCacheKey: string | null;
+	bounds: DashboardBrowserDeckBounds | null;
 	keepAliveTtlMs: number;
 	sweepIntervalMs: number;
 	switchCount: number;
@@ -116,6 +117,13 @@ export interface DashboardBrowserDeckDiagnostics {
 		ageMs: number;
 	}>;
 	lastUpdatedAt: number;
+}
+
+export interface DashboardBrowserDeckBounds {
+	height: number;
+	left: number;
+	top: number;
+	width: number;
 }
 
 export interface DashboardBrowserDiagnosticsSnapshot {
@@ -548,11 +556,13 @@ export function removeDashboardBrowserPaneDiagnostics(paneId: string) {
 
 export function recordDashboardBrowserDeckState({
 	activeCacheKey,
+	bounds,
 	keepAliveTtlMs,
 	retainedEntries,
 	sweepIntervalMs,
 }: {
 	activeCacheKey: string | null;
+	bounds?: DashboardBrowserDeckBounds | null;
 	keepAliveTtlMs: number;
 	retainedEntries: Array<{
 		cacheKey: string;
@@ -585,6 +595,7 @@ export function recordDashboardBrowserDeckState({
 	const sleepingCount = state.deck?.recentlySleptEntries.length ?? 0;
 	state.deck = {
 		activeCacheKey,
+		bounds: bounds ?? null,
 		keepAliveTtlMs,
 		sweepIntervalMs,
 		...switchFields(),

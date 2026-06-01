@@ -10,6 +10,7 @@ export const DASHBOARD_WEB_TAB_APPS = [
 const STORAGE_KEY = "dashboard-web-tabs-v1";
 const CLOSED_DEFAULT_TABS_STORAGE_KEY = "dashboard-web-tabs-closed-defaults-v1";
 const FOLDERS_STORAGE_KEY = "dashboard-web-tab-folders-v1";
+const CHANGE_EVENT = "dashboard-web-tabs-change";
 
 export type DashboardWebTabApp = (typeof DASHBOARD_WEB_TAB_APPS)[number];
 export type DashboardWebTabAppId = DashboardWebTabApp["id"];
@@ -272,6 +273,24 @@ function notifyListeners() {
 	for (const listener of listeners) listener();
 }
 
+function dispatchChangeEvent() {
+	if (typeof window === "undefined") return;
+	window.dispatchEvent(new Event(CHANGE_EVENT));
+}
+
+function notifyStoreChanged() {
+	if (typeof window === "undefined") {
+		notifyListeners();
+		return;
+	}
+	dispatchChangeEvent();
+}
+
+function invalidateCaches() {
+	tabsCache = null;
+	foldersCache = null;
+}
+
 function makeTabId(appId: DashboardWebTabAppId): string {
 	if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
 		return `${appId}-${crypto.randomUUID()}`;
@@ -292,7 +311,33 @@ function makeFolderId(appId: DashboardWebTabAppId): string {
 
 export function subscribeDashboardWebTabs(listener: Listener) {
 	listeners.add(listener);
-	return () => listeners.delete(listener);
+	if (typeof window === "undefined") {
+		return () => listeners.delete(listener);
+	}
+
+	const handleExternalChange = () => {
+		invalidateCaches();
+		listener();
+	};
+	const handleStorageChange = (event: StorageEvent) => {
+		if (
+			event.key !== STORAGE_KEY &&
+			event.key !== FOLDERS_STORAGE_KEY &&
+			event.key !== CLOSED_DEFAULT_TABS_STORAGE_KEY
+		) {
+			return;
+		}
+		handleExternalChange();
+	};
+
+	window.addEventListener(CHANGE_EVENT, handleExternalChange);
+	window.addEventListener("storage", handleStorageChange);
+
+	return () => {
+		listeners.delete(listener);
+		window.removeEventListener(CHANGE_EVENT, handleExternalChange);
+		window.removeEventListener("storage", handleStorageChange);
+	};
 }
 
 export function getDashboardWebTabs(): DashboardWebTab[] {
@@ -355,7 +400,7 @@ export function createDashboardWebTab(
 		updatedAt: now,
 	};
 	writeStoredTabs([...tabs, tab]);
-	notifyListeners();
+	notifyStoreChanged();
 	return tab;
 }
 
@@ -374,7 +419,7 @@ export function createDashboardWebTabFolder(
 		updatedAt: now,
 	};
 	writeStoredFolders([...readStoredFolders(), folder]);
-	notifyListeners();
+	notifyStoreChanged();
 	return folder;
 }
 
@@ -392,7 +437,7 @@ export function renameDashboardWebTabFolder(folderId: string, title: string) {
 				: item,
 		),
 	);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function setDashboardWebTabFolderCollapsed(
@@ -410,7 +455,7 @@ export function setDashboardWebTabFolderCollapsed(
 				: item,
 		),
 	);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function deleteDashboardWebTabFolder(folderId: string) {
@@ -425,7 +470,7 @@ export function deleteDashboardWebTabFolder(folderId: string) {
 				: tab,
 		),
 	);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function moveDashboardWebTabToFolder(
@@ -447,7 +492,7 @@ export function moveDashboardWebTabToFolder(
 				: item,
 		),
 	);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function setDashboardWebTabPinned(tabId: string, isPinned: boolean) {
@@ -460,7 +505,7 @@ export function setDashboardWebTabPinned(tabId: string, isPinned: boolean) {
 			item.id === tabId ? { ...item, isPinned, updatedAt: Date.now() } : item,
 		),
 	);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function renameDashboardWebTab(tabId: string, title: string) {
@@ -478,7 +523,7 @@ export function renameDashboardWebTab(tabId: string, title: string) {
 			: tab,
 	);
 	writeStoredTabs(next);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function closeDashboardWebTab(tabId: string): DashboardWebTab | null {
@@ -497,7 +542,7 @@ export function closeDashboardWebTab(tabId: string): DashboardWebTab | null {
 
 	const nextTabs = tabs.filter((tab) => tab.id !== tabId);
 	writeStoredTabs(nextTabs);
-	notifyListeners();
+	notifyStoreChanged();
 
 	const sameAppTabs = nextTabs.filter((tab) => tab.appId === closedTab.appId);
 	if (sameAppTabs.length > 0) {
@@ -534,7 +579,7 @@ export function setDashboardWebTabBrowserTitle(tabId: string, title: string) {
 			: item,
 	);
 	writeStoredTabs(next);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function setDashboardWebTabUrl(tabId: string, url: string) {
@@ -551,7 +596,7 @@ export function setDashboardWebTabUrl(tabId: string, url: string) {
 			: item,
 	);
 	writeStoredTabs(next);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function setDashboardWebTabFavicon(tabId: string, faviconUrl: string) {
@@ -568,7 +613,7 @@ export function setDashboardWebTabFavicon(tabId: string, faviconUrl: string) {
 			: item,
 	);
 	writeStoredTabs(next);
-	notifyListeners();
+	notifyStoreChanged();
 }
 
 export function resetDashboardWebTabsForTests() {

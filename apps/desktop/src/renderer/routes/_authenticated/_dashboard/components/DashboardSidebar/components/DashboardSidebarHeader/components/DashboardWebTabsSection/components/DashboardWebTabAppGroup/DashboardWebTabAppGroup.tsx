@@ -88,6 +88,7 @@ export function DashboardWebTabAppGroup({
 					<button
 						type="button"
 						aria-label={app.label}
+						data-dashboard-web-app-trigger={app.id}
 						onFocus={() => warmDashboardWebUrl(primaryUrl)}
 						onMouseEnter={() => warmDashboardWebUrl(primaryUrl)}
 						onMouseLeave={cancelDashboardWebUrlWarmup}
@@ -116,15 +117,15 @@ export function DashboardWebTabAppGroup({
 			<div className="flex items-center gap-1">
 				<button
 					type="button"
-					aria-expanded={!isCollapsed}
-					aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${app.label} sessions`}
+					aria-label={`Open ${app.label}`}
+					data-dashboard-web-app-trigger={app.id}
 					onFocus={() => warmDashboardWebUrl(primaryUrl)}
 					onMouseEnter={() => warmDashboardWebUrl(primaryUrl)}
 					onMouseLeave={cancelDashboardWebUrlWarmup}
-					onClick={() => onCollapsedChange(app.id, !isCollapsed)}
+					onClick={() => onOpenApp(app.id)}
 					className={cn(
 						"flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-sm font-semibold transition-colors",
-						isCollapsed && isActive
+						isActive
 							? "bg-accent/70 text-foreground"
 							: "text-muted-foreground hover:bg-accent/35 hover:text-foreground",
 					)}
@@ -140,17 +141,28 @@ export function DashboardWebTabAppGroup({
 							{shortcutLabel}
 						</span>
 					)}
-					<span
-						className={cn(
-							"rounded-sm px-1 font-mono text-[10px] tabular-nums",
-							isActive
-								? "bg-foreground/10 text-foreground/70"
-								: "bg-muted-foreground/10 text-muted-foreground/70",
-						)}
-					>
-						{tabCountLabel}
-					</span>
 				</button>
+				<Tooltip delayDuration={300}>
+					<TooltipTrigger asChild>
+						<button
+							type="button"
+							aria-expanded={!isCollapsed}
+							aria-label={`${isCollapsed ? "Show" : "Hide"} ${app.label} sidebar sessions`}
+							onClick={() => onCollapsedChange(app.id, !isCollapsed)}
+							className={cn(
+								"flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/60 px-1 font-mono text-[10px] tabular-nums text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground",
+								isActive && "border-foreground/15 text-foreground/75",
+							)}
+						>
+							{tabCountLabel}
+						</button>
+					</TooltipTrigger>
+					<TooltipContent side="right">
+						{isCollapsed
+							? `Show ${app.label} sidebar sessions`
+							: `Hide ${app.label} sidebar sessions`}
+					</TooltipContent>
+				</Tooltip>
 				<Tooltip delayDuration={300}>
 					<TooltipTrigger asChild>
 						<button

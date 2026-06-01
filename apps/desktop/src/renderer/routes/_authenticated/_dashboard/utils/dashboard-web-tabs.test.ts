@@ -40,8 +40,7 @@ describe("dashboard web tabs", () => {
 			notificationCount += 1;
 		});
 
-		const nextUrl =
-			"https://www.google.com/search?q=clankee#activity";
+		const nextUrl = "https://www.google.com/search?q=clankee#activity";
 		setDashboardWebTabUrl("chrome-default", nextUrl);
 
 		expect(notificationCount).toBe(1);

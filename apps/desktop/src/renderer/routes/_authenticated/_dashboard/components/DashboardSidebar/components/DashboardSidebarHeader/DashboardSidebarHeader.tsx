@@ -8,6 +8,7 @@ import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { HiMiniPlus, HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import {
 	LuClock,
@@ -19,6 +20,7 @@ import {
 import { GATED_FEATURES, usePaywall } from "renderer/components/Paywall";
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { persistentHistory } from "renderer/lib/persistent-hash-history";
 import { useFolderFirstImport } from "renderer/routes/_authenticated/_dashboard/components/AddRepositoryModals/hooks/useFolderFirstImport";
 import { NavigationControls } from "renderer/routes/_authenticated/_dashboard/components/NavigationControls";
 import { SidebarToggle } from "renderer/routes/_authenticated/_dashboard/components/SidebarToggle";
@@ -28,11 +30,17 @@ import {
 	useTasksFilterStore,
 } from "renderer/routes/_authenticated/_dashboard/tasks/stores/tasks-filter-state";
 import {
+	type DashboardSidebarNavigationIntent,
+	dashboardSidebarNavigationIntentPath,
+	resolveDashboardSidebarNavigationIntent,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-navigation-intent";
+import {
 	closeDashboardWebTab,
 	createDashboardWebTab,
 	type DashboardWebTabAppId,
 	getFirstDashboardWebTabForApp,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
+import { getDashboardHashPathname } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
 import { STROKE_WIDTH_THICK } from "renderer/screens/main/components/WorkspaceSidebar/constants";
 import { useOpenNewProjectModal } from "renderer/stores/add-repository-modal";
 import { useOpenNewWorkspaceModal } from "renderer/stores/new-workspace-modal";
@@ -52,6 +60,7 @@ export function DashboardSidebarHeader({
 	const openModal = useOpenNewWorkspaceModal();
 	const openNewProject = useOpenNewProjectModal();
 	const navigate = useNavigate();
+	const headerRef = useRef<HTMLDivElement | null>(null);
 	const folderImport = useFolderFirstImport({
 		onError: (message) => {
 			toast.error(`Import failed: ${message}`);
@@ -160,9 +169,90 @@ export function DashboardSidebarHeader({
 		navigate({ to: "/v2-workspaces", replace: true });
 	};
 
+	const openNavigationIntent = (intent: DashboardSidebarNavigationIntent) => {
+		if (intent.type === "native-provider") {
+			persistentHistory.replace(
+				intent.provider === "capy" ? "/native/capy" : "/native/devin",
+			);
+			navigate({
+				to: intent.provider === "capy" ? "/native/capy" : "/native/devin",
+			});
+			return;
+		}
+
+		if (intent.type === "native-session") {
+			if (intent.provider === "capy") {
+				persistentHistory.replace(
+					`/native/capy/${encodeURIComponent(intent.id)}`,
+				);
+				navigate({
+					to: "/native/capy/$threadId",
+					params: { threadId: intent.id },
+				});
+				return;
+			}
+			persistentHistory.replace(
+				`/native/devin/${encodeURIComponent(intent.id)}`,
+			);
+			navigate({
+				to: "/native/devin/$sessionId",
+				params: { sessionId: intent.id },
+			});
+			return;
+		}
+
+		if (intent.type === "web-page") {
+			navigate({
+				to: "/web/$pageId",
+				params: { pageId: intent.pageId },
+			});
+			return;
+		}
+
+		if (intent.type === "web-app") {
+			const tab =
+				getFirstDashboardWebTabForApp(intent.appId) ??
+				createDashboardWebTab(intent.appId);
+			navigate({
+				to: "/web-tabs/$tabId",
+				params: { tabId: tab.id },
+			});
+			return;
+		}
+
+		navigate({
+			to: "/web-tabs/$tabId",
+			params: { tabId: intent.tabId },
+		});
+	};
+
+	useEffect(() => {
+		const handleClick = (event: MouseEvent) => {
+			if (event.defaultPrevented || event.button !== 0) return;
+			if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+				return;
+			}
+
+			const intent = resolveDashboardSidebarNavigationIntent(event.target);
+			if (!intent) return;
+
+			const intendedPath = dashboardSidebarNavigationIntentPath(intent);
+			window.setTimeout(() => {
+				if (intendedPath && getDashboardHashPathname() === intendedPath) return;
+				openNavigationIntent(intent);
+			}, 0);
+		};
+
+		window.addEventListener("click", handleClick, true);
+		return () => window.removeEventListener("click", handleClick, true);
+	});
+
 	if (isCollapsed) {
 		return (
-			<div className="flex flex-col items-center gap-2 border-b border-border py-2">
+			<div
+				ref={headerRef}
+				className="flex flex-col items-center gap-2 border-b border-border py-2"
+			>
 				<DashboardWebPagesGrid
 					activePageId={activeWebPageId}
 					variant="collapsed"
@@ -287,7 +377,10 @@ export function DashboardSidebarHeader({
 	}
 
 	return (
-		<div className="flex flex-col gap-1 border-b border-border px-2 pt-2 pb-2">
+		<div
+			ref={headerRef}
+			className="flex flex-col gap-1 border-b border-border px-2 pt-2 pb-2"
+		>
 			{/* -mx-2 cancels the parent's px-2 so this row owns its own
 			    horizontal inset — keeps traffic-light alignment matching the
 			    TopBar's 80px pad regardless of parent padding changes. */}

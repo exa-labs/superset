@@ -41,6 +41,7 @@ export function DashboardWebPageButton({
 					<button
 						type="button"
 						aria-label={page.label}
+						data-dashboard-web-page-trigger={page.id}
 						onFocus={() => warmDashboardWebUrl(page.url)}
 						onMouseEnter={() => warmDashboardWebUrl(page.url)}
 						onMouseLeave={cancelDashboardWebUrlWarmup}
@@ -72,6 +73,7 @@ export function DashboardWebPageButton({
 			<TooltipTrigger asChild>
 				<button
 					type="button"
+					data-dashboard-web-page-trigger={page.id}
 					onFocus={() => warmDashboardWebUrl(page.url)}
 					onMouseEnter={() => warmDashboardWebUrl(page.url)}
 					onMouseLeave={cancelDashboardWebUrlWarmup}

@@ -2,7 +2,11 @@ import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import type { ComponentProps, ReactNode } from "react";
+import type {
+	ComponentProps,
+	KeyboardEvent as ReactKeyboardEvent,
+	ReactNode,
+} from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	LuArchive,
@@ -10,6 +14,7 @@ import {
 	LuFileText,
 	LuGitPullRequest,
 	LuImage,
+	LuInfo,
 	LuKeyRound,
 	LuPin,
 	LuRefreshCw,
@@ -21,20 +26,73 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 import { CommentCodeBlock } from "renderer/components/CommentMarkdown/components/CommentCodeBlock";
+import { useHotkeyDisplay } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { DashboardWebView } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebView";
+import {
+	formatNativeAgentDiagnosticsQuery,
+	formatNativeAgentDiagnosticsQueryGroup,
+	nativeAgentMineEvidenceSummary,
+	nativeAgentMinePolicySummary,
+	nativeAgentSidebarFlagSummary,
+	summarizeNativeAgentDiagnosticsFreshness,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-diagnostics";
+import {
+	createNativeAgentSessionDragPayload,
+	NATIVE_AGENT_SESSION_DRAG_MIME,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
 import {
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
 	useDashboardVimModeStore,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
-import { NATIVE_AGENT_ASSET_PROTOCOL_SCHEME } from "shared/constants";
+import {
+	nativeAgentChatScrollDeltaFromKey,
+	nativeAgentPlainNavigationKey,
+	nativeAgentSearchEscapeResult,
+	nextNativeAgentKeyboardViewMode,
+	nextNativeAgentOverviewFocusIndex,
+} from "../../utils/native-agent-keyboard";
+import {
+	applyNativeAgentOptimisticPinned,
+	applyNativeAgentOptimisticSidebarVisible,
+	mergeActiveNativeAgentRows,
+	nativeAgentSidebarInclusionReasons,
+	resolveNativeAgentSidebarState,
+	restoreNativeAgentOptimisticSidebarState,
+	selectNativeAgentProviderActiveRows,
+} from "../../utils/native-agent-listing";
+import {
+	devinSessionAppUrl,
+	formatNativeAgentFileSize,
+	isNativeAgentImageAttachment,
+	markdownWithNativeAgentLinks,
+	type NativeAgentAttachment,
+	nativeAgentAssetPreviewUrl,
+	normalizeDevinAppUrl,
+	orderNativeAgentMessagesOldestFirst,
+	parseNativeAgentMessageParts,
+	shouldProxyNativeAgentAsset,
+} from "../../utils/native-agent-message-rendering";
+import { compactNativeAgentReplyPreview } from "../../utils/native-agent-notifications";
+import {
+	mergeNativeAgentMessagesWithOptimistic,
+	type NativeAgentOptimisticMessage,
+	pruneConfirmedNativeAgentOptimisticMessages,
+} from "../../utils/native-agent-optimistic-messages";
+import {
+	type NativeAgentOverviewFilter,
+	nativeAgentOverviewHoverTitle,
+	selectNativeAgentOverviewItems,
+} from "../../utils/native-agent-overview";
 import {
 	formatNativeAgentTimestamp,
+	isNativeAgentLiveStatus,
 	type NativeAgentProvider,
 	nativeAgentConversationLabel,
 	nativeAgentConversationSetLabel,
 	nativeAgentProviderTitle,
+	nativeAgentStatusBadgeLabel,
 	nativeAgentStatusTone,
 	nativeAgentTimestampMs,
 	normalizeNativeAgentRole,
@@ -57,22 +115,20 @@ type NativeMessage = {
 	role?: string | null;
 };
 
-type OptimisticNativeMessage = NativeMessage & {
-	provider: NativeAgentProvider;
-	targetId: string;
-};
-
 type NativeItem = {
 	id: string;
 	title: string;
 	status: string | null;
 	url: string | null;
+	updatedAt?: string | number | null;
 	isProviderActive?: boolean;
+	latestMessage?: NativeMessage | null;
+	mineEvidence?: string;
 	sidebarPinned?: boolean;
 	sidebarHidden?: boolean;
 };
 
-type NativeOverviewFilter = "active" | "all" | "finished" | "hidden" | "pinned";
+type NativeViewMode = "browser" | "native" | "split";
 
 type NativeAgentCurrentAction =
 	| "hide"
@@ -80,7 +136,10 @@ type NativeAgentCurrentAction =
 	| "pin"
 	| "refresh"
 	| "show"
+	| "sync-capy"
 	| "toggle-browser"
+	| "toggle-diagnostics"
+	| "toggle-split"
 	| "unpin";
 
 type NativeBrowserTarget = {
@@ -91,40 +150,13 @@ type NativeBrowserTarget = {
 	url: string;
 };
 
-type NativeAttachment = {
-	fileSize: number | null;
-	fileName: string;
-	url: string;
-};
-
-type ParsedNativeMessagePart =
-	| {
-			key: string;
-			kind: "text";
-			value: string;
-	  }
-	| {
-			attachment: NativeAttachment;
-			key: string;
-			kind: "attachment";
-	  }
-	| {
-			key: string;
-			kind: "systemReminder";
-			value: string;
-	  };
-
 const CAPY_MONOREPO_PROJECT_ID = "a275b1f7-318b-49ed-b2c8-5bb31ca7cd97";
 const CAPY_LOCAL_USER_EMAIL = "lakee@exa.ai";
+const CAPY_MANUAL_SYNC_SCAN_PAGE_LIMIT = 25;
 const NATIVE_AGENT_LIST_STALE_MS = 60_000;
 const NATIVE_AGENT_DETAIL_STALE_MS = 30_000;
 const NATIVE_AGENT_CACHE_MS = 2 * 60 * 60 * 1000;
-const ATTACHMENT_PATTERN = /ATTACHMENT:\s*(\{[^{}]*\})/g;
-const SYSTEM_REMINDER_PATTERN =
-	/<system_reminder>([\s\S]*?)<\/system_reminder>/g;
-const PR_REFERENCE_PATTERN =
-	/\[\[pr:([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)#(\d+)]]/g;
-const DEVIN_SESSION_ID_PREFIX = "devin-";
+const READ_STATE_STORAGE_KEY = "dashboard-native-agent-read-state-v1";
 
 const markdownComponents = {
 	code: ({
@@ -168,117 +200,108 @@ const markdownComponents = {
 	},
 } satisfies ReactMarkdownComponents;
 
-function formatFileSize(size: number | null): string | null {
-	if (size == null || !Number.isFinite(size) || size < 0) return null;
-	const units = ["B", "KB", "MB", "GB"];
-	let value = size;
-	let unitIndex = 0;
-	while (value >= 1024 && unitIndex < units.length - 1) {
-		value /= 1024;
-		unitIndex += 1;
-	}
-	const precision = value >= 10 || unitIndex === 0 ? 0 : 1;
-	return `${value.toFixed(precision)} ${units[unitIndex]}`;
+function ShortcutHint({ children }: { children: ReactNode }) {
+	return (
+		<span className="rounded border border-border/70 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+			{children}
+		</span>
+	);
 }
 
-function fileNameFromAttachmentUrl(url: string): string {
-	try {
-		const pathName = new URL(url).pathname;
-		const name = decodeURIComponent(
-			pathName.split("/").filter(Boolean).pop() ?? "",
-		);
-		return name || "Attachment";
-	} catch {
-		const name = url.split("/").filter(Boolean).pop();
-		return name || "Attachment";
-	}
+function DiagnosticsRow({ label, value }: { label: string; value: ReactNode }) {
+	return (
+		<div className="grid grid-cols-[130px_1fr] gap-2 border-border/60 border-t py-1.5 text-xs first:border-t-0">
+			<span className="text-muted-foreground">{label}</span>
+			<span className="min-w-0 break-words font-mono text-foreground/85">
+				{value}
+			</span>
+		</div>
+	);
 }
 
-function parseAttachmentPayload(value: string): NativeAttachment | null {
+function readJson<T>(key: string, fallback: T): T {
+	if (typeof localStorage === "undefined") return fallback;
 	try {
-		const parsed = JSON.parse(value) as unknown;
-		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-			return null;
-		}
-		const record = parsed as Record<string, unknown>;
-		const url = typeof record.url === "string" ? record.url.trim() : "";
-		if (!url) return null;
-		const fileSize =
-			typeof record.fileSize === "number" && Number.isFinite(record.fileSize)
-				? record.fileSize
-				: null;
-		return {
-			fileName: fileNameFromAttachmentUrl(url),
-			fileSize,
-			url,
-		};
+		const raw = localStorage.getItem(key);
+		return raw ? (JSON.parse(raw) as T) : fallback;
 	} catch {
-		return null;
+		return fallback;
 	}
 }
 
-function devinSessionAppUrl(sessionId: string): string {
-	const appSessionId = sessionId.startsWith(DEVIN_SESSION_ID_PREFIX)
-		? sessionId.slice(DEVIN_SESSION_ID_PREFIX.length)
-		: sessionId;
-	return `https://app.devin.ai/sessions/${encodeURIComponent(appSessionId)}`;
-}
-
-function normalizeDevinAppUrl(url: string | null | undefined): string | null {
-	if (!url) return null;
+function writeJson(key: string, value: unknown) {
+	if (typeof localStorage === "undefined") return;
 	try {
-		const parsed = new URL(url);
-		if (parsed.host !== "app.devin.ai") return url;
-		parsed.pathname = parsed.pathname.replace(
-			/^\/sessions\/devin-/,
-			"/sessions/",
-		);
-		return parsed.toString();
-	} catch {
-		return url.replace(
-			"https://app.devin.ai/sessions/devin-",
-			"https://app.devin.ai/sessions/",
-		);
-	}
+		localStorage.setItem(key, JSON.stringify(value));
+	} catch {}
 }
 
-function nativeAgentAssetPreviewUrl(url: string): string {
-	return `${NATIVE_AGENT_ASSET_PROTOCOL_SCHEME}://image/?url=${encodeURIComponent(url)}`;
+function nativeAgentReadStateKey(provider: NativeAgentProvider, id: string) {
+	return `${provider}:${id}`;
 }
 
-function shouldProxyNativeAgentAsset(url: string): boolean {
-	try {
-		const parsed = new URL(url);
-		return (
-			parsed.protocol === "https:" &&
-			["app.devin.ai", "capy.ai", "www.capy.ai"].includes(parsed.host)
-		);
-	} catch {
+function readNativeAgentReadState(): Record<string, number> {
+	return readJson<Record<string, number>>(READ_STATE_STORAGE_KEY, {});
+}
+
+function writeNativeAgentReadState(readState: Record<string, number>) {
+	writeJson(READ_STATE_STORAGE_KEY, readState);
+}
+
+function latestAgentMessageTime(item: NativeItem): number | null {
+	if (!item.latestMessage) return null;
+	return nativeAgentTimestampMs(item.latestMessage.createdAt);
+}
+
+function hasUnreadNativeAgentReply(
+	item: NativeItem,
+	readState: Record<string, number>,
+	provider: NativeAgentProvider,
+): boolean {
+	if (!item.latestMessage) return false;
+	if (normalizeNativeAgentRole(item.latestMessage.role, provider).isUser) {
 		return false;
 	}
+	const latestTime = latestAgentMessageTime(item);
+	if (latestTime == null) return false;
+	return (
+		latestTime > (readState[nativeAgentReadStateKey(provider, item.id)] ?? 0)
+	);
 }
 
-function isImageAttachment(attachment: NativeAttachment): boolean {
-	try {
-		const pathName = new URL(attachment.url).pathname;
-		return /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(pathName);
-	} catch {
-		return /\.(avif|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(attachment.url);
+function consumeNativeAgentKeyboardEvent(
+	event: KeyboardEvent | ReactKeyboardEvent,
+) {
+	event.preventDefault();
+	event.stopPropagation();
+	if ("stopImmediatePropagation" in event) {
+		event.stopImmediatePropagation();
+		return;
 	}
+	event.nativeEvent.stopImmediatePropagation?.();
 }
 
-function nativeAgentStatusIsActive(status: string | null): boolean {
-	const normalized = status?.toLowerCase() ?? "";
-	return [
-		"active",
-		"claimed",
-		"new",
-		"queued",
-		"resuming",
-		"running",
-		"waiting",
-		"working",
-	].includes(normalized);
+function activeDashboardNativeAgentSidebarRow() {
+	if (typeof document === "undefined") return null;
+	const active = document.activeElement;
+	if (!(active instanceof HTMLElement)) return null;
+	return active.closest(
+		"[data-native-agent-session-row-id], [data-native-agent-folder-row-id]",
+	);
+}
+
+function nativeAgentPlainKeyboardScopeAllowsEvent(
+	event: KeyboardEvent,
+	root: HTMLElement | null,
+) {
+	const active =
+		typeof document === "undefined" ? null : document.activeElement;
+	if (typeof document !== "undefined" && active === document.body) return true;
+	if (active instanceof HTMLElement && root?.contains(active)) return true;
+	if (event.target instanceof HTMLElement && root?.contains(event.target)) {
+		return true;
+	}
+	return false;
 }
 
 function nativeAgentStatusIsFinished(status: string | null): boolean {
@@ -294,75 +317,10 @@ function nativeAgentStatusIsFinished(status: string | null): boolean {
 	].includes(normalized);
 }
 
-function parseNativeMessageParts(body: string): ParsedNativeMessagePart[] {
-	const parts: ParsedNativeMessagePart[] = [];
-	let lastIndex = 0;
-
-	const matches = [
-		...Array.from(body.matchAll(ATTACHMENT_PATTERN), (match) => ({
-			kind: "attachment" as const,
-			match,
-		})),
-		...Array.from(body.matchAll(SYSTEM_REMINDER_PATTERN), (match) => ({
-			kind: "systemReminder" as const,
-			match,
-		})),
-	].sort((left, right) => (left.match.index ?? 0) - (right.match.index ?? 0));
-
-	for (const { kind, match } of matches) {
-		const matchIndex = match.index ?? 0;
-		if (matchIndex < lastIndex) continue;
-
-		let part: ParsedNativeMessagePart | null = null;
-		if (kind === "attachment") {
-			const rawPayload = match[1];
-			const attachment = rawPayload ? parseAttachmentPayload(rawPayload) : null;
-			if (!attachment) continue;
-			part = {
-				attachment,
-				key: `attachment:${matchIndex}:${attachment.url}`,
-				kind: "attachment",
-			};
-		} else {
-			const reminder = (match[1] ?? "").trim();
-			if (!reminder) continue;
-			part = {
-				key: `system-reminder:${matchIndex}`,
-				kind: "systemReminder",
-				value: reminder,
-			};
-		}
-
-		const textBefore = body.slice(lastIndex, matchIndex);
-		if (textBefore) {
-			parts.push({ key: `text:${lastIndex}`, kind: "text", value: textBefore });
-		}
-		parts.push(part);
-		lastIndex = matchIndex + match[0].length;
-	}
-
-	const textAfter = body.slice(lastIndex);
-	if (textAfter) {
-		parts.push({ key: `text:${lastIndex}`, kind: "text", value: textAfter });
-	}
-
-	return parts.length > 0
-		? parts
-		: [{ key: "text:0", kind: "text", value: body }];
-}
-
-function markdownWithNativeLinks(body: string): string {
-	return body.replace(
-		PR_REFERENCE_PATTERN,
-		(_match, owner: string, repo: string, number: string) =>
-			`[${owner}/${repo}#${number}](https://github.com/${owner}/${repo}/pull/${number})`,
-	);
-}
-
 function NativeAttachmentImage({
 	attachment,
 }: {
-	attachment: NativeAttachment;
+	attachment: NativeAgentAttachment;
 }) {
 	const [failed, setFailed] = useState(false);
 
@@ -386,9 +344,9 @@ function NativeAttachmentImage({
 	);
 }
 
-function AttachmentChip({ attachment }: { attachment: NativeAttachment }) {
-	const size = formatFileSize(attachment.fileSize);
-	const isImage = isImageAttachment(attachment);
+function AttachmentChip({ attachment }: { attachment: NativeAgentAttachment }) {
+	const size = formatNativeAgentFileSize(attachment.fileSize);
+	const isImage = isNativeAgentImageAttachment(attachment);
 
 	if (isImage) {
 		return (
@@ -458,7 +416,7 @@ function NativeMarkdownText({ body }: { body: string }) {
 			rehypePlugins={[rehypeRaw, rehypeSanitize]}
 			components={markdownComponents}
 		>
-			{markdownWithNativeLinks(body)}
+			{markdownWithNativeAgentLinks(body)}
 		</ReactMarkdown>
 	);
 }
@@ -480,46 +438,8 @@ function SystemReminderDisclosure({ body }: { body: string }) {
 	);
 }
 
-function orderNativeMessagesOldestFirst<T extends NativeMessage>(
-	messages: T[],
-): T[] {
-	return messages
-		.map((message, index) => ({
-			index,
-			message,
-			time: nativeAgentTimestampMs(message.createdAt),
-		}))
-		.sort((left, right) => {
-			if (left.time == null && right.time == null) {
-				return left.index - right.index;
-			}
-			if (left.time == null) return 1;
-			if (right.time == null) return -1;
-			return left.time - right.time || left.index - right.index;
-		})
-		.map(({ message }) => message);
-}
-
-function hasConfirmedUserMessage(
-	confirmedMessages: NativeMessage[],
-	optimisticMessage: OptimisticNativeMessage,
-	provider: NativeAgentProvider,
-): boolean {
-	const optimisticBody = optimisticMessage.body.trim();
-	if (!optimisticBody) return false;
-	const optimisticTime = nativeAgentTimestampMs(optimisticMessage.createdAt);
-
-	return confirmedMessages.some((message) => {
-		if (!normalizeNativeAgentRole(message.role, provider).isUser) return false;
-		if (message.body.trim() !== optimisticBody) return false;
-		const confirmedTime = nativeAgentTimestampMs(message.createdAt);
-		if (optimisticTime == null || confirmedTime == null) return true;
-		return Math.abs(confirmedTime - optimisticTime) < 10 * 60 * 1000;
-	});
-}
-
 function NativeMarkdown({ body }: { body: string }) {
-	const parts = useMemo(() => parseNativeMessageParts(body), [body]);
+	const parts = useMemo(() => parseNativeAgentMessageParts(body), [body]);
 
 	return (
 		<div
@@ -598,19 +518,25 @@ export function NativeAgentChatView({
 	const [messageDraft, setMessageDraft] = useState("");
 	const [credentialDraft, setCredentialDraft] = useState("");
 	const [overviewFilter, setOverviewFilter] =
-		useState<NativeOverviewFilter>("active");
+		useState<NativeAgentOverviewFilter>("all");
 	const [overviewSearch, setOverviewSearch] = useState("");
 	const [optimisticMetadata, setOptimisticMetadata] = useState<
 		Record<string, { hidden?: boolean; pinned?: boolean }>
 	>({});
 	const [optimisticMessages, setOptimisticMessages] = useState<
-		OptimisticNativeMessage[]
+		NativeAgentOptimisticMessage[]
 	>([]);
+	const [readState, setReadState] = useState(() => readNativeAgentReadState());
+	const [showDiagnostics, setShowDiagnostics] = useState(false);
 	const isVimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
+	const nativeBrowserShortcut = useHotkeyDisplay(
+		"TOGGLE_NATIVE_BROWSER_VIEW",
+	).text;
+	const nativeSplitShortcut = useHotkeyDisplay("TOGGLE_NATIVE_SPLIT_VIEW").text;
 	const selectedViewKey = `${provider}:${selectedId ?? ""}`;
 	const [viewState, setViewState] = useState<{
 		key: string;
-		mode: "browser" | "native";
+		mode: NativeViewMode;
 	}>(() => ({ key: selectedViewKey, mode: "native" }));
 	const viewMode =
 		viewState.key === selectedViewKey ? viewState.mode : "native";
@@ -621,8 +547,10 @@ export function NativeAgentChatView({
 	const [devinOrgId, setDevinOrgId] = useState("");
 	const [devinUserEmail, setDevinUserEmail] = useState(userEmail ?? "");
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
+	const messageScrollRef = useRef<HTMLDivElement | null>(null);
 	const composerRef = useRef<HTMLTextAreaElement | null>(null);
 	const overviewSearchRef = useRef<HTMLInputElement | null>(null);
+	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
 
 	const credentialStatus =
 		electronTrpc.nativeAgents.credentials.status.useQuery(undefined, {
@@ -642,31 +570,30 @@ export function NativeAgentChatView({
 
 	const capyThreadsQuery = electronTrpc.nativeAgents.capy.listThreads.useQuery(
 		{
-			limit: 100,
+			limit: 50,
 			mineOnly: true,
 			projectId: CAPY_MONOREPO_PROJECT_ID,
 			userEmail: CAPY_LOCAL_USER_EMAIL,
 		},
 		{
-			enabled: provider === "capy" && isConfigured && !selectedId,
+			enabled: provider === "capy" && isConfigured,
 			gcTime: NATIVE_AGENT_CACHE_MS,
 			refetchInterval: 60_000,
 			staleTime: NATIVE_AGENT_LIST_STALE_MS,
 		},
 	);
-	const capyActiveThreadsQuery =
+	const capyFreshThreadsQuery =
 		electronTrpc.nativeAgents.capy.listThreads.useQuery(
 			{
-				limit: 100,
+				limit: 20,
 				mineOnly: true,
 				projectId: CAPY_MONOREPO_PROJECT_ID,
-				status: "active",
 				userEmail: CAPY_LOCAL_USER_EMAIL,
 			},
 			{
-				enabled: provider === "capy" && isConfigured && !selectedId,
+				enabled: provider === "capy" && isConfigured,
 				gcTime: NATIVE_AGENT_CACHE_MS,
-				refetchInterval: 10_000,
+				refetchInterval: 15_000,
 				staleTime: 10_000,
 			},
 		);
@@ -678,7 +605,7 @@ export function NativeAgentChatView({
 				userEmail: effectiveUserEmail,
 			},
 			{
-				enabled: provider === "devin" && isConfigured && !selectedId,
+				enabled: provider === "devin" && isConfigured,
 				gcTime: NATIVE_AGENT_CACHE_MS,
 				refetchInterval: 15_000,
 				staleTime: NATIVE_AGENT_LIST_STALE_MS,
@@ -713,115 +640,270 @@ export function NativeAgentChatView({
 		},
 	);
 
+	const workspaceItems: NativeItem[] = useMemo(() => {
+		if (provider === "capy") {
+			const capyFreshActiveThreads = selectNativeAgentProviderActiveRows(
+				capyFreshThreadsQuery.data?.items ?? [],
+				{
+					getStatus: (thread) => thread.runState ?? thread.status,
+					isLiveStatus: isNativeAgentLiveStatus,
+				},
+			);
+			return mergeActiveNativeAgentRows(
+				capyThreadsQuery.data?.items ?? [],
+				capyFreshActiveThreads,
+			).map((thread) => {
+				const sidebarState = resolveNativeAgentSidebarState({
+					metadata: thread.nativeAgentMetadata,
+					optimistic: optimisticMetadata[`capy:${thread.id}`],
+				});
+				const status = thread.runState ?? thread.status ?? null;
+				const metadata = thread.nativeAgentMetadata;
+				return {
+					id: thread.id,
+					isProviderActive:
+						thread.isProviderActive || isNativeAgentLiveStatus(status),
+					latestMessage: thread.latestMessage
+						? {
+								body: thread.latestMessage.content,
+								createdAt: thread.latestMessage.createdAt,
+								id: `latest:${thread.id}`,
+								role: thread.latestMessage.role,
+							}
+						: null,
+					sidebarHidden: sidebarState.sidebarHidden,
+					sidebarPinned: sidebarState.sidebarPinned,
+					mineEvidence: nativeAgentMineEvidenceSummary({
+						createdLocally: metadata?.createdLocally,
+						ownershipVerified: metadata?.ownershipVerified,
+						pinned: metadata?.pinned,
+						provider: "capy",
+						userEmail: CAPY_LOCAL_USER_EMAIL,
+					}),
+					status,
+					title:
+						thread.title ??
+						`Untitled ${nativeAgentConversationLabel(provider)}`,
+					updatedAt:
+						thread.latestMessage?.createdAt ??
+						thread.lastMessage?.createdAt ??
+						thread.updatedAt ??
+						thread.createdAt,
+					url: `https://capy.ai/project/${thread.projectId}/thread/${thread.id}`,
+				};
+			});
+		}
+		return (devinSessionsQuery.data?.items ?? []).map((session) => {
+			const sidebarState = resolveNativeAgentSidebarState({
+				metadata: session.nativeAgentMetadata,
+				optimistic: optimisticMetadata[`devin:${session.id}`],
+			});
+			const metadata = session.nativeAgentMetadata;
+			return {
+				id: session.id,
+				latestMessage: session.latestMessage ?? null,
+				mineEvidence: nativeAgentMineEvidenceSummary({
+					createdLocally: metadata?.createdLocally,
+					ownershipVerified: metadata?.ownershipVerified,
+					pinned: metadata?.pinned,
+					provider: "devin",
+					requestingUserEmail: session.requestingUserEmail,
+					userEmail: effectiveUserEmail,
+				}),
+				sidebarHidden: sidebarState.sidebarHidden,
+				sidebarPinned: sidebarState.sidebarPinned,
+				status: session.status,
+				title: session.title ?? session.id,
+				updatedAt:
+					session.latestMessage?.createdAt ??
+					session.updatedAt ??
+					session.createdAt,
+				url: normalizeDevinAppUrl(session.url),
+			};
+		});
+	}, [
+		capyFreshThreadsQuery.data?.items,
+		capyThreadsQuery.data?.items,
+		devinSessionsQuery.data?.items,
+		effectiveUserEmail,
+		optimisticMetadata,
+		provider,
+	]);
+
 	const selectedItem: NativeItem | null = useMemo(() => {
 		if (!selectedId) return null;
 		const optimistic = optimisticMetadata[`${provider}:${selectedId}`];
+		const listFallback =
+			workspaceItems.find((item) => item.id === selectedId) ?? null;
 		if (provider === "capy") {
 			const thread = capyThreadQuery.data;
+			const metadata = thread?.nativeAgentMetadata;
+			const sidebarState = resolveNativeAgentSidebarState({
+				metadata,
+				optimistic,
+			});
+			const sidebarHidden =
+				thread || !listFallback
+					? sidebarState.sidebarHidden
+					: listFallback.sidebarHidden;
+			const sidebarPinned =
+				thread || !listFallback
+					? sidebarState.sidebarPinned
+					: listFallback.sidebarPinned;
 			return {
 				id: selectedId,
-				sidebarHidden:
-					optimistic?.hidden ??
-					thread?.nativeAgentMetadata?.hiddenFromSidebar === true,
-				sidebarPinned:
-					optimistic?.pinned ?? thread?.nativeAgentMetadata?.pinned === true,
-				status: thread?.runState ?? thread?.status ?? null,
-				title: thread?.title ?? nativeAgentConversationLabel(provider),
-				url: `https://capy.ai/project/${thread?.projectId ?? CAPY_MONOREPO_PROJECT_ID}/thread/${selectedId}`,
+				latestMessage: thread?.latestMessage
+					? {
+							body: thread.latestMessage.content,
+							createdAt: thread.latestMessage.createdAt,
+							id: `latest:${selectedId}`,
+							role: thread.latestMessage.role,
+						}
+					: (listFallback?.latestMessage ?? null),
+				mineEvidence:
+					thread || !listFallback
+						? nativeAgentMineEvidenceSummary({
+								createdLocally: metadata?.createdLocally,
+								ownershipVerified: metadata?.ownershipVerified,
+								pinned: metadata?.pinned,
+								provider: "capy",
+								userEmail: CAPY_LOCAL_USER_EMAIL,
+							})
+						: listFallback.mineEvidence,
+				sidebarHidden,
+				sidebarPinned,
+				status:
+					thread?.runState ?? thread?.status ?? listFallback?.status ?? null,
+				title:
+					thread?.title ??
+					listFallback?.title ??
+					nativeAgentConversationLabel(provider),
+				updatedAt: listFallback?.updatedAt,
+				url:
+					thread?.projectId || !listFallback?.url
+						? `https://capy.ai/project/${thread?.projectId ?? CAPY_MONOREPO_PROJECT_ID}/thread/${selectedId}`
+						: listFallback.url,
 			};
 		}
 		const session = devinSessionQuery.data?.session;
+		const metadata = session?.nativeAgentMetadata;
+		const sidebarState = resolveNativeAgentSidebarState({
+			metadata,
+			optimistic,
+		});
+		const sidebarHidden =
+			session || !listFallback
+				? sidebarState.sidebarHidden
+				: listFallback.sidebarHidden;
+		const sidebarPinned =
+			session || !listFallback
+				? sidebarState.sidebarPinned
+				: listFallback.sidebarPinned;
 		return {
 			id: selectedId,
-			sidebarHidden:
-				optimistic?.hidden ??
-				session?.nativeAgentMetadata?.hiddenFromSidebar === true,
-			sidebarPinned:
-				optimistic?.pinned ?? session?.nativeAgentMetadata?.pinned === true,
-			status: session?.status ?? null,
-			title: session?.title ?? nativeAgentConversationLabel(provider),
-			url: normalizeDevinAppUrl(session?.url) ?? devinSessionAppUrl(selectedId),
+			latestMessage:
+				session?.latestMessage ?? listFallback?.latestMessage ?? null,
+			mineEvidence:
+				session || !listFallback
+					? nativeAgentMineEvidenceSummary({
+							createdLocally: metadata?.createdLocally,
+							ownershipVerified: metadata?.ownershipVerified,
+							pinned: metadata?.pinned,
+							provider: "devin",
+							requestingUserEmail: session?.requestingUserEmail,
+							userEmail: effectiveUserEmail,
+						})
+					: listFallback.mineEvidence,
+			sidebarHidden,
+			sidebarPinned,
+			status: session?.status ?? listFallback?.status ?? null,
+			title:
+				session?.title ??
+				listFallback?.title ??
+				nativeAgentConversationLabel(provider),
+			updatedAt: listFallback?.updatedAt,
+			url:
+				normalizeDevinAppUrl(session?.url) ??
+				listFallback?.url ??
+				devinSessionAppUrl(selectedId),
 		};
 	}, [
 		capyThreadQuery.data,
 		devinSessionQuery.data?.session,
+		effectiveUserEmail,
 		optimisticMetadata,
 		provider,
 		selectedId,
-	]);
-
-	const workspaceItems: NativeItem[] = useMemo(() => {
-		if (provider === "capy") {
-			const activeThreadIds = new Set(
-				(capyActiveThreadsQuery.data?.items ?? []).map((thread) => thread.id),
-			);
-			const threadsById = new Map(
-				[
-					...(capyThreadsQuery.data?.items ?? []),
-					...(capyActiveThreadsQuery.data?.items ?? []),
-				].map((thread) => [thread.id, thread]),
-			);
-			return [...threadsById.values()].map((thread) => ({
-				id: thread.id,
-				isProviderActive: activeThreadIds.has(thread.id),
-				sidebarHidden:
-					optimisticMetadata[`capy:${thread.id}`]?.hidden ??
-					thread.nativeAgentMetadata?.hiddenFromSidebar === true,
-				sidebarPinned:
-					optimisticMetadata[`capy:${thread.id}`]?.pinned ??
-					thread.nativeAgentMetadata?.pinned === true,
-				status: thread.runState ?? thread.status ?? null,
-				title:
-					thread.title ?? `Untitled ${nativeAgentConversationLabel(provider)}`,
-				url: `https://capy.ai/project/${thread.projectId}/thread/${thread.id}`,
-			}));
-		}
-		return (devinSessionsQuery.data?.items ?? []).map((session) => ({
-			id: session.id,
-			sidebarHidden:
-				optimisticMetadata[`devin:${session.id}`]?.hidden ??
-				session.nativeAgentMetadata?.hiddenFromSidebar === true,
-			sidebarPinned:
-				optimisticMetadata[`devin:${session.id}`]?.pinned ??
-				session.nativeAgentMetadata?.pinned === true,
-			status: session.status,
-			title: session.title ?? session.id,
-			url: normalizeDevinAppUrl(session.url),
-		}));
-	}, [
-		capyActiveThreadsQuery.data?.items,
-		capyThreadsQuery.data?.items,
-		devinSessionsQuery.data?.items,
-		optimisticMetadata,
-		provider,
+		workspaceItems,
 	]);
 
 	const filteredWorkspaceItems = useMemo(() => {
-		const search = overviewSearch.trim().toLowerCase();
-		return workspaceItems.filter((item) => {
-			const matchesSearch =
-				!search ||
-				item.title.toLowerCase().includes(search) ||
-				item.id.toLowerCase().includes(search) ||
-				item.status?.toLowerCase().includes(search);
-			if (!matchesSearch) return false;
-			if (overviewFilter === "all") return true;
-			if (overviewFilter === "active") {
-				return item.isProviderActive || nativeAgentStatusIsActive(item.status);
-			}
-			if (overviewFilter === "pinned") return item.sidebarPinned === true;
-			if (overviewFilter === "hidden") return item.sidebarHidden === true;
-			return nativeAgentStatusIsFinished(item.status);
+		return selectNativeAgentOverviewItems(workspaceItems, {
+			filter: overviewFilter,
+			isFinishedStatus: nativeAgentStatusIsFinished,
+			isLiveStatus: isNativeAgentLiveStatus,
+			isUnread: (item) => hasUnreadNativeAgentReply(item, readState, provider),
+			search: overviewSearch,
 		});
-	}, [overviewFilter, overviewSearch, workspaceItems]);
+	}, [overviewFilter, overviewSearch, provider, readState, workspaceItems]);
 
 	const activeWorkspaceItems = useMemo(
 		() =>
 			workspaceItems.filter(
-				(item) =>
-					item.isProviderActive || nativeAgentStatusIsActive(item.status),
+				(item) => item.isProviderActive || isNativeAgentLiveStatus(item.status),
 			),
 		[workspaceItems],
+	);
+	const unreadWorkspaceItems = useMemo(
+		() =>
+			workspaceItems.filter((item) =>
+				hasUnreadNativeAgentReply(item, readState, provider),
+			),
+		[provider, readState, workspaceItems],
+	);
+	const overviewHoverTitle = useCallback(
+		(item: NativeItem) =>
+			nativeAgentOverviewHoverTitle(item, {
+				formatPreview: compactNativeAgentReplyPreview,
+				isUnread: hasUnreadNativeAgentReply(item, readState, provider),
+			}),
+		[provider, readState],
+	);
+	const currentItemDiagnostics = useMemo(() => {
+		if (!selectedItem) return [];
+		return [
+			...nativeAgentSidebarInclusionReasons(selectedItem, {
+				activeId: selectedId,
+				isLiveStatus: isNativeAgentLiveStatus,
+				isUnread: (item) =>
+					hasUnreadNativeAgentReply(item, readState, provider),
+			}),
+			provider === "capy" ? "mineOnly: api-filtered" : "mineOnly: user-email",
+		];
+	}, [provider, readState, selectedId, selectedItem]);
+	const diagnosticsQueries = useMemo(
+		() =>
+			provider === "capy"
+				? [
+						capyThreadsQuery,
+						capyFreshThreadsQuery,
+						capyThreadQuery,
+						capyMessagesQuery,
+					]
+				: [devinSessionsQuery, devinSessionQuery],
+		[
+			capyFreshThreadsQuery,
+			capyMessagesQuery,
+			capyThreadQuery,
+			capyThreadsQuery,
+			devinSessionQuery,
+			devinSessionsQuery,
+			provider,
+		],
+	);
+	const diagnosticsFreshness = useMemo(
+		() => summarizeNativeAgentDiagnosticsFreshness(diagnosticsQueries),
+		[diagnosticsQueries],
 	);
 
 	const confirmedMessages: NativeMessage[] = useMemo(() => {
@@ -842,18 +924,14 @@ export function NativeAgentChatView({
 
 	const messages: NativeMessage[] = useMemo(() => {
 		if (!selectedId) {
-			return orderNativeMessagesOldestFirst(confirmedMessages);
+			return orderNativeAgentMessagesOldestFirst(confirmedMessages);
 		}
-		const pendingMessages = optimisticMessages.filter(
-			(message) =>
-				message.provider === provider &&
-				message.targetId === selectedId &&
-				!hasConfirmedUserMessage(confirmedMessages, message, provider),
-		);
-		return orderNativeMessagesOldestFirst([
-			...confirmedMessages,
-			...pendingMessages,
-		]);
+		return mergeNativeAgentMessagesWithOptimistic({
+			confirmedMessages,
+			optimisticMessages,
+			provider,
+			targetId: selectedId,
+		});
 	}, [confirmedMessages, optimisticMessages, provider, selectedId]);
 	const lastMessageId = messages.at(-1)?.id ?? null;
 
@@ -863,14 +941,27 @@ export function NativeAgentChatView({
 	}, [lastMessageId, selectedId]);
 
 	useEffect(() => {
+		if (!selectedItem) return;
+		const latestTime = latestAgentMessageTime(selectedItem);
+		if (latestTime == null) return;
+		setReadState((current) => {
+			const key = nativeAgentReadStateKey(provider, selectedItem.id);
+			if ((current[key] ?? 0) >= latestTime) return current;
+			const next = { ...current, [key]: latestTime };
+			writeNativeAgentReadState(next);
+			return next;
+		});
+	}, [provider, selectedItem]);
+
+	useEffect(() => {
 		if (!selectedId || confirmedMessages.length === 0) return;
 		setOptimisticMessages((current) => {
-			const next = current.filter(
-				(message) =>
-					message.provider !== provider ||
-					message.targetId !== selectedId ||
-					!hasConfirmedUserMessage(confirmedMessages, message, provider),
-			);
+			const next = pruneConfirmedNativeAgentOptimisticMessages({
+				confirmedMessages,
+				optimisticMessages: current,
+				provider,
+				targetId: selectedId,
+			});
 			return next.length === current.length ? current : next;
 		});
 	}, [confirmedMessages, provider, selectedId]);
@@ -901,6 +992,7 @@ export function NativeAgentChatView({
 	const setPinned = electronTrpc.nativeAgents.metadata.setPinned.useMutation();
 	const setSidebarVisible =
 		electronTrpc.nativeAgents.metadata.setSidebarVisible.useMutation();
+	const syncCapyMine = electronTrpc.nativeAgents.capy.syncMine.useMutation();
 	const openExternal = electronTrpc.external.openUrl.useMutation();
 	const nativeBrowserKey =
 		selectedId && selectedItem?.url ? `${provider}:${selectedId}` : null;
@@ -959,6 +1051,26 @@ export function NativeAgentChatView({
 		]);
 	}, [provider, utils]);
 
+	const syncCapyThreads = useCallback(async () => {
+		if (provider !== "capy") return;
+		try {
+			const result = await syncCapyMine.mutateAsync({
+				limit: 50,
+				projectId: CAPY_MONOREPO_PROJECT_ID,
+				scanPageLimit: CAPY_MANUAL_SYNC_SCAN_PAGE_LIMIT,
+				userEmail: CAPY_LOCAL_USER_EMAIL,
+			});
+			await invalidateProvider();
+			toast.success(
+				result.discovered > 0
+					? `Synced ${result.discovered} Capy threads`
+					: `Scanned ${result.scanned} Capy threads`,
+			);
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}, [invalidateProvider, provider, syncCapyMine]);
+
 	const scheduleProviderRefresh = useCallback(() => {
 		void invalidateProvider();
 		window.setTimeout(() => void invalidateProvider(), 1_500);
@@ -967,11 +1079,13 @@ export function NativeAgentChatView({
 
 	const handleSetSidebarVisible = useCallback(
 		async (item: NativeItem, visible: boolean) => {
-			const key = `${provider}:${item.id}`;
-			setOptimisticMetadata((current) => ({
-				...current,
-				[key]: { ...current[key], hidden: !visible, pinned: visible },
-			}));
+			setOptimisticMetadata((current) =>
+				applyNativeAgentOptimisticSidebarVisible(current, {
+					id: item.id,
+					provider,
+					visible,
+				}),
+			);
 			try {
 				await setSidebarVisible.mutateAsync({
 					id: item.id,
@@ -979,30 +1093,32 @@ export function NativeAgentChatView({
 					title: item.title,
 					visible,
 				});
-				await invalidateProvider();
+				scheduleProviderRefresh();
 				toast.success(visible ? "Shown in sidebar" : "Moved to overview");
 			} catch (error) {
-				setOptimisticMetadata((current) => ({
-					...current,
-					[key]: {
-						...current[key],
-						hidden: item.sidebarHidden,
-						pinned: item.sidebarPinned,
-					},
-				}));
+				setOptimisticMetadata((current) =>
+					restoreNativeAgentOptimisticSidebarState(current, {
+						id: item.id,
+						provider,
+						sidebarHidden: item.sidebarHidden,
+						sidebarPinned: item.sidebarPinned,
+					}),
+				);
 				toast.error(error instanceof Error ? error.message : String(error));
 			}
 		},
-		[invalidateProvider, provider, setSidebarVisible],
+		[provider, scheduleProviderRefresh, setSidebarVisible],
 	);
 
 	const handleSetPinned = useCallback(
 		async (item: NativeItem, pinned: boolean) => {
-			const key = `${provider}:${item.id}`;
-			setOptimisticMetadata((current) => ({
-				...current,
-				[key]: { ...current[key], hidden: false, pinned },
-			}));
+			setOptimisticMetadata((current) =>
+				applyNativeAgentOptimisticPinned(current, {
+					id: item.id,
+					pinned,
+					provider,
+				}),
+			);
 			try {
 				await setPinned.mutateAsync({
 					id: item.id,
@@ -1010,17 +1126,21 @@ export function NativeAgentChatView({
 					provider,
 					title: item.title,
 				});
-				await invalidateProvider();
+				scheduleProviderRefresh();
 				toast.success(pinned ? "Pinned in sidebar" : "Unpinned");
 			} catch (error) {
-				setOptimisticMetadata((current) => ({
-					...current,
-					[key]: { ...current[key], pinned: item.sidebarPinned },
-				}));
+				setOptimisticMetadata((current) =>
+					restoreNativeAgentOptimisticSidebarState(current, {
+						id: item.id,
+						provider,
+						sidebarHidden: item.sidebarHidden,
+						sidebarPinned: item.sidebarPinned,
+					}),
+				);
 				toast.error(error instanceof Error ? error.message : String(error));
 			}
 		},
-		[invalidateProvider, provider, setPinned],
+		[provider, scheduleProviderRefresh, setPinned],
 	);
 
 	const handleSaveCredentials = async () => {
@@ -1043,7 +1163,7 @@ export function NativeAgentChatView({
 	const handleSendMessage = async () => {
 		const message = messageDraft.trim();
 		if (!message || !selectedId) return;
-		const optimisticMessage: OptimisticNativeMessage = {
+		const optimisticMessage: NativeAgentOptimisticMessage = {
 			body: message,
 			createdAt: Date.now(),
 			id: `optimistic-${provider}-${selectedId}-${Date.now()}`,
@@ -1114,26 +1234,29 @@ export function NativeAgentChatView({
 		}
 	};
 
-	const handleSelectViewMode = useCallback((mode: "browser" | "native") => {
-		setViewState({ key: selectedViewKey, mode });
-		if (mode !== "browser" || !nativeBrowserKey || !selectedItem?.url) return;
-		const nextTarget: NativeBrowserTarget = {
-			id: selectedItem.id,
-			key: nativeBrowserKey,
-			provider,
-			title: selectedItem.title,
-			url: selectedItem.url,
-		};
-		setOpenedBrowserTargets((current) => {
-			const existingIndex = current.findIndex(
-				(target) => target.key === nativeBrowserKey,
-			);
-			if (existingIndex === -1) return [...current, nextTarget];
-			const next = [...current];
-			next[existingIndex] = nextTarget;
-			return next;
-		});
-	}, [nativeBrowserKey, provider, selectedItem, selectedViewKey]);
+	const handleSelectViewMode = useCallback(
+		(mode: NativeViewMode) => {
+			setViewState({ key: selectedViewKey, mode });
+			if (mode === "native" || !nativeBrowserKey || !selectedItem?.url) return;
+			const nextTarget: NativeBrowserTarget = {
+				id: selectedItem.id,
+				key: nativeBrowserKey,
+				provider,
+				title: selectedItem.title,
+				url: selectedItem.url,
+			};
+			setOpenedBrowserTargets((current) => {
+				const existingIndex = current.findIndex(
+					(target) => target.key === nativeBrowserKey,
+				);
+				if (existingIndex === -1) return [...current, nextTarget];
+				const next = [...current];
+				next[existingIndex] = nextTarget;
+				return next;
+			});
+		},
+		[nativeBrowserKey, provider, selectedItem, selectedViewKey],
+	);
 
 	useEffect(() => {
 		const openItem = (item: NativeItem) => {
@@ -1162,30 +1285,61 @@ export function NativeAgentChatView({
 			return { index, rows };
 		};
 
-		const moveOverviewFocus = (delta: number) => {
+		const overviewColumnCount = (rows: HTMLButtonElement[]) => {
+			if (rows.length <= 1) return 1;
+			const firstTop = rows[0]?.getBoundingClientRect().top;
+			if (firstTop == null) return 1;
+			const firstRowCount = rows.findIndex(
+				(row) => Math.abs(row.getBoundingClientRect().top - firstTop) > 4,
+			);
+			return firstRowCount === -1 ? rows.length : Math.max(1, firstRowCount);
+		};
+
+		const moveOverviewFocusByKey = (key: string) => {
 			const { index, rows } = currentOverviewItem();
-			if (rows.length === 0) return;
-			const nextIndex =
-				index === -1
-					? 0
-					: Math.max(0, Math.min(rows.length - 1, index + delta));
+			const nextIndex = nextNativeAgentOverviewFocusIndex({
+				columnCount: overviewColumnCount(rows),
+				currentIndex: index,
+				itemCount: rows.length,
+				key,
+			});
+			if (nextIndex == null) return;
 			rows[nextIndex]?.focus();
 		};
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (!shouldHandleDashboardVimKey(event)) return;
-			const key = dashboardVimKey(event);
+			if (activeDashboardNativeAgentSidebarRow()) return;
+
+			const vimKey = shouldHandleDashboardVimKey(event)
+				? dashboardVimKey(event)
+				: null;
+			const key = vimKey ?? nativeAgentPlainNavigationKey(event);
+			if (!key) return;
+			if (
+				!vimKey &&
+				!nativeAgentPlainKeyboardScopeAllowsEvent(
+					event,
+					nativeAgentViewRootRef.current,
+				)
+			) {
+				return;
+			}
 
 			if (key === "/") {
-				if (!selectedItem) {
-					event.preventDefault();
-					overviewSearchRef.current?.focus();
+				consumeNativeAgentKeyboardEvent(event);
+				if (selectedItem) {
+					navigate({
+						to: provider === "capy" ? "/native/capy" : "/native/devin",
+					});
+					window.setTimeout(() => overviewSearchRef.current?.focus(), 0);
+					return;
 				}
+				overviewSearchRef.current?.focus();
 				return;
 			}
 
 			if (key === "n") {
-				event.preventDefault();
+				consumeNativeAgentKeyboardEvent(event);
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-create", {
 						detail: { provider },
@@ -1195,58 +1349,96 @@ export function NativeAgentChatView({
 			}
 
 			if (key === "r") {
-				event.preventDefault();
+				consumeNativeAgentKeyboardEvent(event);
 				void invalidateProvider();
 				return;
 			}
 
 			if (selectedItem) {
+				if (
+					(key === "j" || key === "k" || key === "J" || key === "K") &&
+					(viewMode === "native" || viewMode === "split")
+				) {
+					const scrollNode = messageScrollRef.current;
+					if (scrollNode) {
+						consumeNativeAgentKeyboardEvent(event);
+						scrollNode.scrollBy({
+							behavior: "auto",
+							top: nativeAgentChatScrollDeltaFromKey(
+								key,
+								scrollNode.clientHeight,
+							),
+						});
+						return;
+					}
+				}
 				if (key === "i") {
-					event.preventDefault();
+					consumeNativeAgentKeyboardEvent(event);
 					composerRef.current?.focus();
 					return;
 				}
 				if (key === "escape") {
-					event.preventDefault();
+					consumeNativeAgentKeyboardEvent(event);
 					(document.activeElement as HTMLElement | null)?.blur?.();
 					return;
 				}
-				if (key === "b") {
-					event.preventDefault();
-					handleSelectViewMode(viewMode === "native" ? "browser" : "native");
+				const nextViewMode = nextNativeAgentKeyboardViewMode({
+					currentMode: viewMode,
+					hasBrowserUrl: Boolean(selectedItem.url),
+					key,
+				});
+				if (nextViewMode) {
+					consumeNativeAgentKeyboardEvent(event);
+					handleSelectViewMode(nextViewMode);
 					return;
 				}
 				if (key === "p") {
-					event.preventDefault();
+					consumeNativeAgentKeyboardEvent(event);
 					void handleSetPinned(
 						selectedItem,
 						selectedItem.sidebarPinned !== true,
 					);
 					return;
 				}
-				if (key === "H") {
-					event.preventDefault();
-					void handleSetSidebarVisible(
-						selectedItem,
-						selectedItem.sidebarHidden === true,
+				if (key === "f" || key === "F") {
+					consumeNativeAgentKeyboardEvent(event);
+					window.dispatchEvent(
+						new CustomEvent("dashboard-native-agent-folder-action", {
+							detail: {
+								action: key === "F" ? "remove-active" : "move-active",
+								provider,
+								sessionId: selectedItem.id,
+							},
+						}),
 					);
 					return;
 				}
 				if (key === "O" && selectedItem.url) {
-					event.preventDefault();
+					consumeNativeAgentKeyboardEvent(event);
 					openExternal.mutate(selectedItem.url);
 				}
 				return;
 			}
 
-			if (key === "j" || key === "l") {
-				event.preventDefault();
-				moveOverviewFocus(1);
+			if (key === "j" || key === "k") {
+				consumeNativeAgentKeyboardEvent(event);
+				moveOverviewFocusByKey(key);
 				return;
 			}
-			if (key === "k" || key === "h") {
-				event.preventDefault();
-				moveOverviewFocus(-1);
+			if (key === "l" || key === "h") {
+				consumeNativeAgentKeyboardEvent(event);
+				moveOverviewFocusByKey(key);
+				return;
+			}
+			if (key === "escape") {
+				const active = document.activeElement;
+				if (
+					active instanceof HTMLElement &&
+					active.matches("[data-native-agent-overview-card-id]")
+				) {
+					consumeNativeAgentKeyboardEvent(event);
+					active.blur();
+				}
 				return;
 			}
 			if (key === "enter" || key === "o") {
@@ -1257,11 +1449,11 @@ export function NativeAgentChatView({
 						candidate.id === active.dataset.nativeAgentOverviewCardId,
 				);
 				if (!item) return;
-				event.preventDefault();
+				consumeNativeAgentKeyboardEvent(event);
 				openItem(item);
 				return;
 			}
-			if (key === "p" || key === "H") {
+			if (key === "p" || key === "f" || key === "F") {
 				const active = document.activeElement;
 				if (!(active instanceof HTMLButtonElement)) return;
 				const item = workspaceItems.find(
@@ -1269,10 +1461,20 @@ export function NativeAgentChatView({
 						candidate.id === active.dataset.nativeAgentOverviewCardId,
 				);
 				if (!item) return;
-				event.preventDefault();
-				if (key === "p")
+				consumeNativeAgentKeyboardEvent(event);
+				if (key === "p") {
 					void handleSetPinned(item, item.sidebarPinned !== true);
-				else void handleSetSidebarVisible(item, item.sidebarHidden === true);
+					return;
+				}
+				window.dispatchEvent(
+					new CustomEvent("dashboard-native-agent-folder-action", {
+						detail: {
+							action: key === "F" ? "remove-active" : "move-active",
+							provider,
+							sessionId: item.id,
+						},
+					}),
+				);
 			}
 		};
 
@@ -1289,6 +1491,7 @@ export function NativeAgentChatView({
 		viewMode,
 		workspaceItems,
 		navigate,
+		handleSetPinned,
 	]);
 
 	useEffect(() => {
@@ -1312,6 +1515,14 @@ export function NativeAgentChatView({
 				void invalidateProvider();
 				return;
 			}
+			if (detail?.action === "sync-capy") {
+				void syncCapyThreads();
+				return;
+			}
+			if (detail?.action === "toggle-diagnostics") {
+				setShowDiagnostics((current) => !current);
+				return;
+			}
 			if (!selectedItem) return;
 			if (detail?.action === "pin") {
 				void handleSetPinned(selectedItem, true);
@@ -1331,6 +1542,11 @@ export function NativeAgentChatView({
 			}
 			if (detail?.action === "toggle-browser" && selectedItem.url) {
 				handleSelectViewMode(viewMode === "native" ? "browser" : "native");
+				return;
+			}
+			if (detail?.action === "toggle-split" && selectedItem.url) {
+				handleSelectViewMode(viewMode === "split" ? "native" : "split");
+				return;
 			}
 		};
 
@@ -1349,11 +1565,45 @@ export function NativeAgentChatView({
 		invalidateProvider,
 		provider,
 		selectedItem,
+		syncCapyThreads,
 		viewMode,
+		handleSetPinned,
+		handleSetSidebarVisible,
 	]);
 
+	useEffect(() => {
+		const handleFilter = (event: Event) => {
+			const detail = (
+				event as CustomEvent<{
+					filter?: NativeAgentOverviewFilter;
+					provider?: NativeAgentProvider;
+				}>
+			).detail;
+			if (detail?.provider && detail.provider !== provider) return;
+			if (!detail?.filter) return;
+			setOverviewFilter(detail.filter);
+			setViewState({ key: selectedViewKey, mode: "native" });
+			window.setTimeout(() => overviewSearchRef.current?.focus(), 0);
+		};
+
+		window.addEventListener(
+			"dashboard-native-agent-overview-filter",
+			handleFilter,
+		);
+		return () => {
+			window.removeEventListener(
+				"dashboard-native-agent-overview-filter",
+				handleFilter,
+			);
+		};
+	}, [provider, selectedViewKey]);
+
 	return (
-		<div className="flex h-full min-h-0 w-full flex-col bg-background text-foreground">
+		<div
+			ref={nativeAgentViewRootRef}
+			data-native-agent-view-root=""
+			className="flex h-full min-h-0 w-full flex-col bg-background text-foreground"
+		>
 			<header className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4">
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
@@ -1383,7 +1633,10 @@ export function NativeAgentChatView({
 					</p>
 				</div>
 				{selectedItem?.url && (
-					<div className="flex h-8 shrink-0 rounded-md border border-border bg-muted/30 p-0.5">
+					<div
+						className="flex h-8 shrink-0 rounded-md border border-border bg-muted/30 p-0.5"
+						title="b toggles native/browser, s toggles split view"
+					>
 						<button
 							type="button"
 							onClick={() => handleSelectViewMode("native")}
@@ -1408,6 +1661,31 @@ export function NativeAgentChatView({
 						>
 							Browser
 						</button>
+						<button
+							type="button"
+							onClick={() => handleSelectViewMode("split")}
+							className={cn(
+								"rounded px-2.5 text-xs font-medium transition-colors",
+								viewMode === "split"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground",
+							)}
+						>
+							Split
+						</button>
+					</div>
+				)}
+				{selectedItem && (
+					<div className="hidden items-center gap-1 xl:flex">
+						{nativeBrowserShortcut && (
+							<ShortcutHint>{nativeBrowserShortcut}</ShortcutHint>
+						)}
+						{nativeSplitShortcut && (
+							<ShortcutHint>{nativeSplitShortcut}</ShortcutHint>
+						)}
+						<ShortcutHint>i</ShortcutHint>
+						<ShortcutHint>p</ShortcutHint>
+						<ShortcutHint>H</ShortcutHint>
 					</div>
 				)}
 				<button
@@ -1419,6 +1697,22 @@ export function NativeAgentChatView({
 				>
 					<LuRefreshCw className="size-4" />
 				</button>
+				<Tooltip delayDuration={300}>
+					<TooltipTrigger asChild>
+						<button
+							type="button"
+							onClick={() => setShowDiagnostics((current) => !current)}
+							className={cn(
+								"flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+								showDiagnostics && "bg-accent text-foreground",
+							)}
+							aria-label="Toggle native diagnostics"
+						>
+							<LuInfo className="size-4" />
+						</button>
+					</TooltipTrigger>
+					<TooltipContent>Diagnostics</TooltipContent>
+				</Tooltip>
 				{selectedItem && (
 					<Tooltip delayDuration={300}>
 						<TooltipTrigger asChild>
@@ -1512,6 +1806,155 @@ export function NativeAgentChatView({
 				)}
 			</header>
 
+			{showDiagnostics && (
+				<section className="shrink-0 border-b border-border bg-muted/15 px-4 py-3">
+					<div className="grid gap-4 lg:grid-cols-3">
+						<div className="rounded-md border border-border bg-background/60 p-3">
+							<div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+								Provider
+							</div>
+							<DiagnosticsRow label="provider" value={provider} />
+							<DiagnosticsRow
+								label="credentials"
+								value={
+									isConfigured
+										? `stored (${sourceLabel ?? "unknown"})`
+										: "missing"
+								}
+							/>
+							<DiagnosticsRow
+								label="mine filter"
+								value={nativeAgentMinePolicySummary({
+									projectId:
+										provider === "capy" ? CAPY_MONOREPO_PROJECT_ID : undefined,
+									provider,
+									userEmail:
+										provider === "capy"
+											? CAPY_LOCAL_USER_EMAIL
+											: effectiveUserEmail,
+								})}
+							/>
+							<DiagnosticsRow
+								label="mine evidence"
+								value={selectedItem?.mineEvidence ?? "none selected"}
+							/>
+							<DiagnosticsRow
+								label="vim"
+								value={isVimModeEnabled ? "on" : "off"}
+							/>
+						</div>
+
+						<div className="rounded-md border border-border bg-background/60 p-3">
+							<div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+								Freshness
+							</div>
+							<DiagnosticsRow
+								label="health"
+								value={
+									<span
+										className={cn(
+											diagnosticsFreshness.tone === "fresh" &&
+												"text-emerald-300",
+											diagnosticsFreshness.tone === "fetching" &&
+												"text-sky-300",
+											diagnosticsFreshness.tone === "stale" && "text-amber-300",
+											diagnosticsFreshness.tone === "error" && "text-red-300",
+										)}
+									>
+										{diagnosticsFreshness.label}
+									</span>
+								}
+							/>
+							<DiagnosticsRow
+								label="last poll"
+								value={formatNativeAgentDiagnosticsQueryGroup(
+									diagnosticsQueries,
+								)}
+							/>
+							<DiagnosticsRow
+								label="primary list"
+								value={
+									provider === "capy"
+										? formatNativeAgentDiagnosticsQuery(capyThreadsQuery)
+										: formatNativeAgentDiagnosticsQuery(devinSessionsQuery)
+								}
+							/>
+							{provider === "capy" && (
+								<DiagnosticsRow
+									label="fresh live list"
+									value={formatNativeAgentDiagnosticsQuery(
+										capyFreshThreadsQuery,
+									)}
+								/>
+							)}
+							<DiagnosticsRow
+								label="detail"
+								value={
+									selectedId
+										? provider === "capy"
+											? formatNativeAgentDiagnosticsQuery(capyThreadQuery)
+											: formatNativeAgentDiagnosticsQuery(devinSessionQuery)
+										: "none selected"
+								}
+							/>
+							<DiagnosticsRow
+								label="messages"
+								value={
+									selectedId
+										? provider === "capy"
+											? formatNativeAgentDiagnosticsQuery(capyMessagesQuery)
+											: formatNativeAgentDiagnosticsQuery(devinSessionQuery)
+										: "none selected"
+								}
+							/>
+						</div>
+
+						<div className="rounded-md border border-border bg-background/60 p-3">
+							<div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+								Inclusion
+							</div>
+							<DiagnosticsRow label="total" value={workspaceItems.length} />
+							<DiagnosticsRow
+								label="active"
+								value={activeWorkspaceItems.length}
+							/>
+							<DiagnosticsRow
+								label="unread"
+								value={unreadWorkspaceItems.length}
+							/>
+							<DiagnosticsRow label="visible filter" value={overviewFilter} />
+							<DiagnosticsRow
+								label="current"
+								value={selectedItem?.id ?? "overview"}
+							/>
+							<DiagnosticsRow
+								label="status"
+								value={selectedItem?.status ?? "none"}
+							/>
+							<DiagnosticsRow
+								label="sidebar flags"
+								value={
+									selectedItem
+										? nativeAgentSidebarFlagSummary(selectedItem)
+										: "none"
+								}
+							/>
+							<DiagnosticsRow
+								label="reason"
+								value={
+									currentItemDiagnostics.length > 0
+										? currentItemDiagnostics.join(", ")
+										: "none"
+								}
+							/>
+							{selectedItem?.url && (
+								<DiagnosticsRow label="url" value={selectedItem.url} />
+							)}
+						</div>
+					</div>
+				</section>
+			)}
+
 			{!isConfigured ? (
 				<div className="flex flex-1 items-center justify-center p-6">
 					<div className="w-full max-w-xl rounded-lg border border-border bg-muted/30 p-5">
@@ -1586,12 +2029,16 @@ export function NativeAgentChatView({
 					<div
 						className={cn(
 							"absolute inset-0 flex min-h-0 flex-col",
-							viewMode === "native"
+							viewMode === "split" && "right-[50%] border-r border-border",
+							viewMode === "native" || viewMode === "split"
 								? "pointer-events-auto opacity-100"
 								: "pointer-events-none opacity-0",
 						)}
 					>
-						<div className="min-h-0 flex-1 overflow-y-auto p-4">
+						<div
+							ref={messageScrollRef}
+							className="min-h-0 flex-1 overflow-y-auto p-4"
+						>
 							{messagesError && (
 								<div className="mb-3 rounded-md border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-200">
 									{messagesError.message}
@@ -1625,11 +2072,16 @@ export function NativeAgentChatView({
 									value={messageDraft}
 									onChange={(event) => setMessageDraft(event.target.value)}
 									onKeyDown={(event) => {
+										if (event.key === "Escape") {
+											consumeNativeAgentKeyboardEvent(event);
+											event.currentTarget.blur();
+											return;
+										}
 										if (
 											event.key === "Enter" &&
 											(event.metaKey || event.ctrlKey)
 										) {
-											event.preventDefault();
+											consumeNativeAgentKeyboardEvent(event);
 											void handleSendMessage();
 										}
 									}}
@@ -1651,12 +2103,14 @@ export function NativeAgentChatView({
 
 					{openedBrowserTargets.map((target) => {
 						const isTargetActive =
-							viewMode === "browser" && nativeBrowserKey === target.key;
+							(viewMode === "browser" || viewMode === "split") &&
+							nativeBrowserKey === target.key;
 						return (
 							<div
 								key={target.key}
 								className={cn(
 									"absolute inset-0 flex min-h-0",
+									viewMode === "split" && "left-[50%]",
 									isTargetActive
 										? "pointer-events-auto opacity-100"
 										: "pointer-events-none opacity-0",
@@ -1692,6 +2146,14 @@ export function NativeAgentChatView({
 									ref={overviewSearchRef}
 									value={overviewSearch}
 									onChange={(event) => setOverviewSearch(event.target.value)}
+									onKeyDown={(event) => {
+										if (event.key !== "Escape") return;
+										consumeNativeAgentKeyboardEvent(event);
+										const result =
+											nativeAgentSearchEscapeResult(overviewSearch);
+										setOverviewSearch(result.nextSearch);
+										if (result.shouldBlur) event.currentTarget.blur();
+									}}
 									placeholder="Search sessions..."
 									className="h-8 min-w-0 max-w-sm flex-1 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-foreground/40"
 								/>
@@ -1703,23 +2165,30 @@ export function NativeAgentChatView({
 							</div>
 						</div>
 						<div className="flex flex-wrap gap-1.5">
-							{(["active", "all", "pinned", "hidden", "finished"] as const).map(
-								(filter) => (
-									<button
-										key={filter}
-										type="button"
-										onClick={() => setOverviewFilter(filter)}
-										className={cn(
-											"rounded-md border px-2 py-1 text-xs capitalize transition-colors",
-											overviewFilter === filter
-												? "border-foreground/40 bg-accent text-foreground"
-												: "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",
-										)}
-									>
-										{filter}
-									</button>
-								),
-							)}
+							{(
+								[
+									"all",
+									"active",
+									"unread",
+									"pinned",
+									"hidden",
+									"finished",
+								] as const
+							).map((filter) => (
+								<button
+									key={filter}
+									type="button"
+									onClick={() => setOverviewFilter(filter)}
+									className={cn(
+										"rounded-md border px-2 py-1 text-xs capitalize transition-colors",
+										overviewFilter === filter
+											? "border-foreground/40 bg-accent text-foreground"
+											: "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+									)}
+								>
+									{filter}
+								</button>
+							))}
 						</div>
 						{activeWorkspaceItems.length > 0 && (
 							<div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
@@ -1731,6 +2200,7 @@ export function NativeAgentChatView({
 										<button
 											key={item.id}
 											type="button"
+											title={overviewHoverTitle(item)}
 											onClick={() => {
 												if (provider === "capy") {
 													navigate({
@@ -1760,108 +2230,129 @@ export function NativeAgentChatView({
 								Loading...
 							</div>
 						) : (
-							<div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-								{filteredWorkspaceItems.map((item) => (
-									<div
-										key={item.id}
-										title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}`}
-										className="group flex min-h-24 flex-col rounded-lg border border-border bg-muted/20 p-3 text-left transition-colors hover:bg-accent/40 hover:text-foreground"
-									>
-										<button
-											type="button"
-											data-native-agent-overview-card-id={item.id}
-											onClick={() => {
-												if (provider === "capy") {
-													navigate({
-														to: "/native/capy/$threadId",
-														params: { threadId: item.id },
-													});
-													return;
-												}
-												navigate({
-													to: "/native/devin/$sessionId",
-													params: { sessionId: item.id },
-												});
+							<ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+								{filteredWorkspaceItems.map((item) => {
+									const statusLabel = nativeAgentStatusBadgeLabel(item.status);
+									return (
+										<li
+											key={item.id}
+											draggable
+											onDragStart={(event) => {
+												event.dataTransfer.setData(
+													NATIVE_AGENT_SESSION_DRAG_MIME,
+													createNativeAgentSessionDragPayload({
+														id: item.id,
+														provider,
+													}),
+												);
+												event.dataTransfer.effectAllowed = "move";
 											}}
-											className="min-w-0 flex-1 text-left"
+											title={overviewHoverTitle(item)}
+											className={cn(
+												"group flex min-h-24 flex-col rounded-lg border bg-muted/20 p-3 text-left transition-colors hover:bg-accent/40 hover:text-foreground",
+												item.isProviderActive ||
+													isNativeAgentLiveStatus(item.status)
+													? "border-emerald-500/45 shadow-[0_0_0_1px_rgba(16,185,129,0.12)]"
+													: "border-border",
+											)}
 										>
-											<div className="flex items-start gap-2">
-												<span className="min-w-0 flex-1 truncate text-sm font-medium">
-													{item.title}
-												</span>
-												{item.status && (
-													<span
-														className={cn(
-															"shrink-0 rounded-sm border px-1.5 py-0.5 text-[10px] font-medium",
-															nativeAgentStatusTone(item.status),
-														)}
-													>
-														{item.status}
-													</span>
-												)}
-											</div>
-											<div className="mt-2 line-clamp-2 break-all text-xs text-muted-foreground">
-												{item.id}
-											</div>
-										</button>
-										<div className="mt-3 flex items-center justify-between gap-2">
-											<span className="text-[10px] text-muted-foreground">
-												{item.sidebarHidden
-													? "In overview"
-													: item.sidebarPinned
-														? "Pinned in sidebar"
-														: "Auto sidebar"}
-											</span>
 											<button
 												type="button"
-												onClick={() =>
-													void handleSetSidebarVisible(
-														item,
-														item.sidebarHidden === true,
-													)
-												}
-												disabled={setSidebarVisible.isPending}
-												className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
+												data-native-agent-overview-card-id={item.id}
+												onClick={() => {
+													if (provider === "capy") {
+														navigate({
+															to: "/native/capy/$threadId",
+															params: { threadId: item.id },
+														});
+														return;
+													}
+													navigate({
+														to: "/native/devin/$sessionId",
+														params: { sessionId: item.id },
+													});
+												}}
+												className="min-w-0 flex-1 rounded text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
 											>
-												<LuPin
-													className={cn(
-														"size-3",
-														item.sidebarHidden !== true && "fill-current",
+												<div className="flex items-start gap-2">
+													<span className="min-w-0 flex-1 truncate text-sm font-medium">
+														{item.title}
+													</span>
+													{item.status && statusLabel && (
+														<span
+															title={item.status}
+															className={cn(
+																"inline-flex h-5 shrink-0 items-center gap-1 rounded-sm border px-1.5 text-[10px] font-medium",
+																nativeAgentStatusTone(item.status),
+															)}
+														>
+															{statusLabel}
+														</span>
 													)}
-												/>
-												<span>
-													{item.sidebarHidden ? "Show in sidebar" : "Hide"}
-												</span>
+												</div>
+												<div className="mt-2 line-clamp-2 break-all text-xs text-muted-foreground">
+													{item.id}
+												</div>
 											</button>
-											{item.sidebarHidden !== true && (
+											<div className="mt-3 flex items-center justify-between gap-2">
+												<span className="text-[10px] text-muted-foreground">
+													{item.sidebarHidden
+														? "In overview"
+														: item.sidebarPinned
+															? "Pinned in sidebar"
+															: "Auto sidebar"}
+												</span>
 												<button
 													type="button"
 													onClick={() =>
-														void handleSetPinned(item, !item.sidebarPinned)
+														void handleSetSidebarVisible(
+															item,
+															item.sidebarHidden === true,
+														)
 													}
-													disabled={setPinned.isPending}
+													disabled={setSidebarVisible.isPending}
 													className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
 												>
 													<LuPin
 														className={cn(
 															"size-3",
-															item.sidebarPinned && "fill-current",
+															item.sidebarHidden !== true && "fill-current",
 														)}
 													/>
-													<span>{item.sidebarPinned ? "Unpin" : "Pin"}</span>
+													<span>
+														{item.sidebarHidden ? "Show in sidebar" : "Hide"}
+													</span>
 												</button>
-											)}
-										</div>
-									</div>
-								))}
+												{item.sidebarHidden !== true && (
+													<button
+														type="button"
+														onClick={() =>
+															void handleSetPinned(item, !item.sidebarPinned)
+														}
+														disabled={setPinned.isPending}
+														className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
+													>
+														<LuPin
+															className={cn(
+																"size-3",
+																item.sidebarPinned && "fill-current",
+															)}
+														/>
+														<span>{item.sidebarPinned ? "Unpin" : "Pin"}</span>
+													</button>
+												)}
+											</div>
+										</li>
+									);
+								})}
 								{filteredWorkspaceItems.length === 0 && (
-									<div className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+									<li className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
 										No matching{" "}
 										{nativeAgentConversationLabel(provider, { plural: true })}{" "}
 										yet.
-									</div>
+									</li>
 								)}
-							</div>
+							</ul>
 						)}
 					</div>
 				</div>

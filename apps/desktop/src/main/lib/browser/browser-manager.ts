@@ -1,5 +1,6 @@
 import { EventEmitter } from "node:events";
 import { clipboard, Menu, webContents } from "electron";
+import { isOpenControlPlaneShortcutInput } from "main/lib/control-plane-shortcut";
 import {
 	type DashboardWebShortcut,
 	dashboardWebDigitIndexFromInput,
@@ -15,6 +16,40 @@ interface ConsoleEntry {
 }
 
 const MAX_CONSOLE_ENTRIES = 500;
+const DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX =
+	"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:";
+const DASHBOARD_WEB_SHORTCUT_URL_PROTOCOL = "clankee-dashboard-shortcut:";
+const DASHBOARD_WEB_SHORTCUTS = new Set<DashboardWebShortcut>([
+	"OPEN_WEB_PAGE_1",
+	"OPEN_WEB_PAGE_2",
+	"OPEN_WEB_PAGE_3",
+	"OPEN_WEB_PAGE_4",
+	"OPEN_WEB_PAGE_5",
+	"OPEN_WEB_PAGE_6",
+	"OPEN_CAPY",
+	"OPEN_DEVIN",
+	"OPEN_CHROME",
+	"TOGGLE_NATIVE_BROWSER_VIEW",
+	"TOGGLE_NATIVE_SPLIT_VIEW",
+	"OPEN_CAPY_1",
+	"OPEN_CAPY_2",
+	"OPEN_CAPY_3",
+	"OPEN_CAPY_4",
+	"OPEN_CAPY_5",
+	"OPEN_CAPY_6",
+	"OPEN_CAPY_7",
+	"OPEN_CAPY_8",
+	"OPEN_CAPY_9",
+	"OPEN_DEVIN_1",
+	"OPEN_DEVIN_2",
+	"OPEN_DEVIN_3",
+	"OPEN_DEVIN_4",
+	"OPEN_DEVIN_5",
+	"OPEN_DEVIN_6",
+	"OPEN_DEVIN_7",
+	"OPEN_DEVIN_8",
+	"OPEN_DEVIN_9",
+]);
 
 function sanitizeUrl(url: string): string {
 	if (/^https?:\/\//i.test(url) || url.startsWith("about:")) {
@@ -29,12 +64,28 @@ function sanitizeUrl(url: string): string {
 	return `https://www.google.com/search?q=${encodeURIComponent(url)}`;
 }
 
+function dashboardWebShortcutFromBridgeUrl(
+	url: string,
+): DashboardWebShortcut | null {
+	try {
+		const parsed = new URL(url);
+		if (parsed.protocol !== DASHBOARD_WEB_SHORTCUT_URL_PROTOCOL) return null;
+		const shortcut = parsed.searchParams.get(
+			"shortcut",
+		) as DashboardWebShortcut | null;
+		return shortcut && DASHBOARD_WEB_SHORTCUTS.has(shortcut) ? shortcut : null;
+	} catch {
+		return null;
+	}
+}
+
 class BrowserManager extends EventEmitter {
 	private paneWebContentsIds = new Map<string, number>();
 	private consoleLogs = new Map<string, ConsoleEntry[]>();
 	private consoleListeners = new Map<string, () => void>();
 	private contextMenuListeners = new Map<string, () => void>();
 	private beforeInputListeners = new Map<string, () => void>();
+	private shortcutNavigationListeners = new Map<string, () => void>();
 	private pendingDashboardWebAppShortcut: {
 		shortcut: DashboardWebShortcut;
 		timeout: NodeJS.Timeout;
@@ -49,6 +100,7 @@ class BrowserManager extends EventEmitter {
 				this.consoleListeners,
 				this.contextMenuListeners,
 				this.beforeInputListeners,
+				this.shortcutNavigationListeners,
 			]) {
 				const cleanup = map.get(paneId);
 				if (cleanup) {
@@ -64,6 +116,11 @@ class BrowserManager extends EventEmitter {
 			// run at full speed in the background.
 			wc.setBackgroundThrottling(true);
 			wc.setWindowOpenHandler(({ url }) => {
+				const dashboardWebShortcut = dashboardWebShortcutFromBridgeUrl(url);
+				if (dashboardWebShortcut) {
+					this.openDashboardWebShortcut(dashboardWebShortcut);
+					return { action: "deny" as const };
+				}
 				if (url && url !== "about:blank") {
 					this.emit(`new-window:${paneId}`, url);
 				}
@@ -72,6 +129,7 @@ class BrowserManager extends EventEmitter {
 			this.setupConsoleCapture(paneId, wc);
 			this.setupContextMenu(paneId, wc);
 			this.setupBeforeInput(paneId, wc);
+			this.setupShortcutNavigation(paneId, wc);
 		}
 	}
 
@@ -80,6 +138,7 @@ class BrowserManager extends EventEmitter {
 			this.consoleListeners,
 			this.contextMenuListeners,
 			this.beforeInputListeners,
+			this.shortcutNavigationListeners,
 		]) {
 			const cleanup = map.get(paneId);
 			if (cleanup) {
@@ -305,7 +364,13 @@ class BrowserManager extends EventEmitter {
 	// Cmd+Shift+W (CLOSE_TAB) and Cmd+Shift+R (forceReload).
 	private setupBeforeInput(paneId: string, wc: Electron.WebContents): void {
 		const handler = (event: Electron.Event, input: Electron.Input): void => {
-			if (input.type !== "keyDown") return;
+			if ((event as { defaultPrevented?: boolean }).defaultPrevented) return;
+
+			if (isOpenControlPlaneShortcutInput(input)) {
+				event.preventDefault();
+				this.openControlPlane();
+				return;
+			}
 
 			const dashboardWebShortcut = this.dashboardWebShortcutFromInput(input);
 			if (dashboardWebShortcut) {
@@ -313,6 +378,8 @@ class BrowserManager extends EventEmitter {
 				this.openDashboardWebShortcut(dashboardWebShortcut);
 				return;
 			}
+
+			if (input.type !== "keyDown") return;
 
 			if (input.shift || input.alt) return;
 			if (!(input.meta || input.control)) return;
@@ -353,6 +420,16 @@ class BrowserManager extends EventEmitter {
 			level: number,
 			message: string,
 		) => {
+			if (message.startsWith(DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX)) {
+				const shortcut = message.slice(
+					DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX.length,
+				) as DashboardWebShortcut;
+				if (DASHBOARD_WEB_SHORTCUTS.has(shortcut)) {
+					this.openDashboardWebShortcut(shortcut);
+					return;
+				}
+			}
+
 			const entries = this.consoleLogs.get(paneId) ?? [];
 			entries.push({
 				level: LEVEL_MAP[level] ?? "log",
@@ -370,6 +447,27 @@ class BrowserManager extends EventEmitter {
 		this.consoleListeners.set(paneId, () => {
 			try {
 				wc.off("console-message", handler);
+			} catch {
+				// webContents may be destroyed
+			}
+		});
+	}
+
+	private setupShortcutNavigation(
+		paneId: string,
+		wc: Electron.WebContents,
+	): void {
+		const handler = (event: Electron.Event, url: string) => {
+			const dashboardWebShortcut = dashboardWebShortcutFromBridgeUrl(url);
+			if (!dashboardWebShortcut) return;
+			event.preventDefault();
+			this.openDashboardWebShortcut(dashboardWebShortcut);
+		};
+
+		wc.on("will-navigate", handler);
+		this.shortcutNavigationListeners.set(paneId, () => {
+			try {
+				wc.off("will-navigate", handler);
 			} catch {
 				// webContents may be destroyed
 			}

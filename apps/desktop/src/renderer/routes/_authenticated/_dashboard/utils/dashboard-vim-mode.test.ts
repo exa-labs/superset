@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
+	dashboardVimGlobalActionFromKey,
+	dashboardVimNavigationActionFromSequence,
 	nextDashboardVimSequence,
 	setDashboardVimModeEnabled,
 	shouldHandleDashboardVimKey,
@@ -8,7 +10,7 @@ import {
 function keyEvent(
 	overrides: Partial<KeyboardEvent> & { target?: EventTarget | null } = {},
 ) {
-	const target = overrides.target ?? document.body;
+	const target = overrides.target ?? null;
 	return {
 		altKey: false,
 		ctrlKey: false,
@@ -44,6 +46,33 @@ describe("dashboard vim mode", () => {
 		expect(shouldHandleDashboardVimKey(keyEvent())).toBe(true);
 	});
 
+	it("guards command palette, terminal, editor, and browser webview targets", () => {
+		setDashboardVimModeEnabled(true);
+		if (typeof document === "undefined") return;
+
+		const commandInput = document.createElement("input");
+		commandInput.setAttribute("data-command-palette-input", "true");
+		const browserView = document.createElement("div");
+		browserView.setAttribute("data-dashboard-browser-view", "true");
+		const terminalRoot = document.createElement("div");
+		terminalRoot.setAttribute("data-terminal-root", "true");
+		const monacoEditor = document.createElement("div");
+		monacoEditor.setAttribute("data-monaco-editor", "true");
+		const guardedTargets = [
+			commandInput,
+			document.createElement("webview"),
+			browserView,
+			terminalRoot,
+			monacoEditor,
+		];
+
+		for (const target of guardedTargets) {
+			document.body.append(target);
+			expect(shouldHandleDashboardVimKey(keyEvent({ target }))).toBe(false);
+			target.remove();
+		}
+	});
+
 	it("parses g-prefixed jumps", () => {
 		expect(nextDashboardVimSequence(null, "g")).toEqual({
 			pendingPrefix: "g",
@@ -65,5 +94,18 @@ describe("dashboard vim mode", () => {
 			pendingPrefix: null,
 			sequence: null,
 		});
+	});
+
+	it("maps global vim actions", () => {
+		expect(dashboardVimGlobalActionFromKey("H")).toBe("toggle-sidebar");
+		expect(dashboardVimGlobalActionFromKey("h")).toBe("none");
+		expect(dashboardVimGlobalActionFromKey("p")).toBe("none");
+	});
+
+	it("maps g-prefixed jumps to dashboard navigation actions", () => {
+		expect(dashboardVimNavigationActionFromSequence("g c")).toBe("open-capy");
+		expect(dashboardVimNavigationActionFromSequence("g d")).toBe("open-devin");
+		expect(dashboardVimNavigationActionFromSequence("g g")).toBe("open-chrome");
+		expect(dashboardVimNavigationActionFromSequence(null)).toBe("none");
 	});
 });

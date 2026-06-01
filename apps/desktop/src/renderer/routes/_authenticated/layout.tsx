@@ -9,7 +9,7 @@ import {
 	useMatchRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { DndProvider } from "react-dnd";
 import { HiOutlineWifi } from "react-icons/hi2";
 import { CommandPaletteHost } from "renderer/commandPalette";
@@ -41,7 +41,14 @@ import { GlobalBrowserLifecycle } from "./components/GlobalBrowserLifecycle";
 import { TeardownLogsDialog } from "./components/TeardownLogsDialog";
 import { V2NotificationController } from "./components/V2NotificationController";
 import { useDashboardWebShortcuts } from "./hooks/useDashboardWebShortcuts";
-import { resolveDashboardWebRouteActivation } from "./lib/dashboardWebRouteActivation";
+import {
+	getDashboardHashPathname,
+	subscribeDashboardHashPathname,
+} from "./lib/dashboardHashPathname";
+import {
+	resolveDashboardWebPathname,
+	resolveDashboardWebRouteActivation,
+} from "./lib/dashboardWebRouteActivation";
 import { createPierreWorker } from "./lib/pierreWorker";
 import { CollectionsProvider } from "./providers/CollectionsProvider";
 import { DeletingWorkspacesProvider } from "./providers/DeletingWorkspacesProvider";
@@ -67,6 +74,11 @@ function AuthenticatedLayout() {
 	const utils = electronTrpc.useUtils();
 	const shownWorkspaceInitWarningsRef = useRef(new Set<string>());
 	const isV2CloudEnabled = useIsV2CloudEnabled();
+	const hashPathname = useSyncExternalStore(
+		subscribeDashboardHashPathname,
+		getDashboardHashPathname,
+		getDashboardHashPathname,
+	);
 
 	const isSignedIn = env.SKIP_ENV_VALIDATION || !!session?.user;
 	const activeOrganizationId = env.SKIP_ENV_VALIDATION
@@ -74,9 +86,13 @@ function AuthenticatedLayout() {
 		: session?.session?.activeOrganizationId;
 	const webPageMatch = matchRoute({ to: "/web/$pageId", fuzzy: true });
 	const webTabMatch = matchRoute({ to: "/web-tabs/$tabId", fuzzy: true });
+	const dashboardWebPathname = resolveDashboardWebPathname({
+		hashPathname,
+		locationPathname: location.pathname,
+	});
 	const { activeWebPageId, activeWebTabId } =
 		resolveDashboardWebRouteActivation({
-			pathname: location.pathname,
+			pathname: dashboardWebPathname,
 			webPageMatch,
 			webTabMatch,
 		});

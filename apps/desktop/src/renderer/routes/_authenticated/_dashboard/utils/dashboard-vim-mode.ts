@@ -1,8 +1,14 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 export type DashboardVimSequence = "g c" | "g d" | "g g";
+export type DashboardVimGlobalAction = "none" | "toggle-sidebar";
+export type DashboardVimNavigationAction =
+	| "none"
+	| "open-capy"
+	| "open-chrome"
+	| "open-devin";
 
 interface DashboardVimModeState {
 	enabled: boolean;
@@ -26,6 +32,17 @@ const EDITABLE_SELECTOR = [
 	"webview",
 ].join(",");
 
+const dashboardVimModeStorage = createJSONStorage<{
+	enabled: boolean;
+}>(() => {
+	if (typeof localStorage !== "undefined") return localStorage;
+	return {
+		getItem: () => null,
+		removeItem: () => {},
+		setItem: () => {},
+	};
+});
+
 export const useDashboardVimModeStore = create<DashboardVimModeState>()(
 	devtools(
 		persist(
@@ -37,6 +54,7 @@ export const useDashboardVimModeStore = create<DashboardVimModeState>()(
 			{
 				name: "dashboard-vim-mode-v1",
 				partialize: (state) => ({ enabled: state.enabled }),
+				storage: dashboardVimModeStorage,
 			},
 		),
 		{ name: "DashboardVimModeStore" },
@@ -71,7 +89,11 @@ export function shouldHandleDashboardVimKey(
 ): boolean {
 	if (!isDashboardVimModeEnabled()) return false;
 	if (event.defaultPrevented) return false;
-	if (event.isComposing) return false;
+	const isComposing =
+		"isComposing" in event
+			? event.isComposing
+			: event.nativeEvent.isComposing === true;
+	if (isComposing) return false;
 	if (event.altKey || event.ctrlKey || event.metaKey) return false;
 	return !isDashboardVimEditableTarget(event.target);
 }
@@ -84,6 +106,13 @@ export function dashboardVimKey(event: KeyboardEvent): string {
 	if (event.key === "Escape") return "escape";
 	if (event.key === "Enter") return "enter";
 	return event.key.length === 1 ? event.key : event.key.toLowerCase();
+}
+
+export function dashboardVimGlobalActionFromKey(
+	key: string,
+): DashboardVimGlobalAction {
+	if (key === "H") return "toggle-sidebar";
+	return "none";
 }
 
 export function nextDashboardVimSequence(
@@ -101,4 +130,13 @@ export function nextDashboardVimSequence(
 	if (key === "d") return { pendingPrefix: null, sequence: "g d" };
 	if (key === "g") return { pendingPrefix: null, sequence: "g g" };
 	return { pendingPrefix: null, sequence: null };
+}
+
+export function dashboardVimNavigationActionFromSequence(
+	sequence: DashboardVimSequence | null,
+): DashboardVimNavigationAction {
+	if (sequence === "g c") return "open-capy";
+	if (sequence === "g d") return "open-devin";
+	if (sequence === "g g") return "open-chrome";
+	return "none";
 }

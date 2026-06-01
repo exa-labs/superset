@@ -133,9 +133,14 @@ export async function MainWindow() {
 	});
 
 	createApplicationMenu();
-	installControlPlaneShortcutBridge(() => {
-		browserManager.openControlPlane();
-	});
+	installControlPlaneShortcutBridge(
+		() => {
+			browserManager.openControlPlane();
+		},
+		(shortcut) => {
+			browserManager.openDashboardWebShortcut(shortcut);
+		},
+	);
 
 	currentWindow = window;
 

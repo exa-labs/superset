@@ -205,7 +205,7 @@ export function DashboardSidebar({
 			<DashboardSidebarHoverProvider>
 				<DashboardSidebarHoverCardOverlay>
 					<div className="flex h-full min-h-0 flex-col border-r border-border bg-muted/45 dark:bg-muted/35">
-						<div className="min-h-0 flex-1 overflow-y-auto hide-scrollbar">
+						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
 							<DashboardSidebarHeader
 								isCollapsed={isCollapsed}
 								showExtraNav={showExtraNav}

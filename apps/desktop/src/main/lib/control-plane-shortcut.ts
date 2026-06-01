@@ -15,7 +15,7 @@ type ControlPlaneShortcutInput = Pick<
 export function isOpenControlPlaneShortcutInput(
 	input: ControlPlaneShortcutInput,
 ): boolean {
-	if (input.type !== "keyDown") return false;
+	if (input.type !== "keyDown" && input.type !== "rawKeyDown") return false;
 	if (input.isAutoRepeat) return false;
 	if (!input.alt || input.control || input.meta || input.shift) return false;
 
@@ -24,5 +24,6 @@ export function isOpenControlPlaneShortcutInput(
 
 	// Some synthetic callers only fill `key`; real macOS Option+K can report a
 	// dead-key glyph here, so `code` remains the primary matcher.
-	return input.key.toLowerCase() === "k";
+	const key = input.key.toLowerCase();
+	return key === "k" || key === "dead" || key === "˚";
 }

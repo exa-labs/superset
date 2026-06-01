@@ -8,6 +8,7 @@ import {
 	PanelRightIcon,
 	PlusIcon,
 	RefreshCwIcon,
+	SettingsIcon,
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
@@ -64,6 +65,21 @@ export const actionsProvider: CommandProvider = {
 					const enabled = toggleDashboardVimMode();
 					toast.success(enabled ? "Vim mode enabled" : "Vim mode disabled");
 				},
+			},
+			{
+				id: "actions.openSettings",
+				title: "Open settings",
+				section: "actions",
+				icon: SettingsIcon,
+				hotkeyId: "OPEN_SETTINGS",
+				keywords: [
+					"settings",
+					"preferences",
+					"configuration",
+					"keyboard",
+					"integrations",
+				],
+				run: (ctx) => ctx.navigate("/settings/account"),
 			},
 			{
 				id: "actions.toggleTheme",

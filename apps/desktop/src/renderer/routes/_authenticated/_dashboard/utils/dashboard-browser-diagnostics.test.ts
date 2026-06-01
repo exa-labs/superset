@@ -61,6 +61,7 @@ describe("dashboard browser diagnostics", () => {
 		resetDashboardBrowserDiagnosticsForTests();
 		recordDashboardBrowserDeckState({
 			activeCacheKey: "tab:devin-default",
+			bounds: { height: 700, left: 272, top: 48, width: 1200 },
 			keepAliveTtlMs: 7_200_000,
 			retainedEntries: [
 				{
@@ -91,6 +92,7 @@ describe("dashboard browser diagnostics", () => {
 
 		const snapshot = getDashboardBrowserDiagnosticsSnapshotForTests();
 		expect(snapshot.deck).toMatchObject({
+			bounds: { height: 700, left: 272, top: 48, width: 1200 },
 			switchCount: 1,
 			lastSwitchFromCacheKey: "tab:capy-default",
 			lastSwitchToCacheKey: "tab:devin-default",

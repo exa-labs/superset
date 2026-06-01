@@ -114,4 +114,15 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			chord: "meta+comma",
 		});
 	});
+
+	it("registers native session view toggles as discoverable Option shortcuts", () => {
+		expect(HOTKEYS_REGISTRY.TOGGLE_NATIVE_BROWSER_VIEW.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+b",
+		});
+		expect(HOTKEYS_REGISTRY.TOGGLE_NATIVE_SPLIT_VIEW.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+s",
+		});
+	});
 });

@@ -31,6 +31,14 @@ import {
 	updateDashboardBrowserTabRetention,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-tab-retention";
 import {
+	dashboardBrowserVimActionFromKey,
+	nextDashboardBrowserTabId,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-vim";
+import {
+	dashboardVimKey,
+	shouldHandleDashboardVimKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import {
 	DashboardBrowserWebView,
 	type DashboardBrowserWebViewState,
 } from "./components/DashboardBrowserWebView";
@@ -45,6 +53,15 @@ const COMMON_NEW_TAB_DESTINATIONS = [
 	{ label: "ChatGPT", url: "https://chatgpt.com/", title: "ChatGPT" },
 	{ label: "Claude", url: "https://claude.ai/", title: "Claude" },
 ] as const;
+
+type DashboardBrowserCurrentAction =
+	| "close-current-tab"
+	| "new-chatgpt-tab"
+	| "new-claude-tab"
+	| "new-current-url-tab"
+	| "new-google-tab"
+	| "reload"
+	| "toggle-split";
 
 interface DashboardBrowserTab extends DashboardBrowserWebViewState {
 	id: string;
@@ -271,6 +288,7 @@ export function DashboardWebView({
 	const activeBrowserTabIdRef = useRef(DEFAULT_BROWSER_TAB_ID);
 	const lastActiveBrowserTabIdRef = useRef<string | null>(null);
 	const splitBrowserTabIdRef = useRef<string | null>(null);
+	const browserTabStripRef = useRef<HTMLDivElement | null>(null);
 	const webviewsRef = useRef(new Map<string, Electron.WebviewTag>());
 	const readyTabIdsRef = useRef(new Set<string>());
 	const onFaviconCapturedRef = useRef(onFaviconCaptured);
@@ -657,11 +675,15 @@ export function DashboardWebView({
 		});
 	}, [browserTabs, createBrowserTab, currentUrl, label, pageTitle]);
 
-	const getActiveWebview = () =>
-		webviewsRef.current.get(activeBrowserTabIdRef.current) ?? null;
+	const getActiveWebview = useCallback(
+		() => webviewsRef.current.get(activeBrowserTabIdRef.current) ?? null,
+		[],
+	);
 
-	const isActiveWebviewReady = () =>
-		readyTabIdsRef.current.has(activeBrowserTabIdRef.current);
+	const isActiveWebviewReady = useCallback(
+		() => readyTabIdsRef.current.has(activeBrowserTabIdRef.current),
+		[],
+	);
 
 	const goBack = () => {
 		const webview = getActiveWebview();
@@ -679,7 +701,7 @@ export function DashboardWebView({
 		} catch {}
 	};
 
-	const reload = () => {
+	const reload = useCallback(() => {
 		if (!isActiveWebviewReady()) return;
 		recordDashboardBrowserPaneEvent({
 			paneId: `dashboard-web:${id}:${activeBrowserTabIdRef.current}`,
@@ -702,18 +724,154 @@ export function DashboardWebView({
 				detail: error instanceof Error ? error.message : String(error),
 			});
 		}
-	};
+	}, [
+		cacheKey,
+		currentUrl,
+		getActiveWebview,
+		id,
+		isActiveWebviewReady,
+		pageTitle,
+	]);
 
-	const createTabFromCurrentUrl = () => {
+	const createTabFromCurrentUrl = useCallback(() => {
 		const title =
 			pageTitle && pageTitle !== currentUrl ? pageTitle : `${label} tab`;
 		createBrowserTab({ title, url: currentUrl });
-	};
+	}, [createBrowserTab, currentUrl, label, pageTitle]);
+
+	useEffect(() => {
+		if (!isActive) return;
+
+		const handleBrowserAction = (event: Event) => {
+			const action = (
+				event as CustomEvent<{ action?: DashboardBrowserCurrentAction }>
+			).detail?.action;
+			if (!action) return;
+
+			if (action === "reload") {
+				reload();
+				return;
+			}
+			if (action === "toggle-split") {
+				toggleSplitView();
+				return;
+			}
+			if (action === "close-current-tab") {
+				closeBrowserTab(activeBrowserTabIdRef.current);
+				return;
+			}
+			if (action === "new-current-url-tab") {
+				createTabFromCurrentUrl();
+				return;
+			}
+
+			const destination = COMMON_NEW_TAB_DESTINATIONS.find((item) => {
+				if (action === "new-google-tab") return item.label === "Google";
+				if (action === "new-chatgpt-tab") return item.label === "ChatGPT";
+				return item.label === "Claude";
+			});
+			if (destination) createBrowserTab(destination);
+		};
+
+		window.addEventListener(
+			"dashboard-browser-current-action",
+			handleBrowserAction,
+		);
+		return () => {
+			window.removeEventListener(
+				"dashboard-browser-current-action",
+				handleBrowserAction,
+			);
+		};
+	}, [
+		closeBrowserTab,
+		createBrowserTab,
+		createTabFromCurrentUrl,
+		isActive,
+		reload,
+		toggleSplitView,
+	]);
+
+	useEffect(() => {
+		if (!isActive) return;
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (!shouldHandleDashboardVimKey(event)) return;
+			const action = dashboardBrowserVimActionFromKey(dashboardVimKey(event));
+			if (action === "none") return;
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			if (action === "new-tab") {
+				createTabFromCurrentUrl();
+				return;
+			}
+
+			if (action === "reload") {
+				reload();
+				return;
+			}
+
+			if (action === "toggle-split") {
+				toggleSplitView();
+				return;
+			}
+
+			const nextTabId = nextDashboardBrowserTabId(
+				browserTabIds,
+				activeBrowserTabId,
+				action === "next-tab" ? 1 : -1,
+			);
+			if (nextTabId && nextTabId !== activeBrowserTabId) {
+				activateBrowserTab(nextTabId);
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown, { capture: true });
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown, { capture: true });
+		};
+	}, [
+		activateBrowserTab,
+		activeBrowserTabId,
+		browserTabIds,
+		createTabFromCurrentUrl,
+		isActive,
+		reload,
+		toggleSplitView,
+	]);
+
+	useEffect(() => {
+		const node = browserTabStripRef.current;
+		if (!node) return;
+
+		const handleClick = (event: MouseEvent) => {
+			if (event.defaultPrevented || event.button !== 0) return;
+			if (!(event.target instanceof Element)) return;
+
+			const tabButton = event.target.closest<HTMLElement>(
+				"[data-dashboard-browser-tab-button]",
+			);
+			const tabId =
+				tabButton?.getAttribute("data-dashboard-browser-tab-button")?.trim() ??
+				"";
+			if (!tabId) return;
+
+			activateBrowserTab(tabId);
+		};
+
+		node.addEventListener("click", handleClick, true);
+		return () => node.removeEventListener("click", handleClick, true);
+	}, [activateBrowserTab]);
 
 	return (
 		<div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
 			<div className="flex h-7 shrink-0 items-center border-b border-border bg-muted/30 px-2">
-				<div className="scrollbar-thin flex min-w-0 flex-1 items-end gap-1 overflow-x-auto">
+				<div
+					ref={browserTabStripRef}
+					className="scrollbar-thin flex min-w-0 flex-1 items-end gap-1 overflow-x-auto"
+				>
 					{browserTabs.map((tab) => {
 						const isActive = tab.id === activeBrowserTabId;
 						const isSplitPeer = splitBrowserTab?.id === tab.id;
@@ -893,6 +1051,7 @@ export function DashboardWebView({
 							src={tab.url}
 							label={tab.title || label}
 							isActive={isActive && tab.id === activeBrowserTabId}
+							isViewActive={isActive}
 							placement={placement}
 							onStateChange={handleStateChange}
 							onFaviconCaptured={handleFaviconCaptured}

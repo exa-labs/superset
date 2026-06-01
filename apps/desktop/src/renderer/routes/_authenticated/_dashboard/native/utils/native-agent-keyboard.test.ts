@@ -1,0 +1,226 @@
+import { describe, expect, it } from "bun:test";
+import {
+	nativeAgentChatScrollDeltaFromKey,
+	nativeAgentOverviewFocusDeltaFromKey,
+	nativeAgentPlainNavigationKey,
+	nativeAgentSearchEscapeResult,
+	nativeAgentSidebarVimActionFromKey,
+	nextNativeAgentKeyboardViewMode,
+	nextNativeAgentOverviewFocusIndex,
+} from "./native-agent-keyboard";
+
+function keyEvent(
+	overrides: Partial<KeyboardEvent> & { target?: EventTarget | null } = {},
+) {
+	return {
+		altKey: false,
+		ctrlKey: false,
+		defaultPrevented: false,
+		isComposing: false,
+		key: "ArrowDown",
+		keyCode: 40,
+		metaKey: false,
+		target: null,
+		...overrides,
+	} as KeyboardEvent;
+}
+
+describe("native agent keyboard helpers", () => {
+	it("clears overview search before blurring it", () => {
+		expect(nativeAgentSearchEscapeResult("qes")).toEqual({
+			nextSearch: "",
+			shouldBlur: false,
+		});
+		expect(nativeAgentSearchEscapeResult("")).toEqual({
+			nextSearch: "",
+			shouldBlur: true,
+		});
+	});
+
+	it("maps native sidebar vim row actions", () => {
+		expect(nativeAgentSidebarVimActionFromKey("enter")).toBe("open");
+		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open");
+		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
+		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
+		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("move-to-folder");
+		expect(nativeAgentSidebarVimActionFromKey("F")).toBe("remove-from-folder");
+		expect(nativeAgentSidebarVimActionFromKey("j")).toBe("none");
+	});
+
+	it("maps chat vim scroll keys to predictable deltas", () => {
+		expect(nativeAgentChatScrollDeltaFromKey("j", 1000)).toBe(96);
+		expect(nativeAgentChatScrollDeltaFromKey("k", 1000)).toBe(-96);
+		expect(nativeAgentChatScrollDeltaFromKey("J", 1000)).toBe(800);
+		expect(nativeAgentChatScrollDeltaFromKey("K", 1000)).toBe(-800);
+		expect(nativeAgentChatScrollDeltaFromKey("h", 1000)).toBe(0);
+	});
+
+	it("toggles native browser modes only when the selected session has a browser URL", () => {
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "native",
+				hasBrowserUrl: true,
+				key: "b",
+			}),
+		).toBe("browser");
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "browser",
+				hasBrowserUrl: true,
+				key: "b",
+			}),
+		).toBe("native");
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "native",
+				hasBrowserUrl: true,
+				key: "s",
+			}),
+		).toBe("split");
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "split",
+				hasBrowserUrl: true,
+				key: "s",
+			}),
+		).toBe("native");
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "native",
+				hasBrowserUrl: false,
+				key: "b",
+			}),
+		).toBeNull();
+		expect(
+			nextNativeAgentKeyboardViewMode({
+				currentMode: "native",
+				hasBrowserUrl: true,
+				key: "x",
+			}),
+		).toBeNull();
+	});
+
+	it("maps plain arrow navigation while guarding editable and sidebar targets", () => {
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "ArrowDown" }))).toBe(
+			"j",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "ArrowUp" }))).toBe(
+			"k",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "ArrowLeft" }))).toBe(
+			"h",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "ArrowRight" }))).toBe(
+			"l",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "Enter" }))).toBe(
+			"enter",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "x" }))).toBeNull();
+		expect(
+			nativeAgentPlainNavigationKey(
+				keyEvent({ key: "ArrowDown", metaKey: true }),
+			),
+		).toBeNull();
+
+		if (typeof document === "undefined") return;
+		const input = document.createElement("input");
+		document.body.append(input);
+		expect(
+			nativeAgentPlainNavigationKey(
+				keyEvent({ key: "ArrowDown", target: input }),
+			),
+		).toBeNull();
+		input.remove();
+
+		const sidebarRow = document.createElement("button");
+		sidebarRow.setAttribute("data-native-agent-session-row-id", "thread-1");
+		document.body.append(sidebarRow);
+		expect(
+			nativeAgentPlainNavigationKey(
+				keyEvent({ key: "ArrowDown", target: sidebarRow }),
+			),
+		).toBeNull();
+		sidebarRow.focus();
+		expect(
+			nativeAgentPlainNavigationKey(keyEvent({ key: "ArrowDown" })),
+		).toBeNull();
+		sidebarRow.remove();
+	});
+
+	it("maps overview grid movement keys by detected column count", () => {
+		expect(nativeAgentOverviewFocusDeltaFromKey("j", 3)).toBe(3);
+		expect(nativeAgentOverviewFocusDeltaFromKey("k", 3)).toBe(-3);
+		expect(nativeAgentOverviewFocusDeltaFromKey("l", 3)).toBe(1);
+		expect(nativeAgentOverviewFocusDeltaFromKey("h", 3)).toBe(-1);
+		expect(nativeAgentOverviewFocusDeltaFromKey("x", 3)).toBe(0);
+		expect(nativeAgentOverviewFocusDeltaFromKey("j", 0)).toBe(1);
+	});
+
+	it("clamps overview focus movement and supports no-current-focus starts", () => {
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: 1,
+				itemCount: 8,
+				key: "j",
+			}),
+		).toBe(4);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: 1,
+				itemCount: 8,
+				key: "k",
+			}),
+		).toBe(0);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: 7,
+				itemCount: 8,
+				key: "j",
+			}),
+		).toBe(7);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: -1,
+				itemCount: 8,
+				key: "j",
+			}),
+		).toBe(0);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: -1,
+				itemCount: 8,
+				key: "k",
+			}),
+		).toBe(0);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: -1,
+				itemCount: 8,
+				key: "h",
+			}),
+		).toBe(0);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: -1,
+				itemCount: 8,
+				key: "l",
+			}),
+		).toBe(0);
+		expect(
+			nextNativeAgentOverviewFocusIndex({
+				columnCount: 3,
+				currentIndex: 1,
+				itemCount: 8,
+				key: "x",
+			}),
+		).toBeNull();
+	});
+});

@@ -31,7 +31,7 @@ describe("dashboardWebShortcutFromInput", () => {
 		);
 	});
 
-	it("matches Option+C, Option+D, and Option+G by physical code", () => {
+	it("matches app-level Option shortcuts by physical code", () => {
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyC", key: "Dead" })),
 		).toBe("OPEN_CAPY");
@@ -40,6 +40,33 @@ describe("dashboardWebShortcutFromInput", () => {
 		).toBe("OPEN_DEVIN");
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyG", key: "Dead" })),
+		).toBe("OPEN_CHROME");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyB", key: "Dead" })),
+		).toBe("TOGGLE_NATIVE_BROWSER_VIEW");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyS", key: "Dead" })),
+		).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
+	});
+
+	it("matches raw key down events emitted by focused webviews", () => {
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyG", key: "g", type: "rawKeyDown" }),
+			),
+		).toBe("OPEN_CHROME");
+		expect(
+			dashboardWebDigitIndexFromInput(
+				input({ code: "Digit3", key: "3", type: "rawKeyDown" }),
+			),
+		).toBe(2);
+	});
+
+	it("matches character events emitted by focused webviews", () => {
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyG", key: "g", type: "char" }),
+			),
 		).toBe("OPEN_CHROME");
 	});
 

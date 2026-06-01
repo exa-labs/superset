@@ -4,6 +4,7 @@ import {
 	nativeAgentConversationLabel,
 	nativeAgentConversationSetLabel,
 	nativeAgentProviderConfig,
+	nativeAgentStatusBadgeLabel,
 	normalizeNativeAgentRole,
 } from "./native-agent-ui";
 
@@ -55,6 +56,15 @@ describe("native agent UI terminology", () => {
 	it("normalizes live statuses used by both provider sidebars", () => {
 		expect(isNativeAgentLiveStatus("working")).toBe(true);
 		expect(isNativeAgentLiveStatus("running")).toBe(true);
+		expect(isNativeAgentLiveStatus("blocked")).toBe(true);
+		expect(isNativeAgentLiveStatus("suspended")).toBe(true);
 		expect(isNativeAgentLiveStatus("finished")).toBe(false);
+	});
+
+	it("keeps status badge labels compact for narrow sidebar rows", () => {
+		expect(nativeAgentStatusBadgeLabel("finished")).toBe("done");
+		expect(nativeAgentStatusBadgeLabel("running")).toBe("run");
+		expect(nativeAgentStatusBadgeLabel("ready")).toBe("ready");
+		expect(nativeAgentStatusBadgeLabel("waiting_for_input")).toBe("waiting");
 	});
 });

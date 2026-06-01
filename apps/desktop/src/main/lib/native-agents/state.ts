@@ -12,6 +12,8 @@ export interface NativeAgentSessionMetadata {
 	id: string;
 	title?: string | null;
 	createdLocally?: boolean;
+	discoveredFromProvider?: boolean;
+	ownershipVerified?: boolean;
 	pinned?: boolean;
 	hiddenFromSidebar?: boolean;
 	archivedLocally?: boolean;
@@ -74,6 +76,8 @@ export async function markNativeAgentSessionSeen(input: {
 	id: string;
 	title?: string | null;
 	createdLocally?: boolean;
+	discoveredFromProvider?: boolean;
+	ownershipVerified?: boolean;
 	pinned?: boolean;
 }): Promise<NativeAgentSessionMetadata> {
 	const state = await readState();
@@ -86,6 +90,12 @@ export async function markNativeAgentSessionSeen(input: {
 		id: input.id,
 		title: input.title ?? existing?.title ?? null,
 		createdLocally: existing?.createdLocally || input.createdLocally === true,
+		discoveredFromProvider:
+			existing?.discoveredFromProvider || input.discoveredFromProvider === true,
+		ownershipVerified:
+			existing?.ownershipVerified ||
+			input.ownershipVerified === true ||
+			input.createdLocally === true,
 		pinned: input.pinned ?? existing?.pinned ?? false,
 		hiddenFromSidebar:
 			input.pinned === true ? false : (existing?.hiddenFromSidebar ?? false),

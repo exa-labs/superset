@@ -18,7 +18,15 @@ import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import {
+	type DragEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from "react";
 import {
 	LuArchive,
 	LuFolder,
@@ -32,6 +40,47 @@ import {
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { authClient } from "renderer/lib/auth-client";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { persistentHistory } from "renderer/lib/persistent-hash-history";
+import {
+	createNativeAgentFolder,
+	createNativeAgentSessionDragPayload,
+	deleteNativeAgentFolder,
+	forgetNativeAgentLastFolderId,
+	moveNativeAgentSessionToFolder,
+	NATIVE_AGENT_FOLDER_COLORS,
+	NATIVE_AGENT_FOLDERS_STORAGE_KEY,
+	NATIVE_AGENT_LAST_FOLDER_STORAGE_KEY,
+	NATIVE_AGENT_RECENT_FOLDER_COLORS_STORAGE_KEY,
+	NATIVE_AGENT_SESSION_DRAG_MIME,
+	type NativeAgentFolder,
+	type NativeAgentLastFolderIds,
+	nativeAgentSessionFolderKey,
+	normalizeNativeAgentFolders,
+	normalizeNativeAgentRecentFolderColors,
+	normalizeNativeAgentSessionFolders,
+	parseNativeAgentSessionDragPayload,
+	rememberNativeAgentLastFolderId,
+	rememberNativeAgentRecentFolderColor,
+	renameNativeAgentFolder,
+	setNativeAgentFolderCollapsed,
+	setNativeAgentFolderColor,
+	toggleNativeAgentFolderCollapsed,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
+import { nativeAgentSidebarVimActionFromKey } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
+import {
+	applyNativeAgentOptimisticPinned,
+	applyNativeAgentOptimisticSidebarVisible,
+	mergeActiveNativeAgentRows,
+	nativeAgentSidebarInclusionReasons,
+	resolveNativeAgentSidebarState,
+	restoreNativeAgentOptimisticSidebarState,
+	selectNativeAgentProviderActiveRows,
+	selectNativeAgentSidebarItems,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
+import {
+	getUnreadNativeAgentReplyNotifications,
+	writeLatestNativeAgentReplyNotification,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
 	formatNativeAgentTimestamp,
 	isFreshNativeAgentResponse,
@@ -39,8 +88,8 @@ import {
 	type NativeAgentProvider,
 	nativeAgentConversationLabel,
 	nativeAgentProviderConfig,
+	nativeAgentStatusBadgeLabel,
 	nativeAgentStatusDotTone,
-	nativeAgentStatusTone,
 	nativeAgentTimestampMs,
 	normalizeNativeAgentRole,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
@@ -48,6 +97,10 @@ import {
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import {
+	getDashboardHashPathname,
+	subscribeDashboardHashPathname,
+} from "renderer/routes/_authenticated/lib/dashboardHashPathname";
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {
@@ -71,43 +124,29 @@ type NativeAgentItem = {
 	} | null;
 };
 
-type NativeAgentFolder = {
-	id: string;
-	provider: NativeAgentProvider;
-	title: string;
-	isCollapsed: boolean;
-	color: string;
-	createdAt: number;
-	updatedAt: number;
-};
+type NativeAgentFolderCommandAction =
+	| "color"
+	| "create"
+	| "delete"
+	| "move-active"
+	| "remove-active"
+	| "rename";
 
 const CAPY_MONOREPO_PROJECT_ID = "a275b1f7-318b-49ed-b2c8-5bb31ca7cd97";
 const CAPY_LOCAL_USER_EMAIL = "lakee@exa.ai";
 const COLLAPSED_STORAGE_KEY = "dashboard-native-agent-collapsed-v1";
-const FOLDERS_STORAGE_KEY = "dashboard-native-agent-folders-v1";
+const FOLDERS_STORAGE_KEY = NATIVE_AGENT_FOLDERS_STORAGE_KEY;
+const RECENT_FOLDER_COLORS_STORAGE_KEY =
+	NATIVE_AGENT_RECENT_FOLDER_COLORS_STORAGE_KEY;
 const SESSION_FOLDERS_STORAGE_KEY = "dashboard-native-agent-session-folders-v1";
 const READ_STATE_STORAGE_KEY = "dashboard-native-agent-read-state-v1";
-const FOLDER_COLORS = [
-	"#38bdf8",
-	"#0ea5e9",
-	"#a78bfa",
-	"#8b5cf6",
-	"#f472b6",
-	"#ec4899",
-	"#34d399",
-	"#10b981",
-	"#fbbf24",
-	"#f59e0b",
-	"#fb7185",
-	"#ef4444",
-	"#f97316",
-	"#84cc16",
-	"#14b8a6",
-	"#6366f1",
-	"#d946ef",
-	"#64748b",
-];
+const NOTIFIED_STATE_STORAGE_KEY = "dashboard-native-agent-notified-replies-v1";
+const LAST_FOLDER_STORAGE_KEY = NATIVE_AGENT_LAST_FOLDER_STORAGE_KEY;
+const CAPY_BACKGROUND_SYNC_STORAGE_KEY = "dashboard-native-agent-capy-sync-v1";
+const FOLDER_COLORS: string[] = [...NATIVE_AGENT_FOLDER_COLORS];
 const NATIVE_AGENT_LIST_CACHE_MS = 2 * 60 * 60 * 1000;
+const CAPY_BACKGROUND_SYNC_INTERVAL_MS = 15 * 60 * 1000;
+const CAPY_BACKGROUND_SYNC_SCAN_PAGE_LIMIT = 25;
 
 const PROVIDERS = [
 	nativeAgentProviderConfig("capy"),
@@ -143,26 +182,18 @@ function readCollapsedProviderIds(): Set<NativeAgentProvider> {
 
 function readFolders(): NativeAgentFolder[] {
 	const parsed = readJson<NativeAgentFolder[]>(FOLDERS_STORAGE_KEY, []);
-	return parsed
-		.filter(
-			(folder) =>
-				(folder.provider === "capy" || folder.provider === "devin") &&
-				typeof folder.id === "string" &&
-				typeof folder.title === "string",
-		)
-		.map((folder, index) => ({
-			...folder,
-			color:
-				typeof folder.color === "string" && folder.color
-					? folder.color
-					: (FOLDER_COLORS[index % FOLDER_COLORS.length] ?? FOLDER_COLORS[0]),
-		}));
+	return normalizeNativeAgentFolders(parsed);
+}
+
+function readRecentFolderColors(): string[] {
+	const parsed = readJson<string[]>(RECENT_FOLDER_COLORS_STORAGE_KEY, []);
+	return normalizeNativeAgentRecentFolderColors(parsed);
 }
 
 function readSessionFolders(): Record<string, string | null> {
-	return readJson<Record<string, string | null>>(
-		SESSION_FOLDERS_STORAGE_KEY,
-		{},
+	return normalizeNativeAgentSessionFolders(
+		readJson<Record<string, string | null>>(SESSION_FOLDERS_STORAGE_KEY, {}),
+		readFolders(),
 	);
 }
 
@@ -170,12 +201,12 @@ function writeFolders(folders: NativeAgentFolder[]) {
 	writeJson(FOLDERS_STORAGE_KEY, folders);
 }
 
-function writeSessionFolders(sessionFolders: Record<string, string | null>) {
-	writeJson(SESSION_FOLDERS_STORAGE_KEY, sessionFolders);
+function writeRecentFolderColors(colors: string[]) {
+	writeJson(RECENT_FOLDER_COLORS_STORAGE_KEY, colors);
 }
 
-function sessionFolderKey(provider: NativeAgentProvider, id: string): string {
-	return `${provider}:${id}`;
+function writeSessionFolders(sessionFolders: Record<string, string | null>) {
+	writeJson(SESSION_FOLDERS_STORAGE_KEY, sessionFolders);
 }
 
 function readReadState(): Record<string, number> {
@@ -184,6 +215,22 @@ function readReadState(): Record<string, number> {
 
 function writeReadState(readState: Record<string, number>) {
 	writeJson(READ_STATE_STORAGE_KEY, readState);
+}
+
+function readNotifiedState(): Record<string, number> {
+	return readJson<Record<string, number>>(NOTIFIED_STATE_STORAGE_KEY, {});
+}
+
+function writeNotifiedState(notifiedState: Record<string, number>) {
+	writeJson(NOTIFIED_STATE_STORAGE_KEY, notifiedState);
+}
+
+function readLastFolderIds(): NativeAgentLastFolderIds {
+	return readJson<NativeAgentLastFolderIds>(LAST_FOLDER_STORAGE_KEY, {});
+}
+
+function writeLastFolderIds(lastFolderIds: NativeAgentLastFolderIds) {
+	writeJson(LAST_FOLDER_STORAGE_KEY, lastFolderIds);
 }
 
 function latestAgentMessageTime(item: NativeAgentItem): number | null {
@@ -201,7 +248,8 @@ function hasUnreadAgentResponse(
 	const latestTime = latestAgentMessageTime(item);
 	if (latestTime == null) return false;
 	return (
-		latestTime > (readState[sessionFolderKey(item.provider, item.id)] ?? 0)
+		latestTime >
+		(readState[nativeAgentSessionFolderKey(item.provider, item.id)] ?? 0)
 	);
 }
 
@@ -234,6 +282,19 @@ function activeNativeRoute(pathname: string): {
 	if (pathname.includes("/native/devin"))
 		return { id: null, provider: "devin" };
 	return { id: null, provider: null };
+}
+
+function nativeProviderPath(provider: NativeAgentProvider): string {
+	return provider === "capy" ? "/native/capy" : "/native/devin";
+}
+
+function nativeSessionPath(item: {
+	id: string;
+	provider: NativeAgentProvider;
+}): string {
+	return item.provider === "capy"
+		? `/native/capy/${encodeURIComponent(item.id)}`
+		: `/native/devin/${encodeURIComponent(item.id)}`;
 }
 
 function NativeCreateDialog({
@@ -335,6 +396,7 @@ function SessionRow({
 	onOpen,
 	onPin,
 	onSidebarVisible,
+	readState,
 	shortcutLabel,
 	variant,
 }: {
@@ -344,31 +406,47 @@ function SessionRow({
 	onOpen: (item: NativeAgentItem) => void;
 	onPin: (item: NativeAgentItem, pinned: boolean) => void;
 	onSidebarVisible: (item: NativeAgentItem, visible: boolean) => void;
+	readState: Record<string, number>;
 	shortcutLabel: string | null;
 	variant: "collapsed" | "expanded";
 }) {
 	if (variant === "collapsed") return null;
 	const isActive = activeId === item.id;
 	const hasFreshAgentResponse = isFreshNativeAgentResponse(item, item.provider);
+	const isProviderActive =
+		item.isProviderActive || isNativeAgentLiveStatus(item.status);
+	const statusLabel = nativeAgentStatusBadgeLabel(item.status);
 	const latestPreview = item.latestMessage?.body.trim();
+	const inclusionReasons = nativeAgentSidebarInclusionReasons(item, {
+		activeId,
+		isLiveStatus: isNativeAgentLiveStatus,
+		isUnread: (candidate) => hasUnreadAgentResponse(candidate, readState),
+	});
 
 	return (
 		<li
 			draggable
 			onDragStart={(event) => {
 				event.dataTransfer.setData(
-					"application/x-native-agent-session",
-					JSON.stringify({ id: item.id, provider: item.provider }),
+					NATIVE_AGENT_SESSION_DRAG_MIME,
+					createNativeAgentSessionDragPayload({
+						id: item.id,
+						provider: item.provider,
+					}),
 				);
+				event.dataTransfer.effectAllowed = "move";
 			}}
 			className={cn(
-				"group relative flex min-h-10 items-center gap-1 rounded-md border border-transparent pr-1 transition-colors",
+				"group relative flex min-h-10 w-full min-w-0 max-w-full items-start overflow-hidden rounded-md border border-transparent transition-colors",
 				isActive
 					? "border-border/80 bg-accent/70 text-foreground shadow-sm"
 					: "text-muted-foreground hover:border-border/50 hover:bg-accent/30 hover:text-foreground",
 				hasFreshAgentResponse &&
 					!isActive &&
 					"bg-emerald-500/10 text-emerald-100 ring-1 ring-emerald-500/25",
+				isProviderActive &&
+					!isActive &&
+					"border-emerald-500/35 bg-emerald-500/5",
 			)}
 		>
 			<button
@@ -376,85 +454,88 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}`}
-				className="flex min-w-0 flex-1 flex-col px-2 py-1.5 text-left"
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}`}
+				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-12 text-left"
 			>
-				<span className="flex min-w-0 items-center gap-2">
-					{hasFreshAgentResponse && (
-						<span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-					)}
-					<span className="min-w-0 flex-1 truncate text-[12px] font-medium leading-4">
-						{item.title}
-					</span>
-					{item.status && (
-						<span
-							className={cn(
-								"inline-flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[9px] font-medium leading-none",
-								nativeAgentStatusTone(item.status),
-							)}
-						>
+				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
+					<span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
+						{hasFreshAgentResponse && (
+							<span className="size-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+						)}
+						{item.status && statusLabel && (
 							<span
+								aria-label={statusLabel}
+								role="img"
+								title={item.status}
 								className={cn(
-									"size-1.5 rounded-full",
+									"size-2 shrink-0 rounded-full ring-1 ring-background/70",
 									nativeAgentStatusDotTone(item.status),
 								)}
 							/>
-							{item.status}
+						)}
+						<span className="min-w-0 flex-1 truncate text-[12px] font-medium leading-4">
+							{item.title}
 						</span>
-					)}
+					</span>
 				</span>
-				<span className="mt-0.5 flex min-w-0 items-center gap-2 text-[10px] leading-3 text-muted-foreground/70">
-					<span className="min-w-0 flex-1 truncate font-mono">
+				<span className="mt-0.5 grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-1 text-[10px] leading-3 text-muted-foreground/70">
+					<span className="min-w-0 truncate font-mono">
 						{hasFreshAgentResponse && latestPreview
 							? latestPreview
 							: item.subtitle}
 					</span>
-					<span className="shrink-0">
+					<span className="max-w-10 shrink-0 overflow-hidden truncate text-right tabular-nums">
 						{formatNativeAgentTimestamp(item.updatedAt)}
 					</span>
 					{shortcutLabel && (
-						<span className="shrink-0 font-mono text-[10px] text-muted-foreground/60">
+						<span className="max-w-8 shrink-0 overflow-hidden truncate text-right font-mono text-[10px] text-muted-foreground/60">
 							{shortcutLabel}
 						</span>
 					)}
 				</span>
 			</button>
-			<Tooltip delayDuration={250}>
-				<TooltipTrigger asChild>
-					<button
-						type="button"
-						aria-label={
-							item.sidebarPinned
-								? `Unpin ${item.title} from native sidebar`
-								: `Pin ${item.title} to native sidebar`
-						}
-						onClick={() => onPin(item, item.sidebarPinned !== true)}
-						className={cn(
-							"flex h-5 shrink-0 items-center gap-1 rounded px-1.5 text-[10px] font-medium leading-none transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100",
-							item.sidebarPinned
-								? "border border-border/70 bg-background/70 text-foreground opacity-100"
-								: "text-muted-foreground/70 opacity-0",
-						)}
-					>
-						<LuPin
-							className={cn("size-3", item.sidebarPinned && "fill-current")}
-						/>
-						{item.sidebarPinned && <span>Unpin</span>}
-					</button>
-				</TooltipTrigger>
-				<TooltipContent side="right">
-					{item.sidebarPinned ? "Unpin from sidebar" : "Pin to sidebar"}
-				</TooltipContent>
-			</Tooltip>
-			<button
-				type="button"
-				aria-label={`Move ${item.title} to overview`}
-				onClick={() => onSidebarVisible(item, false)}
-				title="Move to overview"
-				className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-0 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
+			<div
+				className={cn(
+					"absolute right-1 top-1 flex w-11 shrink-0 items-start justify-end gap-0.5 rounded-md bg-background/90 p-0.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100",
+					item.sidebarPinned && "opacity-100",
+				)}
 			>
-				<LuArchive className="size-3" />
-			</button>
+				<Tooltip delayDuration={250}>
+					<TooltipTrigger asChild>
+						<button
+							type="button"
+							aria-label={
+								item.sidebarPinned
+									? `Unpin ${item.title} from native sidebar`
+									: `Pin ${item.title} to native sidebar`
+							}
+							onClick={() => onPin(item, item.sidebarPinned !== true)}
+							className={cn(
+								"flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-medium leading-none transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100",
+								item.sidebarPinned
+									? "border border-border/70 bg-background/70 text-foreground opacity-100"
+									: "text-muted-foreground/70 opacity-60",
+							)}
+						>
+							<LuPin
+								className={cn("size-3", item.sidebarPinned && "fill-current")}
+							/>
+						</button>
+					</TooltipTrigger>
+					<TooltipContent side="right">
+						{item.sidebarPinned ? "Unpin from sidebar" : "Pin to sidebar"}
+					</TooltipContent>
+				</Tooltip>
+				<button
+					type="button"
+					aria-label={`Move ${item.title} to overview`}
+					onClick={() => onSidebarVisible(item, false)}
+					title="Move to overview"
+					className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-60 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
+				>
+					<LuArchive className="size-3" />
+				</button>
+			</div>
 			<button
 				type="button"
 				aria-label={`Move ${item.title} out of folder`}
@@ -472,7 +553,13 @@ export function DashboardNativeAgentsSection({
 	const location = useLocation();
 	const { data: session } = authClient.useSession();
 	const utils = electronTrpc.useUtils();
-	const activeRoute = activeNativeRoute(location.pathname);
+	const hashPathname = useSyncExternalStore(
+		subscribeDashboardHashPathname,
+		getDashboardHashPathname,
+		getDashboardHashPathname,
+	);
+	const activePathname = hashPathname ?? location.pathname;
+	const activeRoute = activeNativeRoute(activePathname);
 	const capyShortcut = useHotkeyDisplay("OPEN_CAPY").text;
 	const devinShortcut = useHotkeyDisplay("OPEN_DEVIN").text;
 	const credentialStatus =
@@ -485,6 +572,9 @@ export function DashboardNativeAgentsSection({
 		readCollapsedProviderIds(),
 	);
 	const [folders, setFolders] = useState(() => readFolders());
+	const [recentFolderColors, setRecentFolderColors] = useState(() =>
+		readRecentFolderColors(),
+	);
 	const [sessionFolders, setSessionFolders] = useState(() =>
 		readSessionFolders(),
 	);
@@ -492,6 +582,10 @@ export function DashboardNativeAgentsSection({
 		Record<string, { hidden?: boolean; pinned?: boolean }>
 	>({});
 	const [readState, setReadState] = useState(() => readReadState());
+	const [notifiedState, setNotifiedState] = useState(() => readNotifiedState());
+	const hasInitializedReplyNotificationsRef = useRef(false);
+	const hasStartedCapyBackgroundSyncRef = useRef(false);
+	const [lastFolderIds, setLastFolderIds] = useState(() => readLastFolderIds());
 	const [createProvider, setCreateProvider] =
 		useState<NativeAgentProvider | null>(null);
 	const [editingFolder, setEditingFolder] = useState<NativeAgentFolder | null>(
@@ -501,9 +595,18 @@ export function DashboardNativeAgentsSection({
 		useState<NativeAgentFolder | null>(null);
 	const [folderTitleDraft, setFolderTitleDraft] = useState("");
 
+	useEffect(() => {
+		setSessionFolders((current) => {
+			const next = normalizeNativeAgentSessionFolders(current, folders);
+			if (JSON.stringify(next) === JSON.stringify(current)) return current;
+			writeSessionFolders(next);
+			return next;
+		});
+	}, [folders]);
+
 	const capyThreadsQuery = electronTrpc.nativeAgents.capy.listThreads.useQuery(
 		{
-			limit: 100,
+			limit: 50,
 			mineOnly: true,
 			projectId: CAPY_MONOREPO_PROJECT_ID,
 			userEmail: CAPY_LOCAL_USER_EMAIL,
@@ -514,18 +617,17 @@ export function DashboardNativeAgentsSection({
 			staleTime: 60_000,
 		},
 	);
-	const capyActiveThreadsQuery =
+	const capyFreshThreadsQuery =
 		electronTrpc.nativeAgents.capy.listThreads.useQuery(
 			{
-				limit: 100,
+				limit: 20,
 				mineOnly: true,
 				projectId: CAPY_MONOREPO_PROJECT_ID,
-				status: "active",
 				userEmail: CAPY_LOCAL_USER_EMAIL,
 			},
 			{
 				gcTime: NATIVE_AGENT_LIST_CACHE_MS,
-				refetchInterval: 10_000,
+				refetchInterval: 15_000,
 				staleTime: 10_000,
 			},
 		);
@@ -545,189 +647,326 @@ export function DashboardNativeAgentsSection({
 	const setPinned = electronTrpc.nativeAgents.metadata.setPinned.useMutation();
 	const setSidebarVisible =
 		electronTrpc.nativeAgents.metadata.setSidebarVisible.useMutation();
+	const syncCapyMine = electronTrpc.nativeAgents.capy.syncMine.useMutation();
+	const scheduleNativeAgentListRefresh = useCallback(() => {
+		void Promise.all([
+			utils.nativeAgents.capy.listThreads.invalidate(),
+			utils.nativeAgents.devin.listSessions.invalidate(),
+		]);
+	}, [utils]);
 
 	const itemsByProvider = useMemo(() => {
-		const activeCapyThreadIds = new Set(
-			(capyActiveThreadsQuery.data?.items ?? []).map((thread) => thread.id),
-		);
-		const capyThreadsById = new Map(
-			[
-				...(capyThreadsQuery.data?.items ?? []),
-				...(capyActiveThreadsQuery.data?.items ?? []),
-			].map((thread) => [thread.id, thread]),
-		);
-		const capyItems: NativeAgentItem[] = [...capyThreadsById.values()].map(
-			(thread) => {
-				const latestMessage =
-					thread.latestMessage ?? thread.lastMessage ?? null;
-				return {
-					id: thread.id,
-					isProviderActive: activeCapyThreadIds.has(thread.id),
-					latestMessage: latestMessage
-						? {
-								body: latestMessage.content,
-								createdAt: latestMessage.createdAt,
-								role: latestMessage.role,
-							}
-						: null,
-					provider: "capy" as const,
-					sidebarHidden:
-						optimisticMetadata[`capy:${thread.id}`]?.hidden ??
-						thread.nativeAgentMetadata?.hiddenFromSidebar === true,
-					sidebarPinned:
-						optimisticMetadata[`capy:${thread.id}`]?.pinned ??
-						thread.nativeAgentMetadata?.pinned === true,
-					status: thread.runState ?? thread.status ?? null,
-					subtitle:
-						thread.tasks?.[0]?.identifier ??
-						thread.pullRequests?.[0]?.repoFullName ??
-						thread.projectId,
-					title: thread.title ?? "Untitled thread",
-					updatedAt:
-						latestMessage?.createdAt ?? thread.updatedAt ?? thread.createdAt,
-				};
+		const capyFreshActiveThreads = selectNativeAgentProviderActiveRows(
+			capyFreshThreadsQuery.data?.items ?? [],
+			{
+				getStatus: (thread) => thread.runState ?? thread.status,
+				isLiveStatus: isNativeAgentLiveStatus,
 			},
 		);
+		const capyItems: NativeAgentItem[] = mergeActiveNativeAgentRows(
+			capyThreadsQuery.data?.items ?? [],
+			capyFreshActiveThreads,
+		).map((thread) => {
+			const latestMessage = thread.latestMessage ?? thread.lastMessage ?? null;
+			const sidebarState = resolveNativeAgentSidebarState({
+				metadata: thread.nativeAgentMetadata,
+				optimistic: optimisticMetadata[`capy:${thread.id}`],
+			});
+			const status = thread.runState ?? thread.status ?? null;
+			return {
+				id: thread.id,
+				isProviderActive:
+					thread.isProviderActive || isNativeAgentLiveStatus(status),
+				latestMessage: latestMessage
+					? {
+							body: latestMessage.content,
+							createdAt: latestMessage.createdAt,
+							role: latestMessage.role,
+						}
+					: null,
+				provider: "capy" as const,
+				sidebarHidden: sidebarState.sidebarHidden,
+				sidebarPinned: sidebarState.sidebarPinned,
+				status,
+				subtitle:
+					thread.tasks?.[0]?.identifier ??
+					thread.pullRequests?.[0]?.repoFullName ??
+					thread.projectId,
+				title: thread.title ?? "Untitled thread",
+				updatedAt:
+					latestMessage?.createdAt ?? thread.updatedAt ?? thread.createdAt,
+			};
+		});
 		const devinItems: NativeAgentItem[] = (
 			devinSessionsQuery.data?.items ?? []
-		).map((session) => ({
-			id: session.id,
-			latestMessage: session.latestMessage ?? null,
-			provider: "devin" as const,
-			sidebarHidden:
-				optimisticMetadata[`devin:${session.id}`]?.hidden ??
-				session.nativeAgentMetadata?.hiddenFromSidebar === true,
-			sidebarPinned:
-				optimisticMetadata[`devin:${session.id}`]?.pinned ??
-				session.nativeAgentMetadata?.pinned === true,
-			status: session.status,
-			subtitle: session.pullRequestUrl ?? session.id,
-			title: session.title ?? session.id,
-			updatedAt: session.updatedAt ?? session.createdAt,
-		}));
+		).map((session) => {
+			const sidebarState = resolveNativeAgentSidebarState({
+				metadata: session.nativeAgentMetadata,
+				optimistic: optimisticMetadata[`devin:${session.id}`],
+			});
+			return {
+				id: session.id,
+				latestMessage: session.latestMessage ?? null,
+				provider: "devin" as const,
+				sidebarHidden: sidebarState.sidebarHidden,
+				sidebarPinned: sidebarState.sidebarPinned,
+				status: session.status,
+				subtitle: session.pullRequestUrl ?? session.id,
+				title: session.title ?? session.id,
+				updatedAt: session.updatedAt ?? session.createdAt,
+			};
+		});
 		return {
 			capy: capyItems,
 			devin: devinItems,
 		};
 	}, [
-		capyActiveThreadsQuery.data?.items,
+		capyFreshThreadsQuery.data?.items,
 		capyThreadsQuery.data?.items,
 		devinSessionsQuery.data?.items,
 		optimisticMetadata,
 	]);
 
-	const setProviderCollapsed = (
-		provider: NativeAgentProvider,
-		isCollapsed: boolean,
-	) => {
-		setCollapsedProviderIds((current) => {
-			const next = new Set(current);
-			if (isCollapsed) next.add(provider);
-			else next.delete(provider);
-			writeJson(COLLAPSED_STORAGE_KEY, [...next]);
-			return next;
-		});
-	};
+	const setProviderCollapsed = useCallback(
+		(provider: NativeAgentProvider, isCollapsed: boolean) => {
+			setCollapsedProviderIds((current) => {
+				const next = new Set(current);
+				if (isCollapsed) next.add(provider);
+				else next.delete(provider);
+				writeJson(COLLAPSED_STORAGE_KEY, [...next]);
+				return next;
+			});
+		},
+		[],
+	);
 
-	const createFolder = (provider: NativeAgentProvider) => {
-		const now = Date.now();
-		const providerFolderCount = folders.filter(
-			(folder) => folder.provider === provider,
-		).length;
-		const nextFolder: NativeAgentFolder = {
-			id: makeFolderId(provider),
-			provider,
-			title: "Folder",
-			isCollapsed: false,
-			color:
-				FOLDER_COLORS[providerFolderCount % FOLDER_COLORS.length] ??
-				FOLDER_COLORS[0],
-			createdAt: now,
-			updatedAt: now,
-		};
-		setFolders((current) => {
-			const next = [...current, nextFolder];
-			writeFolders(next);
-			return next;
-		});
-		setProviderCollapsed(provider, false);
-	};
+	const createFolder = useCallback(
+		(provider: NativeAgentProvider) => {
+			const now = Date.now();
+			const providerFolderCount = folders.filter(
+				(folder) => folder.provider === provider,
+			).length;
+			const nextFolder = createNativeAgentFolder({
+				color:
+					FOLDER_COLORS[providerFolderCount % FOLDER_COLORS.length] ??
+					FOLDER_COLORS[0],
+				id: makeFolderId(provider),
+				now,
+				provider,
+				title: "Folder",
+			});
+			setFolders((current) => {
+				const next = [...current, nextFolder];
+				writeFolders(next);
+				return next;
+			});
+			setLastFolderIds((current) => {
+				const next = rememberNativeAgentLastFolderId(current, {
+					folderId: nextFolder.id,
+					provider,
+				});
+				writeLastFolderIds(next);
+				return next;
+			});
+			setProviderCollapsed(provider, false);
+		},
+		[folders, setProviderCollapsed],
+	);
 
-	const moveToFolder = (item: NativeAgentItem, folderId: string | null) => {
-		setSessionFolders((current) => {
-			const next = {
-				...current,
-				[sessionFolderKey(item.provider, item.id)]: folderId,
-			};
-			writeSessionFolders(next);
-			return next;
-		});
-	};
+	const moveToFolder = useCallback(
+		(item: NativeAgentItem, folderId: string | null) => {
+			setSessionFolders((current) => {
+				const next = moveNativeAgentSessionToFolder(current, {
+					folderId,
+					provider: item.provider,
+					sessionId: item.id,
+				});
+				writeSessionFolders(next);
+				return next;
+			});
+			if (folderId) {
+				setProviderCollapsed(item.provider, false);
+				setFolders((current) => {
+					const next = setNativeAgentFolderCollapsed(current, {
+						folderId,
+						isCollapsed: false,
+						now: Date.now(),
+					});
+					writeFolders(next);
+					return next;
+				});
+				setLastFolderIds((current) => {
+					const next = rememberNativeAgentLastFolderId(current, {
+						folderId,
+						provider: item.provider,
+					});
+					writeLastFolderIds(next);
+					return next;
+				});
+			}
+		},
+		[setProviderCollapsed],
+	);
+
+	const ensureNativeHashPath = useCallback((path: string) => {
+		if (getDashboardHashPathname() !== path) {
+			persistentHistory.replace(path);
+		}
+	}, []);
+
+	const navigateToNativeProvider = useCallback(
+		(provider: NativeAgentProvider) => {
+			const path = nativeProviderPath(provider);
+			ensureNativeHashPath(path);
+			if (provider === "capy") {
+				navigate({ to: "/native/capy" });
+			} else {
+				navigate({ to: "/native/devin" });
+			}
+		},
+		[ensureNativeHashPath, navigate],
+	);
+
+	const navigateToNativeSession = useCallback(
+		(item: { id: string; provider: NativeAgentProvider }) => {
+			const path = nativeSessionPath(item);
+			ensureNativeHashPath(path);
+			if (item.provider === "capy") {
+				navigate({
+					to: "/native/capy/$threadId",
+					params: { threadId: item.id },
+				});
+			} else {
+				navigate({
+					to: "/native/devin/$sessionId",
+					params: { sessionId: item.id },
+				});
+			}
+		},
+		[ensureNativeHashPath, navigate],
+	);
+
+	const moveDraggedSessionToFolder = useCallback(
+		(event: DragEvent, items: NativeAgentItem[], folderId: string | null) => {
+			event.preventDefault();
+			const parsed = parseNativeAgentSessionDragPayload(
+				event.dataTransfer.getData(NATIVE_AGENT_SESSION_DRAG_MIME),
+			);
+			if (!parsed) return;
+			const item = items.find(
+				(candidate) =>
+					candidate.id === parsed.id && candidate.provider === parsed.provider,
+			);
+			if (item) moveToFolder(item, folderId);
+		},
+		[moveToFolder],
+	);
 
 	const deleteFolder = (folder: NativeAgentFolder) => {
-		setFolders((current) => {
-			const next = current.filter((item) => item.id !== folder.id);
-			writeFolders(next);
-			return next;
-		});
+		let nextFolders: NativeAgentFolder[] | null = null;
 		setSessionFolders((current) => {
-			const next = { ...current };
-			for (const [key, folderId] of Object.entries(next)) {
-				if (folderId === folder.id) {
-					next[key] = null;
-				}
-			}
-			writeSessionFolders(next);
+			const next = deleteNativeAgentFolder(folders, current, folder.id);
+			nextFolders = next.folders;
+			writeSessionFolders(next.sessionFolders);
+			return next.sessionFolders;
+		});
+		if (nextFolders) {
+			setFolders(nextFolders);
+			writeFolders(nextFolders);
+		}
+		setLastFolderIds((current) => {
+			const next = forgetNativeAgentLastFolderId(current, folder);
+			writeLastFolderIds(next);
 			return next;
 		});
 	};
 
 	const renameFolder = (folderId: string, title: string) => {
-		const trimmedTitle = title.trim();
-		if (!trimmedTitle) return;
 		setFolders((current) => {
-			const next = current.map((folder) =>
-				folder.id === folderId
-					? { ...folder, title: trimmedTitle, updatedAt: Date.now() }
-					: folder,
-			);
+			const next = renameNativeAgentFolder(current, {
+				folderId,
+				now: Date.now(),
+				title,
+			});
 			writeFolders(next);
 			return next;
 		});
 	};
 
-	const setFolderColor = (folderId: string, color: string) => {
+	const setFolderColor = useCallback((folderId: string, color: string) => {
 		setFolders((current) => {
-			const next = current.map((folder) =>
-				folder.id === folderId
-					? { ...folder, color, updatedAt: Date.now() }
-					: folder,
-			);
+			const next = setNativeAgentFolderColor(current, {
+				color,
+				folderId,
+				now: Date.now(),
+			});
 			writeFolders(next);
 			return next;
 		});
-	};
+		setRecentFolderColors((current) => {
+			const next = rememberNativeAgentRecentFolderColor(current, color);
+			writeRecentFolderColors(next);
+			return next;
+		});
+	}, []);
 
-	const openFolderEditor = (folder: NativeAgentFolder) => {
+	const openFolderEditor = useCallback((folder: NativeAgentFolder) => {
+		setLastFolderIds((current) => {
+			const next = rememberNativeAgentLastFolderId(current, {
+				folderId: folder.id,
+				provider: folder.provider,
+			});
+			writeLastFolderIds(next);
+			return next;
+		});
 		setEditingFolder(folder);
 		setFolderTitleDraft(folder.title);
-	};
+	}, []);
 
-	const toggleFolder = (folderId: string) => {
+	const rememberFolder = useCallback((folder: NativeAgentFolder) => {
+		setLastFolderIds((current) => {
+			const next = rememberNativeAgentLastFolderId(current, {
+				folderId: folder.id,
+				provider: folder.provider,
+			});
+			writeLastFolderIds(next);
+			return next;
+		});
+	}, []);
+
+	const toggleFolder = useCallback((folderId: string) => {
 		setFolders((current) => {
-			const next = current.map((folder) =>
-				folder.id === folderId
-					? {
-							...folder,
-							isCollapsed: !folder.isCollapsed,
-							updatedAt: Date.now(),
-						}
-					: folder,
-			);
+			const next = toggleNativeAgentFolderCollapsed(current, {
+				folderId,
+				now: Date.now(),
+			});
 			writeFolders(next);
 			return next;
 		});
-	};
+	}, []);
+
+	const setFolderCollapsed = useCallback(
+		(folderId: string, isCollapsed: boolean) => {
+			setFolders((current) => {
+				const next = setNativeAgentFolderCollapsed(current, {
+					folderId,
+					isCollapsed,
+					now: Date.now(),
+				});
+				writeFolders(next);
+				return next;
+			});
+		},
+		[],
+	);
+	const recentFolderColorChoices = useMemo(() => {
+		const colors = normalizeNativeAgentRecentFolderColors([
+			editingFolder?.color,
+			...recentFolderColors,
+		]);
+		const defaultColors = new Set(FOLDER_COLORS);
+		return colors.filter((color) => !defaultColors.has(color));
+	}, [editingFolder?.color, recentFolderColors]);
 
 	const handleOpen = (item: NativeAgentItem) => {
 		const latestTime = latestAgentMessageTime(item);
@@ -735,140 +974,102 @@ export function DashboardNativeAgentsSection({
 			setReadState((current) => {
 				const next = {
 					...current,
-					[sessionFolderKey(item.provider, item.id)]: latestTime,
+					[nativeAgentSessionFolderKey(item.provider, item.id)]: latestTime,
 				};
 				writeReadState(next);
 				return next;
 			});
 		}
-		if (item.provider === "capy") {
-			navigate({
-				to: "/native/capy/$threadId",
-				params: { threadId: item.id },
-			});
-			return;
-		}
-		navigate({
-			to: "/native/devin/$sessionId",
-			params: { sessionId: item.id },
-		});
+		navigateToNativeSession(item);
 	};
 
-	const handlePin = async (item: NativeAgentItem, pinned: boolean) => {
-		const key = sessionFolderKey(item.provider, item.id);
-		setOptimisticMetadata((current) => ({
-			...current,
-			[key]: { ...current[key], hidden: false, pinned },
-		}));
-		try {
-			await setPinned.mutateAsync({
-				id: item.id,
-				pinned,
-				provider: item.provider,
-				title: item.title,
-			});
-			await Promise.all([
-				utils.nativeAgents.capy.listThreads.invalidate(),
-				utils.nativeAgents.devin.listSessions.invalidate(),
-			]);
-			toast.success(pinned ? "Pinned to sidebar" : "Removed from sidebar");
-		} catch (error) {
-			setOptimisticMetadata((current) => ({
-				...current,
-				[key]: { ...current[key], pinned: item.sidebarPinned },
-			}));
-			toast.error(error instanceof Error ? error.message : String(error));
-		}
-	};
+	const handlePin = useCallback(
+		async (item: NativeAgentItem, pinned: boolean) => {
+			setOptimisticMetadata((current) =>
+				applyNativeAgentOptimisticPinned(current, {
+					id: item.id,
+					pinned,
+					provider: item.provider,
+				}),
+			);
+			try {
+				await setPinned.mutateAsync({
+					id: item.id,
+					pinned,
+					provider: item.provider,
+					title: item.title,
+				});
+				scheduleNativeAgentListRefresh();
+				toast.success(pinned ? "Pinned to sidebar" : "Removed from sidebar");
+			} catch (error) {
+				setOptimisticMetadata((current) =>
+					restoreNativeAgentOptimisticSidebarState(current, {
+						id: item.id,
+						provider: item.provider,
+						sidebarHidden: item.sidebarHidden,
+						sidebarPinned: item.sidebarPinned,
+					}),
+				);
+				toast.error(error instanceof Error ? error.message : String(error));
+			}
+		},
+		[scheduleNativeAgentListRefresh, setPinned],
+	);
 
-	const handleSidebarVisible = async (
-		item: NativeAgentItem,
-		visible: boolean,
-	) => {
-		const key = sessionFolderKey(item.provider, item.id);
-		setOptimisticMetadata((current) => ({
-			...current,
-			[key]: { ...current[key], hidden: !visible, pinned: visible },
-		}));
-		try {
-			await setSidebarVisible.mutateAsync({
-				id: item.id,
-				provider: item.provider,
-				title: item.title,
-				visible,
-			});
-			await Promise.all([
-				utils.nativeAgents.capy.listThreads.invalidate(),
-				utils.nativeAgents.devin.listSessions.invalidate(),
-			]);
-			toast.success(visible ? "Shown in sidebar" : "Moved to overview");
-		} catch (error) {
-			setOptimisticMetadata((current) => ({
-				...current,
-				[key]: {
-					...current[key],
-					hidden: item.sidebarHidden,
-					pinned: item.sidebarPinned,
-				},
-			}));
-			toast.error(error instanceof Error ? error.message : String(error));
-		}
-	};
+	const handleSidebarVisible = useCallback(
+		async (item: NativeAgentItem, visible: boolean) => {
+			setOptimisticMetadata((current) =>
+				applyNativeAgentOptimisticSidebarVisible(current, {
+					id: item.id,
+					provider: item.provider,
+					visible,
+				}),
+			);
+			try {
+				await setSidebarVisible.mutateAsync({
+					id: item.id,
+					provider: item.provider,
+					title: item.title,
+					visible,
+				});
+				scheduleNativeAgentListRefresh();
+				toast.success(visible ? "Shown in sidebar" : "Moved to overview");
+			} catch (error) {
+				setOptimisticMetadata((current) =>
+					restoreNativeAgentOptimisticSidebarState(current, {
+						id: item.id,
+						provider: item.provider,
+						sidebarHidden: item.sidebarHidden,
+						sidebarPinned: item.sidebarPinned,
+					}),
+				);
+				toast.error(error instanceof Error ? error.message : String(error));
+			}
+		},
+		[scheduleNativeAgentListRefresh, setSidebarVisible],
+	);
 
 	const handleCreated = async (item: {
 		id: string;
 		provider: NativeAgentProvider;
 	}) => {
-		await Promise.all([
+		navigateToNativeSession(item);
+		void Promise.all([
 			utils.nativeAgents.capy.listThreads.invalidate(),
 			utils.nativeAgents.devin.listSessions.invalidate(),
 		]);
-		if (item.provider === "capy") {
-			navigate({ to: "/native/capy/$threadId", params: { threadId: item.id } });
-			return;
-		}
-		navigate({
-			to: "/native/devin/$sessionId",
-			params: { sessionId: item.id },
-		});
 	};
 
 	const openProvider = (provider: NativeAgentProvider) => {
-		if (provider === "capy") {
-			navigate({ to: "/native/capy" });
-			return;
-		}
-		navigate({ to: "/native/devin" });
+		navigateToNativeProvider(provider);
 	};
 
 	const displayedItemsForProvider = (items: NativeAgentItem[]) => {
-		const visibleItems = items.filter((item) => item.sidebarHidden !== true);
-		const activeItem = visibleItems.find((item) => item.id === activeRoute.id);
-		const pinnedItems = visibleItems.filter((item) => item.sidebarPinned);
-		const unreadItems = visibleItems.filter((item) =>
-			hasUnreadAgentResponse(item, readState),
-		);
-		const liveItems = visibleItems.filter(
-			(item) => item.isProviderActive || isNativeAgentLiveStatus(item.status),
-		);
-		const nextItems = [...pinnedItems];
-		for (const item of [...unreadItems, ...liveItems]) {
-			if (nextItems.length >= 10) break;
-			if (!nextItems.some((candidate) => candidate.id === item.id)) {
-				nextItems.push(item);
-			}
-		}
-		const recentFallbackLimit = nextItems.length === 0 ? 3 : 1;
-		for (const item of visibleItems) {
-			if (nextItems.length >= pinnedItems.length + recentFallbackLimit) break;
-			if (!nextItems.some((candidate) => candidate.id === item.id)) {
-				nextItems.push(item);
-			}
-		}
-		if (activeItem && !nextItems.some((item) => item.id === activeItem.id)) {
-			return [activeItem, ...nextItems].slice(0, 11);
-		}
-		return nextItems;
+		return selectNativeAgentSidebarItems(items, {
+			activeId: activeRoute.id,
+			isLiveStatus: isNativeAgentLiveStatus,
+			isUnread: (item) => hasUnreadAgentResponse(item, readState),
+		});
 	};
 
 	useEffect(() => {
@@ -880,13 +1081,108 @@ export function DashboardNativeAgentsSection({
 		const latestTime = latestAgentMessageTime(item);
 		if (latestTime == null) return;
 		setReadState((current) => {
-			const key = sessionFolderKey(item.provider, item.id);
+			const key = nativeAgentSessionFolderKey(item.provider, item.id);
 			if ((current[key] ?? 0) >= latestTime) return current;
 			const next = { ...current, [key]: latestTime };
 			writeReadState(next);
 			return next;
 		});
 	}, [activeRoute.id, activeRoute.provider, itemsByProvider]);
+
+	useEffect(() => {
+		if (credentialStatus.data?.capy.configured !== true) return;
+		if (hasStartedCapyBackgroundSyncRef.current) return;
+		const lastSync = readJson<number>(CAPY_BACKGROUND_SYNC_STORAGE_KEY, 0);
+		if (Date.now() - lastSync < CAPY_BACKGROUND_SYNC_INTERVAL_MS) return;
+		hasStartedCapyBackgroundSyncRef.current = true;
+		writeJson(CAPY_BACKGROUND_SYNC_STORAGE_KEY, Date.now());
+		syncCapyMine.mutate(
+			{
+				limit: 50,
+				projectId: CAPY_MONOREPO_PROJECT_ID,
+				scanPageLimit: CAPY_BACKGROUND_SYNC_SCAN_PAGE_LIMIT,
+				userEmail: CAPY_LOCAL_USER_EMAIL,
+			},
+			{
+				onSuccess: (result) => {
+					if (result.discovered > 0) {
+						void utils.nativeAgents.capy.listThreads.invalidate();
+					}
+				},
+			},
+		);
+	}, [
+		credentialStatus.data?.capy.configured,
+		syncCapyMine,
+		utils.nativeAgents.capy.listThreads,
+	]);
+
+	useEffect(() => {
+		const capyHasLoaded = capyThreadsQuery.data != null;
+		const devinHasLoaded = devinSessionsQuery.data != null;
+		if (!capyHasLoaded && !devinHasLoaded) return;
+
+		const notifications = getUnreadNativeAgentReplyNotifications({
+			activeIdByProvider: {
+				capy: activeRoute.provider === "capy" ? activeRoute.id : null,
+				devin: activeRoute.provider === "devin" ? activeRoute.id : null,
+			},
+			itemsByProvider,
+			notifiedState,
+			readState,
+		});
+
+		if (!hasInitializedReplyNotificationsRef.current) {
+			hasInitializedReplyNotificationsRef.current = true;
+			if (notifications.length === 0) return;
+			setNotifiedState((current) => {
+				const next = { ...current };
+				for (const notification of notifications) {
+					next[notification.key] = Math.max(
+						next[notification.key] ?? 0,
+						notification.latestTime,
+					);
+				}
+				writeNotifiedState(next);
+				return next;
+			});
+			return;
+		}
+
+		if (notifications.length === 0) return;
+		setNotifiedState((current) => {
+			const next = { ...current };
+			for (const notification of notifications) {
+				next[notification.key] = Math.max(
+					next[notification.key] ?? 0,
+					notification.latestTime,
+				);
+				writeLatestNativeAgentReplyNotification(notification);
+				toast.message(
+					`${nativeAgentProviderConfig(notification.provider).title} replied`,
+					{
+						action: {
+							label: "Open",
+							onClick: () => navigateToNativeSession(notification),
+						},
+						description: `${notification.title}: ${notification.preview}`,
+						id: `native-agent-reply:${notification.key}:${notification.latestTime}`,
+					},
+				);
+			}
+			writeNotifiedState(next);
+			return next;
+		});
+	}, [
+		activeRoute.id,
+		activeRoute.provider,
+		capyThreadsQuery.data,
+		devinSessionsQuery.data,
+		itemsByProvider,
+		navigateToNativeSession,
+		notifiedState,
+		readState,
+	]);
 
 	useEffect(() => {
 		const handleCreate = (event: Event) => {
@@ -904,6 +1200,122 @@ export function DashboardNativeAgentsSection({
 	}, []);
 
 	useEffect(() => {
+		const folderForProvider = (
+			provider: NativeAgentProvider,
+		): NativeAgentFolder | null => {
+			const persistedFolders = readFolders();
+			const folderById = new Map<string, NativeAgentFolder>();
+			for (const folder of [...persistedFolders, ...folders]) {
+				folderById.set(folder.id, folder);
+			}
+			const providerFolders = [...folderById.values()].filter(
+				(folder) => folder.provider === provider,
+			);
+			const persistedLastFolderIds = readLastFolderIds();
+			const lastFolderId =
+				lastFolderIds[provider] ?? persistedLastFolderIds[provider];
+			return (
+				providerFolders.find((folder) => folder.id === lastFolderId) ??
+				providerFolders[0] ??
+				null
+			);
+		};
+
+		const handleFolderAction = (event: Event) => {
+			const detail = (
+				event as CustomEvent<{
+					action?: NativeAgentFolderCommandAction;
+					color?: string;
+					folderId?: string;
+					provider?: NativeAgentProvider;
+					sessionId?: string;
+				}>
+			).detail;
+			const provider = detail?.provider ?? activeRoute.provider;
+			if (provider !== "capy" && provider !== "devin") return;
+			const action = detail?.action;
+			if (action === "create") {
+				createFolder(provider);
+				return;
+			}
+			if (action === "remove-active") {
+				const sessionId = detail?.sessionId ?? activeRoute.id;
+				if (!sessionId) return;
+				const item = itemsByProvider[provider].find(
+					(candidate) => candidate.id === sessionId,
+				);
+				if (item) moveToFolder(item, null);
+				return;
+			}
+			const folder =
+				(detail?.folderId
+					? folders.find(
+							(candidate) =>
+								candidate.id === detail.folderId &&
+								candidate.provider === provider,
+						)
+					: null) ?? folderForProvider(provider);
+			if (!folder) {
+				toast.error(
+					`Create a ${nativeAgentProviderConfig(provider).title} folder first`,
+				);
+				return;
+			}
+			if (action === "rename") {
+				openFolderEditor(folder);
+				return;
+			}
+			if (action === "delete") {
+				setDeleteFolderTarget(folder);
+				return;
+			}
+			if (action === "color") {
+				if (detail?.color) {
+					setFolderColor(folder.id, detail.color);
+					return;
+				}
+				const currentIndex = FOLDER_COLORS.indexOf(folder.color);
+				setFolderColor(
+					folder.id,
+					FOLDER_COLORS[(currentIndex + 1) % FOLDER_COLORS.length] ??
+						FOLDER_COLORS[0],
+				);
+				return;
+			}
+			if (action === "move-active") {
+				const sessionId = detail?.sessionId ?? activeRoute.id;
+				if (!sessionId) return;
+				const item = itemsByProvider[provider].find(
+					(candidate) => candidate.id === sessionId,
+				);
+				if (item) moveToFolder(item, folder.id);
+				return;
+			}
+		};
+
+		window.addEventListener(
+			"dashboard-native-agent-folder-action",
+			handleFolderAction,
+		);
+		return () => {
+			window.removeEventListener(
+				"dashboard-native-agent-folder-action",
+				handleFolderAction,
+			);
+		};
+	}, [
+		activeRoute.id,
+		activeRoute.provider,
+		createFolder,
+		folders,
+		itemsByProvider,
+		lastFolderIds,
+		moveToFolder,
+		openFolderEditor,
+		setFolderColor,
+	]);
+
+	useEffect(() => {
 		const isEditableTarget = (target: EventTarget | null) =>
 			target instanceof HTMLInputElement ||
 			target instanceof HTMLTextAreaElement ||
@@ -917,18 +1329,29 @@ export function DashboardNativeAgentsSection({
 			if (
 				event.key !== "ArrowDown" &&
 				event.key !== "ArrowUp" &&
+				vimKey !== "h" &&
 				vimKey !== "j" &&
 				vimKey !== "k" &&
+				vimKey !== "l" &&
 				vimKey !== "enter" &&
-				vimKey !== "o"
+				vimKey !== "o" &&
+				vimKey !== "p" &&
+				vimKey !== "f" &&
+				vimKey !== "F"
 			) {
 				return;
 			}
 			if (!activeRoute.provider || isEditableTarget(event.target)) return;
+			if (
+				document.activeElement instanceof HTMLElement &&
+				document.activeElement.closest("[data-native-agent-overview-card-id]")
+			) {
+				return;
+			}
 
 			const rows = Array.from(
 				document.querySelectorAll<HTMLButtonElement>(
-					"[data-native-agent-session-row-id]",
+					"[data-native-agent-session-row-id], [data-native-agent-folder-row-id]",
 				),
 			);
 			if (rows.length === 0) return;
@@ -941,12 +1364,68 @@ export function DashboardNativeAgentsSection({
 					? rows.indexOf(document.activeElement)
 					: -1;
 			const currentIndex = activeIndex >= 0 ? activeIndex : focusedIndex;
-			if (vimKey === "enter" || vimKey === "o") {
+			const currentRow = rows[currentIndex];
+			const rowProvider =
+				currentRow?.dataset.nativeAgentSessionRowProvider === "capy" ||
+				currentRow?.dataset.nativeAgentSessionRowProvider === "devin"
+					? currentRow.dataset.nativeAgentSessionRowProvider
+					: currentRow?.dataset.nativeAgentFolderRowProvider === "capy" ||
+							currentRow?.dataset.nativeAgentFolderRowProvider === "devin"
+						? currentRow.dataset.nativeAgentFolderRowProvider
+						: activeRoute.provider;
+			const rowFolder = currentRow?.dataset.nativeAgentFolderRowId
+				? folders.find(
+						(folder) =>
+							folder.id === currentRow.dataset.nativeAgentFolderRowId &&
+							folder.provider === rowProvider,
+					)
+				: null;
+			const rowItem = currentRow
+				? itemsByProvider[rowProvider].find(
+						(item) => item.id === currentRow.dataset.nativeAgentSessionRowId,
+					)
+				: null;
+			if (rowFolder && (vimKey === "h" || vimKey === "l")) {
+				event.preventDefault();
+				event.stopPropagation();
+				rememberFolder(rowFolder);
+				setFolderCollapsed(rowFolder.id, vimKey === "h");
+				currentRow?.focus();
+				return;
+			}
+			const sidebarAction = nativeAgentSidebarVimActionFromKey(vimKey);
+			if (sidebarAction !== "none") {
 				const row = rows[currentIndex];
 				if (!row) return;
 				event.preventDefault();
 				event.stopPropagation();
-				row.click();
+				if (rowFolder) {
+					rememberFolder(rowFolder);
+					if (sidebarAction === "open") toggleFolder(rowFolder.id);
+					return;
+				}
+				if (sidebarAction === "open") {
+					row.click();
+					return;
+				}
+				if (!rowItem) return;
+				if (sidebarAction === "pin") {
+					void handlePin(rowItem, rowItem.sidebarPinned !== true);
+					return;
+				}
+				if (sidebarAction === "remove-from-folder") {
+					moveToFolder(rowItem, null);
+					return;
+				}
+				window.dispatchEvent(
+					new CustomEvent("dashboard-native-agent-folder-action", {
+						detail: {
+							action: "move-active",
+							provider: rowItem.provider,
+							sessionId: rowItem.id,
+						},
+					}),
+				);
 				return;
 			}
 			const nextIndex =
@@ -959,14 +1438,23 @@ export function DashboardNativeAgentsSection({
 			event.preventDefault();
 			event.stopPropagation();
 			row.focus();
-			row.click();
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 		};
-	}, [activeRoute.id, activeRoute.provider]);
+	}, [
+		activeRoute.id,
+		activeRoute.provider,
+		folders,
+		handlePin,
+		itemsByProvider,
+		moveToFolder,
+		rememberFolder,
+		setFolderCollapsed,
+		toggleFolder,
+	]);
 
 	return (
 		<div
@@ -978,12 +1466,16 @@ export function DashboardNativeAgentsSection({
 			{PROVIDERS.map((providerConfig) => {
 				const items = itemsByProvider[providerConfig.id];
 				const displayedItems = displayedItemsForProvider(items);
+				const displayedItemCount = displayedItems.length;
 				const isCollapsed = collapsedProviderIds.has(providerConfig.id);
 				const providerFolders = folders.filter(
 					(folder) => folder.provider === providerConfig.id,
 				);
 				const unfolderedItems = displayedItems.filter(
-					(item) => !sessionFolders[sessionFolderKey(item.provider, item.id)],
+					(item) =>
+						!sessionFolders[
+							nativeAgentSessionFolderKey(item.provider, item.id)
+						],
 				);
 				const isActive = activeRoute.provider === providerConfig.id;
 				const providerShortcut =
@@ -1005,6 +1497,7 @@ export function DashboardNativeAgentsSection({
 							<TooltipTrigger asChild>
 								<button
 									type="button"
+									data-dashboard-native-provider-trigger={providerConfig.id}
 									onClick={() => openProvider(providerConfig.id)}
 									className={cn(
 										"flex size-8 items-center justify-center rounded-md transition-colors",
@@ -1032,6 +1525,7 @@ export function DashboardNativeAgentsSection({
 						<div className="flex items-center gap-1">
 							<button
 								type="button"
+								data-dashboard-native-provider-trigger={providerConfig.id}
 								onClick={() => openProvider(providerConfig.id)}
 								className={cn(
 									"flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-sm font-semibold transition-colors",
@@ -1043,7 +1537,7 @@ export function DashboardNativeAgentsSection({
 								<DashboardWebPageIcon
 									src={providerConfig.iconUrl}
 									fallbackLabel={providerConfig.title}
-									className="size-4"
+									className="size-4 shrink-0"
 								/>
 								<span className="min-w-0 flex-1 truncate text-left">
 									{providerConfig.title}
@@ -1060,18 +1554,19 @@ export function DashboardNativeAgentsSection({
 										type="button"
 										aria-expanded={!isCollapsed}
 										aria-label={`${isCollapsed ? "Show" : "Hide"} ${providerConfig.title} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
+										title={`${displayedItemCount} shown in sidebar, ${items.length} total`}
 										onClick={() =>
 											setProviderCollapsed(providerConfig.id, !isCollapsed)
 										}
 										className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/60 px-1 font-mono text-[10px] tabular-nums text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 									>
-										{items.length}
+										{displayedItemCount}
 									</button>
 								</TooltipTrigger>
 								<TooltipContent side="right">
 									{isCollapsed
-										? `Show sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`
-										: `Hide sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
+										? `Show ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`
+										: `Hide ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
 								</TooltipContent>
 							</Tooltip>
 							<Tooltip delayDuration={300}>
@@ -1105,14 +1600,32 @@ export function DashboardNativeAgentsSection({
 						</div>
 
 						{!isCollapsed && (
-							<div className="ml-2 flex flex-col gap-1.5 border-l border-border/50 pl-2">
+							<fieldset
+								className="ml-1.5 flex min-w-0 max-w-full flex-col gap-1.5 overflow-visible border-l border-border/50 pl-1.5"
+								onDragOver={(event) => event.preventDefault()}
+								onDrop={(event) =>
+									moveDraggedSessionToFolder(event, items, null)
+								}
+							>
 								{providerFolders.map((folder) => {
-									const folderItems = displayedItems.filter(
-										(item) =>
-											sessionFolders[
-												sessionFolderKey(item.provider, item.id)
-											] === folder.id,
-									);
+									const folderItems = items
+										.filter(
+											(item) =>
+												sessionFolders[
+													nativeAgentSessionFolderKey(item.provider, item.id)
+												] === folder.id,
+										)
+										.sort((a, b) => {
+											const aActive =
+												a.isProviderActive || isNativeAgentLiveStatus(a.status);
+											const bActive =
+												b.isProviderActive || isNativeAgentLiveStatus(b.status);
+											if (aActive !== bActive) return aActive ? -1 : 1;
+											return (
+												(nativeAgentTimestampMs(b.updatedAt) ?? 0) -
+												(nativeAgentTimestampMs(a.updatedAt) ?? 0)
+											);
+										});
 									const folderHasUnread = folderItems.some((item) =>
 										hasUnreadAgentResponse(item, readState),
 									);
@@ -1120,31 +1633,18 @@ export function DashboardNativeAgentsSection({
 										<div
 											key={folder.id}
 											className={cn(
-												"flex flex-col gap-1 rounded-md",
+												"flex min-w-0 max-w-full flex-col gap-1 overflow-visible rounded-md",
 												folderItems.length > 0 && "pb-0.5",
 											)}
 										>
 											<fieldset
 												onDragOver={(event) => event.preventDefault()}
 												onDrop={(event) => {
-													event.preventDefault();
-													const payload = event.dataTransfer.getData(
-														"application/x-native-agent-session",
-													);
-													if (!payload) return;
-													const parsed = JSON.parse(payload) as {
-														id?: string;
-														provider?: NativeAgentProvider;
-													};
-													const item = items.find(
-														(candidate) =>
-															candidate.id === parsed.id &&
-															candidate.provider === parsed.provider,
-													);
-													if (item) moveToFolder(item, folder.id);
+													event.stopPropagation();
+													moveDraggedSessionToFolder(event, items, folder.id);
 												}}
 												className={cn(
-													"group/folder flex h-7 min-w-0 items-center gap-2 rounded-md border px-2 text-xs font-medium transition-colors",
+													"group/folder relative flex h-7 min-w-0 max-w-full items-center gap-1.5 rounded-md border px-1.5 text-xs font-medium transition-colors",
 													folderHasUnread
 														? "border-emerald-500/25 bg-emerald-500/10 text-emerald-100"
 														: "border-transparent text-muted-foreground hover:border-border/50 hover:bg-accent/25 hover:text-foreground",
@@ -1157,66 +1657,74 @@ export function DashboardNativeAgentsSection({
 												<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
 												<button
 													type="button"
+													data-native-agent-folder-row-id={folder.id}
+													data-native-agent-folder-row-provider={
+														folder.provider
+													}
 													onClick={() => toggleFolder(folder.id)}
 													onDoubleClick={(event) => {
 														event.preventDefault();
 														event.stopPropagation();
 														openFolderEditor(folder);
 													}}
-													className="min-w-0 flex-1 truncate text-left font-medium"
+													onFocus={() => rememberFolder(folder)}
+													className="min-w-0 flex-1 truncate rounded-sm text-left font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring"
 												>
 													{folder.title}
 												</button>
-												<span className="rounded-sm bg-muted-foreground/10 px-1 font-mono text-[10px]">
-													{folderItems.length === 0
-														? "empty"
-														: folderItems.length}
+												<span
+													className="min-w-4 shrink-0 rounded-sm bg-muted-foreground/10 px-1 text-center font-mono text-[10px] tabular-nums"
+													title={`${folderItems.length} ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
+												>
+													{folderItems.length}
 												</span>
-												<button
-													type="button"
-													aria-label={`Rename ${folder.title}`}
-													onClick={(event) => {
-														event.stopPropagation();
-														openFolderEditor(folder);
-													}}
-													className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
-												>
-													<LuPencil className="size-3" />
-												</button>
-												<button
-													type="button"
-													aria-label={`Change ${folder.title} color`}
-													onClick={(event) => {
-														event.stopPropagation();
-														const currentIndex = FOLDER_COLORS.indexOf(
-															folder.color,
-														);
-														setFolderColor(
-															folder.id,
-															FOLDER_COLORS[
-																(currentIndex + 1) % FOLDER_COLORS.length
-															] ?? FOLDER_COLORS[0],
-														);
-													}}
-													className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
-												>
-													<LuPalette className="size-3" />
-												</button>
-												<button
-													type="button"
-													aria-label={`Delete ${folder.title}`}
-													onClick={(event) => {
-														event.stopPropagation();
-														setDeleteFolderTarget(folder);
-													}}
-													className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent hover:text-red-300 group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
-												>
-													<LuFolderX className="size-3" />
-												</button>
+												<span className="pointer-events-none absolute right-1 flex items-center rounded-md bg-background/90 opacity-0 shadow-sm transition group-hover/folder:pointer-events-auto group-hover/folder:opacity-100 group-focus-within/folder:pointer-events-auto group-focus-within/folder:opacity-100">
+													<button
+														type="button"
+														aria-label={`Rename ${folder.title}`}
+														onClick={(event) => {
+															event.stopPropagation();
+															openFolderEditor(folder);
+														}}
+														className="flex size-5 items-center justify-center rounded transition hover:bg-accent"
+													>
+														<LuPencil className="size-3 shrink-0" />
+													</button>
+													<button
+														type="button"
+														aria-label={`Change ${folder.title} color`}
+														onClick={(event) => {
+															event.stopPropagation();
+															const currentIndex = FOLDER_COLORS.indexOf(
+																folder.color,
+															);
+															setFolderColor(
+																folder.id,
+																FOLDER_COLORS[
+																	(currentIndex + 1) % FOLDER_COLORS.length
+																] ?? FOLDER_COLORS[0],
+															);
+														}}
+														className="flex size-5 items-center justify-center rounded transition hover:bg-accent"
+													>
+														<LuPalette className="size-3 shrink-0" />
+													</button>
+													<button
+														type="button"
+														aria-label={`Delete ${folder.title}`}
+														onClick={(event) => {
+															event.stopPropagation();
+															setDeleteFolderTarget(folder);
+														}}
+														className="flex size-5 items-center justify-center rounded transition hover:bg-accent hover:text-red-300"
+													>
+														<LuFolderX className="size-3 shrink-0" />
+													</button>
+												</span>
 											</fieldset>
 											{!folder.isCollapsed && folderItems.length > 0 && (
 												<ul
-													className="ml-3 flex flex-col gap-1 border-l py-0.5 pl-2"
+													className="ml-2 flex min-w-0 max-w-full flex-col gap-1 overflow-visible border-l py-0.5 pl-1.5"
 													style={{ borderColor: `${folder.color}66` }}
 												>
 													{folderItems.map((item) => (
@@ -1228,6 +1736,7 @@ export function DashboardNativeAgentsSection({
 															onOpen={handleOpen}
 															onPin={handlePin}
 															onSidebarVisible={handleSidebarVisible}
+															readState={readState}
 															shortcutLabel={shortcutLabelForItem(item)}
 															variant={variant}
 														/>
@@ -1246,6 +1755,7 @@ export function DashboardNativeAgentsSection({
 										onOpen={handleOpen}
 										onPin={handlePin}
 										onSidebarVisible={handleSidebarVisible}
+										readState={readState}
 										shortcutLabel={shortcutLabelForItem(item)}
 										variant={variant}
 									/>
@@ -1259,7 +1769,7 @@ export function DashboardNativeAgentsSection({
 										yet.
 									</div>
 								)}
-							</div>
+							</fieldset>
 						)}
 					</div>
 				);
@@ -1315,6 +1825,34 @@ export function DashboardNativeAgentsSection({
 								/>
 							))}
 						</div>
+						{recentFolderColorChoices.length > 0 && (
+							<div className="flex flex-col gap-2">
+								<div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+									Recent custom
+								</div>
+								<div className="grid grid-cols-6 gap-2">
+									{recentFolderColorChoices.map((color) => (
+										<button
+											key={color}
+											type="button"
+											aria-label={`Set folder color ${color}`}
+											onClick={() => {
+												if (!editingFolder) return;
+												setFolderColor(editingFolder.id, color);
+												setEditingFolder({ ...editingFolder, color });
+											}}
+											className={cn(
+												"size-8 rounded-md border transition",
+												editingFolder?.color === color
+													? "border-foreground ring-2 ring-ring"
+													: "border-border hover:border-foreground/40",
+											)}
+											style={{ backgroundColor: color }}
+										/>
+									))}
+								</div>
+							</div>
+						)}
 						<label className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
 							<span className="min-w-0 flex-1">Custom color</span>
 							<input
