@@ -1,5 +1,4 @@
 import type { KeyboardLayoutData } from "main/lib/keyboardLayout";
-import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { create } from "zustand";
 
 // Mirror of the main-process layout service for synchronous reads from
@@ -42,21 +41,31 @@ function applySnapshot(data: KeyboardLayoutData): void {
 // label would silently fall back to US-ANSI glyphs.
 const RETRY_BACKOFF_MS = [1_000, 2_000, 5_000, 10_000];
 let retryAttempt = 0;
+let syncStarted = false;
 
-function startKeyboardLayoutSync(): void {
+function hasElectronTrpcBridge(): boolean {
+	return typeof globalThis === "object" && "electronTRPC" in globalThis;
+}
+
+export async function startKeyboardLayoutSync(): Promise<void> {
+	if (syncStarted) return;
+	if (!hasElectronTrpcBridge()) return;
+	syncStarted = true;
+	const { electronTrpcClient } = await import("renderer/lib/trpc-client");
 	electronTrpcClient.keyboardLayout.changes.subscribe(undefined, {
 		onData: (data) => {
 			retryAttempt = 0;
 			applySnapshot(data);
 		},
 		onError: (err) => {
+			syncStarted = false;
 			console.error("[keyboardLayoutStore] subscription error:", err);
 			const idx = Math.min(retryAttempt, RETRY_BACKOFF_MS.length - 1);
 			const delay = RETRY_BACKOFF_MS[idx] ?? 10_000;
 			retryAttempt++;
-			setTimeout(startKeyboardLayoutSync, delay);
+			setTimeout(() => void startKeyboardLayoutSync(), delay);
 		},
 	});
 }
 
-startKeyboardLayoutSync();
+void startKeyboardLayoutSync();

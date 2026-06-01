@@ -1,5 +1,49 @@
 import type { ParsedBinding, ShortcutBinding } from "../types";
-import { canonicalizeChord, normalizeToken } from "./resolveHotkeyFromEvent";
+
+const CODE_ALIASES: Record<string, string> = {
+	AltLeft: "alt",
+	AltRight: "alt",
+	ControlLeft: "ctrl",
+	ControlRight: "ctrl",
+	esc: "escape",
+	left: "arrowleft",
+	MetaLeft: "meta",
+	MetaRight: "meta",
+	OSLeft: "meta",
+	OSRight: "meta",
+	return: "enter",
+	right: "arrowright",
+	ShiftLeft: "shift",
+	ShiftRight: "shift",
+	up: "arrowup",
+	down: "arrowdown",
+};
+
+function normalizeToken(token: string): string {
+	const aliased = CODE_ALIASES[token.trim()] ?? token.trim();
+	return aliased.toLowerCase().replace(/key|digit|numpad/, "");
+}
+
+function canonicalizeChord(chord: string): string {
+	const parts = chord.toLowerCase().split("+").map(normalizeToken);
+	const mods: string[] = [];
+	const keys: string[] = [];
+	for (const part of parts) {
+		if (
+			part === "alt" ||
+			part === "control" ||
+			part === "ctrl" ||
+			part === "meta" ||
+			part === "shift"
+		) {
+			mods.push(part === "control" ? "ctrl" : part);
+		} else {
+			keys.push(part);
+		}
+	}
+	mods.sort();
+	return [...mods, ...keys].join("+");
+}
 
 /**
  * Keys whose `event.code` is stable across keyboard layouts (Enter, arrows,
