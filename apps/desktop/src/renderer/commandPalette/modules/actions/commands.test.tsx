@@ -1,8 +1,6 @@
 import { describe, expect, it, mock } from "bun:test";
 import type { CommandContext } from "../../core/types";
 
-let toggleDashboardVimModeCalls = 0;
-
 mock.module("@superset/ui/sonner", () => ({
 	toast: { error: () => undefined, success: () => undefined },
 }));
@@ -21,18 +19,6 @@ mock.module("renderer/providers/ElectronTRPCProvider", () => ({
 		invalidateQueries: async () => undefined,
 	},
 }));
-
-mock.module(
-	"renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode",
-	() => ({
-		isDashboardVimEditableTarget: () => false,
-		shouldHandleDashboardVimKey: () => false,
-		toggleDashboardVimMode: () => {
-			toggleDashboardVimModeCalls += 1;
-			return true;
-		},
-	}),
-);
 
 mock.module("renderer/stores/new-workspace-modal", () => ({
 	useNewWorkspaceModalStore: {
@@ -66,6 +52,9 @@ mock.module("../../ui/ThemeFrame/ThemeFrame", () => ({
 	ThemeFrame: () => null,
 }));
 
+const { isDashboardVimModeEnabled, setDashboardVimModeEnabled } = await import(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode"
+);
 const { actionsProvider } = await import("./commands");
 
 function commandContext(pathname = "/native/capy"): CommandContext {
@@ -119,13 +108,14 @@ describe("actions command provider", () => {
 	});
 
 	it("runs the dashboard Vim toggle command", () => {
-		toggleDashboardVimModeCalls = 0;
+		setDashboardVimModeEnabled(false);
 		const command = actionsProvider
 			.provide(commandContext())
 			.find((candidate) => candidate.id === "actions.toggleDashboardVimMode");
 
 		command?.run?.(commandContext());
 
-		expect(toggleDashboardVimModeCalls).toBe(1);
+		expect(isDashboardVimModeEnabled()).toBe(true);
+		setDashboardVimModeEnabled(false);
 	});
 });
