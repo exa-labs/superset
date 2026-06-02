@@ -1,4 +1,5 @@
-import { Workspace } from "@superset/panes";
+import { type CreatePaneInput, Workspace } from "@superset/panes";
+import { toast } from "@superset/ui/sonner";
 import { workspaceTrpc } from "@superset/workspace-client";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
@@ -9,6 +10,12 @@ import { useHotkey } from "renderer/hotkeys";
 import { CommandPalette } from "renderer/screens/main/components/CommandPalette";
 import { ResizablePanel } from "renderer/screens/main/components/ResizablePanel";
 import { getV2NotificationSourcesForTab } from "renderer/stores/v2-notifications";
+import {
+	DASHBOARD_QUICK_TERMINAL_EVENT,
+	type DashboardQuickTerminalEventDetail,
+	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalTitle,
+} from "../../utils/dashboard-quick-terminals";
 import { useWorkspace } from "../providers/WorkspaceProvider";
 import { AddTabMenu } from "./components/AddTabMenu";
 import { BackgroundTerminalsButton } from "./components/BackgroundTerminalsButton";
@@ -36,7 +43,7 @@ import { useWorkspaceHotkeys } from "./hooks/useWorkspaceHotkeys";
 import { useWorkspacePaneOpeners } from "./hooks/useWorkspacePaneOpeners";
 import { WorkspaceGitStatusProvider } from "./providers/WorkspaceGitStatusProvider";
 import { FileDocumentStoreProvider } from "./state/fileDocumentStore";
-import type { PaneViewerData } from "./types";
+import type { PaneViewerData, TerminalPaneData } from "./types";
 import type { V2WorkspaceUrlOpenTarget } from "./utils/openUrlInV2Workspace";
 
 interface WorkspaceSearch {
@@ -219,6 +226,42 @@ function V2WorkspaceContent() {
 	);
 	const defaultPaneActions = useDefaultPaneActions({ launcher });
 	const onBeforeCloseTab = useDirtyTabCloseGuard();
+	const handleQuickTerminalLaunch = useCallback(
+		async (target: DashboardQuickTerminalEventDetail["target"]) => {
+			const title = dashboardQuickTerminalTitle(target);
+			try {
+				const terminalId = await launcher.create({
+					command: dashboardQuickTerminalCommand(target),
+				});
+				const pane: CreatePaneInput<PaneViewerData> = {
+					kind: "terminal",
+					titleOverride: title,
+					data: { terminalId } satisfies TerminalPaneData,
+				};
+				store.getState().addTab({ panes: [pane] });
+			} catch (error) {
+				toast.error(`Failed to open ${title} terminal`, {
+					description:
+						error instanceof Error
+							? error.message
+							: "Terminal session creation failed.",
+				});
+			}
+		},
+		[launcher, store],
+	);
+
+	useEffect(() => {
+		const handleEvent = (event: Event) => {
+			const detail = (event as CustomEvent<DashboardQuickTerminalEventDetail>)
+				.detail;
+			if (!detail?.target) return;
+			void handleQuickTerminalLaunch(detail.target);
+		};
+		window.addEventListener(DASHBOARD_QUICK_TERMINAL_EVENT, handleEvent);
+		return () =>
+			window.removeEventListener(DASHBOARD_QUICK_TERMINAL_EVENT, handleEvent);
+	}, [handleQuickTerminalLaunch]);
 
 	// Fallback for rows persisted before the rightSidebarWidth field existed —
 	// the live collection skips zod defaults, so an older row reads undefined

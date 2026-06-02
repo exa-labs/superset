@@ -1,3 +1,4 @@
+import type { TerminalPreset } from "@superset/local-db/schema/zod";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -30,6 +31,12 @@ import {
 	useTasksFilterStore,
 } from "renderer/routes/_authenticated/_dashboard/tasks/stores/tasks-filter-state";
 import {
+	DASHBOARD_QUICK_TERMINAL_EVENT,
+	type DashboardQuickTerminalId,
+	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalTitle,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
+import {
 	type DashboardSidebarNavigationIntent,
 	dashboardSidebarNavigationIntentPath,
 	resolveDashboardSidebarNavigationIntent,
@@ -44,7 +51,9 @@ import { getDashboardHashPathname } from "renderer/routes/_authenticated/lib/das
 import { STROKE_WIDTH_THICK } from "renderer/screens/main/components/WorkspaceSidebar/constants";
 import { useOpenNewProjectModal } from "renderer/stores/add-repository-modal";
 import { useOpenNewWorkspaceModal } from "renderer/stores/new-workspace-modal";
+import { useTabsWithPresets } from "renderer/stores/tabs/useTabsWithPresets";
 import { DashboardNativeAgentsSection } from "./components/DashboardNativeAgentsSection";
+import { DashboardQuickTerminalsGrid } from "./components/DashboardQuickTerminalsGrid";
 import { DashboardWebPagesGrid } from "./components/DashboardWebPagesGrid";
 import { DashboardWebTabsSection } from "./components/DashboardWebTabsSection";
 
@@ -96,6 +105,25 @@ export function DashboardSidebarHeader({
 	const activeWebPageId = webPageMatch !== false ? webPageMatch.pageId : null;
 	const webTabMatch = matchRoute({ to: "/web-tabs/$tabId", fuzzy: true });
 	const activeWebTabId = webTabMatch !== false ? webTabMatch.tabId : null;
+	const currentWorkspaceMatch = matchRoute({
+		to: "/workspace/$workspaceId",
+		fuzzy: true,
+	});
+	const currentWorkspaceId =
+		currentWorkspaceMatch !== false ? currentWorkspaceMatch.workspaceId : null;
+	const currentV2WorkspaceMatch = matchRoute({
+		to: "/v2-workspace/$workspaceId",
+		fuzzy: true,
+	});
+	const currentV2WorkspaceId =
+		currentV2WorkspaceMatch !== false
+			? currentV2WorkspaceMatch.workspaceId
+			: null;
+	const { data: currentWorkspace } = electronTrpc.workspaces.get.useQuery(
+		{ id: currentWorkspaceId ?? "" },
+		{ enabled: !!currentWorkspaceId },
+	);
+	const { openPreset } = useTabsWithPresets(currentWorkspace?.projectId);
 
 	const {
 		tab: lastTab,
@@ -132,6 +160,35 @@ export function DashboardSidebarHeader({
 		navigate({
 			to: "/web/$pageId",
 			params: { pageId },
+		});
+	};
+
+	const handleQuickTerminalClick = (target: DashboardQuickTerminalId) => {
+		if (currentWorkspaceId) {
+			const title = dashboardQuickTerminalTitle(target);
+			const preset: TerminalPreset = {
+				id: `quick-terminal-${target}`,
+				name: title,
+				description: `Open ${title} kr9 shell`,
+				cwd: "",
+				commands: [dashboardQuickTerminalCommand(target)],
+				executionMode: "new-tab",
+			};
+			openPreset(currentWorkspaceId, preset, { target: "new-tab" });
+			return;
+		}
+
+		if (currentV2WorkspaceId) {
+			window.dispatchEvent(
+				new CustomEvent(DASHBOARD_QUICK_TERMINAL_EVENT, {
+					detail: { target },
+				}),
+			);
+			return;
+		}
+
+		toast.info("Open a workspace first", {
+			description: "Quick kr9 terminals run inside the active workspace.",
 		});
 	};
 
@@ -257,6 +314,10 @@ export function DashboardSidebarHeader({
 					activePageId={activeWebPageId}
 					variant="collapsed"
 					onOpenPage={handleWebPageClick}
+				/>
+				<DashboardQuickTerminalsGrid
+					variant="collapsed"
+					onOpenTerminal={handleQuickTerminalClick}
 				/>
 
 				{showExtraNav && (
@@ -397,6 +458,10 @@ export function DashboardSidebarHeader({
 				activePageId={activeWebPageId}
 				variant="expanded"
 				onOpenPage={handleWebPageClick}
+			/>
+			<DashboardQuickTerminalsGrid
+				variant="expanded"
+				onOpenTerminal={handleQuickTerminalClick}
 			/>
 
 			{showExtraNav && (
