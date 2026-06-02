@@ -36,9 +36,9 @@ export function isDashboardQuickTerminalId(
 }
 
 export function dashboardQuickTerminalCommand(
-	target: DashboardQuickTerminalId,
+	_target: DashboardQuickTerminalId,
 ): string {
-	return `kr9 ${target}`;
+	return "kr9";
 }
 
 export function dashboardQuickTerminalTitle(

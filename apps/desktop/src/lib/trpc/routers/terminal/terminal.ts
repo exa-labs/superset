@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { workspaces, worktrees } from "@superset/local-db";
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
@@ -22,6 +24,7 @@ import { getWorkspaceTerminalContext, resolveCwd } from "./utils";
 const DEBUG_TERMINAL = process.env.SUPERSET_TERMINAL_DEBUG === "1";
 const logger = console;
 let createOrAttachCallCounter = 0;
+const DASHBOARD_ROOT_WORKSPACE_ID = "dashboard-root";
 
 const SAFE_ID = z
 	.string()
@@ -31,6 +34,22 @@ const SAFE_ID = z
 			!value.includes("/") && !value.includes("\\") && !value.includes(".."),
 		{ message: "Invalid id" },
 	);
+
+function findRepoRoot(startPath = process.cwd()): string {
+	let current = startPath;
+	for (let index = 0; index < 8; index++) {
+		if (
+			existsSync(join(current, "bun.lock")) ||
+			existsSync(join(current, "turbo.json"))
+		) {
+			return current;
+		}
+		const parent = dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+	return startPath;
+}
 
 /**
  * Terminal router using daemon-backed terminal runtime
@@ -57,6 +76,39 @@ export const createTerminalRouter = () => {
 	}
 
 	return router({
+		createRootSession: publicProcedure
+			.input(
+				z.object({
+					terminalId: SAFE_ID,
+					command: z.string().trim().min(1).optional(),
+					cols: z.number().optional(),
+					rows: z.number().optional(),
+					themeType: z.enum(["dark", "light"]).optional(),
+				}),
+			)
+			.mutation(async ({ input }) => {
+				const repoRoot = findRepoRoot();
+				const resolvedThemeType = resolveTerminalThemeType({
+					requestedThemeType: input.themeType,
+					persistedThemeState: appState.data.themeState,
+				});
+				await terminal.createOrAttach({
+					paneId: input.terminalId,
+					tabId: input.terminalId,
+					workspaceId: DASHBOARD_ROOT_WORKSPACE_ID,
+					workspaceName: "root",
+					workspacePath: repoRoot,
+					rootPath: repoRoot,
+					cwd: repoRoot,
+					cols: input.cols,
+					rows: input.rows,
+					command: input.command,
+					skipColdRestore: !!input.command,
+					themeType: resolvedThemeType,
+				});
+				return { terminalId: input.terminalId };
+			}),
+
 		createOrAttach: publicProcedure
 			.input(
 				z.object({

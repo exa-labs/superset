@@ -31,9 +31,9 @@ describe("dashboard quick terminals", () => {
 	});
 
 	it("builds the kr9 command for each target", () => {
-		expect(dashboardQuickTerminalCommand("stag")).toBe("kr9 stag");
-		expect(dashboardQuickTerminalCommand("prod")).toBe("kr9 prod");
-		expect(dashboardQuickTerminalCommand("heph")).toBe("kr9 heph");
+		expect(dashboardQuickTerminalCommand("stag")).toBe("kr9");
+		expect(dashboardQuickTerminalCommand("prod")).toBe("kr9");
+		expect(dashboardQuickTerminalCommand("heph")).toBe("kr9");
 	});
 
 	it("uses the short target as the terminal title", () => {
