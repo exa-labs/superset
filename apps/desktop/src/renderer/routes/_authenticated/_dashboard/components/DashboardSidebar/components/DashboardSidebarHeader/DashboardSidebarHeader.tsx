@@ -8,8 +8,9 @@ import {
 import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
+import { useLiveQuery } from "@tanstack/react-db";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { HiMiniPlus, HiOutlineClipboardDocumentList } from "react-icons/hi2";
 import {
 	LuClock,
@@ -35,6 +36,7 @@ import {
 	type DashboardQuickTerminalId,
 	dashboardQuickTerminalCommand,
 	dashboardQuickTerminalTitle,
+	writePendingDashboardQuickTerminalLaunch,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
 import {
 	type DashboardSidebarNavigationIntent,
@@ -47,7 +49,9 @@ import {
 	type DashboardWebTabAppId,
 	getFirstDashboardWebTabForApp,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
+import { navigateToV2Workspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { getDashboardHashPathname } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
+import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
 import { STROKE_WIDTH_THICK } from "renderer/screens/main/components/WorkspaceSidebar/constants";
 import { useOpenNewProjectModal } from "renderer/stores/add-repository-modal";
 import { useOpenNewWorkspaceModal } from "renderer/stores/new-workspace-modal";
@@ -98,6 +102,7 @@ export function DashboardSidebarHeader({
 	const isMac = platform === undefined || platform === "darwin";
 	const matchRoute = useMatchRoute();
 	const { gateFeature } = usePaywall();
+	const collections = useCollections();
 	const isWorkspacesListOpen = !!matchRoute({ to: "/v2-workspaces" });
 	const isTasksOpen = !!matchRoute({ to: "/tasks", fuzzy: true });
 	const isAutomationsOpen = !!matchRoute({ to: "/automations", fuzzy: true });
@@ -124,6 +129,44 @@ export function DashboardSidebarHeader({
 		{ enabled: !!currentWorkspaceId },
 	);
 	const { openPreset } = useTabsWithPresets(currentWorkspace?.projectId);
+	const { data: quickTerminalWorkspaces = [] } = useLiveQuery(
+		(q) =>
+			q
+				.from({ workspaces: collections.v2Workspaces })
+				.select(({ workspaces }) => ({
+					id: workspaces.id,
+					type: workspaces.type,
+					updatedAt: workspaces.updatedAt,
+					createdAt: workspaces.createdAt,
+				})),
+		[collections],
+	);
+	const quickTerminalFallbackWorkspaceId = useMemo(() => {
+		if (currentV2WorkspaceId) return currentV2WorkspaceId;
+		if (typeof window !== "undefined") {
+			const lastViewedWorkspaceId = window.localStorage.getItem(
+				"lastViewedWorkspaceId",
+			);
+			if (
+				lastViewedWorkspaceId &&
+				quickTerminalWorkspaces.some(
+					(workspace) => workspace.id === lastViewedWorkspaceId,
+				)
+			) {
+				return lastViewedWorkspaceId;
+			}
+		}
+
+		const sorted = [...quickTerminalWorkspaces].sort((left, right) => {
+			if (left.type !== right.type) {
+				return left.type === "main" ? -1 : 1;
+			}
+			const leftTime = new Date(left.updatedAt ?? left.createdAt).getTime();
+			const rightTime = new Date(right.updatedAt ?? right.createdAt).getTime();
+			return rightTime - leftTime;
+		});
+		return sorted[0]?.id ?? null;
+	}, [currentV2WorkspaceId, quickTerminalWorkspaces]);
 
 	const {
 		tab: lastTab,
@@ -187,8 +230,17 @@ export function DashboardSidebarHeader({
 			return;
 		}
 
-		toast.info("Open a workspace first", {
-			description: "Quick kr9 terminals run inside the active workspace.",
+		if (quickTerminalFallbackWorkspaceId) {
+			writePendingDashboardQuickTerminalLaunch(
+				target,
+				quickTerminalFallbackWorkspaceId,
+			);
+			void navigateToV2Workspace(quickTerminalFallbackWorkspaceId, navigate);
+			return;
+		}
+
+		toast.info("Create a workspace first", {
+			description: "Quick kr9 terminals open inside your root workspace.",
 		});
 	};
 

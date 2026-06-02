@@ -11,6 +11,7 @@ import { CommandPalette } from "renderer/screens/main/components/CommandPalette"
 import { ResizablePanel } from "renderer/screens/main/components/ResizablePanel";
 import { getV2NotificationSourcesForTab } from "renderer/stores/v2-notifications";
 import {
+	consumePendingDashboardQuickTerminalLaunch,
 	DASHBOARD_QUICK_TERMINAL_EVENT,
 	type DashboardQuickTerminalEventDetail,
 	dashboardQuickTerminalCommand,
@@ -262,6 +263,12 @@ function V2WorkspaceContent() {
 		return () =>
 			window.removeEventListener(DASHBOARD_QUICK_TERMINAL_EVENT, handleEvent);
 	}, [handleQuickTerminalLaunch]);
+
+	useEffect(() => {
+		const target = consumePendingDashboardQuickTerminalLaunch(workspaceId);
+		if (!target) return;
+		void handleQuickTerminalLaunch(target);
+	}, [handleQuickTerminalLaunch, workspaceId]);
 
 	// Fallback for rows persisted before the rightSidebarWidth field existed —
 	// the live collection skips zod defaults, so an older row reads undefined

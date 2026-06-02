@@ -53,6 +53,7 @@ export function navigateToV2Workspace(
 	},
 ): Promise<void> {
 	const { search, ...rest } = options ?? {};
+	localStorage.setItem("lastViewedWorkspaceId", workspaceId);
 	return navigate({
 		to: "/v2-workspace/$workspaceId",
 		params: { workspaceId },
