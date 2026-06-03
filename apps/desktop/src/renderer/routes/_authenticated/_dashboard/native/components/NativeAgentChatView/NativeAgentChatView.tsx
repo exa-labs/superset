@@ -24,7 +24,6 @@ import type {
 } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-	LuCheck,
 	LuColumns2,
 	LuEllipsis,
 	LuExternalLink,
@@ -190,6 +189,7 @@ interface NativeAgentHeaderShortcut {
 	key: string;
 	label: string;
 	onSelect?: () => void;
+	section: "session" | "split" | "utility" | "view";
 }
 
 type NativeBrowserTarget = {
@@ -269,49 +269,7 @@ function shortcutSequence(...keys: Array<string | null | undefined>): string {
 		.join(" / ");
 }
 
-function NativeAgentHeaderShortcutsMenu({
-	shortcuts,
-}: {
-	shortcuts: NativeAgentHeaderShortcut[];
-}) {
-	if (shortcuts.length === 0) return null;
-
-	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					aria-label="Show native agent shortcuts"
-					title="Show shortcuts"
-					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-				>
-					<LuKeyRound className="size-4" />
-					<span className="hidden 2xl:inline">Shortcuts</span>
-				</button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-64">
-				<div className="px-2 py-1.5">
-					<div className="text-xs font-medium text-foreground">Shortcuts</div>
-					<div className="text-[11px] text-muted-foreground">
-						These work when the native session has focus.
-					</div>
-				</div>
-				<DropdownMenuSeparator />
-				{shortcuts.map((shortcut) => (
-					<DropdownMenuItem
-						key={`${shortcut.label}-${shortcut.key}`}
-						onSelect={shortcut.onSelect}
-					>
-						{shortcut.label}
-						<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
-					</DropdownMenuItem>
-				))}
-			</DropdownMenuContent>
-		</DropdownMenu>
-	);
-}
-
-function NativeAgentHeaderViewMenu({
+function NativeAgentHeaderViewSwitcher({
 	nativeBrowserShortcut,
 	nativeSplitShortcut,
 	onSelectViewMode,
@@ -343,113 +301,114 @@ function NativeAgentHeaderViewMenu({
 			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
 		},
 	];
-	const currentOption = options.find((option) => option.key === viewMode);
 
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<button
-					type="button"
-					aria-label={`Current native agent view: ${currentOption?.label ?? viewMode}`}
-					title="Switch native, browser, or split view"
-					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-				>
-					<LuColumns2 className="size-4" />
-					<span className="hidden 2xl:inline">
-						View: {currentOption?.label ?? viewMode}
-					</span>
-				</button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-56">
-				<div className="px-2 py-1.5">
-					<div className="text-xs font-medium text-foreground">View</div>
-					<div className="text-[11px] text-muted-foreground">
-						Switch chat, browser, or side-by-side mode.
-					</div>
-				</div>
-				<DropdownMenuSeparator />
-				{options.map((option) => (
-					<DropdownMenuItem
+		<div className="flex h-8 shrink-0 items-center overflow-hidden rounded-md border border-border/70 bg-muted/20 p-0.5">
+			{options.map((option) => {
+				const selected = option.key === viewMode;
+				const shortcutSuffix = option.shortcut ? ` (${option.shortcut})` : "";
+				return (
+					<button
 						key={option.key}
-						onSelect={() => onSelectViewMode(option.key)}
+						type="button"
+						aria-pressed={selected}
+						onClick={() => onSelectViewMode(option.key)}
+						title={`${option.label} view${shortcutSuffix}`}
+						className={cn(
+							"flex h-7 items-center gap-1.5 rounded px-2 text-xs font-medium transition-colors",
+							selected
+								? "bg-background text-foreground shadow-sm"
+								: "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+						)}
 					>
-						<span className="flex min-w-0 items-center gap-2">
-							<LuCheck
-								className={cn(
-									"size-3.5 shrink-0",
-									viewMode === option.key
-										? "text-foreground"
-										: "text-transparent",
-								)}
-							/>
-							{option.label}
-						</span>
-						<DropdownMenuShortcut>{option.shortcut}</DropdownMenuShortcut>
-					</DropdownMenuItem>
-				))}
-			</DropdownMenuContent>
-		</DropdownMenu>
+						{option.key === "split" ? (
+							<LuColumns2 className="hidden size-3.5 shrink-0 sm:block" />
+						) : null}
+						<span>{option.label}</span>
+					</button>
+				);
+			})}
+		</div>
 	);
 }
 
-function NativeAgentHeaderSessionMenu({
+const NATIVE_AGENT_HEADER_ACTION_SECTION_LABELS = {
+	session: "Session",
+	split: "Split",
+	utility: "Utilities",
+	view: "View",
+} satisfies Record<NativeAgentHeaderShortcut["section"], string>;
+
+function NativeAgentHeaderActionsMenu({
 	isArchiving,
 	isStopping,
 	onArchive,
-	onOpenExternal,
-	onPin,
-	onRename,
-	onSetSidebarVisible,
 	onStop,
-	selectedItem,
 	provider,
+	shortcuts,
 }: {
 	isArchiving: boolean;
 	isStopping: boolean;
 	onArchive: () => void;
-	onOpenExternal: () => void;
-	onPin: () => void;
-	onRename: () => void;
-	onSetSidebarVisible: () => void;
 	onStop: () => void;
 	provider: NativeAgentProvider;
-	selectedItem: NativeItem;
+	shortcuts: NativeAgentHeaderShortcut[];
 }) {
 	const stopLabel = provider === "capy" ? "Stop" : "Terminate";
+	const sectionOrder: NativeAgentHeaderShortcut["section"][] = [
+		"session",
+		"view",
+		"split",
+		"utility",
+	];
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
-					aria-label="Show session actions"
-					title="Session actions"
+					aria-label="Show native agent actions"
+					title="Actions and shortcuts"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
 					<LuEllipsis className="size-4" />
-					<span className="hidden 2xl:inline">Session</span>
+					<span className="hidden xl:inline">Actions</span>
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-56">
-				<DropdownMenuItem onSelect={onPin}>
-					{selectedItem.sidebarPinned ? "Unpin" : "Pin"}
-					<DropdownMenuShortcut>p</DropdownMenuShortcut>
-				</DropdownMenuItem>
-				<DropdownMenuItem onSelect={onSetSidebarVisible}>
-					{selectedItem.sidebarHidden ? "Show in sidebar" : "Move to overview"}
-					<DropdownMenuShortcut>x</DropdownMenuShortcut>
-				</DropdownMenuItem>
-				<DropdownMenuItem onSelect={onRename}>
-					Rename
-					<DropdownMenuShortcut>e</DropdownMenuShortcut>
-				</DropdownMenuItem>
+			<DropdownMenuContent align="end" className="w-72">
+				<div className="px-2 py-1.5">
+					<div className="text-xs font-medium text-foreground">Actions</div>
+					<div className="text-[11px] text-muted-foreground">
+						Keyboard shortcuts are shown here instead of crowding the header.
+					</div>
+				</div>
+				{sectionOrder.map((section) => {
+					const sectionShortcuts = shortcuts.filter(
+						(shortcut) => shortcut.section === section,
+					);
+					if (sectionShortcuts.length === 0) return null;
+					return (
+						<div key={section}>
+							<DropdownMenuSeparator />
+							<div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+								{NATIVE_AGENT_HEADER_ACTION_SECTION_LABELS[section]}
+							</div>
+							{sectionShortcuts.map((shortcut) => (
+								<DropdownMenuItem
+									key={`${shortcut.section}-${shortcut.label}-${shortcut.key}`}
+									onSelect={shortcut.onSelect}
+								>
+									{shortcut.label}
+									<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
+								</DropdownMenuItem>
+							))}
+						</div>
+					);
+				})}
 				<DropdownMenuSeparator />
-				{selectedItem.url && (
-					<DropdownMenuItem onSelect={onOpenExternal}>
-						Open externally
-						<DropdownMenuShortcut>O</DropdownMenuShortcut>
-					</DropdownMenuItem>
-				)}
+				<div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+					Danger
+				</div>
 				<DropdownMenuItem onSelect={onArchive} disabled={isArchiving}>
 					Archive
 				</DropdownMenuItem>
@@ -2236,11 +2195,13 @@ export function NativeAgentChatView({
 					key: "r",
 					label: "Reply",
 					onSelect: () => composerRef.current?.focus(),
+					section: "session",
 				},
 				{
 					key: "R",
 					label: "Refresh",
 					onSelect: () => void invalidateProvider(),
+					section: "utility",
 				},
 				{
 					key: "p",
@@ -2250,11 +2211,13 @@ export function NativeAgentChatView({
 							selectedItem,
 							selectedItem.sidebarPinned !== true,
 						),
+					section: "session",
 				},
 				{
 					key: "e",
 					label: "Rename",
 					onSelect: () => openRenameDialog(selectedItem),
+					section: "session",
 				},
 				{
 					key: "m",
@@ -2269,6 +2232,7 @@ export function NativeAgentChatView({
 								},
 							}),
 						),
+					section: "session",
 				},
 				{
 					key: "F",
@@ -2283,17 +2247,20 @@ export function NativeAgentChatView({
 								},
 							}),
 						),
+					section: "session",
 				},
 				{
 					key: "x",
 					label: "Move to overview",
 					onSelect: () => void handleSetSidebarVisible(selectedItem, false),
+					section: "session",
 				},
 				{
 					key: "Esc",
 					label: "Focus sidebar",
 					onSelect: () =>
 						handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+					section: "utility",
 				},
 				...(selectedItem.url
 					? [
@@ -2304,6 +2271,7 @@ export function NativeAgentChatView({
 									handleSelectViewMode(
 										viewMode === "native" ? "browser" : "native",
 									),
+								section: "view" as const,
 							},
 							{
 								key: shortcutSequence(nativeSplitShortcut, "s"),
@@ -2312,16 +2280,19 @@ export function NativeAgentChatView({
 									handleSelectViewMode(
 										viewMode === "split" ? "native" : "split",
 									),
+								section: "view" as const,
 							},
 							{
 								key: "o",
 								label: "Open browser view",
 								onSelect: () => handleSelectViewMode("browser"),
+								section: "view" as const,
 							},
 							{
 								key: "O",
 								label: "Open externally",
 								onSelect: () => openExternal.mutate(selectedItem.url ?? ""),
+								section: "view" as const,
 							},
 							...(viewMode === "split"
 								? [
@@ -2329,23 +2300,27 @@ export function NativeAgentChatView({
 											key: "w",
 											label: "Swap panes",
 											onSelect: () => swapNativeSplitPanes(),
+											section: "split" as const,
 										},
 										{
 											key: "[",
 											label: "Narrow native pane",
 											onSelect: () =>
 												resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP),
+											section: "split" as const,
 										},
 										{
 											key: "]",
 											label: "Widen native pane",
 											onSelect: () =>
 												resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP),
+											section: "split" as const,
 										},
 										{
 											key: "=",
 											label: "Equalize panes",
 											onSelect: () => equalizeNativeSplitPanes(),
+											section: "split" as const,
 										},
 									]
 								: []),
@@ -2427,15 +2402,12 @@ export function NativeAgentChatView({
 					</p>
 				</div>
 				{selectedItem?.url && (
-					<NativeAgentHeaderViewMenu
+					<NativeAgentHeaderViewSwitcher
 						nativeBrowserShortcut={nativeBrowserShortcut}
 						nativeSplitShortcut={nativeSplitShortcut}
 						onSelectViewMode={handleSelectViewMode}
 						viewMode={viewMode}
 					/>
-				)}
-				{selectedItem && (
-					<NativeAgentHeaderShortcutsMenu shortcuts={selectedHeaderShortcuts} />
 				)}
 				<button
 					type="button"
@@ -2465,27 +2437,13 @@ export function NativeAgentChatView({
 					<TooltipContent>Diagnostics</TooltipContent>
 				</Tooltip>
 				{selectedItem && (
-					<NativeAgentHeaderSessionMenu
+					<NativeAgentHeaderActionsMenu
 						isArchiving={isArchiving}
 						isStopping={isStopping}
 						onArchive={handleArchive}
-						onOpenExternal={() => openExternal.mutate(selectedItem.url ?? "")}
-						onPin={() =>
-							void handleSetPinned(
-								selectedItem,
-								selectedItem.sidebarPinned !== true,
-							)
-						}
-						onRename={() => openRenameDialog(selectedItem)}
-						onSetSidebarVisible={() =>
-							void handleSetSidebarVisible(
-								selectedItem,
-								selectedItem.sidebarHidden === true,
-							)
-						}
 						onStop={handleStop}
 						provider={provider}
-						selectedItem={selectedItem}
+						shortcuts={selectedHeaderShortcuts}
 					/>
 				)}
 			</header>
