@@ -2,7 +2,10 @@ import { CommandItem, CommandShortcut } from "@superset/ui/command";
 import { Kbd, KbdGroup } from "@superset/ui/kbd";
 import { useHotkeyDisplay } from "renderer/hotkeys/hooks/useHotkeyDisplay";
 import type { Command } from "../../core/types";
-import { commandShortcutKeycapsFromLabel } from "./command-shortcut-keycaps";
+import {
+	commandShortcutKeycapsFromLabel,
+	commandShortcutSearchText,
+} from "./command-shortcut-keycaps";
 
 interface CommandItemRowProps {
 	command: Command;
@@ -19,6 +22,10 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 			: [];
 	const shortcutText =
 		command.shortcutLabel ?? (shortcutKeys.length > 0 ? display.text : null);
+	const shortcutSearchText = commandShortcutSearchText({
+		keys: shortcutKeys,
+		label: shortcutText,
+	});
 	const shortcutOccurrences = new Map<string, number>();
 	const shortcutKeycaps = shortcutKeys.map((key) => {
 		const occurrence = shortcutOccurrences.get(key) ?? 0;
@@ -31,7 +38,7 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 	return (
 		<CommandItem
 			data-command-palette-command-id={command.id}
-			value={`${command.id} ${command.title} ${(command.keywords ?? []).join(" ")}`}
+			value={`${command.id} ${command.title} ${(command.keywords ?? []).join(" ")} ${shortcutSearchText}`}
 			onSelect={() => onSelect(command)}
 		>
 			{command.iconUrl ? (
