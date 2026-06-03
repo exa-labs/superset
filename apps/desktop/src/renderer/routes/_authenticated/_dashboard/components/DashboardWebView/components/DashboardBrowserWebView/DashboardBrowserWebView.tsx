@@ -208,6 +208,20 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				!event.altKey &&
 				!event.ctrlKey &&
 				!event.metaKey &&
+				String(event.key || "") === "?" &&
+				!isEditableTarget(event.target)
+			) {
+				event.preventDefault();
+				event.stopPropagation();
+				invokeShortcut("SHOW_DASHBOARD_KEYBOARD_HELP");
+				return;
+			}
+			if (
+				window.__clankeeDashboardVimModeEnabled === true &&
+				!event.repeat &&
+				!event.altKey &&
+				!event.ctrlKey &&
+				!event.metaKey &&
 				!event.shiftKey &&
 				String(event.key || "").toLowerCase() === "f" &&
 				!isEditableTarget(event.target)

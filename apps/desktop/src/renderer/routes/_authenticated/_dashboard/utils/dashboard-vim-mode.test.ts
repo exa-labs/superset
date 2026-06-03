@@ -97,6 +97,7 @@ describe("dashboard vim mode", () => {
 	});
 
 	it("maps global vim actions", () => {
+		expect(dashboardVimGlobalActionFromKey("?")).toBe("show-keyboard-help");
 		expect(dashboardVimGlobalActionFromKey("H")).toBe("toggle-sidebar");
 		expect(dashboardVimGlobalActionFromKey("h")).toBe("none");
 		expect(dashboardVimGlobalActionFromKey("p")).toBe("none");

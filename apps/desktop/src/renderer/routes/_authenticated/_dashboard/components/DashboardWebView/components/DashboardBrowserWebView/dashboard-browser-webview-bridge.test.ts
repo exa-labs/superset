@@ -15,5 +15,11 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'String(event.key || "").toLowerCase() === "f"',
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'String(event.key || "") === "?"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"SHOW_DASHBOARD_KEYBOARD_HELP",
+		);
 	});
 });

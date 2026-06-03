@@ -54,6 +54,7 @@ const DASHBOARD_WEB_SHORTCUTS = new Set<DashboardWebShortcut>([
 	"OPEN_DEVIN_7",
 	"OPEN_DEVIN_8",
 	"OPEN_DEVIN_9",
+	"SHOW_DASHBOARD_KEYBOARD_HELP",
 ]);
 
 function sanitizeUrl(url: string): string {

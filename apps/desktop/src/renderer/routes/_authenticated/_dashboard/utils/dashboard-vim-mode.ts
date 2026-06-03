@@ -3,7 +3,10 @@ import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 export type DashboardVimSequence = "g c" | "g d" | "g g";
-export type DashboardVimGlobalAction = "none" | "toggle-sidebar";
+export type DashboardVimGlobalAction =
+	| "none"
+	| "show-keyboard-help"
+	| "toggle-sidebar";
 export type DashboardVimNavigationAction =
 	| "none"
 	| "open-capy"
@@ -111,6 +114,7 @@ export function dashboardVimKey(event: KeyboardEvent): string {
 export function dashboardVimGlobalActionFromKey(
 	key: string,
 ): DashboardVimGlobalAction {
+	if (key === "?") return "show-keyboard-help";
 	if (key === "H") return "toggle-sidebar";
 	return "none";
 }

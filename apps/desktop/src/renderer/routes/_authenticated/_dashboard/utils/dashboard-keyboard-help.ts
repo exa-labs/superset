@@ -47,6 +47,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Review the dashboard keyboard map from browsers and terminals",
 				},
 				{
+					keys: ["?"],
+					label: "Show this overlay in Vim mode",
+					description:
+						"Open this guide from the dashboard shell or embedded browser pages",
+				},
+				{
 					keys: ["f"],
 					label: "Show action hints",
 					description: "Label visible dashboard buttons and links by key",

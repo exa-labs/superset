@@ -29,7 +29,8 @@ export type DashboardWebShortcut =
 	| "OPEN_DEVIN_6"
 	| "OPEN_DEVIN_7"
 	| "OPEN_DEVIN_8"
-	| "OPEN_DEVIN_9";
+	| "OPEN_DEVIN_9"
+	| "SHOW_DASHBOARD_KEYBOARD_HELP";
 
 type DashboardWebShortcutInput = Pick<
 	Input,

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
 	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
@@ -46,7 +47,8 @@ type DashboardWebShortcut =
 	| "OPEN_DEVIN_6"
 	| "OPEN_DEVIN_7"
 	| "OPEN_DEVIN_8"
-	| "OPEN_DEVIN_9";
+	| "OPEN_DEVIN_9"
+	| "SHOW_DASHBOARD_KEYBOARD_HELP";
 
 const WEB_PAGE_SHORTCUTS: DashboardWebShortcut[] = [
 	"OPEN_WEB_PAGE_1",
@@ -191,6 +193,10 @@ export function useDashboardWebShortcuts() {
 
 	const runShortcut = useCallback(
 		(shortcut: DashboardWebShortcut) => {
+			if (shortcut === "SHOW_DASHBOARD_KEYBOARD_HELP") {
+				openDashboardKeyboardHelp();
+				return;
+			}
 			if (shortcut === "OPEN_CAPY") {
 				openNativeProviderWithPrefix("capy");
 				return;
@@ -266,6 +272,13 @@ export function useDashboardWebShortcuts() {
 			if (shouldHandleDashboardVimKey(event)) {
 				const key = dashboardVimKey(event);
 				const globalAction = dashboardVimGlobalActionFromKey(key);
+				if (globalAction === "show-keyboard-help") {
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					openDashboardKeyboardHelp();
+					return;
+				}
 				if (globalAction === "toggle-sidebar") {
 					event.preventDefault();
 					event.stopPropagation();
