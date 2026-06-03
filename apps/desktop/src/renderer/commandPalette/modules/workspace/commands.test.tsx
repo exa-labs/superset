@@ -105,6 +105,7 @@ describe("workspace command provider", () => {
 		const hotkeyById = new Map(
 			commands.map((command) => [command.id, command.hotkeyId] as const),
 		);
+		const commandIds = new Set(commands.map((command) => command.id));
 
 		expect(hotkeyById.get("workspace.pane.splitAuto")).toBe("SPLIT_AUTO");
 		expect(hotkeyById.get("workspace.pane.splitRight")).toBe("SPLIT_RIGHT");
@@ -125,6 +126,10 @@ describe("workspace command provider", () => {
 		);
 		expect(hotkeyById.get("workspace.pane.focusUp")).toBe("FOCUS_PANE_UP");
 		expect(hotkeyById.get("workspace.pane.focusDown")).toBe("FOCUS_PANE_DOWN");
+		expect(commandIds.has("workspace.pane.swapLeft")).toBe(true);
+		expect(commandIds.has("workspace.pane.swapRight")).toBe(true);
+		expect(commandIds.has("workspace.pane.swapUp")).toBe(true);
+		expect(commandIds.has("workspace.pane.swapDown")).toBe(true);
 	});
 
 	it("dispatches workspace pane action events", () => {
@@ -149,6 +154,9 @@ describe("workspace command provider", () => {
 			commands
 				.find((command) => command.id === "workspace.pane.focusLeft")
 				?.run?.(commandContext());
+			commands
+				.find((command) => command.id === "workspace.pane.swapRight")
+				?.run?.(commandContext());
 
 			expect(events).toContainEqual({
 				detail: { action: "split-right" },
@@ -172,6 +180,10 @@ describe("workspace command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "focus-left" },
+				type: DASHBOARD_WORKSPACE_PANE_ACTION_EVENT,
+			});
+			expect(events).toContainEqual({
+				detail: { action: "swap-right" },
 				type: DASHBOARD_WORKSPACE_PANE_ACTION_EVENT,
 			});
 		});

@@ -14,6 +14,7 @@ import {
 import {
 	type DashboardWorkspacePaneResizeDirection,
 	resizeMosaicWorkspacePane,
+	swapMosaicWorkspacePanes,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
 import type { WorkspaceSearchParams } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { navigateToWorkspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
@@ -491,6 +492,25 @@ function WorkspacePage() {
 		},
 		[activeTabId, activeTab?.layout, focusedPaneId, setFocusedPane],
 	);
+
+	const handleSwapFocusedPane = useCallback(
+		(dir: FocusDirection) => {
+			if (!activeTabId || !activeTab?.layout || !focusedPaneId) return;
+			const neighbor = getSpatialNeighborMosaicPaneId(
+				activeTab.layout,
+				focusedPaneId,
+				dir,
+			);
+			if (!neighbor) return;
+			const nextLayout = swapMosaicWorkspacePanes({
+				firstPaneId: focusedPaneId,
+				layout: activeTab.layout,
+				secondPaneId: neighbor,
+			});
+			if (nextLayout) updateTabLayout(activeTabId, nextLayout);
+		},
+		[activeTab?.layout, activeTabId, focusedPaneId, updateTabLayout],
+	);
 	useHotkey("FOCUS_PANE_LEFT", () => moveFocusDirectional("left"));
 	useHotkey("FOCUS_PANE_RIGHT", () => moveFocusDirectional("right"));
 	useHotkey("FOCUS_PANE_UP", () => moveFocusDirectional("up"));
@@ -535,6 +555,18 @@ function WorkspacePage() {
 				case "split-right":
 					handleSplitRight();
 					break;
+				case "swap-down":
+					handleSwapFocusedPane("down");
+					break;
+				case "swap-left":
+					handleSwapFocusedPane("left");
+					break;
+				case "swap-right":
+					handleSwapFocusedPane("right");
+					break;
+				case "swap-up":
+					handleSwapFocusedPane("up");
+					break;
 				case "widen-pane":
 					handleResizeFocusedPane("widen");
 					break;
@@ -544,6 +576,7 @@ function WorkspacePage() {
 			handleClosePane,
 			handleEqualizePaneSplits,
 			handleResizeFocusedPane,
+			handleSwapFocusedPane,
 			handleSplitAuto,
 			handleSplitDown,
 			handleSplitRight,

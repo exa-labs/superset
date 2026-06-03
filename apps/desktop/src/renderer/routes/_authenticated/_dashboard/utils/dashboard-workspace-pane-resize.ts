@@ -139,3 +139,70 @@ export function resizeMosaicWorkspacePane({
 		typeof node === "string" ? node : { ...node, splitPercentage },
 	);
 }
+
+export function swapV2WorkspacePanes({
+	firstPaneId,
+	layout,
+	secondPaneId,
+}: {
+	firstPaneId: string;
+	layout: LayoutNode;
+	secondPaneId: string;
+}): LayoutNode | null {
+	if (firstPaneId === secondPaneId) return null;
+	if (!v2PanePath(layout, firstPaneId) || !v2PanePath(layout, secondPaneId)) {
+		return null;
+	}
+
+	const swap = (node: LayoutNode): LayoutNode => {
+		if (node.type === "pane") {
+			if (node.paneId === firstPaneId)
+				return { type: "pane", paneId: secondPaneId };
+			if (node.paneId === secondPaneId)
+				return { type: "pane", paneId: firstPaneId };
+			return node;
+		}
+
+		return {
+			...node,
+			first: swap(node.first),
+			second: swap(node.second),
+		};
+	};
+
+	return swap(layout);
+}
+
+export function swapMosaicWorkspacePanes({
+	firstPaneId,
+	layout,
+	secondPaneId,
+}: {
+	firstPaneId: string;
+	layout: MosaicNode<string>;
+	secondPaneId: string;
+}): MosaicNode<string> | null {
+	if (firstPaneId === secondPaneId) return null;
+	if (
+		!mosaicPanePath(layout, firstPaneId) ||
+		!mosaicPanePath(layout, secondPaneId)
+	) {
+		return null;
+	}
+
+	const swap = (node: MosaicNode<string>): MosaicNode<string> => {
+		if (typeof node === "string") {
+			if (node === firstPaneId) return secondPaneId;
+			if (node === secondPaneId) return firstPaneId;
+			return node;
+		}
+
+		return {
+			...node,
+			first: swap(node.first),
+			second: swap(node.second),
+		};
+	};
+
+	return swap(layout);
+}

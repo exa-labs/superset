@@ -347,6 +347,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Move workspace focus to the pane below",
 				},
 				{
+					keys: ["⌥", "K"],
+					label: "Swap workspace pane",
+					description:
+						"Use the control plane to swap the focused pane with a neighbor",
+				},
+				{
 					hotkeyId: "CLOSE_PANE",
 					label: "Close focused pane",
 					description: "Close the focused workspace pane",

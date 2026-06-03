@@ -182,6 +182,38 @@ export const workspaceProvider: CommandProvider = {
 				keywords: ["pane", "move", "keyboard"],
 				run: () => dispatchDashboardWorkspacePaneAction("focus-down"),
 			},
+			{
+				id: "workspace.pane.swapLeft",
+				title: "Swap pane left",
+				section: "workspace",
+				icon: ArrowLeftIcon,
+				keywords: ["pane", "move", "keyboard", "swap"],
+				run: () => dispatchDashboardWorkspacePaneAction("swap-left"),
+			},
+			{
+				id: "workspace.pane.swapRight",
+				title: "Swap pane right",
+				section: "workspace",
+				icon: ArrowRightIcon,
+				keywords: ["pane", "move", "keyboard", "swap"],
+				run: () => dispatchDashboardWorkspacePaneAction("swap-right"),
+			},
+			{
+				id: "workspace.pane.swapUp",
+				title: "Swap pane up",
+				section: "workspace",
+				icon: ArrowUpIcon,
+				keywords: ["pane", "move", "keyboard", "swap"],
+				run: () => dispatchDashboardWorkspacePaneAction("swap-up"),
+			},
+			{
+				id: "workspace.pane.swapDown",
+				title: "Swap pane down",
+				section: "workspace",
+				icon: ArrowDownIcon,
+				keywords: ["pane", "move", "keyboard", "swap"],
+				run: () => dispatchDashboardWorkspacePaneAction("swap-down"),
+			},
 		];
 
 		if (workspace.projectId) {

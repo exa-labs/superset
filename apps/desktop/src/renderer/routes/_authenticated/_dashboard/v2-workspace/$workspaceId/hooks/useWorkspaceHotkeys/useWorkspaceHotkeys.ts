@@ -15,6 +15,7 @@ import {
 import {
 	type DashboardWorkspacePaneResizeDirection,
 	resolveV2WorkspacePaneResize,
+	swapV2WorkspacePanes,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
 import type { V2TerminalPresetRow } from "renderer/routes/_authenticated/providers/CollectionsProvider/dashboardSidebarLocal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
@@ -209,6 +210,35 @@ export function useWorkspaceHotkeys({
 		[store],
 	);
 
+	const handleSwapFocusedPane = useCallback(
+		(dir: FocusDirection) => {
+			const state = store.getState();
+			const tab = state.getActiveTab();
+			if (!tab || !tab.activePaneId) return;
+			const neighbor = getSpatialNeighborPaneId(
+				tab.layout,
+				tab.activePaneId,
+				dir,
+			);
+			if (!neighbor) return;
+			const nextLayout = swapV2WorkspacePanes({
+				firstPaneId: tab.activePaneId,
+				layout: tab.layout,
+				secondPaneId: neighbor,
+			});
+			if (!nextLayout) return;
+			state.replaceState((prev) => ({
+				...prev,
+				tabs: prev.tabs.map((candidate) =>
+					candidate.id === tab.id
+						? { ...candidate, layout: nextLayout }
+						: candidate,
+				),
+			}));
+		},
+		[store],
+	);
+
 	useHotkey("FOCUS_PANE_LEFT", () => moveFocusDirectional("left"));
 	useHotkey("FOCUS_PANE_RIGHT", () => moveFocusDirectional("right"));
 	useHotkey("FOCUS_PANE_UP", () => moveFocusDirectional("up"));
@@ -374,6 +404,18 @@ export function useWorkspaceHotkeys({
 				case "split-right":
 					void handleSplitRight();
 					break;
+				case "swap-down":
+					handleSwapFocusedPane("down");
+					break;
+				case "swap-left":
+					handleSwapFocusedPane("left");
+					break;
+				case "swap-right":
+					handleSwapFocusedPane("right");
+					break;
+				case "swap-up":
+					handleSwapFocusedPane("up");
+					break;
 				case "widen-pane":
 					handleResizeFocusedPane("widen");
 					break;
@@ -383,6 +425,7 @@ export function useWorkspaceHotkeys({
 			handleClosePane,
 			handleEqualizePaneSplits,
 			handleResizeFocusedPane,
+			handleSwapFocusedPane,
 			handleSplitAuto,
 			handleSplitDown,
 			handleSplitRight,

@@ -14,6 +14,10 @@ export const DASHBOARD_WORKSPACE_PANE_ACTIONS = [
 	"split-chat",
 	"split-down",
 	"split-right",
+	"swap-down",
+	"swap-left",
+	"swap-right",
+	"swap-up",
 	"widen-pane",
 ] as const;
 

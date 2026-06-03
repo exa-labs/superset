@@ -57,6 +57,9 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("FOCUS_PANE_UP")).toBe(true);
 		expect(hotkeyIds.has("FOCUS_PANE_DOWN")).toBe(true);
 		expect(hotkeyIds.has("CLOSE_PANE")).toBe(true);
+		expect(entryByLabel.get("Swap workspace pane")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "K"] }),
+		);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),
 		);
