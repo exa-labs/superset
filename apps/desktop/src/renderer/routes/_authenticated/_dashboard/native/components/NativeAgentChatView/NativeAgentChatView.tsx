@@ -123,6 +123,7 @@ import {
 	nativeAgentShortcutDisplayLabel,
 	nativeAgentShortcutTitleSuffix,
 } from "../../utils/native-agent-shortcuts";
+import { nativeAgentSplitShortcutDescriptors } from "../../utils/native-agent-split-shortcuts";
 import {
 	formatNativeAgentTimestamp,
 	isNativeAgentLiveStatus,
@@ -2314,36 +2315,32 @@ export function NativeAgentChatView({
 								onSelect: () => openExternal.mutate(selectedItem.url ?? ""),
 								section: "view" as const,
 							},
-							...(viewMode === "split"
-								? [
-										{
-											key: "w",
-											label: "Swap panes",
-											onSelect: () => swapNativeSplitPanes(),
-											section: "split" as const,
-										},
-										{
-											key: "[",
-											label: "Narrow native pane",
-											onSelect: () =>
-												resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP),
-											section: "split" as const,
-										},
-										{
-											key: "]",
-											label: "Widen native pane",
-											onSelect: () =>
-												resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP),
-											section: "split" as const,
-										},
-										{
-											key: "=",
-											label: "Equalize panes",
-											onSelect: () => equalizeNativeSplitPanes(),
-											section: "split" as const,
-										},
-									]
-								: []),
+							...nativeAgentSplitShortcutDescriptors(viewMode).map(
+								(shortcut) => ({
+									key: shortcut.key,
+									label: shortcut.label,
+									onSelect: () => {
+										if (shortcut.action === "close-split") {
+											handleSelectViewMode("native");
+											return;
+										}
+										if (shortcut.action === "swap-split") {
+											swapNativeSplitPanes();
+											return;
+										}
+										if (shortcut.action === "narrow-native-split") {
+											resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
+											return;
+										}
+										if (shortcut.action === "widen-native-split") {
+											resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP);
+											return;
+										}
+										equalizeNativeSplitPanes();
+									},
+									section: "split" as const,
+								}),
+							),
 						]
 					: []),
 			]
