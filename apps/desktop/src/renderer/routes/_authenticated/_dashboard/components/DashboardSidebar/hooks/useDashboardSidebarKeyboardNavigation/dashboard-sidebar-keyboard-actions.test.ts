@@ -4,6 +4,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import {
@@ -74,6 +75,17 @@ describe("dashboardSidebarActivationActionFromKey", () => {
 	});
 });
 
+describe("dashboardSidebarRovingNavigationDeltaFromKey", () => {
+	test("maps arrows and j/k to sidebar roving deltas", () => {
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("ArrowDown")).toBe(1);
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("j")).toBe(1);
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("ArrowUp")).toBe(-1);
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("k")).toBe(-1);
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("J")).toBe(0);
+		expect(dashboardSidebarRovingNavigationDeltaFromKey("x")).toBe(0);
+	});
+});
+
 describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	test("starts sidebar typeahead for printable keys in normal keyboard mode", () => {
 		expect(
@@ -132,7 +144,7 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		for (const key of ["c", "d", "n", "p"]) {
+		for (const key of ["c", "d", "j", "k", "n", "p"]) {
 			expect(
 				dashboardSidebarTypeaheadSeedFromKey({
 					altKey: false,

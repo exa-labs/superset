@@ -6,6 +6,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
 
@@ -162,8 +163,11 @@ export function useDashboardSidebarKeyboardNavigation(
 			const activeElement = document.activeElement;
 			const focusInsideSidebar =
 				isHTMLElement(activeElement) && root.contains(activeElement);
-			const arrowNavigation =
-				event.key === "ArrowUp" || event.key === "ArrowDown";
+			const rovingNavigationDelta =
+				focusInsideSidebar || vimModeEnabled
+					? dashboardSidebarRovingNavigationDeltaFromKey(event.key)
+					: 0;
+			const rovingNavigation = rovingNavigationDelta !== 0;
 			const activationAction = dashboardSidebarActivationActionFromKey(
 				event.key,
 			);
@@ -195,7 +199,7 @@ export function useDashboardSidebarKeyboardNavigation(
 				].includes(event.key);
 
 			if (
-				!arrowNavigation &&
+				!rovingNavigation &&
 				!vimNavigation &&
 				!activationKey &&
 				!sidebarActionKey &&
@@ -232,15 +236,9 @@ export function useDashboardSidebarKeyboardNavigation(
 				focusItem(items[nextIndex]);
 			};
 
-			if (event.key === "ArrowDown" || event.key === "j") {
+			if (rovingNavigationDelta !== 0) {
 				event.preventDefault();
-				focusByDelta(1);
-				return;
-			}
-
-			if (event.key === "ArrowUp" || event.key === "k") {
-				event.preventDefault();
-				focusByDelta(-1);
+				focusByDelta(rovingNavigationDelta);
 				return;
 			}
 

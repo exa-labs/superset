@@ -43,6 +43,14 @@ export function dashboardSidebarActivationActionFromKey(
 	return "none";
 }
 
+export function dashboardSidebarRovingNavigationDeltaFromKey(
+	key: string,
+): -1 | 0 | 1 {
+	if (key === "ArrowDown" || key === "j") return 1;
+	if (key === "ArrowUp" || key === "k") return -1;
+	return 0;
+}
+
 export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	altKey: boolean;
 	ctrlKey: boolean;
@@ -56,6 +64,9 @@ export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	if (input.altKey || input.ctrlKey || input.metaKey) return null;
 	if (input.key.length !== 1) return null;
 	if (input.key.trim().length === 0) return null;
+	if (dashboardSidebarRovingNavigationDeltaFromKey(input.key) !== 0) {
+		return null;
+	}
 	if (dashboardSidebarKeyboardActionFromKey(input.key) !== "none") return null;
 	return input.key;
 }
