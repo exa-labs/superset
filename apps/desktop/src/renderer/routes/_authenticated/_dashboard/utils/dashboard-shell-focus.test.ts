@@ -11,6 +11,7 @@ class FakeElement {
 		private readonly options: {
 			active?: boolean;
 			height?: number;
+			nativeSession?: boolean;
 			width?: number;
 		} = {},
 	) {}
@@ -19,6 +20,9 @@ class FakeElement {
 		if (name === "aria-hidden") return null;
 		if (name === "data-dashboard-sidebar-active") {
 			return this.options.active ? "true" : null;
+		}
+		if (name === "data-native-agent-session-row-id") {
+			return this.options.nativeSession ? "native-session" : null;
 		}
 		return null;
 	}
@@ -47,6 +51,13 @@ class FakeSidebarRoot {
 	constructor(private readonly elements: FakeElement[]) {}
 
 	querySelectorAll(selector: string) {
+		if (selector.includes("data-native-agent-session-row-id")) {
+			return this.elements.filter(
+				(element) =>
+					element.getAttribute("data-dashboard-sidebar-active") === "true" &&
+					element.getAttribute("data-native-agent-session-row-id") != null,
+			);
+		}
 		if (selector.includes("data-dashboard-sidebar-active")) {
 			return this.elements.filter(
 				(element) =>
@@ -76,6 +87,23 @@ describe("focusDashboardNavigationShell", () => {
 		expect(first.focusCount).toBe(0);
 		expect(active.focusCount).toBe(1);
 		expect(active.scrollCount).toBe(1);
+	});
+
+	it("prefers an active native session row over an active provider header", () => {
+		const providerHeader = new FakeElement("Devin provider", { active: true });
+		const nativeSession = new FakeElement("Active Devin session", {
+			active: true,
+			nativeSession: true,
+		});
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([providerHeader, nativeSession])),
+			),
+		).toBe(true);
+		expect(providerHeader.focusCount).toBe(0);
+		expect(nativeSession.focusCount).toBe(1);
+		expect(nativeSession.scrollCount).toBe(1);
 	});
 
 	it("falls back to the first visible sidebar control", () => {

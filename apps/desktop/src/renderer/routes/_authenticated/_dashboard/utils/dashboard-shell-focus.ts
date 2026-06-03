@@ -1,5 +1,9 @@
 const ACTIVE_SIDEBAR_SELECTOR =
 	'[data-dashboard-sidebar-active="true"]:not([disabled])';
+const ACTIVE_NATIVE_AGENT_ROW_SELECTOR = [
+	'[data-dashboard-sidebar-active="true"][data-native-agent-session-row-id]:not([disabled])',
+	'[data-dashboard-sidebar-active="true"] [data-native-agent-session-row-id]:not([disabled])',
+].join(",");
 
 const FALLBACK_SIDEBAR_SELECTOR = [
 	"button:not([disabled])",
@@ -43,6 +47,7 @@ export function focusDashboardNavigationShell(
 	if (!root) return false;
 
 	const target =
+		firstVisible(root.querySelectorAll(ACTIVE_NATIVE_AGENT_ROW_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_SIDEBAR_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(FALLBACK_SIDEBAR_SELECTOR));
 	if (!target) return false;
