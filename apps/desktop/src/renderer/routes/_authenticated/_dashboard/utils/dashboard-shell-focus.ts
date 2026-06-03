@@ -30,6 +30,13 @@ const FALLBACK_SIDEBAR_SELECTOR = [
 	"[role='button']:not([aria-disabled='true'])",
 	"[tabindex]:not([tabindex='-1'])",
 ].join(",");
+const DEFAULT_NAVIGATION_SHELL_FOCUS_DELAYS_MS = [0, 120] as const;
+
+interface ScheduleDashboardNavigationShellFocusOptions {
+	delaysMs?: readonly number[];
+	focus?: () => boolean;
+	setTimer?: (callback: () => void, ms: number) => unknown;
+}
 
 function isHTMLElement(value: Element | null): value is HTMLElement {
 	if (!value) return false;
@@ -133,4 +140,23 @@ export function focusDashboardNavigationShell(
 	target.focus({ preventScroll: true });
 	target.scrollIntoView({ block: "nearest" });
 	return true;
+}
+
+export function scheduleDashboardNavigationShellFocus(
+	options: ScheduleDashboardNavigationShellFocusOptions = {},
+): void {
+	const focus = options.focus ?? (() => focusDashboardNavigationShell());
+	const setTimer =
+		options.setTimer ??
+		((callback: () => void, ms: number) => {
+			if (typeof window !== "undefined") return window.setTimeout(callback, ms);
+			return setTimeout(callback, ms);
+		});
+	const delaysMs = options.delaysMs ?? DEFAULT_NAVIGATION_SHELL_FOCUS_DELAYS_MS;
+
+	for (const delayMs of delaysMs) {
+		setTimer(() => {
+			focus();
+		}, delayMs);
+	}
 }

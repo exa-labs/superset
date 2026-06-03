@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { focusDashboardNavigationShell } from "./dashboard-shell-focus";
+import {
+	focusDashboardNavigationShell,
+	scheduleDashboardNavigationShellFocus,
+} from "./dashboard-shell-focus";
 
 class FakeElement {
 	tabIndex = 0;
@@ -335,5 +338,42 @@ describe("focusDashboardNavigationShell", () => {
 	it("returns false when the dashboard sidebar or document is missing", () => {
 		expect(focusDashboardNavigationShell(fakeDocument(null))).toBe(false);
 		expect(focusDashboardNavigationShell(null)).toBe(false);
+	});
+});
+
+describe("scheduleDashboardNavigationShellFocus", () => {
+	it("schedules an immediate and delayed focus attempt for route-driven jumps", () => {
+		const calls: number[] = [];
+		let focusCount = 0;
+
+		scheduleDashboardNavigationShellFocus({
+			focus: () => {
+				focusCount += 1;
+				return true;
+			},
+			setTimer: (callback, ms) => {
+				calls.push(ms);
+				callback();
+				return ms;
+			},
+		});
+
+		expect(calls).toEqual([0, 120]);
+		expect(focusCount).toBe(2);
+	});
+
+	it("allows focused tests to override retry timings", () => {
+		const calls: number[] = [];
+
+		scheduleDashboardNavigationShellFocus({
+			delaysMs: [10, 250, 500],
+			focus: () => true,
+			setTimer: (_callback, ms) => {
+				calls.push(ms);
+				return ms;
+			},
+		});
+
+		expect(calls).toEqual([10, 250, 500]);
 	});
 });

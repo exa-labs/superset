@@ -9,6 +9,7 @@ import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashbo
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
@@ -155,15 +156,19 @@ export function useDashboardWebShortcuts() {
 				to: "/web/$pageId",
 				params: { pageId: page.id },
 			});
+			scheduleDashboardNavigationShellFocus();
 		},
 		[navigate],
 	);
 
 	const openNativeProvider = useCallback(
-		(provider: NativeAgentProvider) => {
+		(provider: NativeAgentProvider, options: { focusShell?: boolean } = {}) => {
 			void navigate({
 				to: provider === "capy" ? "/native/capy" : "/native/devin",
 			});
+			if (options.focusShell !== false) {
+				scheduleDashboardNavigationShellFocus();
+			}
 		},
 		[navigate],
 	);
@@ -171,7 +176,7 @@ export function useDashboardWebShortcuts() {
 	const createNativeProviderSession = useCallback(
 		(provider: NativeAgentProvider) => {
 			clearPendingNativeProvider();
-			openNativeProvider(provider);
+			openNativeProvider(provider, { focusShell: false });
 			const dispatchCreate = () => {
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-create", {
@@ -193,10 +198,12 @@ export function useDashboardWebShortcuts() {
 			to: "/web-tabs/$tabId",
 			params: { tabId: tab.id },
 		});
+		scheduleDashboardNavigationShellFocus();
 	}, [navigate]);
 
 	const openWorkspaces = useCallback(() => {
 		void navigate({ to: "/v2-workspaces" });
+		scheduleDashboardNavigationShellFocus();
 	}, [navigate]);
 
 	const openNativeProviderAtIndex = useCallback(
@@ -212,6 +219,7 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 			row.click();
+			scheduleDashboardNavigationShellFocus();
 		},
 		[openNativeProvider],
 	);
