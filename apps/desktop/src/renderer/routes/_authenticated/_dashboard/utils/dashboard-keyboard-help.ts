@@ -257,6 +257,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Jump to the next unread Capy or Devin response",
 				},
 				{
+					keys: ["U"],
+					label: "Mark latest reply read",
+					description:
+						"Acknowledge the latest Capy or Devin response without opening it",
+				},
+				{
 					keys: ["o"],
 					label: "Open browser version",
 					description: "Open the current agent session in the embedded browser",

@@ -640,7 +640,7 @@ export const webProvider: CommandProvider = {
 					iconUrl,
 					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
 					keywords: [...keywords, "read", "dismiss", "clear"],
-					shortcutLabel: "u a",
+					shortcutLabel: "U",
 					run: () => {
 						markNativeAgentReplyNotificationRead(actionableLatestNativeReply);
 					},

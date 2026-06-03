@@ -97,7 +97,9 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
 import {
 	getUnreadNativeAgentReplyNotifications,
+	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	readLatestNativeAgentReplyNotification,
 	readNativeAgentReadState,
 	writeLatestNativeAgentReplyNotification,
 	writeNativeAgentReadState,
@@ -1664,6 +1666,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "o" &&
 				vimKey !== "p" &&
 				vimKey !== "u" &&
+				vimKey !== "U" &&
 				vimKey !== "x" &&
 				vimKey !== "F"
 			) {
@@ -1753,7 +1756,16 @@ export function DashboardNativeAgentsSection({
 				createFolder(rowProvider);
 				return;
 			}
-			if (nativeAgentUnreadVimActionFromKey(vimKey) === "open-unread") {
+			const unreadAction = nativeAgentUnreadVimActionFromKey(vimKey);
+			if (unreadAction === "mark-latest-read") {
+				const latestReply = readLatestNativeAgentReplyNotification();
+				if (!latestReply) return;
+				event.preventDefault();
+				event.stopPropagation();
+				markNativeAgentReplyNotificationRead(latestReply);
+				return;
+			}
+			if (unreadAction === "open-unread") {
 				const unreadItem = itemsByProvider[rowProvider].find((item) =>
 					hasUnreadAgentResponse(item, readState),
 				);

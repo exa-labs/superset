@@ -91,7 +91,9 @@ import {
 } from "../../utils/native-agent-message-rendering";
 import {
 	compactNativeAgentReplyPreview,
+	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	readLatestNativeAgentReplyNotification,
 	readNativeAgentReadState,
 	writeNativeAgentReadState,
 } from "../../utils/native-agent-notifications";
@@ -1562,7 +1564,15 @@ export function NativeAgentChatView({
 				return;
 			}
 
-			if (nativeAgentUnreadVimActionFromKey(key) === "open-unread") {
+			const unreadAction = nativeAgentUnreadVimActionFromKey(key);
+			if (unreadAction === "mark-latest-read") {
+				const latestReply = readLatestNativeAgentReplyNotification();
+				if (!latestReply) return;
+				consumeNativeAgentKeyboardEvent(event);
+				markNativeAgentReplyNotificationRead(latestReply);
+				return;
+			}
+			if (unreadAction === "open-unread") {
 				const unreadItem = unreadWorkspaceItems[0];
 				if (!unreadItem) return;
 				consumeNativeAgentKeyboardEvent(event);

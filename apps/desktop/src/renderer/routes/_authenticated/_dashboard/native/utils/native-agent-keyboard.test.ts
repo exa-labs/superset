@@ -170,7 +170,7 @@ describe("native agent keyboard helpers", () => {
 
 	it("maps unread vim action keys", () => {
 		expect(nativeAgentUnreadVimActionFromKey("u")).toBe("open-unread");
-		expect(nativeAgentUnreadVimActionFromKey("U")).toBe("none");
+		expect(nativeAgentUnreadVimActionFromKey("U")).toBe("mark-latest-read");
 		expect(nativeAgentUnreadVimActionFromKey("j")).toBe("none");
 	});
 

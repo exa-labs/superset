@@ -42,7 +42,10 @@ export type NativeAgentCreateVimAction =
 	| "create-folder"
 	| "create-session"
 	| "none";
-export type NativeAgentUnreadVimAction = "none" | "open-unread";
+export type NativeAgentUnreadVimAction =
+	| "mark-latest-read"
+	| "none"
+	| "open-unread";
 export type NativeAgentSplitPaneAction =
 	| "equalize"
 	| "narrow-native"
@@ -118,6 +121,7 @@ export function nativeAgentUnreadVimActionFromKey(
 	key: string | null,
 ): NativeAgentUnreadVimAction {
 	if (key === "u") return "open-unread";
+	if (key === "U") return "mark-latest-read";
 	return "none";
 }
 
