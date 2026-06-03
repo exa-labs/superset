@@ -8,6 +8,10 @@ const ACTIVE_NATIVE_AGENT_ROW_SELECTOR = [
 	'[data-dashboard-sidebar-active="true"][data-native-agent-session-row-id]:not([disabled])',
 	'[data-dashboard-sidebar-active="true"] [data-native-agent-session-row-id]:not([disabled])',
 ].join(",");
+const ACTIVE_WEB_TAB_ROW_SELECTOR = [
+	'[data-dashboard-sidebar-active="true"][data-dashboard-web-tab-row-button]:not([disabled])',
+	'[data-dashboard-sidebar-active="true"] [data-dashboard-web-tab-row-button]:not([disabled])',
+].join(",");
 
 const PRIMARY_SIDEBAR_SELECTOR = [
 	'[data-dashboard-sidebar-roving-item="true"]',
@@ -119,6 +123,7 @@ export function focusDashboardNavigationShell(
 	const target =
 		firstPreservedSidebarItem(root) ??
 		firstVisible(root.querySelectorAll(ACTIVE_NATIVE_AGENT_ROW_SELECTOR)) ??
+		firstVisible(root.querySelectorAll(ACTIVE_WEB_TAB_ROW_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_SIDEBAR_SELECTOR)) ??
 		firstPrimarySidebarItem(root) ??
 		firstFallbackSidebarItem(root);

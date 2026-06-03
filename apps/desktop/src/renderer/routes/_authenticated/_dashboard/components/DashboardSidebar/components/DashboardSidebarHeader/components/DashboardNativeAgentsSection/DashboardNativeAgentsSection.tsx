@@ -1903,6 +1903,7 @@ export function DashboardNativeAgentsSection({
 							<TooltipTrigger asChild>
 								<button
 									type="button"
+									data-dashboard-sidebar-active={isActive ? "true" : undefined}
 									data-dashboard-native-provider-trigger={providerConfig.id}
 									data-dashboard-sidebar-typeahead-label={providerConfig.title}
 									onClick={() => openProvider(providerConfig.id)}

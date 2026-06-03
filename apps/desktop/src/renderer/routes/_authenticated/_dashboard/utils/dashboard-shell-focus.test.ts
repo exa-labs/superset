@@ -16,6 +16,7 @@ class FakeElement {
 			height?: number;
 			nativeSession?: boolean;
 			roving?: boolean;
+			webTab?: boolean;
 			width?: number;
 		} = {},
 	) {}
@@ -34,6 +35,9 @@ class FakeElement {
 		}
 		if (name === "data-dashboard-sidebar-action") {
 			return this.options.action ? "pin" : null;
+		}
+		if (name === "data-dashboard-web-tab-row-button") {
+			return this.options.webTab ? "chrome-tab" : null;
 		}
 		return null;
 	}
@@ -111,6 +115,13 @@ class FakeSidebarRoot {
 				(element) =>
 					element.getAttribute("data-dashboard-sidebar-active") === "true" &&
 					element.getAttribute("data-native-agent-session-row-id") != null,
+			);
+		}
+		if (selector.includes("data-dashboard-web-tab-row-button")) {
+			return this.elements.filter(
+				(element) =>
+					element.getAttribute("data-dashboard-sidebar-active") === "true" &&
+					element.getAttribute("data-dashboard-web-tab-row-button") != null,
 			);
 		}
 		if (selector.includes("data-dashboard-sidebar-active")) {
@@ -260,6 +271,23 @@ describe("focusDashboardNavigationShell", () => {
 		expect(providerHeader.focusCount).toBe(0);
 		expect(nativeSession.focusCount).toBe(1);
 		expect(nativeSession.scrollCount).toBe(1);
+	});
+
+	it("prefers an active Chrome tab row over an active app header", () => {
+		const appHeader = new FakeElement("Chrome app", { active: true });
+		const chromeTab = new FakeElement("Active Chrome tab", {
+			active: true,
+			webTab: true,
+		});
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([appHeader, chromeTab])),
+			),
+		).toBe(true);
+		expect(appHeader.focusCount).toBe(0);
+		expect(chromeTab.focusCount).toBe(1);
+		expect(chromeTab.scrollCount).toBe(1);
 	});
 
 	it("falls back to the first visible sidebar control", () => {

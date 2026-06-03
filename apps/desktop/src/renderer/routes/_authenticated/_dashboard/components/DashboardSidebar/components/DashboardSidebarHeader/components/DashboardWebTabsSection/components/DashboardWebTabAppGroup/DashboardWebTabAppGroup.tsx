@@ -151,6 +151,7 @@ export function DashboardWebTabAppGroup({
 					<button
 						type="button"
 						aria-label={app.label}
+						data-dashboard-sidebar-active={isActive ? "true" : undefined}
 						data-dashboard-sidebar-typeahead-label={app.label}
 						data-dashboard-web-app-trigger={app.id}
 						onFocus={() => warmDashboardWebUrl(primaryUrl)}
@@ -185,6 +186,7 @@ export function DashboardWebTabAppGroup({
 				<button
 					type="button"
 					aria-label={`Open ${app.label}`}
+					data-dashboard-sidebar-active={isActive ? "true" : undefined}
 					data-dashboard-sidebar-typeahead-label={app.label}
 					data-dashboard-web-app-trigger={app.id}
 					onFocus={() => warmDashboardWebUrl(primaryUrl)}
