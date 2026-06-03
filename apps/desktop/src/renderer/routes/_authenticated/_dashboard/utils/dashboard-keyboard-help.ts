@@ -279,7 +279,8 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				{
 					keys: ["m"],
 					label: "Move to folder",
-					description: "Put the current session into a sidebar folder",
+					description:
+						"Put the current session into the focused or remembered sidebar folder",
 				},
 				{
 					keys: ["F"],

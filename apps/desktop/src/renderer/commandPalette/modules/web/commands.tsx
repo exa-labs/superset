@@ -945,7 +945,7 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.folder.moveCurrent",
-				title: "Move current native session to folder",
+				title: "Move current native session to remembered folder",
 				section: "web",
 				description:
 					"Move the current Capy/Devin session to the last selected folder",

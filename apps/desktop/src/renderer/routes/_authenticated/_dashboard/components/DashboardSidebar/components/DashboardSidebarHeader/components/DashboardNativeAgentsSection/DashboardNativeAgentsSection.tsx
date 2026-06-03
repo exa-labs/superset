@@ -1784,6 +1784,19 @@ export function DashboardNativeAgentsSection({
 					currentRow?.focus();
 					return;
 				}
+				if (folderAction === "move-active") {
+					const activeItem =
+						activeRoute.provider === rowFolder.provider && activeRoute.id
+							? itemsByProvider[rowFolder.provider].find(
+									(item) => item.id === activeRoute.id,
+								)
+							: null;
+					if (activeItem) {
+						moveToFolder(activeItem, rowFolder.id);
+						currentRow?.focus();
+					}
+					return;
+				}
 				setDeleteFolderTarget(rowFolder);
 				return;
 			}

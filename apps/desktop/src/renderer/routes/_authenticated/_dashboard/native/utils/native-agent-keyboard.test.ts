@@ -66,6 +66,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentFolderVimActionFromKey("o")).toBe("toggle");
 		expect(nativeAgentFolderVimActionFromKey("h")).toBe("collapse");
 		expect(nativeAgentFolderVimActionFromKey("l")).toBe("expand");
+		expect(nativeAgentFolderVimActionFromKey("m")).toBe("move-active");
 		expect(nativeAgentFolderVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentFolderVimActionFromKey("c")).toBe("color");
 		expect(nativeAgentFolderVimActionFromKey("d")).toBe("delete");

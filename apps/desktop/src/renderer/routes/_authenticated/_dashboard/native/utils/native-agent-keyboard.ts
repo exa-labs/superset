@@ -31,6 +31,7 @@ export type NativeAgentFolderVimAction =
 	| "color"
 	| "delete"
 	| "expand"
+	| "move-active"
 	| "none"
 	| "rename"
 	| "toggle";
@@ -75,6 +76,7 @@ export function nativeAgentFolderVimActionFromKey(
 	if (key === "enter" || key === " " || key === "o") return "toggle";
 	if (key === "h") return "collapse";
 	if (key === "l") return "expand";
+	if (key === "m") return "move-active";
 	if (key === "e") return "rename";
 	if (key === "c") return "color";
 	if (key === "d") return "delete";
