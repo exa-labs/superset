@@ -33,11 +33,11 @@ export function CommandPaletteHost({ children }: { children?: ReactNode }) {
 }
 
 function CommandPaletteTrigger() {
-	const setOpen = useFrameStackStore((s) => s.setOpen);
-	useHotkey("OPEN_COMMAND_PALETTE", () => setOpen(true));
-	useHotkey("OPEN_CONTROL_PLANE", () => setOpen(true));
+	const openRoot = useFrameStackStore((s) => s.openRoot);
+	useHotkey("OPEN_COMMAND_PALETTE", () => openRoot());
+	useHotkey("OPEN_CONTROL_PLANE", () => openRoot());
 	electronTrpc.browser.onOpenControlPlane.useSubscription(undefined, {
-		onData: () => setOpen(true),
+		onData: () => openRoot(),
 	});
 	return null;
 }

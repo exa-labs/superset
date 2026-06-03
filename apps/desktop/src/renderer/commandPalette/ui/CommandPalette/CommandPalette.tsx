@@ -29,6 +29,7 @@ export function useCommandPaletteQuery(): string {
 
 export function CommandPalette() {
 	const open = useFrameStackStore((s) => s.open);
+	const rootOpenRequestId = useFrameStackStore((s) => s.rootOpenRequestId);
 	const setOpen = useFrameStackStore((s) => s.setOpen);
 	const frames = useFrameStackStore((s) => s.frames);
 	const pushFrame = useFrameStackStore((s) => s.pushFrame);
@@ -39,6 +40,7 @@ export function CommandPalette() {
 	const [query, setQuery] = useState("");
 	const depth = frames.length;
 	const currentFrame = frames[depth - 1] ?? null;
+	const rootOpenQueryResetKey = open ? rootOpenRequestId : null;
 
 	const handleOpenChange = useCallback(
 		(next: boolean) => {
@@ -82,6 +84,11 @@ export function CommandPalette() {
 	useEffect(() => {
 		if (!open) setQuery("");
 	}, [open]);
+
+	useEffect(() => {
+		if (rootOpenQueryResetKey === null) return;
+		setQuery("");
+	}, [rootOpenQueryResetKey]);
 
 	const placeholder = currentFrame
 		? `Search in ${currentFrame.command.title}…`

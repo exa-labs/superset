@@ -8,7 +8,9 @@ export interface Frame {
 
 interface FrameStackState {
 	open: boolean;
+	rootOpenRequestId: number;
 	frames: Frame[];
+	openRoot: () => void;
 	setOpen: (open: boolean) => void;
 	pushFrame: (command: Command) => void;
 	popFrame: () => void;
@@ -17,7 +19,17 @@ interface FrameStackState {
 
 export const useFrameStackStore = create<FrameStackState>((set) => ({
 	open: false,
+	rootOpenRequestId: 0,
 	frames: [],
+	openRoot: () =>
+		set((state) => {
+			if (!state.open) track("command_palette_opened");
+			return {
+				frames: [],
+				open: true,
+				rootOpenRequestId: state.rootOpenRequestId + 1,
+			};
+		}),
 	setOpen: (open) =>
 		set((state) => {
 			if (open) {
