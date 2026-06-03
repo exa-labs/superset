@@ -133,6 +133,26 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					label: "Collapse or expand",
 					description: "Collapse or expand focused folders and sidebar groups",
 				},
+				{
+					keys: ["N"],
+					label: "Create from section",
+					description: "Create a session, folder, workspace, or tab from focus",
+				},
+				{
+					keys: ["P"],
+					label: "Pin or unpin selected",
+					description: "Toggle selected Capy or Devin sidebar persistence",
+				},
+				{
+					keys: ["E"],
+					label: "Rename selected",
+					description: "Rename the focused native session or folder",
+				},
+				{
+					keys: ["A", "X"],
+					label: "Archive selected",
+					description: "Move the focused native session back to overview",
+				},
 			],
 		},
 		{
@@ -146,9 +166,20 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Switch a Capy or Devin session between native and browser",
 				},
 				{
+					keys: ["b"],
+					label: "Native/browser in Vim mode",
+					description:
+						"Switch the selected native session between chat and browser",
+				},
+				{
 					hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 					label: "Split native/browser",
 					description: "Show chat and browser side by side",
+				},
+				{
+					keys: ["s"],
+					label: "Split in Vim mode",
+					description: "Toggle side-by-side chat and browser for a session",
 				},
 				{
 					keys: ["r"],
@@ -156,9 +187,19 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Focus the active native-agent reply box",
 				},
 				{
+					keys: ["i"],
+					label: "Insert reply",
+					description: "Focus the composer using a Vim-style insert key",
+				},
+				{
 					keys: ["o"],
 					label: "Open browser version",
 					description: "Open the current agent session in the embedded browser",
+				},
+				{
+					keys: ["O"],
+					label: "Open externally",
+					description: "Open the current agent session in the system browser",
 				},
 				{
 					keys: ["p"],
@@ -176,6 +217,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Put the current session into a sidebar folder",
 				},
 				{
+					keys: ["F"],
+					label: "Remove from folder",
+					description: "Return the current session to the main provider list",
+				},
+				{
 					keys: ["e"],
 					label: "Rename session",
 					description: "Set a local title for the current native-agent session",
@@ -184,6 +230,17 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					keys: ["R"],
 					label: "Refresh native data",
 					description: "Reload the active Capy or Devin session list",
+				},
+				{
+					keys: ["c"],
+					label: "Cycle folder color",
+					description: "Recolor the focused native sidebar folder",
+				},
+				{
+					keys: ["d"],
+					label: "Delete folder",
+					description:
+						"Open confirmation for the focused native sidebar folder",
 				},
 			],
 		},

@@ -578,6 +578,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Switch the current native session between chat and browser",
 				keywords: ["capy", "devin", "browser", "native", "toggle"],
+				shortcutLabel: "b",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -593,6 +594,7 @@ export const webProvider: CommandProvider = {
 				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 				description: "Show the current native chat and browser side by side",
 				keywords: ["capy", "devin", "browser", "native", "split", "side"],
+				shortcutLabel: "s",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -620,6 +622,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Create a folder for the current Capy/Devin section",
 				keywords: ["capy", "devin", "folder", "create", "native"],
+				shortcutLabel: "n",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeFolderAction(
@@ -633,6 +636,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Rename the last selected folder for this native provider",
 				keywords: ["capy", "devin", "folder", "rename", "native"],
+				shortcutLabel: "e",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeFolderAction(
@@ -646,6 +650,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Cycle the last selected native folder color",
 				keywords: ["capy", "devin", "folder", "color", "native"],
+				shortcutLabel: "c",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeFolderAction(
@@ -660,6 +665,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Delete the last selected native folder after confirmation",
 				keywords: ["capy", "devin", "folder", "delete", "native"],
+				shortcutLabel: "d",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeFolderAction(
@@ -728,6 +734,7 @@ export const webProvider: CommandProvider = {
 						"move",
 						"native",
 					],
+					shortcutLabel: "m",
 					when: () => isCurrentProvider,
 					run: () =>
 						dispatchNativeFolderAction(provider, "move-active", folder.id),
@@ -745,6 +752,7 @@ export const webProvider: CommandProvider = {
 						"rename",
 						"native",
 					],
+					shortcutLabel: "e",
 					when: () => isCurrentProvider,
 					run: () => dispatchNativeFolderAction(provider, "rename", folder.id),
 				},
@@ -761,6 +769,7 @@ export const webProvider: CommandProvider = {
 						"color",
 						"native",
 					],
+					shortcutLabel: "c",
 					when: () => isCurrentProvider,
 					run: () => dispatchNativeFolderAction(provider, "color", folder.id),
 				},
@@ -777,6 +786,7 @@ export const webProvider: CommandProvider = {
 						"delete",
 						"native",
 					],
+					shortcutLabel: "d",
 					when: () => isCurrentProvider,
 					run: () => dispatchNativeFolderAction(provider, "delete", folder.id),
 				},

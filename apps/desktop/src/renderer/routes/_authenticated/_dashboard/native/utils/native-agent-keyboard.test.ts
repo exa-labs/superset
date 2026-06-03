@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	nativeAgentChatScrollDeltaFromKey,
+	nativeAgentFolderVimActionFromKey,
 	nativeAgentOverviewFocusDeltaFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
@@ -49,6 +50,17 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("archive");
 		expect(nativeAgentSidebarVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSidebarVimActionFromKey("j")).toBe("none");
+	});
+
+	it("maps native folder vim row actions", () => {
+		expect(nativeAgentFolderVimActionFromKey("enter")).toBe("toggle");
+		expect(nativeAgentFolderVimActionFromKey("o")).toBe("toggle");
+		expect(nativeAgentFolderVimActionFromKey("h")).toBe("collapse");
+		expect(nativeAgentFolderVimActionFromKey("l")).toBe("expand");
+		expect(nativeAgentFolderVimActionFromKey("e")).toBe("rename");
+		expect(nativeAgentFolderVimActionFromKey("c")).toBe("color");
+		expect(nativeAgentFolderVimActionFromKey("d")).toBe("delete");
+		expect(nativeAgentFolderVimActionFromKey("p")).toBe("none");
 	});
 
 	it("maps selected-session vim actions", () => {

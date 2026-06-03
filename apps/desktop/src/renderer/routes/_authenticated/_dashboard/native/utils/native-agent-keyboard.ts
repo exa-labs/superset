@@ -22,6 +22,15 @@ export type NativeAgentSidebarVimAction =
 	| "pin"
 	| "remove-from-folder";
 
+export type NativeAgentFolderVimAction =
+	| "collapse"
+	| "color"
+	| "delete"
+	| "expand"
+	| "none"
+	| "rename"
+	| "toggle";
+
 export type NativeAgentViewMode = "browser" | "native" | "split";
 
 export type NativeAgentSelectedSessionVimAction =
@@ -42,6 +51,18 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "f" || key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
+	return "none";
+}
+
+export function nativeAgentFolderVimActionFromKey(
+	key: string | null,
+): NativeAgentFolderVimAction {
+	if (key === "enter" || key === "o") return "toggle";
+	if (key === "h") return "collapse";
+	if (key === "l") return "expand";
+	if (key === "e") return "rename";
+	if (key === "c") return "color";
+	if (key === "d") return "delete";
 	return "none";
 }
 

@@ -66,7 +66,10 @@ import {
 	setNativeAgentFolderColor,
 	toggleNativeAgentFolderCollapsed,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
-import { nativeAgentSidebarVimActionFromKey } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
+import {
+	nativeAgentFolderVimActionFromKey,
+	nativeAgentSidebarVimActionFromKey,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
 import {
 	applyNativeAgentOptimisticPinned,
 	applyNativeAgentOptimisticSidebarVisible,
@@ -1372,6 +1375,8 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "k" &&
 				vimKey !== "l" &&
 				vimKey !== "a" &&
+				vimKey !== "c" &&
+				vimKey !== "d" &&
 				vimKey !== "e" &&
 				vimKey !== "enter" &&
 				vimKey !== "m" &&
@@ -1434,19 +1439,37 @@ export function DashboardNativeAgentsSection({
 				setCreateProvider(rowProvider);
 				return;
 			}
-			if (rowFolder && (vimKey === "h" || vimKey === "l")) {
+			const folderAction = rowFolder
+				? nativeAgentFolderVimActionFromKey(vimKey)
+				: "none";
+			if (rowFolder && folderAction !== "none") {
 				event.preventDefault();
 				event.stopPropagation();
 				rememberFolder(rowFolder);
-				setFolderCollapsed(rowFolder.id, vimKey === "h");
-				currentRow?.focus();
-				return;
-			}
-			if (rowFolder && vimKey === "e") {
-				event.preventDefault();
-				event.stopPropagation();
-				rememberFolder(rowFolder);
-				openFolderEditor(rowFolder);
+				if (folderAction === "toggle") {
+					toggleFolder(rowFolder.id);
+					return;
+				}
+				if (folderAction === "collapse" || folderAction === "expand") {
+					setFolderCollapsed(rowFolder.id, folderAction === "collapse");
+					currentRow?.focus();
+					return;
+				}
+				if (folderAction === "rename") {
+					openFolderEditor(rowFolder);
+					return;
+				}
+				if (folderAction === "color") {
+					const currentIndex = FOLDER_COLORS.indexOf(rowFolder.color);
+					setFolderColor(
+						rowFolder.id,
+						FOLDER_COLORS[(currentIndex + 1) % FOLDER_COLORS.length] ??
+							FOLDER_COLORS[0],
+					);
+					currentRow?.focus();
+					return;
+				}
+				setDeleteFolderTarget(rowFolder);
 				return;
 			}
 			const sidebarAction = nativeAgentSidebarVimActionFromKey(vimKey);
@@ -1455,11 +1478,7 @@ export function DashboardNativeAgentsSection({
 				if (!row) return;
 				event.preventDefault();
 				event.stopPropagation();
-				if (rowFolder) {
-					rememberFolder(rowFolder);
-					if (sidebarAction === "open") toggleFolder(rowFolder.id);
-					return;
-				}
+				if (rowFolder) return;
 				if (sidebarAction === "open") {
 					row.click();
 					return;
@@ -1516,6 +1535,7 @@ export function DashboardNativeAgentsSection({
 		rememberFolder,
 		setFolderCollapsed,
 		toggleFolder,
+		setFolderColor,
 	]);
 
 	return (

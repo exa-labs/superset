@@ -27,17 +27,47 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
 		expect(labels.has("Search sidebar")).toBe(true);
 		expect(labels.has("Split native/browser")).toBe(true);
+		expect(entryByLabel.get("Create from section")).toEqual(
+			expect.objectContaining({ keys: ["N"] }),
+		);
+		expect(entryByLabel.get("Pin or unpin selected")).toEqual(
+			expect.objectContaining({ keys: ["P"] }),
+		);
+		expect(entryByLabel.get("Archive selected")).toEqual(
+			expect.objectContaining({ keys: ["A", "X"] }),
+		);
 		expect(entryByLabel.get("Reply")).toEqual(
 			expect.objectContaining({ keys: ["r"] }),
 		);
+		expect(entryByLabel.get("Insert reply")).toEqual(
+			expect.objectContaining({ keys: ["i"] }),
+		);
 		expect(entryByLabel.get("Open browser version")).toEqual(
 			expect.objectContaining({ keys: ["o"] }),
+		);
+		expect(entryByLabel.get("Open externally")).toEqual(
+			expect.objectContaining({ keys: ["O"] }),
+		);
+		expect(entryByLabel.get("Native/browser in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["b"] }),
+		);
+		expect(entryByLabel.get("Split in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["s"] }),
+		);
+		expect(entryByLabel.get("Remove from folder")).toEqual(
+			expect.objectContaining({ keys: ["F"] }),
 		);
 		expect(entryByLabel.get("Rename session")).toEqual(
 			expect.objectContaining({ keys: ["e"] }),
 		);
 		expect(entryByLabel.get("Refresh native data")).toEqual(
 			expect.objectContaining({ keys: ["R"] }),
+		);
+		expect(entryByLabel.get("Cycle folder color")).toEqual(
+			expect.objectContaining({ keys: ["c"] }),
+		);
+		expect(entryByLabel.get("Delete folder")).toEqual(
+			expect.objectContaining({ keys: ["d"] }),
 		);
 	});
 

@@ -188,6 +188,12 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.rename")).toBe("e");
 		expect(shortcutById.get("native.current.hide")).toBe("x");
 		expect(shortcutById.get("native.current.show")).toBe("p");
+		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
+		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
+		expect(shortcutById.get("native.folder.create")).toBe("n");
+		expect(shortcutById.get("native.folder.rename")).toBe("e");
+		expect(shortcutById.get("native.folder.color")).toBe("c");
+		expect(shortcutById.get("native.folder.delete")).toBe("d");
 		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
 		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
 	});
@@ -333,6 +339,15 @@ describe("web command provider", () => {
 				const capyMove = commands.find(
 					(command) => command.id === "native.folder.capy-folder.moveCurrent",
 				);
+				const capyRename = commands.find(
+					(command) => command.id === "native.folder.capy-folder.rename",
+				);
+				const capyColor = commands.find(
+					(command) => command.id === "native.folder.capy-folder.color",
+				);
+				const capyDelete = commands.find(
+					(command) => command.id === "native.folder.capy-folder.delete",
+				);
 				const devinMove = commands.find(
 					(command) => command.id === "native.folder.devin-folder.moveCurrent",
 				);
@@ -349,6 +364,10 @@ describe("web command provider", () => {
 				);
 				expect(commandIds.has("native.folder.capy-folder.delete")).toBe(true);
 				expect(capyMove?.title).toBe("Move current session to Research");
+				expect(capyMove?.shortcutLabel).toBe("m");
+				expect(capyRename?.shortcutLabel).toBe("e");
+				expect(capyColor?.shortcutLabel).toBe("c");
+				expect(capyDelete?.shortcutLabel).toBe("d");
 				expect(capyMove?.when?.(context)).toBe(true);
 				expect(devinMove?.when?.(context)).toBe(false);
 			},
