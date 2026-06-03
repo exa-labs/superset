@@ -1,5 +1,5 @@
-import { useNavigate } from "@tanstack/react-router";
 import { type RefObject, useEffect, useRef } from "react";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 
 const INTERACTIVE_SELECTOR = [
@@ -51,7 +51,6 @@ export function useDashboardSidebarKeyboardNavigation(
 		searchInputRef?: RefObject<HTMLInputElement | null>;
 	} = {},
 ): void {
-	const navigate = useNavigate();
 	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 	const lastGRef = useRef(0);
 
@@ -129,7 +128,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (event.key === "?") {
 				event.preventDefault();
-				void navigate({ to: "/settings/keyboard" });
+				openDashboardKeyboardHelp();
 				return;
 			}
 
@@ -180,11 +179,5 @@ export function useDashboardSidebarKeyboardNavigation(
 
 		document.addEventListener("keydown", onKeyDown, true);
 		return () => document.removeEventListener("keydown", onKeyDown, true);
-	}, [
-		navigate,
-		options.onClearSearch,
-		options.searchInputRef,
-		rootRef,
-		vimModeEnabled,
-	]);
+	}, [options.onClearSearch, options.searchInputRef, rootRef, vimModeEnabled]);
 }

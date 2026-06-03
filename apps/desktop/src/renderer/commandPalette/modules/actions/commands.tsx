@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
@@ -37,6 +38,16 @@ function dispatchDashboardViewMruSwitch(direction: "next" | "previous"): void {
 			detail: { direction },
 		}),
 	);
+}
+
+function showKeyboardShortcuts(
+	context: Parameters<NonNullable<Command["run"]>>[0],
+): void {
+	if (context.route.pathname.startsWith("/settings")) {
+		context.navigate("/settings/keyboard");
+		return;
+	}
+	openDashboardKeyboardHelp();
 }
 
 async function toggleNotificationSoundsMuted(
@@ -157,7 +168,7 @@ export const actionsProvider: CommandProvider = {
 				icon: KeyboardIcon,
 				hotkeyId: "SHOW_HOTKEYS",
 				keywords: ["hotkeys"],
-				run: (ctx) => ctx.navigate("/settings/keyboard"),
+				run: showKeyboardShortcuts,
 			},
 			{
 				id: "actions.checkUpdates",

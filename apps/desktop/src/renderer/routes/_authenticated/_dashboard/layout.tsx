@@ -7,12 +7,14 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useIsV2CloudEnabled } from "renderer/hooks/useIsV2CloudEnabled";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { DashboardKeyboardShortcutsDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardKeyboardShortcutsDialog";
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
+import { DASHBOARD_KEYBOARD_HELP_OPEN_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useDevSeedV2Sidebar } from "renderer/routes/_authenticated/hooks/useDevSeedV2Sidebar";
 import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
@@ -54,6 +56,7 @@ function DashboardLayout() {
 	const isV2CloudEnabled = useIsV2CloudEnabled();
 	const collections = useCollections();
 	const { removeWorkspaceFromSidebar } = useDashboardSidebarState();
+	const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
 	useDevSeedV2Sidebar();
 	// Get current workspace from route to pre-select project in new workspace modal
 	const matchRoute = useMatchRoute();
@@ -112,7 +115,7 @@ function DashboardLayout() {
 
 	// Global hotkeys for dashboard
 	useHotkey("OPEN_SETTINGS", () => navigate({ to: "/settings/account" }));
-	useHotkey("SHOW_HOTKEYS", () => navigate({ to: "/settings/keyboard" }));
+	useHotkey("SHOW_HOTKEYS", () => setKeyboardHelpOpen(true));
 	useHotkey("TOGGLE_WORKSPACE_SIDEBAR", () => {
 		if (!isWorkspaceSidebarOpen) {
 			setWorkspaceSidebarOpen(true);
@@ -125,6 +128,23 @@ function DashboardLayout() {
 	);
 
 	const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+
+	useEffect(() => {
+		const handleOpenKeyboardHelp = (event: Event) => {
+			event.preventDefault();
+			setKeyboardHelpOpen(true);
+		};
+
+		window.addEventListener(
+			DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
+			handleOpenKeyboardHelp,
+		);
+		return () =>
+			window.removeEventListener(
+				DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
+				handleOpenKeyboardHelp,
+			);
+	}, []);
 
 	useHotkey(
 		"CLOSE_WORKSPACE",
@@ -211,6 +231,10 @@ function DashboardLayout() {
 			</div>
 			<div id="workspace-right-sidebar-slot" className="flex h-full shrink-0" />
 			<AddRepositoryModals />
+			<DashboardKeyboardShortcutsDialog
+				open={keyboardHelpOpen}
+				onOpenChange={setKeyboardHelpOpen}
+			/>
 			{deleteTarget?.version === "v1" && (
 				<DeleteWorkspaceDialog
 					workspaceId={deleteTarget.workspaceId}

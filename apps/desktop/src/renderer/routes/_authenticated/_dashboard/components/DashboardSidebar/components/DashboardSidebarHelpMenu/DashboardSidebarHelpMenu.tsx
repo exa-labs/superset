@@ -10,7 +10,6 @@ import {
 	DropdownMenuTrigger,
 } from "@superset/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
-import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { FaDiscord, FaGithub, FaXTwitter } from "react-icons/fa6";
 import {
@@ -23,6 +22,7 @@ import { IoBugOutline } from "react-icons/io5";
 import { LuKeyboard, LuMegaphone } from "react-icons/lu";
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { SubmitPromptDialog } from "./components/SubmitPromptDialog";
 
 interface DashboardSidebarHelpMenuProps {
@@ -32,7 +32,6 @@ interface DashboardSidebarHelpMenuProps {
 export function DashboardSidebarHelpMenu({
 	isCollapsed,
 }: DashboardSidebarHelpMenuProps) {
-	const navigate = useNavigate();
 	const shortcutsHotkey = useHotkeyDisplay("SHOW_HOTKEYS").text;
 	const [submitPromptOpen, setSubmitPromptOpen] = useState(false);
 	const openUrlMutation = electronTrpc.external.openUrl.useMutation();
@@ -77,9 +76,7 @@ export function DashboardSidebarHelpMenu({
 						<HiOutlineBookOpen className="h-4 w-4" />
 						Documentation
 					</DropdownMenuItem>
-					<DropdownMenuItem
-						onClick={() => navigate({ to: "/settings/keyboard" })}
-					>
+					<DropdownMenuItem onClick={openDashboardKeyboardHelp}>
 						<LuKeyboard className="h-4 w-4" />
 						Keyboard Shortcuts
 						{shortcutsHotkey !== "Unassigned" && (

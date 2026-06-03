@@ -135,4 +135,38 @@ describe("actions command provider", () => {
 		expect(isDashboardVimModeEnabled()).toBe(true);
 		setDashboardVimModeEnabled(false);
 	});
+
+	it("opens the dashboard keyboard overlay from dashboard routes", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener("dashboard-keyboard-help-open", listener, {
+			once: true,
+		});
+		const command = actionsProvider
+			.provide(commandContext("/native/devin"))
+			.find((candidate) => candidate.id === "actions.showShortcuts");
+
+		command?.run?.(commandContext("/native/devin"));
+		window.removeEventListener("dashboard-keyboard-help-open", listener);
+
+		expect(openEventCount).toBe(1);
+	});
+
+	it("falls back to the keyboard settings page from settings routes", () => {
+		const navigated: string[] = [];
+		const context = {
+			...commandContext("/settings/account"),
+			navigate: (path: string) => navigated.push(path),
+		};
+		const command = actionsProvider
+			.provide(context)
+			.find((candidate) => candidate.id === "actions.showShortcuts");
+
+		command?.run?.(context);
+
+		expect(navigated).toEqual(["/settings/keyboard"]);
+	});
 });
