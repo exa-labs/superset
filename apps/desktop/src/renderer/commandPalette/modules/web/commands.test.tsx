@@ -136,6 +136,7 @@ describe("web command provider", () => {
 		expect(commandIds.has("native.current.refresh")).toBe(true);
 		expect(commandIds.has("native.current.pin")).toBe(true);
 		expect(commandIds.has("native.current.unpin")).toBe(true);
+		expect(commandIds.has("native.current.rename")).toBe(true);
 		expect(commandIds.has("native.current.hide")).toBe(true);
 		expect(commandIds.has("native.current.show")).toBe(true);
 		expect(commandIds.has("native.current.toggleBrowser")).toBe(true);
@@ -236,6 +237,7 @@ describe("web command provider", () => {
 		for (const id of [
 			"native.current.pin",
 			"native.current.unpin",
+			"native.current.rename",
 			"native.current.hide",
 			"native.current.show",
 			"native.current.toggleBrowser",
@@ -259,6 +261,9 @@ describe("web command provider", () => {
 			commands
 				.find((command) => command.id === "native.current.toggleDiagnostics")
 				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.current.rename")
+				?.run?.(context);
 
 			expect(events).toContainEqual({
 				detail: { provider: "devin" },
@@ -266,6 +271,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "toggle-diagnostics", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "rename", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 		});

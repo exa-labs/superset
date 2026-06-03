@@ -59,6 +59,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("o")).toBe(
 			"open-browser",
 		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentSelectedSessionVimActionFromKey("m")).toBe(
 			"move-to-folder",
 		);

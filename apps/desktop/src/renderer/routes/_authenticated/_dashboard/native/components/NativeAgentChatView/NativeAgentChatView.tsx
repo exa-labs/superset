@@ -1,3 +1,9 @@
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@superset/ui/dialog";
 import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
@@ -16,6 +22,7 @@ import {
 	LuImage,
 	LuInfo,
 	LuKeyRound,
+	LuPencil,
 	LuPin,
 	LuRefreshCw,
 	LuSend,
@@ -57,10 +64,14 @@ import {
 import {
 	applyNativeAgentOptimisticPinned,
 	applyNativeAgentOptimisticSidebarVisible,
+	applyNativeAgentOptimisticTitle,
 	mergeActiveNativeAgentRows,
+	type NativeAgentOptimisticMetadataMap,
+	nativeAgentDisplayTitle,
 	nativeAgentSidebarInclusionReasons,
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
+	restoreNativeAgentOptimisticTitle,
 	selectNativeAgentProviderActiveRows,
 } from "../../utils/native-agent-listing";
 import {
@@ -127,6 +138,7 @@ type NativeItem = {
 	mineEvidence?: string;
 	sidebarPinned?: boolean;
 	sidebarHidden?: boolean;
+	titleOverride?: string | null;
 };
 
 type NativeViewMode = "browser" | "native" | "split";
@@ -136,6 +148,7 @@ type NativeAgentCurrentAction =
 	| "new"
 	| "pin"
 	| "refresh"
+	| "rename"
 	| "show"
 	| "sync-capy"
 	| "toggle-browser"
@@ -530,12 +543,13 @@ export function NativeAgentChatView({
 	const [overviewFilter, setOverviewFilter] =
 		useState<NativeAgentOverviewFilter>("all");
 	const [overviewSearch, setOverviewSearch] = useState("");
-	const [optimisticMetadata, setOptimisticMetadata] = useState<
-		Record<string, { hidden?: boolean; pinned?: boolean }>
-	>({});
+	const [optimisticMetadata, setOptimisticMetadata] =
+		useState<NativeAgentOptimisticMetadataMap>({});
 	const [optimisticMessages, setOptimisticMessages] = useState<
 		NativeAgentOptimisticMessage[]
 	>([]);
+	const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+	const [renameDraft, setRenameDraft] = useState("");
 	const [readState, setReadState] = useState(() => readNativeAgentReadState());
 	const [showDiagnostics, setShowDiagnostics] = useState(false);
 	const isVimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
@@ -560,6 +574,7 @@ export function NativeAgentChatView({
 	const messageScrollRef = useRef<HTMLDivElement | null>(null);
 	const composerRef = useRef<HTMLTextAreaElement | null>(null);
 	const overviewSearchRef = useRef<HTMLInputElement | null>(null);
+	const renameInputRef = useRef<HTMLInputElement | null>(null);
 	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
 
 	const credentialStatus =
@@ -663,12 +678,15 @@ export function NativeAgentChatView({
 				capyThreadsQuery.data?.items ?? [],
 				capyFreshActiveThreads,
 			).map((thread) => {
+				const optimistic = optimisticMetadata[`capy:${thread.id}`];
 				const sidebarState = resolveNativeAgentSidebarState({
 					metadata: thread.nativeAgentMetadata,
-					optimistic: optimisticMetadata[`capy:${thread.id}`],
+					optimistic,
 				});
 				const status = thread.runState ?? thread.status ?? null;
 				const metadata = thread.nativeAgentMetadata;
+				const titleOverride =
+					optimistic?.titleOverride ?? metadata?.titleOverride ?? null;
 				return {
 					id: thread.id,
 					isProviderActive:
@@ -683,6 +701,7 @@ export function NativeAgentChatView({
 						: null,
 					sidebarHidden: sidebarState.sidebarHidden,
 					sidebarPinned: sidebarState.sidebarPinned,
+					titleOverride,
 					mineEvidence: nativeAgentMineEvidenceSummary({
 						createdLocally: metadata?.createdLocally,
 						ownershipVerified: metadata?.ownershipVerified,
@@ -691,9 +710,12 @@ export function NativeAgentChatView({
 						userEmail: CAPY_LOCAL_USER_EMAIL,
 					}),
 					status,
-					title:
-						thread.title ??
-						`Untitled ${nativeAgentConversationLabel(provider)}`,
+					title: nativeAgentDisplayTitle({
+						fallbackTitle: `Untitled ${nativeAgentConversationLabel(provider)}`,
+						metadata,
+						optimistic,
+						providerTitle: thread.title,
+					}),
 					updatedAt:
 						thread.latestMessage?.createdAt ??
 						thread.lastMessage?.createdAt ??
@@ -704,11 +726,14 @@ export function NativeAgentChatView({
 			});
 		}
 		return (devinSessionsQuery.data?.items ?? []).map((session) => {
+			const optimistic = optimisticMetadata[`devin:${session.id}`];
 			const sidebarState = resolveNativeAgentSidebarState({
 				metadata: session.nativeAgentMetadata,
-				optimistic: optimisticMetadata[`devin:${session.id}`],
+				optimistic,
 			});
 			const metadata = session.nativeAgentMetadata;
+			const titleOverride =
+				optimistic?.titleOverride ?? metadata?.titleOverride ?? null;
 			return {
 				id: session.id,
 				latestMessage: session.latestMessage ?? null,
@@ -723,7 +748,13 @@ export function NativeAgentChatView({
 				sidebarHidden: sidebarState.sidebarHidden,
 				sidebarPinned: sidebarState.sidebarPinned,
 				status: session.status,
-				title: session.title ?? session.id,
+				title: nativeAgentDisplayTitle({
+					fallbackTitle: session.id,
+					metadata,
+					optimistic,
+					providerTitle: session.title,
+				}),
+				titleOverride,
 				updatedAt:
 					session.latestMessage?.createdAt ??
 					session.updatedAt ??
@@ -752,6 +783,11 @@ export function NativeAgentChatView({
 				metadata,
 				optimistic,
 			});
+			const titleOverride =
+				optimistic?.titleOverride ??
+				metadata?.titleOverride ??
+				listFallback?.titleOverride ??
+				null;
 			const sidebarHidden =
 				thread || !listFallback
 					? sidebarState.sidebarHidden
@@ -784,10 +820,14 @@ export function NativeAgentChatView({
 				sidebarPinned,
 				status:
 					thread?.runState ?? thread?.status ?? listFallback?.status ?? null,
-				title:
-					thread?.title ??
-					listFallback?.title ??
-					nativeAgentConversationLabel(provider),
+				title: nativeAgentDisplayTitle({
+					fallbackTitle:
+						listFallback?.title ?? nativeAgentConversationLabel(provider),
+					metadata,
+					optimistic,
+					providerTitle: thread?.title,
+				}),
+				titleOverride,
 				updatedAt: listFallback?.updatedAt,
 				url:
 					thread?.projectId || !listFallback?.url
@@ -801,6 +841,11 @@ export function NativeAgentChatView({
 			metadata,
 			optimistic,
 		});
+		const titleOverride =
+			optimistic?.titleOverride ??
+			metadata?.titleOverride ??
+			listFallback?.titleOverride ??
+			null;
 		const sidebarHidden =
 			session || !listFallback
 				? sidebarState.sidebarHidden
@@ -827,10 +872,14 @@ export function NativeAgentChatView({
 			sidebarHidden,
 			sidebarPinned,
 			status: session?.status ?? listFallback?.status ?? null,
-			title:
-				session?.title ??
-				listFallback?.title ??
-				nativeAgentConversationLabel(provider),
+			title: nativeAgentDisplayTitle({
+				fallbackTitle:
+					listFallback?.title ?? nativeAgentConversationLabel(provider),
+				metadata,
+				optimistic,
+				providerTitle: session?.title,
+			}),
+			titleOverride,
 			updatedAt: listFallback?.updatedAt,
 			url:
 				normalizeDevinAppUrl(session?.url) ??
@@ -1002,6 +1051,7 @@ export function NativeAgentChatView({
 	const setPinned = electronTrpc.nativeAgents.metadata.setPinned.useMutation();
 	const setSidebarVisible =
 		electronTrpc.nativeAgents.metadata.setSidebarVisible.useMutation();
+	const setTitle = electronTrpc.nativeAgents.metadata.setTitle.useMutation();
 	const syncCapyMine = electronTrpc.nativeAgents.capy.syncMine.useMutation();
 	const openExternal = electronTrpc.external.openUrl.useMutation();
 	const nativeBrowserKey =
@@ -1152,6 +1202,50 @@ export function NativeAgentChatView({
 		},
 		[provider, scheduleProviderRefresh, setPinned],
 	);
+
+	const openRenameDialog = useCallback((item: NativeItem) => {
+		setRenameDraft(item.title);
+		setRenameDialogOpen(true);
+		window.setTimeout(() => {
+			renameInputRef.current?.focus();
+			renameInputRef.current?.select();
+		}, 0);
+	}, []);
+
+	const handleRenameSelectedItem = useCallback(async () => {
+		if (!selectedItem) return;
+		const title = renameDraft.trim();
+		if (!title) {
+			toast.error("Enter a session name first");
+			return;
+		}
+		setRenameDialogOpen(false);
+		setOptimisticMetadata((current) =>
+			applyNativeAgentOptimisticTitle(current, {
+				id: selectedItem.id,
+				provider,
+				titleOverride: title,
+			}),
+		);
+		try {
+			await setTitle.mutateAsync({
+				id: selectedItem.id,
+				provider,
+				title,
+			});
+			scheduleProviderRefresh();
+			toast.success("Session renamed");
+		} catch (error) {
+			setOptimisticMetadata((current) =>
+				restoreNativeAgentOptimisticTitle(current, {
+					id: selectedItem.id,
+					provider,
+					titleOverride: selectedItem.titleOverride,
+				}),
+			);
+			toast.error(error instanceof Error ? error.message : String(error));
+		}
+	}, [provider, renameDraft, scheduleProviderRefresh, selectedItem, setTitle]);
 
 	const handleSaveCredentials = async () => {
 		if (!credentialDraft.trim()) {
@@ -1403,6 +1497,10 @@ export function NativeAgentChatView({
 						if (selectedItem.url) handleSelectViewMode("browser");
 						return;
 					}
+					if (selectedSessionAction === "rename") {
+						openRenameDialog(selectedItem);
+						return;
+					}
 					if (selectedSessionAction === "archive") {
 						void handleSetSidebarVisible(selectedItem, false);
 						return;
@@ -1524,6 +1622,7 @@ export function NativeAgentChatView({
 		navigate,
 		handleSetPinned,
 		handleSetSidebarVisible,
+		openRenameDialog,
 	]);
 
 	useEffect(() => {
@@ -1564,6 +1663,10 @@ export function NativeAgentChatView({
 				void handleSetPinned(selectedItem, false);
 				return;
 			}
+			if (detail?.action === "rename") {
+				openRenameDialog(selectedItem);
+				return;
+			}
 			if (detail?.action === "hide") {
 				void handleSetSidebarVisible(selectedItem, false);
 				return;
@@ -1601,6 +1704,7 @@ export function NativeAgentChatView({
 		viewMode,
 		handleSetPinned,
 		handleSetSidebarVisible,
+		openRenameDialog,
 	]);
 
 	useEffect(() => {
@@ -1636,6 +1740,44 @@ export function NativeAgentChatView({
 			data-native-agent-view-root=""
 			className="flex h-full min-h-0 w-full flex-col bg-background text-foreground"
 		>
+			<Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
+				<DialogContent className="max-w-[420px]">
+					<DialogHeader>
+						<DialogTitle>Rename session</DialogTitle>
+					</DialogHeader>
+					<form
+						className="flex flex-col gap-3"
+						onSubmit={(event) => {
+							event.preventDefault();
+							void handleRenameSelectedItem();
+						}}
+					>
+						<input
+							ref={renameInputRef}
+							value={renameDraft}
+							onChange={(event) => setRenameDraft(event.target.value)}
+							placeholder="Session name"
+							className="h-9 rounded-md border border-border bg-background px-3 text-sm outline-none focus:border-foreground/40"
+						/>
+						<div className="flex justify-end gap-2">
+							<button
+								type="button"
+								onClick={() => setRenameDialogOpen(false)}
+								className="h-8 rounded-md border border-border px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+							>
+								Cancel
+							</button>
+							<button
+								type="submit"
+								disabled={setTitle.isPending || !renameDraft.trim()}
+								className="h-8 rounded-md bg-foreground px-3 text-sm font-medium text-background transition-opacity disabled:opacity-50"
+							>
+								Rename
+							</button>
+						</div>
+					</form>
+				</DialogContent>
+			</Dialog>
 			<header className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4">
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
@@ -1725,6 +1867,7 @@ export function NativeAgentChatView({
 						)}
 						<ShortcutHint title="Pin or unpin">p</ShortcutHint>
 						<ShortcutHint title="Move to folder">m</ShortcutHint>
+						<ShortcutHint title="Rename">e</ShortcutHint>
 						<ShortcutHint title="Archive or hide">x</ShortcutHint>
 						<ShortcutHint title="Refresh native data">R</ShortcutHint>
 					</div>
@@ -1813,6 +1956,19 @@ export function NativeAgentChatView({
 				)}
 				{selectedItem && (
 					<>
+						<Tooltip delayDuration={300}>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									onClick={() => openRenameDialog(selectedItem)}
+									className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+									aria-label="Rename session"
+								>
+									<LuPencil className="size-4" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent>Rename session (e)</TooltipContent>
+						</Tooltip>
 						<Tooltip delayDuration={300}>
 							<TooltipTrigger asChild>
 								<button

@@ -11,6 +11,7 @@ export interface NativeAgentSessionMetadata {
 	provider: NativeAgentProvider;
 	id: string;
 	title?: string | null;
+	titleOverride?: string | null;
 	createdLocally?: boolean;
 	discoveredFromProvider?: boolean;
 	ownershipVerified?: boolean;
@@ -89,6 +90,7 @@ export async function markNativeAgentSessionSeen(input: {
 		provider: input.provider,
 		id: input.id,
 		title: input.title ?? existing?.title ?? null,
+		titleOverride: existing?.titleOverride ?? null,
 		createdLocally: existing?.createdLocally || input.createdLocally === true,
 		discoveredFromProvider:
 			existing?.discoveredFromProvider || input.discoveredFromProvider === true,
@@ -105,6 +107,35 @@ export async function markNativeAgentSessionSeen(input: {
 		updatedAt: now,
 	};
 	await writeState({ ...state, sessions: { ...sessions, [key]: next } });
+	return next;
+}
+
+export async function setNativeAgentSessionTitleOverride(input: {
+	provider: NativeAgentProvider;
+	id: string;
+	titleOverride: string | null;
+	title?: string | null;
+}): Promise<NativeAgentSessionMetadata> {
+	const existing =
+		(await getNativeAgentSessionMetadata(input.provider, input.id)) ??
+		(await markNativeAgentSessionSeen({
+			id: input.id,
+			provider: input.provider,
+			title: input.title,
+		}));
+	const state = await readState();
+	const sessions = state.sessions ?? {};
+	const trimmedTitleOverride = input.titleOverride?.trim() || null;
+	const next: NativeAgentSessionMetadata = {
+		...existing,
+		title: input.title ?? existing.title,
+		titleOverride: trimmedTitleOverride,
+		updatedAt: new Date().toISOString(),
+	};
+	await writeState({
+		...state,
+		sessions: { ...sessions, [sessionKey(input.provider, input.id)]: next },
+	});
 	return next;
 }
 

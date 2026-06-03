@@ -48,6 +48,7 @@ function dispatchNativeAgentAction(
 		| "new"
 		| "pin"
 		| "refresh"
+		| "rename"
 		| "show"
 		| "sync-capy"
 		| "toggle-browser"
@@ -515,6 +516,20 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"unpin",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.rename",
+				title: "Rename current native session",
+				section: "web",
+				description: "Set a local title for the current Capy/Devin session",
+				keywords: ["capy", "devin", "rename", "title", "session", "native"],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"rename",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

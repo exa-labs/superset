@@ -11,6 +11,7 @@ import {
 	type NativeAgentSessionMetadata,
 	saveNativeAgentCredentials,
 	setNativeAgentSessionSidebarVisible,
+	setNativeAgentSessionTitleOverride,
 } from "main/lib/native-agents";
 import { z } from "zod";
 import { publicProcedure, router } from "../..";
@@ -711,6 +712,21 @@ export const createNativeAgentsRouter = () =>
 						provider: input.provider,
 						title: input.title,
 						visible: input.visible,
+					}),
+				),
+			setTitle: publicProcedure
+				.input(
+					z.object({
+						id: nonEmptyString,
+						provider: providerSchema,
+						title: z.string().trim().min(1).max(200),
+					}),
+				)
+				.mutation(({ input }) =>
+					setNativeAgentSessionTitleOverride({
+						id: input.id,
+						provider: input.provider,
+						titleOverride: input.title,
 					}),
 				),
 			archiveSession: publicProcedure

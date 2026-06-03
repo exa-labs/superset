@@ -18,4 +18,5 @@ export {
 	markNativeAgentSessionSeen,
 	type NativeAgentSessionMetadata,
 	setNativeAgentSessionSidebarVisible,
+	setNativeAgentSessionTitleOverride,
 } from "./state";

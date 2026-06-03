@@ -31,6 +31,7 @@ export type NativeAgentSelectedSessionVimAction =
 	| "none"
 	| "open-browser"
 	| "refresh"
+	| "rename"
 	| "remove-from-folder";
 
 export function nativeAgentSidebarVimActionFromKey(
@@ -50,6 +51,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "r") return "focus-composer";
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";
+	if (key === "e") return "rename";
 	if (key === "f" || key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";

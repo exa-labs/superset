@@ -33,6 +33,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open browser version")).toEqual(
 			expect.objectContaining({ keys: ["o"] }),
 		);
+		expect(entryByLabel.get("Rename session")).toEqual(
+			expect.objectContaining({ keys: ["e"] }),
+		);
 		expect(entryByLabel.get("Refresh native data")).toEqual(
 			expect.objectContaining({ keys: ["R"] }),
 		);

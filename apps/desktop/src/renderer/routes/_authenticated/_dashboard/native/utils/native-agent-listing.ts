@@ -9,11 +9,14 @@ export type MergedNativeAgentListRow<T extends NativeAgentListRow> = T & {
 export interface NativeAgentMetadataLike {
 	hiddenFromSidebar?: boolean | null;
 	pinned?: boolean | null;
+	title?: string | null;
+	titleOverride?: string | null;
 }
 
 export interface NativeAgentOptimisticMetadata {
 	hidden?: boolean;
 	pinned?: boolean;
+	titleOverride?: string | null;
 }
 
 export type NativeAgentOptimisticMetadataMap = Record<
@@ -91,6 +94,53 @@ export function restoreNativeAgentOptimisticSidebarState(
 			pinned: input.sidebarPinned,
 		},
 	};
+}
+
+export function applyNativeAgentOptimisticTitle(
+	current: NativeAgentOptimisticMetadataMap,
+	input: {
+		id: string;
+		provider: NativeAgentOptimisticProvider;
+		titleOverride: string | null;
+	},
+): NativeAgentOptimisticMetadataMap {
+	const key = nativeAgentMetadataKey(input.provider, input.id);
+	return {
+		...current,
+		[key]: { ...current[key], titleOverride: input.titleOverride },
+	};
+}
+
+export function restoreNativeAgentOptimisticTitle(
+	current: NativeAgentOptimisticMetadataMap,
+	input: {
+		id: string;
+		provider: NativeAgentOptimisticProvider;
+		titleOverride?: string | null;
+	},
+): NativeAgentOptimisticMetadataMap {
+	const key = nativeAgentMetadataKey(input.provider, input.id);
+	return {
+		...current,
+		[key]: { ...current[key], titleOverride: input.titleOverride },
+	};
+}
+
+export function nativeAgentDisplayTitle(input: {
+	fallbackTitle: string;
+	metadata?: NativeAgentMetadataLike | null;
+	optimistic?: NativeAgentOptimisticMetadata | null;
+	providerTitle?: string | null;
+}): string {
+	const optimisticTitle = input.optimistic?.titleOverride?.trim();
+	if (optimisticTitle) return optimisticTitle;
+	const metadataOverride = input.metadata?.titleOverride?.trim();
+	if (metadataOverride) return metadataOverride;
+	const providerTitle = input.providerTitle?.trim();
+	if (providerTitle) return providerTitle;
+	const metadataTitle = input.metadata?.title?.trim();
+	if (metadataTitle) return metadataTitle;
+	return input.fallbackTitle;
 }
 
 export function mergeActiveNativeAgentRows<T extends NativeAgentListRow>(

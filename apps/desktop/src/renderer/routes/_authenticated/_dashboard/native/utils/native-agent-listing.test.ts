@@ -2,12 +2,15 @@ import { describe, expect, it } from "bun:test";
 import {
 	applyNativeAgentOptimisticPinned,
 	applyNativeAgentOptimisticSidebarVisible,
+	applyNativeAgentOptimisticTitle,
 	mergeActiveNativeAgentRows,
 	type NativeAgentSidebarListRow,
+	nativeAgentDisplayTitle,
 	nativeAgentMetadataKey,
 	nativeAgentSidebarInclusionReasons,
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
+	restoreNativeAgentOptimisticTitle,
 	selectNativeAgentProviderActiveRows,
 	selectNativeAgentSidebarItems,
 } from "./native-agent-listing";
@@ -64,6 +67,77 @@ describe("native agent optimistic metadata", () => {
 				},
 			),
 		).toEqual({ "devin:session-1": { hidden: true, pinned: false } });
+	});
+
+	it("renames immediately with a local optimistic title override", () => {
+		expect(
+			applyNativeAgentOptimisticTitle(
+				{ "devin:session-1": { pinned: true } },
+				{
+					id: "session-1",
+					provider: "devin",
+					titleOverride: "QES follow-up",
+				},
+			),
+		).toEqual({
+			"devin:session-1": {
+				pinned: true,
+				titleOverride: "QES follow-up",
+			},
+		});
+	});
+
+	it("restores the previous title override after a failed rename", () => {
+		expect(
+			restoreNativeAgentOptimisticTitle(
+				{ "capy:thread-1": { titleOverride: "New title" } },
+				{
+					id: "thread-1",
+					provider: "capy",
+					titleOverride: "Old title",
+				},
+			),
+		).toEqual({ "capy:thread-1": { titleOverride: "Old title" } });
+	});
+});
+
+describe("nativeAgentDisplayTitle", () => {
+	it("prefers optimistic and persisted local title overrides", () => {
+		expect(
+			nativeAgentDisplayTitle({
+				fallbackTitle: "fallback",
+				metadata: { titleOverride: "persisted", title: "last seen" },
+				optimistic: { titleOverride: "optimistic" },
+				providerTitle: "provider",
+			}),
+		).toBe("optimistic");
+		expect(
+			nativeAgentDisplayTitle({
+				fallbackTitle: "fallback",
+				metadata: { titleOverride: "persisted", title: "last seen" },
+				providerTitle: "provider",
+			}),
+		).toBe("persisted");
+	});
+
+	it("falls through provider, metadata, and fallback titles", () => {
+		expect(
+			nativeAgentDisplayTitle({
+				fallbackTitle: "fallback",
+				metadata: { title: "last seen" },
+				providerTitle: "provider",
+			}),
+		).toBe("provider");
+		expect(
+			nativeAgentDisplayTitle({
+				fallbackTitle: "fallback",
+				metadata: { title: "last seen" },
+				providerTitle: "",
+			}),
+		).toBe("last seen");
+		expect(nativeAgentDisplayTitle({ fallbackTitle: "fallback" })).toBe(
+			"fallback",
+		);
 	});
 });
 

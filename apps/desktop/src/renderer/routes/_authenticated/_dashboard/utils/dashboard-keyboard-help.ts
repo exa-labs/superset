@@ -176,6 +176,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Put the current session into a sidebar folder",
 				},
 				{
+					keys: ["e"],
+					label: "Rename session",
+					description: "Set a local title for the current native-agent session",
+				},
+				{
 					keys: ["R"],
 					label: "Refresh native data",
 					description: "Reload the active Capy or Devin session list",

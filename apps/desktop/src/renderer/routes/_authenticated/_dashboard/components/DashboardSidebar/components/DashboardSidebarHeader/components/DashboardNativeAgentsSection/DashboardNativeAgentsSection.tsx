@@ -71,6 +71,8 @@ import {
 	applyNativeAgentOptimisticPinned,
 	applyNativeAgentOptimisticSidebarVisible,
 	mergeActiveNativeAgentRows,
+	type NativeAgentOptimisticMetadataMap,
+	nativeAgentDisplayTitle,
 	nativeAgentSidebarInclusionReasons,
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
@@ -117,6 +119,7 @@ type NativeAgentItem = {
 	isProviderActive?: boolean;
 	sidebarPinned?: boolean;
 	sidebarHidden?: boolean;
+	titleOverride?: string | null;
 	latestMessage?: {
 		body: string;
 		createdAt: string | number | null | undefined;
@@ -596,9 +599,8 @@ export function DashboardNativeAgentsSection({
 	const [sessionFolders, setSessionFolders] = useState(() =>
 		readSessionFolders(),
 	);
-	const [optimisticMetadata, setOptimisticMetadata] = useState<
-		Record<string, { hidden?: boolean; pinned?: boolean }>
-	>({});
+	const [optimisticMetadata, setOptimisticMetadata] =
+		useState<NativeAgentOptimisticMetadataMap>({});
 	const [readState, setReadState] = useState(() => readReadState());
 	const [notifiedState, setNotifiedState] = useState(() => readNotifiedState());
 	const hasInitializedReplyNotificationsRef = useRef(false);
@@ -686,9 +688,11 @@ export function DashboardNativeAgentsSection({
 			capyFreshActiveThreads,
 		).map((thread) => {
 			const latestMessage = thread.latestMessage ?? thread.lastMessage ?? null;
+			const optimistic = optimisticMetadata[`capy:${thread.id}`];
+			const metadata = thread.nativeAgentMetadata;
 			const sidebarState = resolveNativeAgentSidebarState({
-				metadata: thread.nativeAgentMetadata,
-				optimistic: optimisticMetadata[`capy:${thread.id}`],
+				metadata,
+				optimistic,
 			});
 			const status = thread.runState ?? thread.status ?? null;
 			return {
@@ -710,7 +714,14 @@ export function DashboardNativeAgentsSection({
 					thread.tasks?.[0]?.identifier ??
 					thread.pullRequests?.[0]?.repoFullName ??
 					thread.projectId,
-				title: thread.title ?? "Untitled thread",
+				title: nativeAgentDisplayTitle({
+					fallbackTitle: "Untitled thread",
+					metadata,
+					optimistic,
+					providerTitle: thread.title,
+				}),
+				titleOverride:
+					optimistic?.titleOverride ?? metadata?.titleOverride ?? null,
 				updatedAt:
 					latestMessage?.createdAt ?? thread.updatedAt ?? thread.createdAt,
 			};
@@ -718,9 +729,11 @@ export function DashboardNativeAgentsSection({
 		const devinItems: NativeAgentItem[] = (
 			devinSessionsQuery.data?.items ?? []
 		).map((session) => {
+			const optimistic = optimisticMetadata[`devin:${session.id}`];
+			const metadata = session.nativeAgentMetadata;
 			const sidebarState = resolveNativeAgentSidebarState({
-				metadata: session.nativeAgentMetadata,
-				optimistic: optimisticMetadata[`devin:${session.id}`],
+				metadata,
+				optimistic,
 			});
 			return {
 				id: session.id,
@@ -730,7 +743,14 @@ export function DashboardNativeAgentsSection({
 				sidebarPinned: sidebarState.sidebarPinned,
 				status: session.status,
 				subtitle: session.pullRequestUrl ?? session.id,
-				title: session.title ?? session.id,
+				title: nativeAgentDisplayTitle({
+					fallbackTitle: session.id,
+					metadata,
+					optimistic,
+					providerTitle: session.title,
+				}),
+				titleOverride:
+					optimistic?.titleOverride ?? metadata?.titleOverride ?? null,
 				updatedAt: session.updatedAt ?? session.createdAt,
 			};
 		});
