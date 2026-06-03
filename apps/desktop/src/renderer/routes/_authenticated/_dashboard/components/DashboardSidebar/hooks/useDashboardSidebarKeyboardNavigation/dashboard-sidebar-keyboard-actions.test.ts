@@ -8,6 +8,7 @@ import {
 } from "./dashboard-sidebar-keyboard-actions";
 import {
 	dashboardSidebarExpansionValue,
+	findDashboardSidebarActionButton,
 	findDashboardSidebarExpansionTarget,
 	getDashboardSidebarFocusableItems,
 	shouldToggleDashboardSidebarExpansion,
@@ -308,6 +309,65 @@ describe("getDashboardSidebarFocusableItems", () => {
 				dashboardSidebarKeyboardActionSelector("delete"),
 			),
 		).toBe(deleteButton);
+	});
+});
+
+describe("findDashboardSidebarActionButton", () => {
+	test("resolves folder action buttons from the focused folder row", () => {
+		if (typeof document === "undefined") return;
+
+		const folderScope = document.createElement("div");
+		folderScope.dataset.dashboardSidebarActionScope = "";
+
+		const folder = document.createElement("button");
+		folder.dataset.nativeAgentFolderRowId = "folder-1";
+		makeVisible(folder);
+
+		const color = document.createElement("button");
+		color.dataset.dashboardSidebarAction = "color";
+		makeVisible(color);
+
+		const deleteButton = document.createElement("button");
+		deleteButton.dataset.dashboardSidebarAction = "delete";
+		makeVisible(deleteButton);
+
+		folderScope.append(folder, color, deleteButton);
+
+		expect(findDashboardSidebarActionButton(folder, "color")).toBe(color);
+		expect(findDashboardSidebarActionButton(folder, "delete")).toBe(
+			deleteButton,
+		);
+	});
+
+	test("does not escape the active row action scope", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const firstScope = document.createElement("div");
+		firstScope.dataset.dashboardSidebarActionScope = "";
+		const secondScope = document.createElement("div");
+		secondScope.dataset.dashboardSidebarActionScope = "";
+
+		const firstFolder = document.createElement("button");
+		firstFolder.dataset.nativeAgentFolderRowId = "folder-1";
+		makeVisible(firstFolder);
+
+		const secondFolder = document.createElement("button");
+		secondFolder.dataset.nativeAgentFolderRowId = "folder-2";
+		makeVisible(secondFolder);
+
+		const secondDelete = document.createElement("button");
+		secondDelete.dataset.dashboardSidebarAction = "delete";
+		makeVisible(secondDelete);
+
+		firstScope.append(firstFolder);
+		secondScope.append(secondFolder, secondDelete);
+		root.append(firstScope, secondScope);
+
+		expect(findDashboardSidebarActionButton(firstFolder, "delete")).toBeNull();
+		expect(findDashboardSidebarActionButton(secondFolder, "delete")).toBe(
+			secondDelete,
+		);
 	});
 });
 

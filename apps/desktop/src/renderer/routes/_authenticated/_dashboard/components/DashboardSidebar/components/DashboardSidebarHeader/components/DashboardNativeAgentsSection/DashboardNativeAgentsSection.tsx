@@ -1943,7 +1943,9 @@ export function DashboardNativeAgentsSection({
 													<button
 														type="button"
 														data-dashboard-sidebar-action="rename"
+														aria-keyshortcuts="e"
 														aria-label={`Rename ${folder.title}`}
+														title="Rename folder (e)"
 														onClick={(event) => {
 															event.stopPropagation();
 															openFolderEditor(folder);
@@ -1955,7 +1957,9 @@ export function DashboardNativeAgentsSection({
 													<button
 														type="button"
 														data-dashboard-sidebar-action="color"
+														aria-keyshortcuts="c"
 														aria-label={`Change ${folder.title} color`}
+														title="Cycle folder color (c)"
 														onClick={(event) => {
 															event.stopPropagation();
 															const currentIndex = FOLDER_COLORS.indexOf(
@@ -1975,7 +1979,9 @@ export function DashboardNativeAgentsSection({
 													<button
 														type="button"
 														data-dashboard-sidebar-action="delete"
+														aria-keyshortcuts="d"
 														aria-label={`Delete ${folder.title}`}
+														title="Delete folder (d)"
 														onClick={(event) => {
 															event.stopPropagation();
 															setDeleteFolderTarget(folder);

@@ -92,7 +92,7 @@ function focusItem(item: HTMLElement): void {
 	item.scrollIntoView({ block: "nearest" });
 }
 
-function findActionButton(
+export function findDashboardSidebarActionButton(
 	activeItem: HTMLElement,
 	action: Exclude<DashboardSidebarKeyboardAction, "none">,
 ): HTMLButtonElement | null {
@@ -266,7 +266,10 @@ export function useDashboardSidebarKeyboardNavigation(
 				}
 
 				const activeItem = items[activeIndex];
-				const actionButton = findActionButton(activeItem, sidebarAction);
+				const actionButton = findDashboardSidebarActionButton(
+					activeItem,
+					sidebarAction,
+				);
 				if (actionButton && !actionButton.disabled) {
 					actionButton.click();
 					return;
