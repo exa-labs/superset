@@ -139,6 +139,10 @@ type NativeAgentFolderCommandAction =
 	| "move-active"
 	| "remove-active"
 	| "rename";
+type NativeAgentSidebarSessionAction =
+	| "focus-composer"
+	| "open-browser"
+	| "toggle-browser";
 
 const CAPY_MONOREPO_PROJECT_ID = "a275b1f7-318b-49ed-b2c8-5bb31ca7cd97";
 const CAPY_LOCAL_USER_EMAIL = "lakee@exa.ai";
@@ -305,6 +309,17 @@ function nativeSessionPath(item: {
 		: `/native/devin/${encodeURIComponent(item.id)}`;
 }
 
+function dispatchNativeAgentCurrentAction(
+	action: NativeAgentSidebarSessionAction,
+	provider: NativeAgentProvider,
+): void {
+	window.dispatchEvent(
+		new CustomEvent("dashboard-native-agent-current-action", {
+			detail: { action, provider },
+		}),
+	);
+}
+
 function NativeCreateDialog({
 	open,
 	provider,
@@ -404,6 +419,7 @@ function SessionRow({
 	onMoveToFolder,
 	onOpen,
 	onPin,
+	onSessionAction,
 	onSidebarVisible,
 	readState,
 	shortcutLabel,
@@ -415,6 +431,10 @@ function SessionRow({
 	onMoveToFolder: (item: NativeAgentItem, folderId: string | null) => void;
 	onOpen: (item: NativeAgentItem) => void;
 	onPin: (item: NativeAgentItem, pinned: boolean) => void;
+	onSessionAction: (
+		item: NativeAgentItem,
+		action: NativeAgentSidebarSessionAction,
+	) => void;
 	onSidebarVisible: (item: NativeAgentItem, visible: boolean) => void;
 	readState: Record<string, number>;
 	shortcutLabel: string | null;
@@ -466,7 +486,7 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}`}
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, r reply, o browser, b toggle browser, p pin, x hide, m move`}
 				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-12 text-left"
 			>
 				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
@@ -563,6 +583,49 @@ function SessionRow({
 			/>
 			<button
 				type="button"
+				data-dashboard-sidebar-action="reply"
+				tabIndex={-1}
+				aria-label={`Reply to ${item.title}`}
+				onClick={() => onSessionAction(item, "focus-composer")}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="open-browser"
+				tabIndex={-1}
+				aria-label={`Open ${item.title} in browser mode`}
+				onClick={() => onSessionAction(item, "open-browser")}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="toggle-browser"
+				tabIndex={-1}
+				aria-label={`Toggle ${item.title} native and browser mode`}
+				onClick={() => onSessionAction(item, "toggle-browser")}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="move"
+				tabIndex={-1}
+				aria-label={`Move ${item.title} to last native folder`}
+				onClick={() => {
+					window.dispatchEvent(
+						new CustomEvent("dashboard-native-agent-folder-action", {
+							detail: {
+								action: "move-active",
+								provider: item.provider,
+								sessionId: item.id,
+							},
+						}),
+					);
+				}}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="remove-from-folder"
 				tabIndex={-1}
 				aria-label={`Move ${item.title} out of folder`}
 				onClick={() => onMoveToFolder(item, null)}
@@ -1012,20 +1075,36 @@ export function DashboardNativeAgentsSection({
 		return colors.filter((color) => !defaultColors.has(color));
 	}, [editingFolder?.color, recentFolderColors]);
 
-	const handleOpen = (item: NativeAgentItem) => {
-		const latestTime = latestAgentMessageTime(item);
-		if (latestTime != null) {
-			setReadState((current) => {
-				const next = {
-					...current,
-					[nativeAgentSessionFolderKey(item.provider, item.id)]: latestTime,
-				};
-				writeReadState(next);
-				return next;
-			});
-		}
-		navigateToNativeSession(item);
-	};
+	const handleOpen = useCallback(
+		(item: NativeAgentItem) => {
+			const latestTime = latestAgentMessageTime(item);
+			if (latestTime != null) {
+				setReadState((current) => {
+					const next = {
+						...current,
+						[nativeAgentSessionFolderKey(item.provider, item.id)]: latestTime,
+					};
+					writeReadState(next);
+					return next;
+				});
+			}
+			navigateToNativeSession(item);
+		},
+		[navigateToNativeSession],
+	);
+
+	const handleSessionAction = useCallback(
+		(item: NativeAgentItem, action: NativeAgentSidebarSessionAction) => {
+			handleOpen(item);
+			for (const delay of [0, 150, 500]) {
+				window.setTimeout(
+					() => dispatchNativeAgentCurrentAction(action, item.provider),
+					delay,
+				);
+			}
+		},
+		[handleOpen],
+	);
 
 	const handlePin = useCallback(
 		async (item: NativeAgentItem, pinned: boolean) => {
@@ -1528,6 +1607,18 @@ export function DashboardNativeAgentsSection({
 					return;
 				}
 				if (!rowItem) return;
+				if (sidebarAction === "focus-composer") {
+					handleSessionAction(rowItem, "focus-composer");
+					return;
+				}
+				if (sidebarAction === "open-browser") {
+					handleSessionAction(rowItem, "open-browser");
+					return;
+				}
+				if (sidebarAction === "toggle-browser") {
+					handleSessionAction(rowItem, "toggle-browser");
+					return;
+				}
 				if (sidebarAction === "pin") {
 					void handlePin(rowItem, rowItem.sidebarPinned !== true);
 					return;
@@ -1572,6 +1663,7 @@ export function DashboardNativeAgentsSection({
 		activeRoute.provider,
 		folders,
 		handlePin,
+		handleSessionAction,
 		handleSidebarVisible,
 		itemsByProvider,
 		moveToFolder,
@@ -1871,6 +1963,7 @@ export function DashboardNativeAgentsSection({
 															onMoveToFolder={moveToFolder}
 															onOpen={handleOpen}
 															onPin={handlePin}
+															onSessionAction={handleSessionAction}
 															onSidebarVisible={handleSidebarVisible}
 															readState={readState}
 															shortcutLabel={shortcutLabelForItem(item)}
@@ -1891,6 +1984,7 @@ export function DashboardNativeAgentsSection({
 										onMoveToFolder={moveToFolder}
 										onOpen={handleOpen}
 										onPin={handlePin}
+										onSessionAction={handleSessionAction}
 										onSidebarVisible={handleSidebarVisible}
 										readState={readState}
 										shortcutLabel={shortcutLabelForItem(item)}

@@ -11,6 +11,11 @@ describe("dashboardSidebarKeyboardActionFromKey", () => {
 	const cases: Array<[string, DashboardSidebarKeyboardAction]> = [
 		["n", "create"],
 		["p", "pin"],
+		["r", "reply"],
+		["o", "open-browser"],
+		["b", "toggle-browser"],
+		["m", "move"],
+		["F", "remove-from-folder"],
 		["a", "archive"],
 		["x", "archive"],
 		["e", "rename"],
@@ -70,6 +75,26 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 				ctrlKey: false,
 				focusInsideSidebar: true,
 				key: "d",
+				metaKey: false,
+				vimModeEnabled: false,
+			}),
+		).toBeNull();
+		expect(
+			dashboardSidebarTypeaheadSeedFromKey({
+				altKey: false,
+				ctrlKey: false,
+				focusInsideSidebar: true,
+				key: "r",
+				metaKey: false,
+				vimModeEnabled: false,
+			}),
+		).toBeNull();
+		expect(
+			dashboardSidebarTypeaheadSeedFromKey({
+				altKey: false,
+				ctrlKey: false,
+				focusInsideSidebar: true,
+				key: "o",
 				metaKey: false,
 				vimModeEnabled: false,
 			}),

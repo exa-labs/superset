@@ -16,11 +16,14 @@ export function nativeAgentSearchEscapeResult(
 
 export type NativeAgentSidebarVimAction =
 	| "archive"
+	| "focus-composer"
 	| "move-to-folder"
 	| "none"
 	| "open"
+	| "open-browser"
 	| "pin"
-	| "remove-from-folder";
+	| "remove-from-folder"
+	| "toggle-browser";
 
 export type NativeAgentFolderVimAction =
 	| "collapse"
@@ -53,7 +56,10 @@ export type NativeAgentSelectedSessionVimAction =
 export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
 ): NativeAgentSidebarVimAction {
-	if (key === "enter" || key === " " || key === "o") return "open";
+	if (key === "enter" || key === " ") return "open";
+	if (key === "r") return "focus-composer";
+	if (key === "o") return "open-browser";
+	if (key === "b") return "toggle-browser";
 	if (key === "p") return "pin";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";

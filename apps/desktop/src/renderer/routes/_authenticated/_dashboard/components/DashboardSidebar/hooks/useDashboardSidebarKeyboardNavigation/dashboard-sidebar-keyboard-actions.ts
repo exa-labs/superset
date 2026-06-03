@@ -1,9 +1,14 @@
 export type DashboardSidebarKeyboardAction =
 	| "archive"
 	| "create"
+	| "move"
 	| "none"
+	| "open-browser"
 	| "pin"
-	| "rename";
+	| "remove-from-folder"
+	| "rename"
+	| "reply"
+	| "toggle-browser";
 export type DashboardSidebarActivationAction = "activate" | "none";
 
 export function dashboardSidebarKeyboardActionFromKey(
@@ -11,6 +16,11 @@ export function dashboardSidebarKeyboardActionFromKey(
 ): DashboardSidebarKeyboardAction {
 	if (key === "n") return "create";
 	if (key === "p") return "pin";
+	if (key === "r") return "reply";
+	if (key === "o") return "open-browser";
+	if (key === "b") return "toggle-browser";
+	if (key === "m") return "move";
+	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	if (key === "e") return "rename";
 	return "none";

@@ -45,7 +45,9 @@ describe("native agent keyboard helpers", () => {
 	it("maps native sidebar vim row actions", () => {
 		expect(nativeAgentSidebarVimActionFromKey("enter")).toBe("open");
 		expect(nativeAgentSidebarVimActionFromKey(" ")).toBe("open");
-		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open");
+		expect(nativeAgentSidebarVimActionFromKey("r")).toBe("focus-composer");
+		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open-browser");
+		expect(nativeAgentSidebarVimActionFromKey("b")).toBe("toggle-browser");
 		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
 		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("none");
