@@ -185,6 +185,29 @@ export function useDashboardSidebarKeyboardNavigation(
 				return;
 			}
 
+			if (sidebarAction !== "none") {
+				event.preventDefault();
+				if (activeIndex < 0) {
+					if (sidebarAction === "create") {
+						options.onCreateWorkspace?.();
+						return;
+					}
+					focusItem(items[0]);
+					return;
+				}
+
+				const activeItem = items[activeIndex];
+				const actionButton = findActionButton(activeItem, sidebarAction);
+				if (actionButton && !actionButton.disabled) {
+					actionButton.click();
+					return;
+				}
+				if (sidebarAction === "create") {
+					options.onCreateWorkspace?.();
+				}
+				return;
+			}
+
 			if (!vimModeEnabled) return;
 
 			if (event.key === "Escape") {
@@ -232,19 +255,6 @@ export function useDashboardSidebarKeyboardNavigation(
 			}
 
 			const activeItem = items[activeIndex];
-
-			if (sidebarAction !== "none") {
-				event.preventDefault();
-				const actionButton = findActionButton(activeItem, sidebarAction);
-				if (actionButton && !actionButton.disabled) {
-					actionButton.click();
-					return;
-				}
-				if (sidebarAction === "create") {
-					options.onCreateWorkspace?.();
-				}
-				return;
-			}
 
 			if (event.key === "Enter" || event.key === " ") {
 				event.preventDefault();
