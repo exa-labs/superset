@@ -1,64 +1,14 @@
 import { app, type WebContents, webContents } from "electron";
-import { isOpenControlPlaneShortcutInput } from "main/lib/control-plane-shortcut";
 import {
-	type DashboardWebShortcut,
-	dashboardWebDigitIndexFromInput,
-	dashboardWebIndexedShortcut,
-	dashboardWebShortcutFromInput,
-} from "main/lib/dashboard-web-shortcut";
-import {
-	type GlobalKeyboardAction,
-	globalKeyboardActionFromInput,
-	shouldPreventDefaultForGlobalKeyboardAction,
-} from "main/lib/global-keyboard-shortcut";
+	type ControlPlaneShortcutBridgeInputResolver,
+	createControlPlaneShortcutBridgeInputResolver,
+} from "main/lib/control-plane-shortcut-bridge-resolver";
+import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
+import type { GlobalKeyboardAction } from "main/lib/global-keyboard-shortcut";
 
 const attachedWebContentsIds = new Set<number>();
 let installed = false;
-let pendingDashboardWebAppShortcut: {
-	shortcut: DashboardWebShortcut;
-	timeout: NodeJS.Timeout;
-} | null = null;
-
-function clearPendingDashboardWebAppShortcut(): void {
-	const pending = pendingDashboardWebAppShortcut;
-	if (!pending) return;
-	clearTimeout(pending.timeout);
-	pendingDashboardWebAppShortcut = null;
-}
-
-function armPendingDashboardWebAppShortcut(
-	shortcut: DashboardWebShortcut,
-): void {
-	clearPendingDashboardWebAppShortcut();
-	pendingDashboardWebAppShortcut = {
-		shortcut,
-		timeout: setTimeout(() => {
-			pendingDashboardWebAppShortcut = null;
-		}, 1500),
-	};
-}
-
-function resolveDashboardWebShortcut(
-	input: Parameters<typeof dashboardWebShortcutFromInput>[0],
-): DashboardWebShortcut | null {
-	const pending = pendingDashboardWebAppShortcut;
-	if (pending) {
-		const digitIndex = dashboardWebDigitIndexFromInput(input);
-		if (digitIndex !== null) {
-			clearPendingDashboardWebAppShortcut();
-			return dashboardWebIndexedShortcut(pending.shortcut, digitIndex);
-		}
-	}
-
-	const shortcut = dashboardWebShortcutFromInput(input);
-	if (shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN") {
-		armPendingDashboardWebAppShortcut(shortcut);
-		return shortcut;
-	}
-
-	if (shortcut) clearPendingDashboardWebAppShortcut();
-	return shortcut;
-}
+let inputResolver: ControlPlaneShortcutBridgeInputResolver | null = null;
 
 export function installControlPlaneShortcutBridge(
 	onOpenControlPlane: () => void,
@@ -67,6 +17,7 @@ export function installControlPlaneShortcutBridge(
 ): void {
 	if (installed) return;
 	installed = true;
+	inputResolver = createControlPlaneShortcutBridgeInputResolver();
 
 	const attach = (contents: WebContents) => {
 		if (contents.isDestroyed() || attachedWebContentsIds.has(contents.id)) {
@@ -76,25 +27,27 @@ export function installControlPlaneShortcutBridge(
 		attachedWebContentsIds.add(contents.id);
 
 		contents.on("before-input-event", (event, input) => {
-			if (isOpenControlPlaneShortcutInput(input)) {
+			const result = inputResolver?.resolve(input) ?? {
+				preventDefault: false,
+				type: "none",
+			};
+			if (result.preventDefault) {
 				event.preventDefault();
+			}
+
+			if (result.type === "open-control-plane") {
 				onOpenControlPlane();
 				return;
 			}
 
-			const globalKeyboardAction = globalKeyboardActionFromInput(input);
-			if (globalKeyboardAction) {
-				if (shouldPreventDefaultForGlobalKeyboardAction(globalKeyboardAction)) {
-					event.preventDefault();
-				}
-				onGlobalKeyboardAction?.(globalKeyboardAction);
+			if (result.type === "global-keyboard-action") {
+				onGlobalKeyboardAction?.(result.action);
 				return;
 			}
 
-			const dashboardWebShortcut = resolveDashboardWebShortcut(input);
-			if (!dashboardWebShortcut) return;
-			event.preventDefault();
-			onDashboardWebShortcut?.(dashboardWebShortcut);
+			if (result.type === "dashboard-web-shortcut") {
+				onDashboardWebShortcut?.(result.shortcut);
+			}
 		});
 
 		contents.once("destroyed", () => {
