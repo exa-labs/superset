@@ -44,6 +44,26 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("OPEN_UNREAD_NATIVE_REPLY");
 	});
 
+	it("matches Option+Shift+N as a global latest native reply acknowledgement", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "KeyN",
+				key: "Dead",
+				shift: true,
+			}),
+		).toBe("MARK_LATEST_NATIVE_REPLY_READ");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "",
+				key: "N",
+				shift: true,
+				type: "rawKeyDown",
+			}),
+		).toBe("MARK_LATEST_NATIVE_REPLY_READ");
+	});
+
 	it("keeps unmodified N available for pending Capy and Devin create chords", () => {
 		expect(
 			globalKeyboardActionFromInput({
@@ -174,6 +194,11 @@ describe("globalKeyboardActionFromInput", () => {
 		);
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction("OPEN_UNREAD_NATIVE_REPLY"),
+		).toBe(true);
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction(
+				"MARK_LATEST_NATIVE_REPLY_READ",
+			),
 		).toBe(true);
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction(

@@ -77,6 +77,15 @@ describe("control plane shortcut bridge resolver", () => {
 				},
 			},
 			{
+				input: { code: "KeyN", key: "Dead", shift: true },
+				name: "Option+Shift+N marks the newest unread native reply read",
+				result: {
+					action: "MARK_LATEST_NATIVE_REPLY_READ",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
 				input: { code: "Tab", key: "Tab" },
 				name: "Option+Tab switches recent dashboard views",
 				result: {
@@ -191,6 +200,14 @@ describe("control plane shortcut bridge resolver", () => {
 				input: { code: "Slash", key: "/", type: "rawKeyDown" },
 				result: {
 					action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "KeyN", key: "Dead", shift: true },
+				result: {
+					action: "MARK_LATEST_NATIVE_REPLY_READ",
 					preventDefault: true,
 					type: "global-keyboard-action",
 				},

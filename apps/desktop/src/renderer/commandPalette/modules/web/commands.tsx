@@ -685,7 +685,7 @@ export const webProvider: CommandProvider = {
 					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
 					priority: CONTROL_PLANE_PRIORITY.unreadNativeReply,
 					keywords: [...keywords, "read", "dismiss", "clear"],
-					shortcutLabel: "U",
+					hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ",
 					run: () => {
 						markNativeAgentReplyNotificationRead(actionableLatestNativeReply);
 					},

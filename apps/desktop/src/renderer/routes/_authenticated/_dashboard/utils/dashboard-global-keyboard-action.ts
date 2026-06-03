@@ -5,6 +5,7 @@ import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-stat
 
 export type DashboardGlobalKeyboardAction =
 	| "FOCUS_DASHBOARD_SHELL"
+	| "MARK_LATEST_NATIVE_REPLY_READ"
 	| "OPEN_UNREAD_NATIVE_REPLY"
 	| "SHOW_DASHBOARD_KEYBOARD_HELP"
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
@@ -14,10 +15,13 @@ type DashboardMruSwitchDirection = "next" | "previous";
 
 export const DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT =
 	"dashboard-native-agent-open-unread-reply";
+export const DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT =
+	"dashboard-native-agent-mark-latest-reply-read";
 
 interface DashboardGlobalKeyboardActionHandlers {
 	defer: (callback: () => void) => void;
 	focusNavigationShell: () => boolean;
+	markLatestNativeReplyRead: () => boolean;
 	openKeyboardHelp: () => boolean;
 	openNavigationShell: () => void;
 	openUnreadNativeReply: () => boolean;
@@ -55,9 +59,20 @@ export function dispatchDashboardOpenUnreadNativeReply(): boolean {
 	return true;
 }
 
+export function dispatchDashboardMarkLatestNativeReplyRead(): boolean {
+	if (typeof window === "undefined") return false;
+	window.dispatchEvent(
+		new CustomEvent(DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT, {
+			cancelable: true,
+		}),
+	);
+	return true;
+}
+
 const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	defer,
 	focusNavigationShell: focusDashboardNavigationShell,
+	markLatestNativeReplyRead: dispatchDashboardMarkLatestNativeReplyRead,
 	openKeyboardHelp: openDashboardKeyboardHelp,
 	openNavigationShell: () => useWorkspaceSidebarStore.getState().setOpen(true),
 	openUnreadNativeReply: dispatchDashboardOpenUnreadNativeReply,
@@ -82,6 +97,10 @@ export function handleDashboardGlobalKeyboardAction(
 
 	if (action === "OPEN_UNREAD_NATIVE_REPLY") {
 		return resolved.openUnreadNativeReply();
+	}
+
+	if (action === "MARK_LATEST_NATIVE_REPLY_READ") {
+		return resolved.markLatestNativeReplyRead();
 	}
 
 	if (action === "SWITCH_DASHBOARD_VIEW_NEXT") {

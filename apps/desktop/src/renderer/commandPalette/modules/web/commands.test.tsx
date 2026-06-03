@@ -681,8 +681,8 @@ describe("web command provider", () => {
 					webProvider
 						.provide(context)
 						.find((candidate) => candidate.id === "native.latestReply.markRead")
-						?.shortcutLabel,
-				).toBe("U");
+						?.hotkeyId,
+				).toBe("MARK_LATEST_NATIVE_REPLY_READ");
 				command?.run?.(context);
 				expect(navigatedTo).toEqual(["/native/devin/session-1"]);
 				expect(localStorage.getItem(NATIVE_AGENT_READ_STATE_STORAGE_KEY)).toBe(
@@ -722,7 +722,7 @@ describe("web command provider", () => {
 					.find((candidate) => candidate.id === "native.latestReply.markRead");
 
 				expect(command?.title).toBe("Mark latest Capy reply read");
-				expect(command?.shortcutLabel).toBe("U");
+				expect(command?.hotkeyId).toBe("MARK_LATEST_NATIVE_REPLY_READ");
 				command?.run?.(context);
 
 				expect(navigatedTo).toEqual([]);

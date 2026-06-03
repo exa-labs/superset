@@ -7,6 +7,7 @@ import {
 function handlers(
 	overrides: {
 		focusNavigationShell?: () => boolean;
+		markLatestNativeReplyRead?: () => boolean;
 		openKeyboardHelp?: () => boolean;
 		openUnreadNativeReply?: () => boolean;
 		onDefer?: (callback: () => void) => void;
@@ -18,6 +19,8 @@ function handlers(
 	return {
 		defer: overrides.onDefer ?? ((callback: () => void) => callback()),
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
+		markLatestNativeReplyRead:
+			overrides.markLatestNativeReplyRead ?? (() => true),
 		openKeyboardHelp: overrides.openKeyboardHelp ?? (() => true),
 		openNavigationShell: overrides.onOpenNavigationShell ?? (() => undefined),
 		openUnreadNativeReply: overrides.openUnreadNativeReply ?? (() => true),
@@ -76,6 +79,23 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 			),
 		).toBe(true);
 		expect(opened).toBe(true);
+	});
+
+	it("marks the latest native reply read from the global main-process action", () => {
+		let markedRead = false;
+
+		expect(
+			handleDashboardGlobalKeyboardAction(
+				"MARK_LATEST_NATIVE_REPLY_READ",
+				handlers({
+					markLatestNativeReplyRead: () => {
+						markedRead = true;
+						return true;
+					},
+				}),
+			),
+		).toBe(true);
+		expect(markedRead).toBe(true);
 	});
 
 	it("focuses the navigation shell on Escape even when Vim mode is disabled", () => {

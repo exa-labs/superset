@@ -91,6 +91,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.switchDashboardViewNext")).toBe(true);
 		expect(commandIds.has("actions.switchDashboardViewPrevious")).toBe(true);
 		expect(commandIds.has("actions.openUnreadNativeReply")).toBe(true);
+		expect(commandIds.has("actions.markLatestNativeReplyRead")).toBe(true);
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
@@ -121,6 +122,11 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.openUnreadNativeReply")
 				?.hotkeyId,
 		).toBe("OPEN_UNREAD_NATIVE_REPLY");
+		expect(
+			commands.find(
+				(command) => command.id === "actions.markLatestNativeReplyRead",
+			)?.hotkeyId,
+		).toBe("MARK_LATEST_NATIVE_REPLY_READ");
 		expect(
 			commands.find((command) => command.id === "actions.newWorkspace")
 				?.hotkeyId,
@@ -207,6 +213,31 @@ describe("actions command provider", () => {
 		);
 
 		expect(openEventCount).toBe(1);
+	});
+
+	it("routes mark-latest-read command-palette action through the global event", () => {
+		if (typeof window === "undefined") return;
+		let markReadEventCount = 0;
+		const listener = () => {
+			markReadEventCount += 1;
+		};
+		window.addEventListener(
+			"dashboard-native-agent-mark-latest-reply-read",
+			listener,
+		);
+		const command = actionsProvider
+			.provide(commandContext("/web-tabs/google"))
+			.find(
+				(candidate) => candidate.id === "actions.markLatestNativeReplyRead",
+			);
+
+		command?.run?.(commandContext("/web-tabs/google"));
+		window.removeEventListener(
+			"dashboard-native-agent-mark-latest-reply-read",
+			listener,
+		);
+
+		expect(markReadEventCount).toBe(1);
 	});
 
 	it("runs the dashboard Vim toggle command", () => {

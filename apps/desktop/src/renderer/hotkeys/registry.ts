@@ -884,6 +884,17 @@ export const HOTKEYS_REGISTRY = {
 		category: "Help",
 		description: "Jump to the newest unread Capy or Devin response",
 	},
+	MARK_LATEST_NATIVE_REPLY_READ: {
+		key: {
+			mac: L("alt+shift+n"),
+			windows: L("ctrl+alt+shift+n"),
+			linux: L("ctrl+alt+shift+n"),
+		},
+		label: "Mark Latest Native Reply Read",
+		category: "Help",
+		description:
+			"Acknowledge the newest unread Capy or Devin response without opening it",
+	},
 	OPEN_COMMAND_PALETTE: {
 		key: {
 			mac: L("meta+shift+k"),

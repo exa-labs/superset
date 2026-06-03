@@ -157,5 +157,11 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+n",
 		});
+		expect(
+			HOTKEYS_REGISTRY.MARK_LATEST_NATIVE_REPLY_READ.key.mac,
+		).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+n",
+		});
 	});
 });

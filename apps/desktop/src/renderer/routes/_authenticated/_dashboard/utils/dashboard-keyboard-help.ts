@@ -69,6 +69,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description:
 						"Jump to the newest unread Capy or Devin response from any dashboard view",
 				},
+				{
+					hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ",
+					label: "Mark latest native reply read",
+					description:
+						"Acknowledge the newest unread Capy or Devin response from any dashboard view",
+				},
 			],
 		},
 		{

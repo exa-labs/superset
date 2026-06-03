@@ -100,6 +100,7 @@ import {
 	getUnreadNativeAgentReplyNotifications,
 	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	nativeAgentNotificationKey,
 	readLatestNativeAgentReplyNotification,
 	readNativeAgentReadState,
 	writeLatestNativeAgentReplyNotification,
@@ -117,7 +118,10 @@ import {
 	nativeAgentTimestampMs,
 	normalizeNativeAgentRole,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
-import { DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import {
+	DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT,
+	DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import {
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
@@ -1532,6 +1536,52 @@ export function DashboardNativeAgentsSection({
 			);
 		};
 	}, [handleOpen, itemsByProvider, readState]);
+
+	const markLatestUnreadNativeReplyRead = useCallback((): boolean => {
+		const unreadItem = getLatestUnreadNativeAgentReplyItem({
+			itemsByProvider,
+			readState,
+		});
+		const latestMessage = unreadItem?.latestMessage;
+		if (!unreadItem || !latestMessage) {
+			toast.message("No unread Capy or Devin replies");
+			return false;
+		}
+
+		const latestTime = nativeAgentTimestampMs(latestMessage.createdAt);
+		if (latestTime == null) {
+			toast.message("No unread Capy or Devin replies");
+			return false;
+		}
+
+		markNativeAgentReplyNotificationRead({
+			key: nativeAgentNotificationKey(unreadItem.provider, unreadItem.id),
+			latestTime,
+		});
+		toast.message(
+			`Marked ${nativeAgentProviderConfig(unreadItem.provider).title} reply read`,
+			{ description: unreadItem.title },
+		);
+		return true;
+	}, [itemsByProvider, readState]);
+
+	useEffect(() => {
+		const handleMarkLatestNativeReplyRead = (event: Event) => {
+			if (!markLatestUnreadNativeReplyRead()) return;
+			event.preventDefault();
+		};
+
+		window.addEventListener(
+			DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT,
+			handleMarkLatestNativeReplyRead,
+		);
+		return () => {
+			window.removeEventListener(
+				DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT,
+				handleMarkLatestNativeReplyRead,
+			);
+		};
+	}, [markLatestUnreadNativeReplyRead]);
 
 	useEffect(() => {
 		const handleCreate = (event: Event) => {

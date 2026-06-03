@@ -2,6 +2,7 @@ import type { Input } from "electron";
 
 export type GlobalKeyboardAction =
 	| "FOCUS_DASHBOARD_SHELL"
+	| "MARK_LATEST_NATIVE_REPLY_READ"
 	| "OPEN_UNREAD_NATIVE_REPLY"
 	| "SHOW_DASHBOARD_KEYBOARD_HELP"
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
@@ -36,6 +37,12 @@ function isOptionTabChord(input: GlobalKeyboardShortcutInput): boolean {
 	return input.alt && !input.control && !input.meta;
 }
 
+function isOptionShiftChord(input: GlobalKeyboardShortcutInput): boolean {
+	if (!isShortcutKeyDownType(input.type)) return false;
+	if (input.isAutoRepeat) return false;
+	return input.alt && input.shift && !input.control && !input.meta;
+}
+
 function isOptionHelpChord(input: GlobalKeyboardShortcutInput): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
@@ -68,6 +75,14 @@ export function globalKeyboardActionFromInput(
 				? "SWITCH_DASHBOARD_VIEW_PREVIOUS"
 				: "SWITCH_DASHBOARD_VIEW_NEXT";
 		}
+	}
+
+	if (isOptionShiftChord(input)) {
+		const code = input.code.toLowerCase();
+		if (code === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
+
+		const key = input.key.toLowerCase();
+		if (key === "n") return "MARK_LATEST_NATIVE_REPLY_READ";
 	}
 
 	if (!isBareOptionChord(input)) return null;

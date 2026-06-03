@@ -26,6 +26,7 @@ import { ThemeFrame } from "../../ui/ThemeFrame/ThemeFrame";
 const ACTION_COMMAND_PRIORITY = {
 	focusRecovery: 180,
 	keyboardHelp: 170,
+	markUnreadNativeReply: 188,
 	newWorkspace: 160,
 	unreadNativeReply: 190,
 	vimMode: 150,
@@ -134,6 +135,30 @@ export const actionsProvider: CommandProvider = {
 				],
 				run: () => {
 					handleDashboardGlobalKeyboardAction("OPEN_UNREAD_NATIVE_REPLY");
+				},
+			},
+			{
+				id: "actions.markLatestNativeReplyRead",
+				title: "Mark latest native reply read",
+				section: "actions",
+				description:
+					"Acknowledge the newest unread Capy or Devin response without opening it",
+				icon: BellOffIcon,
+				hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ",
+				priority: ACTION_COMMAND_PRIORITY.markUnreadNativeReply,
+				keywords: [
+					"capy",
+					"devin",
+					"unread",
+					"read",
+					"acknowledge",
+					"dismiss",
+					"notification",
+					"inbox",
+					"agent",
+				],
+				run: () => {
+					handleDashboardGlobalKeyboardAction("MARK_LATEST_NATIVE_REPLY_READ");
 				},
 			},
 			{
