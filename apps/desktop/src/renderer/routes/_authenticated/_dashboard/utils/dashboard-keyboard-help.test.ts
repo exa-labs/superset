@@ -120,6 +120,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Control workspace panes in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["s", "[", "]", "=", "x"] }),
 		);
+		expect(entryByLabel.get("Back or forward Chrome history")).toEqual(
+			expect.objectContaining({ keys: ["H", "L"] }),
+		);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["n"] }),
 		);

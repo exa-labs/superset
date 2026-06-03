@@ -43,6 +43,12 @@ describe("dashboard browser webview bridge", () => {
 			'if (key === "p") return "BROWSER_TOGGLE_PIN"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "H") return "BROWSER_GO_BACK"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "L") return "BROWSER_GO_FORWARD"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "h") return "BROWSER_PREVIOUS_TAB"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

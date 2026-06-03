@@ -217,6 +217,8 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (key === "=") return "BROWSER_EQUALIZE_SPLIT";
 		if (key === "x") return "BROWSER_CLOSE_TAB";
 		if (key === "p") return "BROWSER_TOGGLE_PIN";
+		if (key === "H") return "BROWSER_GO_BACK";
+		if (key === "L") return "BROWSER_GO_FORWARD";
 		if (key === "h") return "BROWSER_PREVIOUS_TAB";
 		if (key === "l") return "BROWSER_NEXT_TAB";
 		return null;

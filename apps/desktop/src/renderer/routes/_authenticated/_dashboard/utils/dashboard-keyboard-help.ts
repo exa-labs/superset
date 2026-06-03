@@ -714,6 +714,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					label: "Previous or next Chrome tab",
 					description: "Move left or right through embedded Chrome tabs",
 				},
+				{
+					keys: ["H", "L"],
+					label: "Back or forward Chrome history",
+					description:
+						"Go backward or forward in the active embedded Chrome tab",
+				},
 			],
 		},
 		{

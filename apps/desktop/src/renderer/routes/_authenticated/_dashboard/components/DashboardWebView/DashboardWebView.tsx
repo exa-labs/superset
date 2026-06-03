@@ -67,6 +67,8 @@ type DashboardBrowserCurrentAction =
 	| "close-current-tab"
 	| "close-split"
 	| "equalize-split"
+	| "go-back"
+	| "go-forward"
 	| "narrow-active-split"
 	| "new-chatgpt-tab"
 	| "new-claude-tab"
@@ -755,21 +757,21 @@ export function DashboardWebView({
 		[],
 	);
 
-	const goBack = () => {
+	const goBack = useCallback(() => {
 		const webview = getActiveWebview();
 		if (!isActiveWebviewReady() || !webview) return;
 		try {
 			if (webview.canGoBack()) webview.goBack();
 		} catch {}
-	};
+	}, [getActiveWebview, isActiveWebviewReady]);
 
-	const goForward = () => {
+	const goForward = useCallback(() => {
 		const webview = getActiveWebview();
 		if (!isActiveWebviewReady() || !webview) return;
 		try {
 			if (webview.canGoForward()) webview.goForward();
 		} catch {}
-	};
+	}, [getActiveWebview, isActiveWebviewReady]);
 
 	const reload = useCallback(() => {
 		if (!isActiveWebviewReady()) return;
@@ -826,6 +828,14 @@ export function DashboardWebView({
 
 			if (action === "reload") {
 				reload();
+				return;
+			}
+			if (action === "go-back") {
+				goBack();
+				return;
+			}
+			if (action === "go-forward") {
+				goForward();
 				return;
 			}
 			if (action === "toggle-split") {
@@ -899,6 +909,8 @@ export function DashboardWebView({
 		createBrowserTab,
 		createTabFromCurrentUrl,
 		equalizeSplitPanes,
+		goBack,
+		goForward,
 		activateBrowserTab,
 		browserTabIds,
 		isActive,
@@ -927,6 +939,16 @@ export function DashboardWebView({
 
 			if (action === "reload") {
 				reload();
+				return;
+			}
+
+			if (action === "go-back") {
+				goBack();
+				return;
+			}
+
+			if (action === "go-forward") {
+				goForward();
 				return;
 			}
 
@@ -991,6 +1013,8 @@ export function DashboardWebView({
 		closeBrowserTab,
 		createTabFromCurrentUrl,
 		equalizeSplitPanes,
+		goBack,
+		goForward,
 		isActive,
 		reload,
 		resizeActiveSplitPane,

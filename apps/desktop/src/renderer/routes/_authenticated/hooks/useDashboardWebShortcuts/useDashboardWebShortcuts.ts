@@ -69,6 +69,8 @@ type DashboardWebShortcut =
 	| "BROWSER_NARROW_SPLIT"
 	| "BROWSER_WIDEN_SPLIT"
 	| "BROWSER_EQUALIZE_SPLIT"
+	| "BROWSER_GO_BACK"
+	| "BROWSER_GO_FORWARD"
 	| "BROWSER_CLOSE_TAB"
 	| "BROWSER_TOGGLE_PIN"
 	| "BROWSER_PREVIOUS_TAB"
@@ -78,6 +80,8 @@ type DashboardBrowserCurrentAction =
 	| "close-current-tab"
 	| "close-split"
 	| "equalize-split"
+	| "go-back"
+	| "go-forward"
 	| "narrow-active-split"
 	| "new-current-url-tab"
 	| "next-tab"
@@ -129,6 +133,8 @@ const BROWSER_SHORTCUT_ACTIONS: Partial<
 	BROWSER_NARROW_SPLIT: "narrow-active-split",
 	BROWSER_WIDEN_SPLIT: "widen-active-split",
 	BROWSER_EQUALIZE_SPLIT: "equalize-split",
+	BROWSER_GO_BACK: "go-back",
+	BROWSER_GO_FORWARD: "go-forward",
 	BROWSER_CLOSE_TAB: "close-current-tab",
 	BROWSER_TOGGLE_PIN: "toggle-tab-pin",
 	BROWSER_PREVIOUS_TAB: "previous-tab",
