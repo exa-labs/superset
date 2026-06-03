@@ -131,6 +131,14 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+s",
 		});
+		expect(HOTKEYS_REGISTRY.NARROW_PANE_SPLIT.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "meta+alt+bracketleft",
+		});
+		expect(HOTKEYS_REGISTRY.WIDEN_PANE_SPLIT.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "meta+alt+bracketright",
+		});
 		expect(HOTKEYS_REGISTRY.OPEN_WORKSPACES.key.mac).toMatchObject({
 			mode: "logical",
 			chord: "alt+w",

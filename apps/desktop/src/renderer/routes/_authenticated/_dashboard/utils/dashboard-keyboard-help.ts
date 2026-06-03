@@ -298,6 +298,62 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 			],
 		},
 		{
+			id: "workspace-panes",
+			title: "Workspace Panes",
+			entries: [
+				{
+					hotkeyId: "SPLIT_RIGHT",
+					label: "Split pane right",
+					description: "Open a new terminal pane to the right",
+				},
+				{
+					hotkeyId: "SPLIT_DOWN",
+					label: "Split pane down",
+					description: "Open a new terminal pane below",
+				},
+				{
+					hotkeyId: "NARROW_PANE_SPLIT",
+					label: "Narrow focused pane",
+					description: "Reduce the focused workspace pane size",
+				},
+				{
+					hotkeyId: "WIDEN_PANE_SPLIT",
+					label: "Widen focused pane",
+					description: "Increase the focused workspace pane size",
+				},
+				{
+					hotkeyId: "EQUALIZE_PANE_SPLITS",
+					label: "Equalize workspace panes",
+					description: "Reset all workspace panes to equal sizes",
+				},
+				{
+					hotkeyId: "FOCUS_PANE_LEFT",
+					label: "Focus pane left",
+					description: "Move workspace focus to the pane on the left",
+				},
+				{
+					hotkeyId: "FOCUS_PANE_RIGHT",
+					label: "Focus pane right",
+					description: "Move workspace focus to the pane on the right",
+				},
+				{
+					hotkeyId: "FOCUS_PANE_UP",
+					label: "Focus pane up",
+					description: "Move workspace focus to the pane above",
+				},
+				{
+					hotkeyId: "FOCUS_PANE_DOWN",
+					label: "Focus pane down",
+					description: "Move workspace focus to the pane below",
+				},
+				{
+					hotkeyId: "CLOSE_PANE",
+					label: "Close focused pane",
+					description: "Close the focused workspace pane",
+				},
+			],
+		},
+		{
 			id: "browser",
 			title: "Browser",
 			entries: [

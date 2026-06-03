@@ -47,6 +47,16 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["/", "type"] }),
 		);
 		expect(labels.has("Split native/browser")).toBe(true);
+		expect(hotkeyIds.has("SPLIT_RIGHT")).toBe(true);
+		expect(hotkeyIds.has("SPLIT_DOWN")).toBe(true);
+		expect(hotkeyIds.has("NARROW_PANE_SPLIT")).toBe(true);
+		expect(hotkeyIds.has("WIDEN_PANE_SPLIT")).toBe(true);
+		expect(hotkeyIds.has("EQUALIZE_PANE_SPLITS")).toBe(true);
+		expect(hotkeyIds.has("FOCUS_PANE_LEFT")).toBe(true);
+		expect(hotkeyIds.has("FOCUS_PANE_RIGHT")).toBe(true);
+		expect(hotkeyIds.has("FOCUS_PANE_UP")).toBe(true);
+		expect(hotkeyIds.has("FOCUS_PANE_DOWN")).toBe(true);
+		expect(hotkeyIds.has("CLOSE_PANE")).toBe(true);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),
 		);

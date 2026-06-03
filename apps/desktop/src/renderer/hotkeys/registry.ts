@@ -481,6 +481,26 @@ export const HOTKEYS_REGISTRY = {
 		category: "Layout",
 		description: "Make all panes equal size",
 	},
+	NARROW_PANE_SPLIT: {
+		key: {
+			mac: L("meta+alt+bracketleft"),
+			windows: L("ctrl+shift+alt+bracketleft"),
+			linux: L("ctrl+shift+alt+bracketleft"),
+		},
+		label: "Narrow Focused Pane",
+		category: "Layout",
+		description: "Reduce the size of the focused pane",
+	},
+	WIDEN_PANE_SPLIT: {
+		key: {
+			mac: L("meta+alt+bracketright"),
+			windows: L("ctrl+shift+alt+bracketright"),
+			linux: L("ctrl+shift+alt+bracketright"),
+		},
+		label: "Widen Focused Pane",
+		category: "Layout",
+		description: "Increase the size of the focused pane",
+	},
 	CLOSE_PANE: {
 		key: {
 			mac: L("meta+w"),

@@ -116,6 +116,8 @@ describe("workspace command provider", () => {
 		expect(hotkeyById.get("workspace.pane.equalize")).toBe(
 			"EQUALIZE_PANE_SPLITS",
 		);
+		expect(hotkeyById.get("workspace.pane.narrow")).toBe("NARROW_PANE_SPLIT");
+		expect(hotkeyById.get("workspace.pane.widen")).toBe("WIDEN_PANE_SPLIT");
 		expect(hotkeyById.get("workspace.pane.close")).toBe("CLOSE_PANE");
 		expect(hotkeyById.get("workspace.pane.focusLeft")).toBe("FOCUS_PANE_LEFT");
 		expect(hotkeyById.get("workspace.pane.focusRight")).toBe(
@@ -139,6 +141,12 @@ describe("workspace command provider", () => {
 				.find((command) => command.id === "workspace.pane.close")
 				?.run?.(commandContext());
 			commands
+				.find((command) => command.id === "workspace.pane.narrow")
+				?.run?.(commandContext());
+			commands
+				.find((command) => command.id === "workspace.pane.widen")
+				?.run?.(commandContext());
+			commands
 				.find((command) => command.id === "workspace.pane.focusLeft")
 				?.run?.(commandContext());
 
@@ -152,6 +160,14 @@ describe("workspace command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "close-pane" },
+				type: DASHBOARD_WORKSPACE_PANE_ACTION_EVENT,
+			});
+			expect(events).toContainEqual({
+				detail: { action: "narrow-pane" },
+				type: DASHBOARD_WORKSPACE_PANE_ACTION_EVENT,
+			});
+			expect(events).toContainEqual({
+				detail: { action: "widen-pane" },
 				type: DASHBOARD_WORKSPACE_PANE_ACTION_EVENT,
 			});
 			expect(events).toContainEqual({

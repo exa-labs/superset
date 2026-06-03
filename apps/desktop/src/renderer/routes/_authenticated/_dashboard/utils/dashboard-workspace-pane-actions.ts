@@ -8,11 +8,13 @@ export const DASHBOARD_WORKSPACE_PANE_ACTIONS = [
 	"focus-left",
 	"focus-right",
 	"focus-up",
+	"narrow-pane",
 	"split-auto",
 	"split-browser",
 	"split-chat",
 	"split-down",
 	"split-right",
+	"widen-pane",
 ] as const;
 
 export type DashboardWorkspacePaneAction =

@@ -11,6 +11,10 @@ import {
 	addDashboardWorkspacePaneActionListener,
 	type DashboardWorkspacePaneAction,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-actions";
+import {
+	type DashboardWorkspacePaneResizeDirection,
+	resizeMosaicWorkspacePane,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
 import type { WorkspaceSearchParams } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { navigateToWorkspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { usePresetHotkeys } from "renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePresetHotkeys";
@@ -165,6 +169,7 @@ function WorkspacePage() {
 	const addBrowserTab = useTabsStore((s) => s.addBrowserTab);
 	const setActiveTab = useTabsStore((s) => s.setActiveTab);
 	const setFocusedPane = useTabsStore((s) => s.setFocusedPane);
+	const updateTabLayout = useTabsStore((s) => s.updateTabLayout);
 	const toggleSidebar = useSidebarStore((s) => s.toggleSidebar);
 	const isSidebarOpen = useSidebarStore((s) => s.isSidebarOpen);
 	const setSidebarOpen = useSidebarStore((s) => s.setSidebarOpen);
@@ -452,12 +457,27 @@ function WorkspacePage() {
 		}
 	}, [activeTabId, equalizePaneSplits]);
 
+	const handleResizeFocusedPane = useCallback(
+		(direction: DashboardWorkspacePaneResizeDirection) => {
+			if (!activeTabId || !activeTab?.layout || !focusedPaneId) return;
+			const nextLayout = resizeMosaicWorkspacePane({
+				direction,
+				layout: activeTab.layout,
+				paneId: focusedPaneId,
+			});
+			if (nextLayout) updateTabLayout(activeTabId, nextLayout);
+		},
+		[activeTab?.layout, activeTabId, focusedPaneId, updateTabLayout],
+	);
+
 	useHotkey("SPLIT_AUTO", handleSplitAuto);
 	useHotkey("SPLIT_RIGHT", handleSplitRight);
 	useHotkey("SPLIT_DOWN", handleSplitDown);
 	useHotkey("SPLIT_WITH_CHAT", handleSplitWithChat);
 	useHotkey("SPLIT_WITH_BROWSER", handleSplitWithBrowser);
 	useHotkey("EQUALIZE_PANE_SPLITS", handleEqualizePaneSplits);
+	useHotkey("NARROW_PANE_SPLIT", () => handleResizeFocusedPane("narrow"));
+	useHotkey("WIDEN_PANE_SPLIT", () => handleResizeFocusedPane("widen"));
 
 	const moveFocusDirectional = useCallback(
 		(dir: FocusDirection) => {
@@ -497,6 +517,9 @@ function WorkspacePage() {
 				case "focus-up":
 					moveFocusDirectional("up");
 					break;
+				case "narrow-pane":
+					handleResizeFocusedPane("narrow");
+					break;
 				case "split-auto":
 					handleSplitAuto();
 					break;
@@ -512,11 +535,15 @@ function WorkspacePage() {
 				case "split-right":
 					handleSplitRight();
 					break;
+				case "widen-pane":
+					handleResizeFocusedPane("widen");
+					break;
 			}
 		},
 		[
 			handleClosePane,
 			handleEqualizePaneSplits,
+			handleResizeFocusedPane,
 			handleSplitAuto,
 			handleSplitDown,
 			handleSplitRight,

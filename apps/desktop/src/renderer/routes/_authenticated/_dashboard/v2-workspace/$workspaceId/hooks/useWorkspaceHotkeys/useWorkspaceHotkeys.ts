@@ -12,6 +12,10 @@ import {
 	addDashboardWorkspacePaneActionListener,
 	type DashboardWorkspacePaneAction,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-actions";
+import {
+	type DashboardWorkspacePaneResizeDirection,
+	resolveV2WorkspacePaneResize,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
 import type { V2TerminalPresetRow } from "renderer/routes/_authenticated/providers/CollectionsProvider/dashboardSidebarLocal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import type { StoreApi } from "zustand";
@@ -302,12 +306,34 @@ export function useWorkspaceHotkeys({
 		state.equalizeTab({ tabId: tab.id });
 	}, [store]);
 
+	const handleResizeFocusedPane = useCallback(
+		(direction: DashboardWorkspacePaneResizeDirection) => {
+			const state = store.getState();
+			const tab = state.getActiveTab();
+			if (!tab || !tab.activePaneId) return;
+			const resize = resolveV2WorkspacePaneResize({
+				direction,
+				layout: tab.layout,
+				paneId: tab.activePaneId,
+			});
+			if (!resize) return;
+			state.resizeSplit({
+				tabId: tab.id,
+				path: resize.path,
+				splitPercentage: resize.splitPercentage,
+			});
+		},
+		[store],
+	);
+
 	useHotkey("SPLIT_AUTO", handleSplitAuto);
 	useHotkey("SPLIT_RIGHT", handleSplitRight);
 	useHotkey("SPLIT_DOWN", handleSplitDown);
 	useHotkey("SPLIT_WITH_CHAT", handleSplitWithChat);
 	useHotkey("SPLIT_WITH_BROWSER", handleSplitWithBrowser);
 	useHotkey("EQUALIZE_PANE_SPLITS", handleEqualizePaneSplits);
+	useHotkey("NARROW_PANE_SPLIT", () => handleResizeFocusedPane("narrow"));
+	useHotkey("WIDEN_PANE_SPLIT", () => handleResizeFocusedPane("widen"));
 
 	const handleWorkspacePaneAction = useCallback(
 		(action: DashboardWorkspacePaneAction) => {
@@ -330,6 +356,9 @@ export function useWorkspaceHotkeys({
 				case "focus-up":
 					moveFocusDirectional("up");
 					break;
+				case "narrow-pane":
+					handleResizeFocusedPane("narrow");
+					break;
 				case "split-auto":
 					void handleSplitAuto();
 					break;
@@ -345,11 +374,15 @@ export function useWorkspaceHotkeys({
 				case "split-right":
 					void handleSplitRight();
 					break;
+				case "widen-pane":
+					handleResizeFocusedPane("widen");
+					break;
 			}
 		},
 		[
 			handleClosePane,
 			handleEqualizePaneSplits,
+			handleResizeFocusedPane,
 			handleSplitAuto,
 			handleSplitDown,
 			handleSplitRight,
