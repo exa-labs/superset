@@ -52,11 +52,13 @@ import { DashboardWebTabsSection } from "./components/DashboardWebTabsSection";
 
 interface DashboardSidebarHeaderProps {
 	isCollapsed?: boolean;
+	searchQuery?: string;
 	showExtraNav?: boolean;
 }
 
 export function DashboardSidebarHeader({
 	isCollapsed = false,
+	searchQuery = "",
 	showExtraNav = false,
 }: DashboardSidebarHeaderProps) {
 	const openModal = useOpenNewWorkspaceModal();
@@ -338,7 +340,10 @@ export function DashboardSidebarHeader({
 					onCloseTab={handleCloseWebTab}
 				/>
 
-				<DashboardNativeAgentsSection variant="collapsed" />
+				<DashboardNativeAgentsSection
+					searchQuery={searchQuery}
+					variant="collapsed"
+				/>
 
 				<Tooltip delayDuration={300}>
 					<TooltipTrigger asChild>
@@ -470,7 +475,10 @@ export function DashboardSidebarHeader({
 				onCloseTab={handleCloseWebTab}
 			/>
 
-			<DashboardNativeAgentsSection variant="expanded" />
+			<DashboardNativeAgentsSection
+				searchQuery={searchQuery}
+				variant="expanded"
+			/>
 
 			<div className="flex items-center gap-0">
 				<button

@@ -29,9 +29,14 @@ export type NativeAgentOptimisticProvider = "capy" | "devin";
 export interface NativeAgentSidebarListRow {
 	id: string;
 	isProviderActive?: boolean;
+	latestMessage?: {
+		body?: string | null;
+	} | null;
 	sidebarHidden?: boolean;
 	sidebarPinned?: boolean;
 	status?: string | null;
+	subtitle?: string | null;
+	title?: string | null;
 	updatedAt?: number | string | null;
 }
 
@@ -187,6 +192,32 @@ function timestampMs(value: number | string | null | undefined): number {
 	return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function nativeAgentSidebarSearchTokens(query: string | undefined): string[] {
+	return query?.toLowerCase().trim().split(/\s+/).filter(Boolean) ?? [];
+}
+
+function nativeAgentSidebarSearchText(item: NativeAgentSidebarListRow): string {
+	return [
+		item.id,
+		item.title,
+		item.subtitle,
+		item.status,
+		item.latestMessage?.body,
+	]
+		.filter((value): value is string => value != null && value.length > 0)
+		.join(" ")
+		.toLowerCase();
+}
+
+function nativeAgentSidebarItemMatchesSearch(
+	item: NativeAgentSidebarListRow,
+	tokens: string[],
+): boolean {
+	if (tokens.length === 0) return true;
+	const text = nativeAgentSidebarSearchText(item);
+	return tokens.every((token) => text.includes(token));
+}
+
 export function selectNativeAgentSidebarItems<
 	T extends NativeAgentSidebarListRow,
 >(
@@ -198,12 +229,14 @@ export function selectNativeAgentSidebarItems<
 		maxPriorityItems?: number;
 		recentFallbackWhenEmpty?: number;
 		recentFallbackWhenPriorityExists?: number;
+		searchQuery?: string;
 	},
 ): T[] {
 	const maxPriorityItems = input.maxPriorityItems ?? 10;
 	const recentFallbackWhenEmpty = input.recentFallbackWhenEmpty ?? 1;
 	const recentFallbackWhenPriorityExists =
 		input.recentFallbackWhenPriorityExists ?? 1;
+	const searchTokens = nativeAgentSidebarSearchTokens(input.searchQuery);
 	const visibleItems = items
 		.filter((item) => item.sidebarHidden !== true)
 		.toSorted((a, b) => {
@@ -218,6 +251,12 @@ export function selectNativeAgentSidebarItems<
 			if (aLive !== bLive) return aLive ? -1 : 1;
 			return timestampMs(b.updatedAt) - timestampMs(a.updatedAt);
 		});
+
+	if (searchTokens.length > 0) {
+		return visibleItems.filter((item) =>
+			nativeAgentSidebarItemMatchesSearch(item, searchTokens),
+		);
+	}
 
 	const activeItem = visibleItems.find((item) => item.id === input.activeId);
 	const pinnedItems = visibleItems.filter(

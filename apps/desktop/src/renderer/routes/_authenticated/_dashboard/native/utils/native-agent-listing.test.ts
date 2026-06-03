@@ -287,6 +287,50 @@ describe("selectNativeAgentSidebarItems", () => {
 		).toEqual(["ready-7", "ready-0"]);
 	});
 
+	it("searches all visible native rows instead of only the priority sidebar subset", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "recent", status: "ready", title: "Recent", updatedAt: 40 },
+			{ id: "live", status: "running", title: "Live", updatedAt: 10 },
+			{ id: "older", status: "ready", title: "QES dashboard", updatedAt: 30 },
+			{
+				id: "hidden-match",
+				sidebarHidden: true,
+				status: "ready",
+				title: "QES hidden",
+				updatedAt: 50,
+			},
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				isLiveStatus,
+				isUnread,
+				searchQuery: "qes",
+			}).map((item) => item.id),
+		).toEqual(["older"]);
+	});
+
+	it("matches native sidebar search against latest reply previews", () => {
+		const items: TestSidebarRow[] = [
+			{
+				id: "reply-match",
+				latestMessage: { body: "Finished checking Vulcan metrics" },
+				status: "ready",
+				title: "Plain title",
+				updatedAt: 20,
+			},
+			{ id: "miss", status: "ready", title: "Other", updatedAt: 30 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				isLiveStatus,
+				isUnread,
+				searchQuery: "vulcan metrics",
+			}).map((item) => item.id),
+		).toEqual(["reply-match"]);
+	});
+
 	it("never shows hidden rows", () => {
 		const items: TestSidebarRow[] = [
 			{ id: "hidden-pinned", sidebarHidden: true, sidebarPinned: true },

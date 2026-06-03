@@ -258,6 +258,7 @@ export function DashboardSidebar({
 						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
 							<DashboardSidebarHeader
 								isCollapsed={isCollapsed}
+								searchQuery={sidebarSearchQuery}
 								showExtraNav={showExtraNav}
 							/>
 							{!isCollapsed && (

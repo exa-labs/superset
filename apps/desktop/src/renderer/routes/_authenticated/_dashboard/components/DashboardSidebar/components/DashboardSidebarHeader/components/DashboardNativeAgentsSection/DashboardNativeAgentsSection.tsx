@@ -124,6 +124,7 @@ import {
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {
+	searchQuery?: string;
 	variant: "collapsed" | "expanded";
 }
 
@@ -808,6 +809,7 @@ function SessionRow({
 }
 
 export function DashboardNativeAgentsSection({
+	searchQuery = "",
 	variant,
 }: DashboardNativeAgentsSectionProps) {
 	const navigate = useNavigate();
@@ -1376,11 +1378,13 @@ export function DashboardNativeAgentsSection({
 		navigateToNativeProvider(provider);
 	};
 
+	const isNativeSidebarSearchActive = searchQuery.trim().length > 0;
 	const displayedItemsForProvider = (items: NativeAgentItem[]) => {
 		return selectNativeAgentSidebarItems(items, {
 			activeId: activeRoute.id,
 			isLiveStatus: isNativeAgentLiveStatus,
 			isUnread: (item) => hasUnreadAgentResponse(item, readState),
+			searchQuery,
 		});
 	};
 
@@ -1884,7 +1888,9 @@ export function DashboardNativeAgentsSection({
 				const items = itemsByProvider[providerConfig.id];
 				const displayedItems = displayedItemsForProvider(items);
 				const displayedItemCount = displayedItems.length;
-				const isCollapsed = collapsedProviderIds.has(providerConfig.id);
+				const isCollapsed =
+					!isNativeSidebarSearchActive &&
+					collapsedProviderIds.has(providerConfig.id);
 				const providerFolders = folders.filter(
 					(folder) => folder.provider === providerConfig.id,
 				);
@@ -2234,29 +2240,30 @@ export function DashboardNativeAgentsSection({
 												</span>
 												<FolderRowKeyHints visible={folderHasUnread} />
 											</fieldset>
-											{!folder.isCollapsed && folderItems.length > 0 && (
-												<ul
-													className="ml-2 flex min-w-0 max-w-full flex-col gap-1 overflow-visible border-l py-0.5 pl-1.5"
-													style={{ borderColor: `${folder.color}66` }}
-												>
-													{folderItems.map((item) => (
-														<SessionRow
-															key={item.id}
-															activeId={activeRoute.id}
-															item={item}
-															onCreate={setCreateProvider}
-															onMoveToFolder={moveToFolder}
-															onOpen={handleOpen}
-															onPin={handlePin}
-															onSessionAction={handleSessionAction}
-															onSidebarVisible={handleSidebarVisible}
-															readState={readState}
-															shortcutLabel={shortcutLabelForItem(item)}
-															variant={variant}
-														/>
-													))}
-												</ul>
-											)}
+											{(!folder.isCollapsed || isNativeSidebarSearchActive) &&
+												folderItems.length > 0 && (
+													<ul
+														className="ml-2 flex min-w-0 max-w-full flex-col gap-1 overflow-visible border-l py-0.5 pl-1.5"
+														style={{ borderColor: `${folder.color}66` }}
+													>
+														{folderItems.map((item) => (
+															<SessionRow
+																key={item.id}
+																activeId={activeRoute.id}
+																item={item}
+																onCreate={setCreateProvider}
+																onMoveToFolder={moveToFolder}
+																onOpen={handleOpen}
+																onPin={handlePin}
+																onSessionAction={handleSessionAction}
+																onSidebarVisible={handleSidebarVisible}
+																readState={readState}
+																shortcutLabel={shortcutLabelForItem(item)}
+																variant={variant}
+															/>
+														))}
+													</ul>
+												)}
 										</div>
 									);
 								})}
