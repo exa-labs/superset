@@ -5,13 +5,13 @@ interface DashboardFocusIndicatorHintOptions {
 }
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Esc", "⌥K", "⌥V", "⌥Tab", "?", "f"],
-	browser: ["Esc", "⌥K", "⌥Tab", "⌥G", "h/l", "s/q", "?", "f"],
-	"command-palette": ["type", "↑↓", "Enter", "Backspace", "Esc"],
+	app: ["Esc", "⌥K", "?"],
+	browser: ["Esc", "⌥K", "f", "?"],
+	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["?", "Esc"],
-	"native-agent": ["Esc", "⌥K", "⌥V", "⌥Tab", "r", "s/b", "p/x", "?", "f"],
-	sidebar: ["Esc", "⌥K", "⌥Tab", "↑↓", "jk", "Enter", ".", "?"],
+	"native-agent": ["Esc", "⌥K", "r", "?"],
+	sidebar: ["↑↓", "↵", ".", "?"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -20,7 +20,6 @@ const VIM_ONLY_HINTS = new Set([
 	"f",
 	"gg/gc/gd/gw",
 	"h/l",
-	"jk",
 	"m/e",
 	"n/r",
 	"n/N",
