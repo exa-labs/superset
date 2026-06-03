@@ -15,6 +15,7 @@ import {
 import {
 	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
 	dashboardSidebarExpansionValue,
+	dashboardSidebarKeyboardFocusIndex,
 	findDashboardSidebarActionButton,
 	findDashboardSidebarActivationTarget,
 	findDashboardSidebarExpansionTarget,
@@ -670,6 +671,68 @@ describe("focusFirstDashboardSidebarItem", () => {
 		} finally {
 			root.remove();
 		}
+	});
+});
+
+describe("dashboardSidebarKeyboardFocusIndex", () => {
+	test("uses the active DOM row when focus is inside the sidebar", () => {
+		if (typeof document === "undefined") return;
+
+		const first = document.createElement("button");
+		const second = document.createElement("button");
+		makeVisible(first);
+		makeVisible(second);
+
+		expect(
+			dashboardSidebarKeyboardFocusIndex({
+				activeElement: second,
+				focusInsideSidebar: true,
+				items: [first, second],
+				root: document.createElement("div"),
+			}),
+		).toBe(1);
+	});
+
+	test("falls back to the preserved sidebar keyboard row when focus is outside", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const first = document.createElement("button");
+		const second = document.createElement("button");
+		makeVisible(first);
+		makeVisible(second);
+		second.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+		root.append(first, second);
+
+		expect(
+			dashboardSidebarKeyboardFocusIndex({
+				activeElement: document.createElement("button"),
+				focusInsideSidebar: false,
+				items: [first, second],
+				root,
+			}),
+		).toBe(1);
+	});
+
+	test("ignores stale preserved focus markers outside the visible row set", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const visible = document.createElement("button");
+		const stale = document.createElement("button");
+		makeVisible(visible);
+		makeVisible(stale);
+		stale.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+		root.append(visible, stale);
+
+		expect(
+			dashboardSidebarKeyboardFocusIndex({
+				activeElement: document.createElement("button"),
+				focusInsideSidebar: false,
+				items: [visible],
+				root,
+			}),
+		).toBe(-1);
 	});
 });
 

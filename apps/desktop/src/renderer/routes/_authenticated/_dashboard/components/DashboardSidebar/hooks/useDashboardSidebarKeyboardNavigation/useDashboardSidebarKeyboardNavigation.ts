@@ -14,7 +14,10 @@ import {
 	dashboardSidebarVimJumpFromKey,
 	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
-import { markDashboardSidebarKeyboardFocus } from "./dashboard-sidebar-keyboard-focus";
+import {
+	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
+	markDashboardSidebarKeyboardFocus,
+} from "./dashboard-sidebar-keyboard-focus";
 
 export {
 	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
@@ -173,6 +176,23 @@ export function focusFirstDashboardSidebarItem(
 	return firstItem;
 }
 
+export function dashboardSidebarKeyboardFocusIndex(input: {
+	activeElement: Element | null;
+	focusInsideSidebar: boolean;
+	items: HTMLElement[];
+	root: HTMLElement;
+}): number {
+	if (input.focusInsideSidebar && isHTMLElement(input.activeElement)) {
+		const focusedIndex = input.items.indexOf(input.activeElement);
+		if (focusedIndex >= 0) return focusedIndex;
+	}
+
+	const preservedItem = input.root.querySelector<HTMLElement>(
+		`[${DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE}="true"]`,
+	);
+	return preservedItem ? input.items.indexOf(preservedItem) : -1;
+}
+
 export function findDashboardSidebarActionButton(
 	activeItem: HTMLElement,
 	action: Exclude<DashboardSidebarKeyboardAction, "none">,
@@ -276,7 +296,8 @@ export function useDashboardSidebarKeyboardNavigation(
 			const sidebarAction = localSidebarKey
 				? dashboardSidebarKeyboardActionFromKey(event.key)
 				: "none";
-			const sidebarActionKey = focusInsideSidebar && sidebarAction !== "none";
+			const sidebarActionKey =
+				(focusInsideSidebar || vimModeEnabled) && sidebarAction !== "none";
 			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
 				altKey: event.altKey,
 				ctrlKey: event.ctrlKey,
@@ -319,9 +340,12 @@ export function useDashboardSidebarKeyboardNavigation(
 			const items = getDashboardSidebarFocusableItems(root);
 			if (items.length === 0) return;
 
-			const activeIndex = focusInsideSidebar
-				? items.indexOf(activeElement as HTMLElement)
-				: -1;
+			const activeIndex = dashboardSidebarKeyboardFocusIndex({
+				activeElement: isHTMLElement(activeElement) ? activeElement : null,
+				focusInsideSidebar,
+				items,
+				root,
+			});
 			const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0;
 
 			if (typeaheadSeed) {
