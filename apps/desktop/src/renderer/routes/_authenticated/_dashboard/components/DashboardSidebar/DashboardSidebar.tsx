@@ -45,6 +45,7 @@ import { DashboardSidebarSectionRenameProvider } from "./components/DashboardSid
 import { V2SetupScriptCard } from "./components/V2SetupScriptCard";
 import { useDashboardSidebarData } from "./hooks/useDashboardSidebarData";
 import { useDashboardSidebarKeyboardNavigation } from "./hooks/useDashboardSidebarKeyboardNavigation";
+import { focusFirstDashboardSidebarItem } from "./hooks/useDashboardSidebarKeyboardNavigation/useDashboardSidebarKeyboardNavigation";
 import { useDashboardSidebarShortcuts } from "./hooks/useDashboardSidebarShortcuts";
 import { DashboardSidebarHoverProvider } from "./providers/DashboardSidebarHoverProvider";
 import type { DashboardSidebarProject } from "./types";
@@ -144,6 +145,11 @@ export function DashboardSidebar({
 	const sidebarRootRef = useRef<HTMLDivElement | null>(null);
 	const sidebarSearchInputRef = useRef<HTMLInputElement | null>(null);
 	const clearSidebarSearch = useCallback(() => setSidebarSearchQuery(""), []);
+	const focusFirstSidebarItem = useCallback(() => {
+		window.setTimeout(() => {
+			focusFirstDashboardSidebarItem(sidebarRootRef.current);
+		}, 0);
+	}, []);
 	const startSidebarTypeaheadSearch = useCallback(
 		(seed: string) => setSidebarSearchQuery(seed),
 		[],
@@ -279,12 +285,11 @@ export function DashboardSidebar({
 											}
 											onKeyDown={(event) => {
 												if (event.key !== "Escape") return;
+												event.preventDefault();
 												if (sidebarSearchQuery.length > 0) {
-													event.preventDefault();
 													setSidebarSearchQuery("");
-													return;
 												}
-												event.currentTarget.blur();
+												focusFirstSidebarItem();
 											}}
 											placeholder="Search sidebar"
 											variant="ghost"

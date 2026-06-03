@@ -93,6 +93,16 @@ function focusItem(item: HTMLElement): void {
 	item.scrollIntoView({ block: "nearest" });
 }
 
+export function focusFirstDashboardSidebarItem(
+	root: HTMLElement | null,
+): HTMLElement | null {
+	if (!root) return null;
+	const firstItem = getDashboardSidebarFocusableItems(root)[0] ?? null;
+	if (!firstItem) return null;
+	focusItem(firstItem);
+	return firstItem;
+}
+
 export function findDashboardSidebarActionButton(
 	activeItem: HTMLElement,
 	action: Exclude<DashboardSidebarKeyboardAction, "none">,

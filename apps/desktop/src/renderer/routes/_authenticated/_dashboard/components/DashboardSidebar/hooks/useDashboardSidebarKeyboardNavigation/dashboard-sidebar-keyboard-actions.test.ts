@@ -12,6 +12,7 @@ import {
 	findDashboardSidebarActionButton,
 	findDashboardSidebarActivationTarget,
 	findDashboardSidebarExpansionTarget,
+	focusFirstDashboardSidebarItem,
 	getDashboardSidebarFocusableItems,
 	shouldToggleDashboardSidebarExpansion,
 } from "./useDashboardSidebarKeyboardNavigation";
@@ -344,6 +345,44 @@ describe("getDashboardSidebarFocusableItems", () => {
 		expect(
 			folderScope.querySelector(dashboardSidebarKeyboardActionSelector("menu")),
 		).toBe(menu);
+	});
+});
+
+describe("focusFirstDashboardSidebarItem", () => {
+	test("focuses the first real sidebar navigation item", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const action = document.createElement("button");
+		action.dataset.dashboardSidebarAction = "create";
+		action.id = "action";
+		makeVisible(action);
+
+		const first = document.createElement("button");
+		first.dataset.dashboardWebAppTrigger = "chrome";
+		first.id = "first";
+		makeVisible(first);
+
+		const second = document.createElement("button");
+		second.dataset.nativeAgentSessionRowId = "devin-1";
+		second.id = "second";
+		makeVisible(second);
+
+		root.append(action, first, second);
+		document.body.append(root);
+		try {
+			expect(focusFirstDashboardSidebarItem(root)).toBe(first);
+			expect(document.activeElement).toBe(first);
+		} finally {
+			root.remove();
+		}
+	});
+
+	test("returns null when no sidebar navigation item is available", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		expect(focusFirstDashboardSidebarItem(root)).toBeNull();
 	});
 });
 
