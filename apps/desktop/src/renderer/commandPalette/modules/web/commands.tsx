@@ -133,6 +133,8 @@ function dispatchBrowserAction(
 		| "close-current-tab"
 		| "close-split"
 		| "equalize-split"
+		| "go-back"
+		| "go-forward"
 		| "narrow-active-split"
 		| "new-chatgpt-tab"
 		| "new-claude-tab"
@@ -329,6 +331,28 @@ export const webProvider: CommandProvider = {
 				shortcutLabel: "r",
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("reload"),
+			},
+			{
+				id: "web.current.goBack",
+				title: "Go back in current Chrome tab",
+				section: "web",
+				description: "Navigate back in the active embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "back", "history", "previous", "tab"],
+				shortcutLabel: "H",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("go-back"),
+			},
+			{
+				id: "web.current.goForward",
+				title: "Go forward in current Chrome tab",
+				section: "web",
+				description: "Navigate forward in the active embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "forward", "history", "next", "tab"],
+				shortcutLabel: "L",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("go-forward"),
 			},
 			{
 				id: "web.current.newFromCurrent",

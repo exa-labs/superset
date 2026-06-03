@@ -306,8 +306,10 @@ describe("web command provider", () => {
 			commandContext("/web-tabs/chrome-default"),
 		);
 
-		expect(commandIds.slice(0, 4)).toEqual([
+		expect(commandIds.slice(0, 6)).toEqual([
 			"web.current.reload",
+			"web.current.goBack",
+			"web.current.goForward",
 			"web.current.newFromCurrent",
 			"web.current.newGoogle",
 			"web.current.newChatGPT",
@@ -493,6 +495,8 @@ describe("web command provider", () => {
 		);
 
 		expect(commandIds.has("web.current.reload")).toBe(true);
+		expect(commandIds.has("web.current.goBack")).toBe(true);
+		expect(commandIds.has("web.current.goForward")).toBe(true);
 		expect(commandIds.has("web.current.newFromCurrent")).toBe(true);
 		expect(commandIds.has("web.current.newGoogle")).toBe(true);
 		expect(commandIds.has("web.current.newChatGPT")).toBe(true);
@@ -505,6 +509,8 @@ describe("web command provider", () => {
 		expect(commandIds.has("web.current.equalizeSplit")).toBe(true);
 		expect(commandIds.has("web.current.close")).toBe(true);
 		expect(shortcutById.get("web.current.reload")).toBe("r");
+		expect(shortcutById.get("web.current.goBack")).toBe("H");
+		expect(shortcutById.get("web.current.goForward")).toBe("L");
 		expect(shortcutById.get("web.current.newFromCurrent")).toBe("n");
 		expect(shortcutById.get("web.current.toggleSplit")).toBe("s");
 		expect(shortcutById.get("web.current.swapSplit")).toBe("w");
@@ -517,15 +523,29 @@ describe("web command provider", () => {
 		expect(reload?.when?.(nativeContext)).toBe(false);
 	});
 
-	it("dispatches Chrome split close from the control plane", () => {
+	it("dispatches Chrome browser actions from the control plane", () => {
 		withWindowEvents((events) => {
 			const context = commandContext("/web-tabs/chrome-default");
 			const commands = webProvider.provide(context);
 
 			commands
+				.find((command) => command.id === "web.current.goBack")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "web.current.goForward")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "web.current.closeSplit")
 				?.run?.(context);
 
+			expect(events).toContainEqual({
+				detail: { action: "go-back" },
+				type: "dashboard-browser-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "go-forward" },
+				type: "dashboard-browser-current-action",
+			});
 			expect(events).toContainEqual({
 				detail: { action: "close-split" },
 				type: "dashboard-browser-current-action",
