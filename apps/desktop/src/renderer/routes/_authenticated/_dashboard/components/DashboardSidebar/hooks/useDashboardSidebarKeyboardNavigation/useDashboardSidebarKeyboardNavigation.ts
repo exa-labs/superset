@@ -3,6 +3,7 @@ import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashb
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
 	type DashboardSidebarKeyboardAction,
+	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarTypeaheadSeedFromKey,
@@ -94,6 +95,10 @@ export function useDashboardSidebarKeyboardNavigation(
 				isHTMLElement(activeElement) && root.contains(activeElement);
 			const arrowNavigation =
 				event.key === "ArrowUp" || event.key === "ArrowDown";
+			const activationAction = dashboardSidebarActivationActionFromKey(
+				event.key,
+			);
+			const activationKey = focusInsideSidebar && activationAction !== "none";
 			const sidebarAction = dashboardSidebarKeyboardActionFromKey(event.key);
 			const sidebarActionKey = focusInsideSidebar && sidebarAction !== "none";
 			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
@@ -123,6 +128,7 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (
 				!arrowNavigation &&
 				!vimNavigation &&
+				!activationKey &&
 				!sidebarActionKey &&
 				!typeaheadSeed
 			) {
@@ -166,6 +172,16 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (event.key === "ArrowUp" || event.key === "k") {
 				event.preventDefault();
 				focusByDelta(-1);
+				return;
+			}
+
+			if (activationKey) {
+				event.preventDefault();
+				if (activeIndex >= 0) {
+					(activeElement as HTMLElement).click();
+					return;
+				}
+				focusItem(items[0]);
 				return;
 			}
 

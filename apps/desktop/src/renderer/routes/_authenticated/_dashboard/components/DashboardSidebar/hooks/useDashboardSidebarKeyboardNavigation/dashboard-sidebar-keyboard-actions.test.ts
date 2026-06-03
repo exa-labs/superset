@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
 	type DashboardSidebarKeyboardAction,
+	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarTypeaheadSeedFromKey,
@@ -27,6 +28,14 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 		expect(dashboardSidebarKeyboardActionSelector("archive")).toBe(
 			'[data-dashboard-sidebar-action="archive"]',
 		);
+	});
+});
+
+describe("dashboardSidebarActivationActionFromKey", () => {
+	test("maps Enter and Space to generic sidebar activation", () => {
+		expect(dashboardSidebarActivationActionFromKey("Enter")).toBe("activate");
+		expect(dashboardSidebarActivationActionFromKey(" ")).toBe("activate");
+		expect(dashboardSidebarActivationActionFromKey("j")).toBe("none");
 	});
 });
 

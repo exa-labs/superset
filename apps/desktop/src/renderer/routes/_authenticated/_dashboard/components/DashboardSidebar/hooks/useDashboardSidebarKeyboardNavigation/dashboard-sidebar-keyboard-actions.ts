@@ -4,6 +4,7 @@ export type DashboardSidebarKeyboardAction =
 	| "none"
 	| "pin"
 	| "rename";
+export type DashboardSidebarActivationAction = "activate" | "none";
 
 export function dashboardSidebarKeyboardActionFromKey(
 	key: string,
@@ -19,6 +20,13 @@ export function dashboardSidebarKeyboardActionSelector(
 	action: Exclude<DashboardSidebarKeyboardAction, "none">,
 ): string {
 	return `[data-dashboard-sidebar-action="${action}"]`;
+}
+
+export function dashboardSidebarActivationActionFromKey(
+	key: string,
+): DashboardSidebarActivationAction {
+	if (key === "Enter" || key === " ") return "activate";
+	return "none";
 }
 
 export function dashboardSidebarTypeaheadSeedFromKey(input: {
