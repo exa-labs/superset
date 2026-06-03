@@ -48,6 +48,7 @@ export const DashboardSidebarProjectRow = forwardRef<
 			// biome-ignore lint/a11y/noStaticElementInteractions: The header acts as a single toggle target in view mode while preserving nested inline controls.
 			<div
 				ref={ref}
+				data-dashboard-sidebar-action-scope
 				role={isRenaming ? undefined : "button"}
 				tabIndex={isRenaming ? undefined : 0}
 				onClick={isRenaming ? undefined : onToggleCollapse}
@@ -102,6 +103,7 @@ export const DashboardSidebarProjectRow = forwardRef<
 							<TooltipTrigger asChild>
 								<button
 									type="button"
+									data-dashboard-sidebar-action="create"
 									onClick={(event) => {
 										event.stopPropagation();
 										onNewWorkspace();
@@ -122,6 +124,20 @@ export const DashboardSidebarProjectRow = forwardRef<
 							{totalWorkspaceCount}
 						</span>
 					</div>
+				)}
+				{!isRenaming && (
+					<button
+						type="button"
+						data-dashboard-sidebar-action="rename"
+						tabIndex={-1}
+						onClick={(event) => {
+							event.stopPropagation();
+							onStartRename();
+						}}
+						className="sr-only"
+					>
+						Rename project
+					</button>
 				)}
 			</div>
 		);

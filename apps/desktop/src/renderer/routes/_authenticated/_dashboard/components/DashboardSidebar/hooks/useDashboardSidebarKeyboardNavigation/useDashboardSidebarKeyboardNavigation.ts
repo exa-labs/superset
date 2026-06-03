@@ -1,6 +1,11 @@
 import { type RefObject, useEffect, useRef } from "react";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import {
+	type DashboardSidebarKeyboardAction,
+	dashboardSidebarKeyboardActionFromKey,
+	dashboardSidebarKeyboardActionSelector,
+} from "./dashboard-sidebar-keyboard-actions";
 
 const INTERACTIVE_SELECTOR = [
 	"button:not([disabled])",
@@ -30,7 +35,12 @@ function getFocusableItems(root: HTMLElement): HTMLElement[] {
 	const seen = new Set<HTMLElement>();
 	const items: HTMLElement[] = [];
 	for (const element of root.querySelectorAll(INTERACTIVE_SELECTOR)) {
-		if (!isHTMLElement(element) || seen.has(element) || !isVisible(element)) {
+		if (
+			!isHTMLElement(element) ||
+			seen.has(element) ||
+			element.tabIndex < 0 ||
+			!isVisible(element)
+		) {
 			continue;
 		}
 		seen.add(element);
@@ -44,10 +54,27 @@ function focusItem(item: HTMLElement): void {
 	item.scrollIntoView({ block: "nearest" });
 }
 
+function findActionButton(
+	activeItem: HTMLElement,
+	action: Exclude<DashboardSidebarKeyboardAction, "none">,
+): HTMLButtonElement | null {
+	const scope =
+		activeItem.closest<HTMLElement>("[data-dashboard-sidebar-action-scope]") ??
+		activeItem;
+	const selector = dashboardSidebarKeyboardActionSelector(action);
+	if (scope.matches(selector) && scope instanceof HTMLButtonElement) {
+		return scope;
+	}
+	const scopedAction = scope.querySelector<HTMLButtonElement>(selector);
+	if (scopedAction) return scopedAction;
+	return null;
+}
+
 export function useDashboardSidebarKeyboardNavigation(
 	rootRef: React.RefObject<HTMLElement | null>,
 	options: {
 		onClearSearch?: () => void;
+		onCreateWorkspace?: () => void;
 		searchInputRef?: RefObject<HTMLInputElement | null>;
 	} = {},
 ): void {
@@ -65,6 +92,8 @@ export function useDashboardSidebarKeyboardNavigation(
 				isHTMLElement(activeElement) && root.contains(activeElement);
 			const arrowNavigation =
 				event.key === "ArrowUp" || event.key === "ArrowDown";
+			const sidebarAction = dashboardSidebarKeyboardActionFromKey(event.key);
+			const sidebarActionKey = focusInsideSidebar && sidebarAction !== "none";
 			const vimNavigation =
 				vimModeEnabled &&
 				[
@@ -81,7 +110,7 @@ export function useDashboardSidebarKeyboardNavigation(
 					"Escape",
 				].includes(event.key);
 
-			if (!arrowNavigation && !vimNavigation) return;
+			if (!arrowNavigation && !vimNavigation && !sidebarActionKey) return;
 			if (!vimModeEnabled && !focusInsideSidebar) return;
 
 			const items = getFocusableItems(root);
@@ -158,6 +187,19 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			const activeItem = items[activeIndex];
 
+			if (sidebarAction !== "none") {
+				event.preventDefault();
+				const actionButton = findActionButton(activeItem, sidebarAction);
+				if (actionButton && !actionButton.disabled) {
+					actionButton.click();
+					return;
+				}
+				if (sidebarAction === "create") {
+					options.onCreateWorkspace?.();
+				}
+				return;
+			}
+
 			if (event.key === "Enter" || event.key === " ") {
 				event.preventDefault();
 				activeItem.click();
@@ -179,5 +221,11 @@ export function useDashboardSidebarKeyboardNavigation(
 
 		document.addEventListener("keydown", onKeyDown, true);
 		return () => document.removeEventListener("keydown", onKeyDown, true);
-	}, [options.onClearSearch, options.searchInputRef, rootRef, vimModeEnabled]);
+	}, [
+		options.onClearSearch,
+		options.onCreateWorkspace,
+		options.searchInputRef,
+		rootRef,
+		vimModeEnabled,
+	]);
 }

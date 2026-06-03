@@ -392,6 +392,7 @@ function NativeCreateDialog({
 function SessionRow({
 	activeId,
 	item,
+	onCreate,
 	onMoveToFolder,
 	onOpen,
 	onPin,
@@ -402,6 +403,7 @@ function SessionRow({
 }: {
 	activeId: string | null;
 	item: NativeAgentItem;
+	onCreate: (provider: NativeAgentProvider) => void;
 	onMoveToFolder: (item: NativeAgentItem, folderId: string | null) => void;
 	onOpen: (item: NativeAgentItem) => void;
 	onPin: (item: NativeAgentItem, pinned: boolean) => void;
@@ -425,6 +427,7 @@ function SessionRow({
 
 	return (
 		<li
+			data-dashboard-sidebar-action-scope
 			draggable
 			onDragStart={(event) => {
 				event.dataTransfer.setData(
@@ -504,6 +507,7 @@ function SessionRow({
 					<TooltipTrigger asChild>
 						<button
 							type="button"
+							data-dashboard-sidebar-action="pin"
 							aria-label={
 								item.sidebarPinned
 									? `Unpin ${item.title} from native sidebar`
@@ -528,6 +532,7 @@ function SessionRow({
 				</Tooltip>
 				<button
 					type="button"
+					data-dashboard-sidebar-action="archive"
 					aria-label={`Move ${item.title} to overview`}
 					onClick={() => onSidebarVisible(item, false)}
 					title="Move to overview"
@@ -538,6 +543,18 @@ function SessionRow({
 			</div>
 			<button
 				type="button"
+				data-dashboard-sidebar-action="create"
+				tabIndex={-1}
+				aria-label={`Create ${nativeAgentProviderConfig(item.provider).title} session`}
+				onClick={(event) => {
+					event.stopPropagation();
+					onCreate(item.provider);
+				}}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				tabIndex={-1}
 				aria-label={`Move ${item.title} out of folder`}
 				onClick={() => onMoveToFolder(item, null)}
 				className="sr-only"
@@ -1546,7 +1563,10 @@ export function DashboardNativeAgentsSection({
 
 				return (
 					<div key={providerConfig.id} className="flex flex-col gap-1.5 py-1">
-						<div className="flex items-center gap-1">
+						<div
+							data-dashboard-sidebar-action-scope
+							className="flex items-center gap-1"
+						>
 							<button
 								type="button"
 								data-dashboard-native-provider-trigger={providerConfig.id}
@@ -1597,6 +1617,7 @@ export function DashboardNativeAgentsSection({
 								<TooltipTrigger asChild>
 									<button
 										type="button"
+										data-dashboard-sidebar-action="create"
 										aria-label={`New ${providerConfig.title}`}
 										onClick={() => setCreateProvider(providerConfig.id)}
 										className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
@@ -1662,6 +1683,7 @@ export function DashboardNativeAgentsSection({
 											)}
 										>
 											<fieldset
+												data-dashboard-sidebar-action-scope
 												onDragOver={(event) => event.preventDefault()}
 												onDrop={(event) => {
 													event.stopPropagation();
@@ -1705,6 +1727,7 @@ export function DashboardNativeAgentsSection({
 												<span className="pointer-events-none absolute right-1 flex items-center rounded-md bg-background/90 opacity-0 shadow-sm transition group-hover/folder:pointer-events-auto group-hover/folder:opacity-100 group-focus-within/folder:pointer-events-auto group-focus-within/folder:opacity-100">
 													<button
 														type="button"
+														data-dashboard-sidebar-action="rename"
 														aria-label={`Rename ${folder.title}`}
 														onClick={(event) => {
 															event.stopPropagation();
@@ -1756,6 +1779,7 @@ export function DashboardNativeAgentsSection({
 															key={item.id}
 															activeId={activeRoute.id}
 															item={item}
+															onCreate={setCreateProvider}
 															onMoveToFolder={moveToFolder}
 															onOpen={handleOpen}
 															onPin={handlePin}
@@ -1775,6 +1799,7 @@ export function DashboardNativeAgentsSection({
 										key={item.id}
 										activeId={activeRoute.id}
 										item={item}
+										onCreate={setCreateProvider}
 										onMoveToFolder={moveToFolder}
 										onOpen={handleOpen}
 										onPin={handlePin}

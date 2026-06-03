@@ -43,6 +43,7 @@ interface DashboardSidebarExpandedWorkspaceRowProps
 	onDoubleClick?: () => void;
 	onCloseWorkspaceClick: () => void;
 	onRemoveFromSidebarClick: () => void;
+	onRenameClick?: () => void;
 	onRenameValueChange: (value: string) => void;
 	onSubmitRename: () => void;
 	onCancelRename: () => void;
@@ -66,6 +67,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 			onDoubleClick,
 			onCloseWorkspaceClick,
 			onRemoveFromSidebarClick,
+			onRenameClick,
 			onRenameValueChange,
 			onSubmitRename,
 			onCancelRename,
@@ -109,6 +111,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 		return (
 			// biome-ignore lint/a11y/noStaticElementInteractions: Mirrors the legacy sidebar row UI, which includes nested action buttons.
 			<div
+				data-dashboard-sidebar-action-scope
 				role={onClick ? "button" : undefined}
 				tabIndex={onClick ? 0 : undefined}
 				aria-disabled={isPending ? true : undefined}
@@ -277,6 +280,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 										<TooltipTrigger asChild>
 											<button
 												type="button"
+												data-dashboard-sidebar-action="archive"
 												onClick={(event) => {
 													event.stopPropagation();
 													onRemoveFromSidebarClick();
@@ -336,6 +340,36 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 						)}
 					</div>
 				</div>
+				{!isPending && (
+					<>
+						{!isMainWorkspace && (
+							<button
+								type="button"
+								data-dashboard-sidebar-action="archive"
+								tabIndex={-1}
+								onClick={(event) => {
+									event.stopPropagation();
+									onRemoveFromSidebarClick();
+								}}
+								className="sr-only"
+							>
+								Remove workspace from sidebar
+							</button>
+						)}
+						<button
+							type="button"
+							data-dashboard-sidebar-action="rename"
+							tabIndex={-1}
+							onClick={(event) => {
+								event.stopPropagation();
+								onRenameClick?.();
+							}}
+							className="sr-only"
+						>
+							Rename workspace
+						</button>
+					</>
+				)}
 			</div>
 		);
 	},

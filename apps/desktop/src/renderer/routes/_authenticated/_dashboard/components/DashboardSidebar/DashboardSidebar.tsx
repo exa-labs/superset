@@ -35,6 +35,7 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
+import { useOpenNewWorkspaceModal } from "renderer/stores/new-workspace-modal";
 import { DashboardSidebarHeader } from "./components/DashboardSidebarHeader";
 import { DashboardSidebarHelpMenu } from "./components/DashboardSidebarHelpMenu";
 import { DashboardSidebarHoverCardOverlay } from "./components/DashboardSidebarHoverCardOverlay";
@@ -133,6 +134,7 @@ export function DashboardSidebar({
 	const settingsHotkey = useHotkeyDisplay("OPEN_SETTINGS").text;
 	const vimModeHotkey = useHotkeyDisplay("TOGGLE_VIM_MODE").text;
 	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
+	const openNewWorkspaceModal = useOpenNewWorkspaceModal();
 	const isSettingsOpen = !!matchRoute({ to: "/settings", fuzzy: true });
 	const { activeHostUrl } = useLocalHostService();
 	const v2RouteMatch = matchRoute({ to: "/v2-workspace/$workspaceId" });
@@ -144,6 +146,7 @@ export function DashboardSidebar({
 	const clearSidebarSearch = useCallback(() => setSidebarSearchQuery(""), []);
 	useDashboardSidebarKeyboardNavigation(sidebarRootRef, {
 		onClearSearch: clearSidebarSearch,
+		onCreateWorkspace: openNewWorkspaceModal,
 		searchInputRef: sidebarSearchInputRef,
 	});
 
