@@ -4,6 +4,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
+	DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from "@superset/ui/dropdown-menu";
 import { cn } from "@superset/ui/utils";
@@ -13,6 +14,7 @@ import {
 	LuArrowRight,
 	LuColumns2,
 	LuExternalLink,
+	LuKeyRound,
 	LuLoaderCircle,
 	LuPlus,
 	LuRefreshCw,
@@ -23,6 +25,11 @@ import {
 	recordDashboardBrowserPaneEvent,
 	removeDashboardBrowserPaneDiagnostics,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-diagnostics";
+import {
+	type DashboardBrowserShortcutAction,
+	type DashboardBrowserShortcutSection,
+	dashboardBrowserShortcutDescriptors,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-shortcuts";
 import {
 	areDashboardBrowserTabRetentionEntriesEqual,
 	DASHBOARD_BROWSER_TAB_KEEPALIVE_TTL_MS,
@@ -64,23 +71,90 @@ const COMMON_NEW_TAB_DESTINATIONS = [
 ] as const;
 
 type DashboardBrowserCurrentAction =
-	| "close-current-tab"
-	| "close-split"
-	| "equalize-split"
-	| "go-back"
-	| "go-forward"
-	| "narrow-active-split"
+	| DashboardBrowserShortcutAction
 	| "new-chatgpt-tab"
 	| "new-claude-tab"
-	| "new-current-url-tab"
-	| "new-google-tab"
-	| "next-tab"
-	| "previous-tab"
-	| "reload"
-	| "swap-split"
-	| "toggle-tab-pin"
-	| "toggle-split"
-	| "widen-active-split";
+	| "new-google-tab";
+
+const BROWSER_SHORTCUT_SECTION_LABELS = {
+	navigation: "Navigation",
+	split: "Split",
+	tabs: "Tabs",
+} satisfies Record<DashboardBrowserShortcutSection, string>;
+
+function DashboardBrowserKeyboardMenu({
+	disabledActions,
+	isSplitView,
+	onAction,
+}: {
+	disabledActions: ReadonlySet<DashboardBrowserShortcutAction>;
+	isSplitView: boolean;
+	onAction: (action: DashboardBrowserShortcutAction) => void;
+}) {
+	const shortcuts = dashboardBrowserShortcutDescriptors({ isSplitView });
+	const sectionOrder: DashboardBrowserShortcutSection[] = [
+		"navigation",
+		"tabs",
+		"split",
+	];
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon-xs"
+					aria-label="Show browser keyboard shortcuts"
+					title="Browser keyboard shortcuts"
+				>
+					<LuKeyRound className="size-3.5" />
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent
+				align="end"
+				className="w-72"
+				onCloseAutoFocus={(event) => event.preventDefault()}
+			>
+				<div className="px-2 py-1.5">
+					<div className="text-xs font-medium text-foreground">
+						Browser controls
+					</div>
+					<div className="text-[11px] text-muted-foreground">
+						Visible labels for the browser Vim keys.
+					</div>
+				</div>
+				{sectionOrder.map((section) => {
+					const sectionShortcuts = shortcuts.filter(
+						(shortcut) => shortcut.section === section,
+					);
+					if (sectionShortcuts.length === 0) return null;
+					return (
+						<div key={section}>
+							<DropdownMenuSeparator />
+							<div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+								{BROWSER_SHORTCUT_SECTION_LABELS[section]}
+							</div>
+							{sectionShortcuts.map((shortcut) => (
+								<DropdownMenuItem
+									key={shortcut.action}
+									disabled={disabledActions.has(shortcut.action)}
+									onSelect={() => onAction(shortcut.action)}
+									className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"
+								>
+									<span className="truncate">{shortcut.label}</span>
+									<DropdownMenuShortcut className="ml-0">
+										{shortcut.key}
+									</DropdownMenuShortcut>
+								</DropdownMenuItem>
+							))}
+						</div>
+					);
+				})}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
 
 interface DashboardBrowserTab extends DashboardBrowserWebViewState {
 	id: string;
@@ -817,15 +891,8 @@ export function DashboardWebView({
 		setDashboardWebTabPinned(tab.id, !tab.isPinned);
 	}, [id]);
 
-	useEffect(() => {
-		if (!isActive) return;
-
-		const handleBrowserAction = (event: Event) => {
-			const action = (
-				event as CustomEvent<{ action?: DashboardBrowserCurrentAction }>
-			).detail?.action;
-			if (!action) return;
-
+	const runBrowserCurrentAction = useCallback(
+		(action: DashboardBrowserCurrentAction) => {
 			if (action === "reload") {
 				reload();
 				return;
@@ -892,6 +959,33 @@ export function DashboardWebView({
 				return item.label === "Claude";
 			});
 			if (destination) createBrowserTab(destination);
+		},
+		[
+			activateBrowserTab,
+			browserTabIds,
+			closeBrowserTab,
+			createBrowserTab,
+			createTabFromCurrentUrl,
+			equalizeSplitPanes,
+			goBack,
+			goForward,
+			reload,
+			resizeActiveSplitPane,
+			swapSplitFocus,
+			toggleDashboardWebTabPinned,
+			toggleSplitView,
+		],
+	);
+
+	useEffect(() => {
+		if (!isActive) return;
+
+		const handleBrowserAction = (event: Event) => {
+			const action = (
+				event as CustomEvent<{ action?: DashboardBrowserCurrentAction }>
+			).detail?.action;
+			if (!action) return;
+			runBrowserCurrentAction(action);
 		};
 
 		window.addEventListener(
@@ -904,22 +998,7 @@ export function DashboardWebView({
 				handleBrowserAction,
 			);
 		};
-	}, [
-		closeBrowserTab,
-		createBrowserTab,
-		createTabFromCurrentUrl,
-		equalizeSplitPanes,
-		goBack,
-		goForward,
-		activateBrowserTab,
-		browserTabIds,
-		isActive,
-		reload,
-		resizeActiveSplitPane,
-		swapSplitFocus,
-		toggleDashboardWebTabPinned,
-		toggleSplitView,
-	]);
+	}, [isActive, runBrowserCurrentAction]);
 
 	useEffect(() => {
 		if (!isActive) return;
@@ -1045,6 +1124,14 @@ export function DashboardWebView({
 		node.addEventListener("click", handleClick, true);
 		return () => node.removeEventListener("click", handleClick, true);
 	}, [activateBrowserTab]);
+
+	const disabledBrowserShortcutActions = useMemo(() => {
+		const disabled = new Set<DashboardBrowserShortcutAction>();
+		if (!canGoBack) disabled.add("go-back");
+		if (!canGoForward) disabled.add("go-forward");
+		if (browserTabs.length <= 1) disabled.add("close-current-tab");
+		return disabled;
+	}, [browserTabs.length, canGoBack, canGoForward]);
 
 	return (
 		<div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -1201,6 +1288,12 @@ export function DashboardWebView({
 						))}
 					</DropdownMenuContent>
 				</DropdownMenu>
+
+				<DashboardBrowserKeyboardMenu
+					disabledActions={disabledBrowserShortcutActions}
+					isSplitView={isSplitView}
+					onAction={runBrowserCurrentAction}
+				/>
 
 				<Button
 					type="button"
