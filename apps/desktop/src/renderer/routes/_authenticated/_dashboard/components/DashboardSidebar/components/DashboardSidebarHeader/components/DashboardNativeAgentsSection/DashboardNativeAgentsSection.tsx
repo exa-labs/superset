@@ -50,6 +50,7 @@ import { useHotkeyDisplay } from "renderer/hotkeys";
 import { authClient } from "renderer/lib/auth-client";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { persistentHistory } from "renderer/lib/persistent-hash-history";
+import { isDashboardSidebarSpaceKey } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-actions";
 import {
 	createNativeAgentFolder,
 	createNativeAgentSessionDragPayload,
@@ -2042,6 +2043,11 @@ export function DashboardNativeAgentsSection({
 										onClick={() =>
 											setProviderCollapsed(providerConfig.id, !isCollapsed)
 										}
+										onKeyDown={(event) => {
+											if (!isDashboardSidebarSpaceKey(event.key)) return;
+											event.preventDefault();
+											setProviderCollapsed(providerConfig.id, !isCollapsed);
+										}}
 										className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/60 px-1 font-mono text-[10px] tabular-nums text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 									>
 										{displayedItemCount}

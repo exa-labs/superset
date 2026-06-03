@@ -15,6 +15,10 @@ export type DashboardSidebarKeyboardAction =
 	| "toggle-browser";
 export type DashboardSidebarActivationAction = "activate" | "none";
 
+export function isDashboardSidebarSpaceKey(key: string): boolean {
+	return key === " " || key === "Spacebar" || key === "Space";
+}
+
 export function dashboardSidebarKeyboardActionFromKey(
 	key: string,
 ): DashboardSidebarKeyboardAction {
@@ -43,7 +47,7 @@ export function dashboardSidebarKeyboardActionSelector(
 export function dashboardSidebarActivationActionFromKey(
 	key: string,
 ): DashboardSidebarActivationAction {
-	if (key === "Enter" || key === " ") return "activate";
+	if (key === "Enter" || isDashboardSidebarSpaceKey(key)) return "activate";
 	return "none";
 }
 

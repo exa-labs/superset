@@ -9,6 +9,7 @@ import {
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
+	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import { markDashboardSidebarKeyboardFocus } from "./dashboard-sidebar-keyboard-focus";
 
@@ -146,7 +147,7 @@ export function findDashboardSidebarActivationTarget(
 	activeItem: HTMLElement,
 	key: string,
 ): HTMLElement {
-	if (key === " ") {
+	if (isDashboardSidebarSpaceKey(key)) {
 		return findDashboardSidebarExpansionTarget(activeItem) ?? activeItem;
 	}
 	return activeItem;
@@ -291,6 +292,14 @@ export function useDashboardSidebarKeyboardNavigation(
 				if (activeIndex >= 0) {
 					const activationTarget = findDashboardSidebarActivationTarget(
 						activeElement as HTMLElement,
+						event.key,
+					);
+					activationTarget.click();
+					return;
+				}
+				if (focusInsideSidebar && isHTMLElement(activeElement)) {
+					const activationTarget = findDashboardSidebarActivationTarget(
+						activeElement,
 						event.key,
 					);
 					activationTarget.click();

@@ -7,6 +7,7 @@ import {
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
+	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import {
 	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
@@ -81,10 +82,23 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 });
 
 describe("dashboardSidebarActivationActionFromKey", () => {
-	test("maps Enter and Space to generic sidebar activation", () => {
+	test("maps Enter and Space variants to generic sidebar activation", () => {
 		expect(dashboardSidebarActivationActionFromKey("Enter")).toBe("activate");
 		expect(dashboardSidebarActivationActionFromKey(" ")).toBe("activate");
+		expect(dashboardSidebarActivationActionFromKey("Space")).toBe("activate");
+		expect(dashboardSidebarActivationActionFromKey("Spacebar")).toBe(
+			"activate",
+		);
 		expect(dashboardSidebarActivationActionFromKey("j")).toBe("none");
+	});
+});
+
+describe("isDashboardSidebarSpaceKey", () => {
+	test("accepts modern and legacy Space key strings", () => {
+		expect(isDashboardSidebarSpaceKey(" ")).toBe(true);
+		expect(isDashboardSidebarSpaceKey("Space")).toBe(true);
+		expect(isDashboardSidebarSpaceKey("Spacebar")).toBe(true);
+		expect(isDashboardSidebarSpaceKey("Enter")).toBe(false);
 	});
 });
 
@@ -690,7 +704,7 @@ describe("findDashboardSidebarActivationTarget", () => {
 		expect(findDashboardSidebarActivationTarget(row, "Enter")).toBe(row);
 	});
 
-	test("uses Space to toggle a row-scoped expansion control", () => {
+	test("uses Space variants to toggle a row-scoped expansion control", () => {
 		if (typeof document === "undefined") return;
 
 		const scope = document.createElement("div");
@@ -703,6 +717,12 @@ describe("findDashboardSidebarActivationTarget", () => {
 		scope.append(row, countToggle);
 
 		expect(findDashboardSidebarActivationTarget(row, " ")).toBe(countToggle);
+		expect(findDashboardSidebarActivationTarget(row, "Space")).toBe(
+			countToggle,
+		);
+		expect(findDashboardSidebarActivationTarget(row, "Spacebar")).toBe(
+			countToggle,
+		);
 	});
 
 	test("falls back to the focused row for Space when no expansion target exists", () => {

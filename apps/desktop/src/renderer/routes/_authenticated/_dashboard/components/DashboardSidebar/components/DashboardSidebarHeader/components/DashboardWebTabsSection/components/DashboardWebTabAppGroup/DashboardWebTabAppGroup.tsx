@@ -18,6 +18,7 @@ import {
 } from "react-icons/lu";
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { DashboardWebPageIcon } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarHeader/components/DashboardWebPagesGrid/components/DashboardWebPageIcon";
+import { isDashboardSidebarSpaceKey } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-actions";
 import {
 	cancelDashboardWebUrlWarmup,
 	warmDashboardWebUrl,
@@ -166,6 +167,11 @@ export function DashboardWebTabAppGroup({
 							aria-expanded={!isCollapsed}
 							aria-label={`${isCollapsed ? "Show" : "Hide"} ${app.label} sidebar sessions`}
 							onClick={() => onCollapsedChange(app.id, !isCollapsed)}
+							onKeyDown={(event) => {
+								if (!isDashboardSidebarSpaceKey(event.key)) return;
+								event.preventDefault();
+								onCollapsedChange(app.id, !isCollapsed);
+							}}
 							className={cn(
 								"flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background/60 px-1 font-mono text-[10px] tabular-nums text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground",
 								isActive && "border-foreground/15 text-foreground/75",
