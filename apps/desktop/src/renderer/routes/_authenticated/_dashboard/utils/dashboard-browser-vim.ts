@@ -1,4 +1,5 @@
 export type DashboardBrowserVimAction =
+	| "close-split"
 	| "close-tab"
 	| "equalize-split"
 	| "new-tab"
@@ -21,6 +22,7 @@ export function dashboardBrowserVimActionFromKey(
 	if (key === "[") return "narrow-active-split";
 	if (key === "]") return "widen-active-split";
 	if (key === "=") return "equalize-split";
+	if (key === "q") return "close-split";
 	if (key === "x") return "close-tab";
 	if (key === "h") return "previous-tab";
 	if (key === "l") return "next-tab";

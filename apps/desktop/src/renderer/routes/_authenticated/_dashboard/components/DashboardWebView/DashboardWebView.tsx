@@ -61,6 +61,7 @@ const COMMON_NEW_TAB_DESTINATIONS = [
 
 type DashboardBrowserCurrentAction =
 	| "close-current-tab"
+	| "close-split"
 	| "equalize-split"
 	| "narrow-active-split"
 	| "new-chatgpt-tab"
@@ -818,6 +819,10 @@ export function DashboardWebView({
 				toggleSplitView();
 				return;
 			}
+			if (action === "close-split") {
+				setSplitBrowserTabId(null);
+				return;
+			}
 			if (action === "swap-split") {
 				swapSplitFocus();
 				return;
@@ -896,6 +901,11 @@ export function DashboardWebView({
 
 			if (action === "toggle-split") {
 				toggleSplitView();
+				return;
+			}
+
+			if (action === "close-split") {
+				setSplitBrowserTabId(null);
 				return;
 			}
 

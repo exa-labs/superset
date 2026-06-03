@@ -130,6 +130,7 @@ function dispatchNativeFolderAction(
 function dispatchBrowserAction(
 	action:
 		| "close-current-tab"
+		| "close-split"
 		| "equalize-split"
 		| "narrow-active-split"
 		| "new-chatgpt-tab"
@@ -391,6 +392,17 @@ export const webProvider: CommandProvider = {
 				shortcutLabel: "w",
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("swap-split"),
+			},
+			{
+				id: "web.current.closeSplit",
+				title: "Close Chrome split view",
+				section: "web",
+				description: "Return embedded Chrome to a single active tab pane",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "split", "close", "pane"],
+				shortcutLabel: "q",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("close-split"),
 			},
 			{
 				id: "web.current.narrowActiveSplit",

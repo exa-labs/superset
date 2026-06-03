@@ -474,6 +474,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Move focus between embedded Chrome split panes",
 				},
 				{
+					keys: ["q"],
+					label: "Close Chrome split",
+					description: "Return embedded Chrome to a single active tab pane",
+				},
+				{
 					keys: ["[", "]"],
 					label: "Resize Chrome split",
 					description: "Narrow or widen the active embedded Chrome pane",

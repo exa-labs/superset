@@ -13,6 +13,7 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("[")).toBe("narrow-active-split");
 		expect(dashboardBrowserVimActionFromKey("]")).toBe("widen-active-split");
 		expect(dashboardBrowserVimActionFromKey("=")).toBe("equalize-split");
+		expect(dashboardBrowserVimActionFromKey("q")).toBe("close-split");
 		expect(dashboardBrowserVimActionFromKey("x")).toBe("close-tab");
 		expect(dashboardBrowserVimActionFromKey("h")).toBe("previous-tab");
 		expect(dashboardBrowserVimActionFromKey("l")).toBe("next-tab");
