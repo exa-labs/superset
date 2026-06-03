@@ -4,6 +4,10 @@ export const DASHBOARD_WORKSPACE_PANE_ACTION_EVENT =
 export const DASHBOARD_WORKSPACE_PANE_ACTIONS = [
 	"close-pane",
 	"equalize",
+	"focus-down",
+	"focus-left",
+	"focus-right",
+	"focus-up",
 	"split-auto",
 	"split-browser",
 	"split-chat",

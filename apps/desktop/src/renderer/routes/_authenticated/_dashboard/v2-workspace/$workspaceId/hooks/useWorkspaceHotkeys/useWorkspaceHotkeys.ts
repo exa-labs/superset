@@ -318,6 +318,18 @@ export function useWorkspaceHotkeys({
 				case "equalize":
 					handleEqualizePaneSplits();
 					break;
+				case "focus-down":
+					moveFocusDirectional("down");
+					break;
+				case "focus-left":
+					moveFocusDirectional("left");
+					break;
+				case "focus-right":
+					moveFocusDirectional("right");
+					break;
+				case "focus-up":
+					moveFocusDirectional("up");
+					break;
 				case "split-auto":
 					void handleSplitAuto();
 					break;
@@ -343,6 +355,7 @@ export function useWorkspaceHotkeys({
 			handleSplitRight,
 			handleSplitWithBrowser,
 			handleSplitWithChat,
+			moveFocusDirectional,
 		],
 	);
 

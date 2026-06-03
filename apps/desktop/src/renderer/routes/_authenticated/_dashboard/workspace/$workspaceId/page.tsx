@@ -459,6 +459,23 @@ function WorkspacePage() {
 	useHotkey("SPLIT_WITH_BROWSER", handleSplitWithBrowser);
 	useHotkey("EQUALIZE_PANE_SPLITS", handleEqualizePaneSplits);
 
+	const moveFocusDirectional = useCallback(
+		(dir: FocusDirection) => {
+			if (!activeTabId || !activeTab?.layout || !focusedPaneId) return;
+			const neighbor = getSpatialNeighborMosaicPaneId(
+				activeTab.layout,
+				focusedPaneId,
+				dir,
+			);
+			if (neighbor) setFocusedPane(activeTabId, neighbor);
+		},
+		[activeTabId, activeTab?.layout, focusedPaneId, setFocusedPane],
+	);
+	useHotkey("FOCUS_PANE_LEFT", () => moveFocusDirectional("left"));
+	useHotkey("FOCUS_PANE_RIGHT", () => moveFocusDirectional("right"));
+	useHotkey("FOCUS_PANE_UP", () => moveFocusDirectional("up"));
+	useHotkey("FOCUS_PANE_DOWN", () => moveFocusDirectional("down"));
+
 	const handleWorkspacePaneAction = useCallback(
 		(action: DashboardWorkspacePaneAction) => {
 			switch (action) {
@@ -467,6 +484,18 @@ function WorkspacePage() {
 					break;
 				case "equalize":
 					handleEqualizePaneSplits();
+					break;
+				case "focus-down":
+					moveFocusDirectional("down");
+					break;
+				case "focus-left":
+					moveFocusDirectional("left");
+					break;
+				case "focus-right":
+					moveFocusDirectional("right");
+					break;
+				case "focus-up":
+					moveFocusDirectional("up");
 					break;
 				case "split-auto":
 					handleSplitAuto();
@@ -493,6 +522,7 @@ function WorkspacePage() {
 			handleSplitRight,
 			handleSplitWithBrowser,
 			handleSplitWithChat,
+			moveFocusDirectional,
 		],
 	);
 
@@ -500,23 +530,6 @@ function WorkspacePage() {
 		() => addDashboardWorkspacePaneActionListener(handleWorkspacePaneAction),
 		[handleWorkspacePaneAction],
 	);
-
-	const moveFocusDirectional = useCallback(
-		(dir: FocusDirection) => {
-			if (!activeTabId || !activeTab?.layout || !focusedPaneId) return;
-			const neighbor = getSpatialNeighborMosaicPaneId(
-				activeTab.layout,
-				focusedPaneId,
-				dir,
-			);
-			if (neighbor) setFocusedPane(activeTabId, neighbor);
-		},
-		[activeTabId, activeTab?.layout, focusedPaneId, setFocusedPane],
-	);
-	useHotkey("FOCUS_PANE_LEFT", () => moveFocusDirectional("left"));
-	useHotkey("FOCUS_PANE_RIGHT", () => moveFocusDirectional("right"));
-	useHotkey("FOCUS_PANE_UP", () => moveFocusDirectional("up"));
-	useHotkey("FOCUS_PANE_DOWN", () => moveFocusDirectional("down"));
 
 	const getPreviousWorkspace =
 		electronTrpc.workspaces.getPreviousWorkspace.useQuery(
