@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { clipboard, Menu, webContents } from "electron";
 import { isOpenControlPlaneShortcutInput } from "main/lib/control-plane-shortcut";
+import { isControlPlaneShortcutEventHandled } from "main/lib/control-plane-shortcut-event";
 import {
 	type DashboardWebShortcut,
 	dashboardWebDigitIndexFromInput,
@@ -375,7 +376,12 @@ class BrowserManager extends EventEmitter {
 	// Cmd+Shift+W (CLOSE_TAB) and Cmd+Shift+R (forceReload).
 	private setupBeforeInput(paneId: string, wc: Electron.WebContents): void {
 		const handler = (event: Electron.Event, input: Electron.Input): void => {
-			if ((event as { defaultPrevented?: boolean }).defaultPrevented) return;
+			if (
+				(event as { defaultPrevented?: boolean }).defaultPrevented ||
+				isControlPlaneShortcutEventHandled(event)
+			) {
+				return;
+			}
 
 			if (isOpenControlPlaneShortcutInput(input)) {
 				event.preventDefault();

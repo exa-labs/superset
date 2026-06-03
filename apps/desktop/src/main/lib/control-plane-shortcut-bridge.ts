@@ -3,6 +3,7 @@ import {
 	type ControlPlaneShortcutBridgeInputResolver,
 	createControlPlaneShortcutBridgeInputResolver,
 } from "main/lib/control-plane-shortcut-bridge-resolver";
+import { markControlPlaneShortcutEventHandled } from "main/lib/control-plane-shortcut-event";
 import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
 import type { GlobalKeyboardAction } from "main/lib/global-keyboard-shortcut";
 
@@ -31,6 +32,9 @@ export function installControlPlaneShortcutBridge(
 				preventDefault: false,
 				type: "none",
 			};
+			if (result.type !== "none") {
+				markControlPlaneShortcutEventHandled(event);
+			}
 			if (result.preventDefault) {
 				event.preventDefault();
 			}
