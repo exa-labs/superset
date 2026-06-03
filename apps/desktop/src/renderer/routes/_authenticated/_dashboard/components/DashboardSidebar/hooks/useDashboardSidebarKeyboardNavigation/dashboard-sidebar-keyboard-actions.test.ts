@@ -4,6 +4,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -102,6 +103,29 @@ describe("isDashboardSidebarSpaceKey", () => {
 		expect(isDashboardSidebarSpaceKey("Space")).toBe(true);
 		expect(isDashboardSidebarSpaceKey("Spacebar")).toBe(true);
 		expect(isDashboardSidebarSpaceKey("Enter")).toBe(false);
+	});
+});
+
+describe("dashboardSidebarLocalKeyAllowsModifiers", () => {
+	test("lets unmodified local sidebar keys through", () => {
+		expect(
+			dashboardSidebarLocalKeyAllowsModifiers({
+				altKey: false,
+				ctrlKey: false,
+				metaKey: false,
+			}),
+		).toBe(true);
+	});
+
+	test("blocks platform command modifiers so global shortcuts always win", () => {
+		for (const modifiers of [
+			{ altKey: true, ctrlKey: false, metaKey: false },
+			{ altKey: false, ctrlKey: true, metaKey: false },
+			{ altKey: false, ctrlKey: false, metaKey: true },
+			{ altKey: true, ctrlKey: true, metaKey: false },
+		]) {
+			expect(dashboardSidebarLocalKeyAllowsModifiers(modifiers)).toBe(false);
+		}
 	});
 });
 

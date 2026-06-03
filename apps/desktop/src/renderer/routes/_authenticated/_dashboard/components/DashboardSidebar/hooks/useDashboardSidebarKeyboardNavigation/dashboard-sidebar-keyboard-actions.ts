@@ -33,6 +33,14 @@ export function isDashboardSidebarSpaceKey(key: string): boolean {
 	return key === " " || key === "Spacebar" || key === "Space";
 }
 
+export function dashboardSidebarLocalKeyAllowsModifiers(input: {
+	altKey: boolean;
+	ctrlKey: boolean;
+	metaKey: boolean;
+}): boolean {
+	return !input.altKey && !input.ctrlKey && !input.metaKey;
+}
+
 export function dashboardSidebarKeyboardActionFromKey(
 	key: string,
 ): DashboardSidebarKeyboardAction {

@@ -6,6 +6,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -254,20 +255,27 @@ export function useDashboardSidebarKeyboardNavigation(
 			const activeElement = document.activeElement;
 			const focusInsideSidebar =
 				isHTMLElement(activeElement) && root.contains(activeElement);
+			const localSidebarKey = dashboardSidebarLocalKeyAllowsModifiers({
+				altKey: event.altKey,
+				ctrlKey: event.ctrlKey,
+				metaKey: event.metaKey,
+			});
 			const rovingNavigationDelta =
-				focusInsideSidebar || vimModeEnabled
+				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
 					? dashboardSidebarRovingNavigationDeltaFromKey(event.key)
 					: 0;
 			const rovingNavigation = rovingNavigationDelta !== 0;
 			const rovingBoundary =
-				focusInsideSidebar || vimModeEnabled
+				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
 					? dashboardSidebarRovingNavigationBoundaryFromKey(event.key)
 					: null;
-			const activationAction = dashboardSidebarActivationActionFromKey(
-				event.key,
-			);
+			const activationAction = localSidebarKey
+				? dashboardSidebarActivationActionFromKey(event.key)
+				: "none";
 			const activationKey = focusInsideSidebar && activationAction !== "none";
-			const sidebarAction = dashboardSidebarKeyboardActionFromKey(event.key);
+			const sidebarAction = localSidebarKey
+				? dashboardSidebarKeyboardActionFromKey(event.key)
+				: "none";
 			const sidebarActionKey = focusInsideSidebar && sidebarAction !== "none";
 			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
 				altKey: event.altKey,
@@ -278,6 +286,7 @@ export function useDashboardSidebarKeyboardNavigation(
 				vimModeEnabled,
 			});
 			const vimNavigation =
+				localSidebarKey &&
 				vimModeEnabled &&
 				[
 					"j",
