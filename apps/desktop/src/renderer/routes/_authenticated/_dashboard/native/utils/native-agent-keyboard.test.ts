@@ -9,6 +9,7 @@ import {
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
+	nativeAgentSidebarCurrentIndex,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarNavigationDeltaFromKey,
 	nativeAgentSidebarVimActionFromKey,
@@ -194,6 +195,27 @@ describe("native agent keyboard helpers", () => {
 				}),
 			).toBe(0);
 		}
+	});
+
+	it("prefers focused native sidebar rows over the active route for repeated navigation", () => {
+		expect(
+			nativeAgentSidebarCurrentIndex({
+				activeIndex: 0,
+				focusedIndex: 2,
+			}),
+		).toBe(2);
+		expect(
+			nativeAgentSidebarCurrentIndex({
+				activeIndex: 1,
+				focusedIndex: -1,
+			}),
+		).toBe(1);
+		expect(
+			nativeAgentSidebarCurrentIndex({
+				activeIndex: -1,
+				focusedIndex: -1,
+			}),
+		).toBe(-1);
 	});
 
 	it("maps selected-session vim actions", () => {

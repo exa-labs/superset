@@ -173,6 +173,14 @@ export function nativeAgentSidebarNavigationDeltaFromKey(input: {
 	return 0;
 }
 
+export function nativeAgentSidebarCurrentIndex(input: {
+	activeIndex: number;
+	focusedIndex: number;
+}): number {
+	if (input.focusedIndex >= 0) return input.focusedIndex;
+	return input.activeIndex;
+}
+
 export function nativeAgentSelectedSessionVimActionFromKey(
 	key: string | null,
 ): NativeAgentSelectedSessionVimAction {

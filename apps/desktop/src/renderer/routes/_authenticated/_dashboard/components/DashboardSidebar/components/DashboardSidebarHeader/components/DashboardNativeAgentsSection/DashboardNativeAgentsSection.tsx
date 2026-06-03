@@ -78,6 +78,7 @@ import {
 import {
 	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
+	nativeAgentSidebarCurrentIndex,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarNavigationDeltaFromKey,
 	nativeAgentSidebarVimActionFromKey,
@@ -1803,7 +1804,10 @@ export function DashboardNativeAgentsSection({
 				document.activeElement instanceof HTMLButtonElement
 					? rows.indexOf(document.activeElement)
 					: -1;
-			const currentIndex = activeIndex >= 0 ? activeIndex : focusedIndex;
+			const currentIndex = nativeAgentSidebarCurrentIndex({
+				activeIndex,
+				focusedIndex,
+			});
 			const currentRow = rows[currentIndex];
 			const rowProvider =
 				currentRow?.dataset.nativeAgentSessionRowProvider === "capy" ||
@@ -1968,7 +1972,7 @@ export function DashboardNativeAgentsSection({
 
 			event.preventDefault();
 			event.stopPropagation();
-			row.focus();
+			focusNativeRow(row);
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
