@@ -14,6 +14,10 @@ export type DashboardSidebarKeyboardAction =
 	| "reply"
 	| "toggle-browser";
 export type DashboardSidebarActivationAction = "activate" | "none";
+export type DashboardSidebarLocalCommand =
+	| "focus-search"
+	| "none"
+	| "show-help";
 export type DashboardSidebarVimJumpAction = "first" | "last" | "none";
 
 export function dashboardSidebarTypeaheadQueryFromSeed(input: {
@@ -101,6 +105,14 @@ export function dashboardSidebarNextRovingIndex(input: {
 	return (input.activeIndex + input.delta + input.itemCount) % input.itemCount;
 }
 
+export function dashboardSidebarLocalCommandFromKey(
+	key: string,
+): DashboardSidebarLocalCommand {
+	if (key === "/") return "focus-search";
+	if (key === "?") return "show-help";
+	return "none";
+}
+
 export function dashboardSidebarVimJumpFromKey(input: {
 	key: string;
 	lastGAt: number;
@@ -144,6 +156,7 @@ export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	if (input.altKey || input.ctrlKey || input.metaKey) return null;
 	if (input.key.length !== 1) return null;
 	if (input.key.trim().length === 0) return null;
+	if (dashboardSidebarLocalCommandFromKey(input.key) !== "none") return null;
 	if (dashboardSidebarRovingNavigationDeltaFromKey(input.key) !== 0) {
 		return null;
 	}

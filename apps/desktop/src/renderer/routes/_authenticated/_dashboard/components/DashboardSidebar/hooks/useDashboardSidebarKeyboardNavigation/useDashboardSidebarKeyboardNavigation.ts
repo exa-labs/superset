@@ -6,6 +6,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarLocalCommandFromKey,
 	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarNextRovingIndex,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
@@ -299,6 +300,10 @@ export function useDashboardSidebarKeyboardNavigation(
 				: "none";
 			const sidebarActionKey =
 				(focusInsideSidebar || vimModeEnabled) && sidebarAction !== "none";
+			const localCommand =
+				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
+					? dashboardSidebarLocalCommandFromKey(event.key)
+					: "none";
 			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
 				altKey: event.altKey,
 				ctrlKey: event.ctrlKey,
@@ -332,11 +337,25 @@ export function useDashboardSidebarKeyboardNavigation(
 				!vimNavigation &&
 				!activationKey &&
 				!sidebarActionKey &&
+				localCommand === "none" &&
 				!typeaheadSeed
 			) {
 				return;
 			}
 			if (!vimModeEnabled && !focusInsideSidebar) return;
+
+			if (localCommand === "focus-search") {
+				event.preventDefault();
+				options.searchInputRef?.current?.focus();
+				options.searchInputRef?.current?.select();
+				return;
+			}
+
+			if (localCommand === "show-help") {
+				event.preventDefault();
+				openDashboardKeyboardHelp();
+				return;
+			}
 
 			const items = getDashboardSidebarFocusableItems(root);
 			if (items.length === 0) return;
@@ -457,19 +476,6 @@ export function useDashboardSidebarKeyboardNavigation(
 				event.preventDefault();
 				options.onClearSearch?.();
 				focusDashboardSidebarItem(items[Math.max(0, activeIndex)]);
-				return;
-			}
-
-			if (event.key === "/") {
-				event.preventDefault();
-				options.searchInputRef?.current?.focus();
-				options.searchInputRef?.current?.select();
-				return;
-			}
-
-			if (event.key === "?") {
-				event.preventDefault();
-				openDashboardKeyboardHelp();
 				return;
 			}
 

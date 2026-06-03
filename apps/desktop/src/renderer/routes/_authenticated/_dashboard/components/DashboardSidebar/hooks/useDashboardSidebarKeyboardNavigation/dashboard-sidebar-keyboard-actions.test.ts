@@ -4,6 +4,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarLocalCommandFromKey,
 	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarNextRovingIndex,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
@@ -154,6 +155,14 @@ describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
 		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
 			null,
 		);
+	});
+});
+
+describe("dashboardSidebarLocalCommandFromKey", () => {
+	test("maps local visible sidebar hints to shell commands", () => {
+		expect(dashboardSidebarLocalCommandFromKey("/")).toBe("focus-search");
+		expect(dashboardSidebarLocalCommandFromKey("?")).toBe("show-help");
+		expect(dashboardSidebarLocalCommandFromKey("d")).toBe("none");
 	});
 });
 
@@ -324,7 +333,7 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		for (const key of [".", "N", "c", "d", "j", "k", "n", "p"]) {
+		for (const key of [".", "/", "?", "N", "c", "d", "j", "k", "n", "p"]) {
 			expect(
 				dashboardSidebarTypeaheadSeedFromKey({
 					altKey: false,
