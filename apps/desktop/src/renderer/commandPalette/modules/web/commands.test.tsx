@@ -5,6 +5,12 @@ import {
 	NATIVE_AGENT_RECENT_FOLDER_COLORS_STORAGE_KEY,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
 import { NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import {
+	createDashboardWebTab,
+	createDashboardWebTabFolder,
+	getDashboardWebTab,
+	resetDashboardWebTabsForTests,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type { CommandContext } from "../../core/types";
 import { webProvider } from "./commands";
 
@@ -234,6 +240,106 @@ describe("web command provider", () => {
 				.provide(commandContext("/web-tabs/chrome-default"))
 				.find((command) => command.id === "web.chrome.new")?.hotkeyId,
 		).toBe("OPEN_CHROME");
+	});
+
+	it("registers Chrome tab action commands with keyboard hints", () => {
+		withLocalStorage({}, () => {
+			resetDashboardWebTabsForTests();
+			try {
+				const folder = createDashboardWebTabFolder("chrome", "Research");
+				const tab = createDashboardWebTab("chrome", {
+					title: "Latency dashboard",
+					url: "https://grafana.example.test/d/latency",
+				});
+				const commands = webProvider.provide(
+					commandContext(`/web-tabs/${tab.id}`),
+				);
+				const shortcutById = new Map(
+					commands.map(
+						(command) => [command.id, command.shortcutLabel] as const,
+					),
+				);
+				const commandIds = new Set(commands.map((command) => command.id));
+
+				expect(commandIds.has(`web.tab.${tab.id}.togglePin`)).toBe(true);
+				expect(commandIds.has(`web.tab.${tab.id}.close`)).toBe(true);
+				expect(
+					commandIds.has(`web.tab.${tab.id}.moveToFolder.${folder.id}`),
+				).toBe(true);
+				expect(commandIds.has(`web.current.moveToFolder.${folder.id}`)).toBe(
+					true,
+				);
+				expect(shortcutById.get("web.current.pin")).toBe("p");
+				expect(shortcutById.get("web.current.unpin")).toBe("p");
+				expect(shortcutById.get(`web.tab.${tab.id}.togglePin`)).toBe("p");
+				expect(shortcutById.get(`web.tab.${tab.id}.close`)).toBe("x");
+				expect(
+					shortcutById.get(`web.tab.${tab.id}.moveToFolder.${folder.id}`),
+				).toBe("m");
+
+				commands
+					.find((command) => command.id === `web.tab.${tab.id}.togglePin`)
+					?.run?.(commandContext(`/web-tabs/${tab.id}`));
+				expect(getDashboardWebTab(tab.id)?.isPinned).toBe(true);
+
+				commands
+					.find(
+						(command) =>
+							command.id === `web.tab.${tab.id}.moveToFolder.${folder.id}`,
+					)
+					?.run?.(commandContext(`/web-tabs/${tab.id}`));
+				expect(getDashboardWebTab(tab.id)?.folderId).toBe(folder.id);
+
+				const updatedCommands = webProvider.provide(
+					commandContext(`/web-tabs/${tab.id}`),
+				);
+				expect(
+					updatedCommands.find(
+						(command) => command.id === "web.current.removeFolder",
+					)?.shortcutLabel,
+				).toBe("F");
+				updatedCommands
+					.find((command) => command.id === "web.current.removeFolder")
+					?.run?.(commandContext(`/web-tabs/${tab.id}`));
+				expect(getDashboardWebTab(tab.id)?.folderId).toBeNull();
+			} finally {
+				resetDashboardWebTabsForTests();
+			}
+		});
+	});
+
+	it("navigates away when a command closes the active Chrome tab", () => {
+		withLocalStorage({}, () => {
+			resetDashboardWebTabsForTests();
+			try {
+				const first = createDashboardWebTab("chrome", {
+					title: "First",
+					url: "https://first.example.test",
+				});
+				const second = createDashboardWebTab("chrome", {
+					title: "Second",
+					url: "https://second.example.test",
+				});
+				const navigations: string[] = [];
+				const context = commandContextWithNavigate(
+					`/web-tabs/${first.id}`,
+					(path) => {
+						navigations.push(path);
+					},
+				);
+				const commands = webProvider.provide(context);
+
+				commands
+					.find((command) => command.id === `web.tab.${first.id}.close`)
+					?.run?.(context);
+
+				expect(navigations).toEqual([`/web-tabs/${second.id}`]);
+				expect(getDashboardWebTab(first.id)).toBeNull();
+				expect(getDashboardWebTab(second.id)).not.toBeNull();
+			} finally {
+				resetDashboardWebTabsForTests();
+			}
+		});
 	});
 
 	it("registers root kr9 terminal commands", () => {

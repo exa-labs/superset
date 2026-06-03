@@ -14,11 +14,16 @@ import {
 import { getDashboardWebPageFavicon } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-page-favicons";
 import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages";
 import {
+	closeDashboardWebTab,
 	createDashboardWebTab,
 	DASHBOARD_WEB_TAB_APPS,
+	getDashboardWebTab,
 	getDashboardWebTabApp,
 	getDashboardWebTabFavicon,
+	getDashboardWebTabFolders,
 	getDashboardWebTabs,
+	moveDashboardWebTabToFolder,
+	setDashboardWebTabPinned,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type {
 	Command,
@@ -130,6 +135,18 @@ function nativeProviderFromPathname(
 	return null;
 }
 
+function webTabIdFromPathname(pathname: string): string | null {
+	const match = pathname.match(/^\/web-tabs\/([^/]+)/);
+	return match?.[1] ?? null;
+}
+
+function closeWebTabFromCommand(context: CommandContext, tabId: string) {
+	const currentTabId = webTabIdFromPathname(context.route.pathname);
+	const nextTab = closeDashboardWebTab(tabId);
+	if (currentTabId !== tabId) return;
+	context.navigate(nextTab ? `/web-tabs/${nextTab.id}` : "/v2-workspaces");
+}
+
 function openNativeOverviewFilter(
 	context: CommandContext,
 	provider: NativeAgentProvider,
@@ -226,6 +243,12 @@ export const webProvider: CommandProvider = {
 			],
 			run: (context) => context.navigate(`/web/${page.id}`),
 		}));
+		const webTabs = getDashboardWebTabs();
+		const webFolders = getDashboardWebTabFolders();
+		const currentWebTabId = webTabIdFromPathname(context.route.pathname);
+		const currentWebTab = currentWebTabId
+			? getDashboardWebTab(currentWebTabId)
+			: null;
 
 		for (const app of DASHBOARD_WEB_TAB_APPS) {
 			commands.push({
@@ -375,7 +398,78 @@ export const webProvider: CommandProvider = {
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("close-current-tab"),
 			},
+			{
+				id: "web.current.pin",
+				title: "Pin current Chrome tab",
+				section: "web",
+				description: "Keep the active embedded Chrome tab warm in the sidebar",
+				keywords: ["chrome", "browser", "pin", "retain", "sidebar", "tab"],
+				shortcutLabel: "p",
+				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
+				run: (context) => {
+					const tabId = webTabIdFromPathname(context.route.pathname);
+					if (tabId) setDashboardWebTabPinned(tabId, true);
+				},
+			},
+			{
+				id: "web.current.unpin",
+				title: "Unpin current Chrome tab",
+				section: "web",
+				description:
+					"Let the active embedded Chrome tab leave retention normally",
+				keywords: ["chrome", "browser", "unpin", "retain", "sidebar", "tab"],
+				shortcutLabel: "p",
+				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
+				run: (context) => {
+					const tabId = webTabIdFromPathname(context.route.pathname);
+					if (tabId) setDashboardWebTabPinned(tabId, false);
+				},
+			},
+			{
+				id: "web.current.removeFolder",
+				title: "Move current Chrome tab out of folder",
+				section: "web",
+				description: "Return the active embedded Chrome tab to the main list",
+				keywords: ["chrome", "browser", "folder", "remove", "out", "tab"],
+				shortcutLabel: "F",
+				when: (context) =>
+					getDashboardWebTab(webTabIdFromPathname(context.route.pathname) ?? "")
+						?.folderId != null,
+				run: (context) => {
+					const tabId = webTabIdFromPathname(context.route.pathname);
+					if (tabId) moveDashboardWebTabToFolder(tabId, null);
+				},
+			},
 		);
+
+		if (currentWebTab) {
+			for (const folder of webFolders) {
+				if (
+					folder.appId !== currentWebTab.appId ||
+					folder.id === currentWebTab.folderId
+				) {
+					continue;
+				}
+				commands.push({
+					id: `web.current.moveToFolder.${folder.id}`,
+					title: `Move current Chrome tab to ${folder.title}`,
+					section: "web",
+					description: "Move the active embedded Chrome tab into a folder",
+					keywords: [
+						"chrome",
+						"browser",
+						"folder",
+						"move",
+						folder.title,
+						"tab",
+					],
+					shortcutLabel: "m",
+					when: (context) =>
+						webTabIdFromPathname(context.route.pathname) === currentWebTab.id,
+					run: () => moveDashboardWebTabToFolder(currentWebTab.id, folder.id),
+				});
+			}
+		}
 
 		const currentNativeProvider = nativeProviderFromPathname(
 			context.route.pathname,
@@ -960,27 +1054,80 @@ export const webProvider: CommandProvider = {
 			}
 		}
 
-		for (const tab of getDashboardWebTabs()) {
+		for (const tab of webTabs) {
 			const app = getDashboardWebTabApp(tab.appId);
-			commands.push({
-				id: `web.tab.${tab.id}`,
-				title: `${app.label}: ${tab.title}`,
-				section: "web",
-				iconUrl: getDashboardWebTabFavicon(tab) ?? undefined,
-				description: tab.url,
-				keywords: [
-					app.label,
-					app.id,
-					tab.title,
-					tab.browserTitle ?? "",
-					tab.url,
-					"session",
-					"tab",
-					"web",
-					"capi",
-				],
-				run: (context) => context.navigate(`/web-tabs/${tab.id}`),
-			});
+			const tabIcon = getDashboardWebTabFavicon(tab) ?? undefined;
+			const tabKeywords = [
+				app.label,
+				app.id,
+				tab.title,
+				tab.browserTitle ?? "",
+				tab.url,
+				"session",
+				"tab",
+				"web",
+				"capi",
+				"chrome",
+				"browser",
+			];
+			commands.push(
+				{
+					id: `web.tab.${tab.id}`,
+					title: `${app.label}: ${tab.title}`,
+					section: "web",
+					iconUrl: tabIcon,
+					description: tab.url,
+					keywords: tabKeywords,
+					run: (context) => context.navigate(`/web-tabs/${tab.id}`),
+				},
+				{
+					id: `web.tab.${tab.id}.togglePin`,
+					title: `${tab.isPinned ? "Unpin" : "Pin"} ${tab.title}`,
+					section: "web",
+					iconUrl: tabIcon,
+					description: `${app.label} tab`,
+					keywords: [...tabKeywords, "pin", "unpin", "retain", "sidebar"],
+					shortcutLabel: "p",
+					run: () => setDashboardWebTabPinned(tab.id, !tab.isPinned),
+				},
+				{
+					id: `web.tab.${tab.id}.close`,
+					title: `Close ${tab.title}`,
+					section: "web",
+					iconUrl: tabIcon,
+					description: `${app.label} tab`,
+					keywords: [...tabKeywords, "close", "archive", "remove"],
+					shortcutLabel: "x",
+					run: (context) => closeWebTabFromCommand(context, tab.id),
+				},
+			);
+
+			if (tab.folderId) {
+				commands.push({
+					id: `web.tab.${tab.id}.removeFolder`,
+					title: `Move ${tab.title} out of folder`,
+					section: "web",
+					iconUrl: tabIcon,
+					description: `${app.label} tab`,
+					keywords: [...tabKeywords, "folder", "remove", "out"],
+					shortcutLabel: "F",
+					run: () => moveDashboardWebTabToFolder(tab.id, null),
+				});
+			}
+
+			for (const folder of webFolders) {
+				if (folder.appId !== tab.appId || folder.id === tab.folderId) continue;
+				commands.push({
+					id: `web.tab.${tab.id}.moveToFolder.${folder.id}`,
+					title: `Move ${tab.title} to ${folder.title}`,
+					section: "web",
+					iconUrl: tabIcon,
+					description: `${app.label} folder`,
+					keywords: [...tabKeywords, folder.title, "folder", "move"],
+					shortcutLabel: "m",
+					run: () => moveDashboardWebTabToFolder(tab.id, folder.id),
+				});
+			}
 		}
 
 		return commands;
