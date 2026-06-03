@@ -3,6 +3,7 @@ export type DashboardSidebarKeyboardAction =
 	| "color"
 	| "create"
 	| "delete"
+	| "menu"
 	| "move"
 	| "none"
 	| "open-browser"
@@ -17,6 +18,7 @@ export function dashboardSidebarKeyboardActionFromKey(
 	key: string,
 ): DashboardSidebarKeyboardAction {
 	if (key === "n") return "create";
+	if (key === ".") return "menu";
 	if (key === "p") return "pin";
 	if (key === "r") return "reply";
 	if (key === "o") return "open-browser";

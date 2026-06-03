@@ -14,6 +14,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@superset/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@superset/ui/dropdown-menu";
 import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
@@ -29,6 +37,7 @@ import {
 } from "react";
 import {
 	LuArchive,
+	LuEllipsis,
 	LuFolder,
 	LuFolderPlus,
 	LuFolderX,
@@ -477,6 +486,7 @@ function SessionRow({
 	shortcutLabel: string | null;
 	variant: "collapsed" | "expanded";
 }) {
+	const [menuOpen, setMenuOpen] = useState(false);
 	if (variant === "collapsed") return null;
 	const isActive = activeId === item.id;
 	const hasFreshAgentResponse = isFreshNativeAgentResponse(item, item.provider);
@@ -489,6 +499,17 @@ function SessionRow({
 		isLiveStatus: isNativeAgentLiveStatus,
 		isUnread: (candidate) => hasUnreadAgentResponse(candidate, readState),
 	});
+	const moveToLastFolder = () => {
+		window.dispatchEvent(
+			new CustomEvent("dashboard-native-agent-folder-action", {
+				detail: {
+					action: "move-active",
+					provider: item.provider,
+					sessionId: item.id,
+				},
+			}),
+		);
+	};
 
 	return (
 		<li
@@ -523,8 +544,8 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, r reply, o browser, b toggle browser, e rename, m move, F remove folder, p pin, x hide`}
-				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-12 text-left"
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, . actions, r reply, o browser, b toggle browser, e rename, m move, F remove folder, p pin, x hide`}
+				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-16 text-left"
 			>
 				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
 					<span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
@@ -565,10 +586,77 @@ function SessionRow({
 			</button>
 			<div
 				className={cn(
-					"absolute right-1 top-1 flex w-11 shrink-0 items-start justify-end gap-0.5 rounded-md bg-background/90 p-0.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100",
-					item.sidebarPinned && "opacity-100",
+					"absolute right-1 top-1 flex w-16 shrink-0 items-start justify-end gap-0.5 rounded-md bg-background/90 p-0.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100",
+					(item.sidebarPinned || menuOpen) && "opacity-100",
 				)}
 			>
+				<DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="menu"
+							aria-keyshortcuts="."
+							aria-label={`Show actions for ${item.title}`}
+							title="Show actions (.)"
+							className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-70 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
+						>
+							<LuEllipsis className="size-3" />
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent side="right" align="start" className="w-56">
+						<DropdownMenuItem onSelect={() => onOpen(item)}>
+							Open
+							<DropdownMenuShortcut>Enter</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={() => onSessionAction(item, "focus-composer")}
+						>
+							Reply
+							<DropdownMenuShortcut>r</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onSelect={() => onSessionAction(item, "open-browser")}
+						>
+							Open browser view
+							<DropdownMenuShortcut>o</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem
+							onSelect={() => onSessionAction(item, "toggle-browser")}
+						>
+							Toggle native/browser
+							<DropdownMenuShortcut>b</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onSelect={() => onSessionAction(item, "rename")}>
+							Rename
+							<DropdownMenuShortcut>e</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={moveToLastFolder}>
+							Move to last folder
+							<DropdownMenuShortcut>m</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => onMoveToFolder(item, null)}>
+							Remove from folder
+							<DropdownMenuShortcut>F</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onSelect={() => onPin(item, item.sidebarPinned !== true)}
+						>
+							{item.sidebarPinned ? "Unpin" : "Pin"}
+							<DropdownMenuShortcut>p</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => onSidebarVisible(item, false)}>
+							Move to overview
+							<DropdownMenuShortcut>a/x</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => onCreate(item.provider)}>
+							Create new {nativeAgentConversationLabel(item.provider)}
+							<DropdownMenuShortcut>n</DropdownMenuShortcut>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 				<Tooltip delayDuration={250}>
 					<TooltipTrigger asChild>
 						<button
@@ -675,17 +763,7 @@ function SessionRow({
 				aria-keyshortcuts="m"
 				aria-label={`Move ${item.title} to last native folder`}
 				title="Move to last folder (m)"
-				onClick={() => {
-					window.dispatchEvent(
-						new CustomEvent("dashboard-native-agent-folder-action", {
-							detail: {
-								action: "move-active",
-								provider: item.provider,
-								sessionId: item.id,
-							},
-						}),
-					);
-				}}
+				onClick={moveToLastFolder}
 				className="sr-only"
 			/>
 			<button

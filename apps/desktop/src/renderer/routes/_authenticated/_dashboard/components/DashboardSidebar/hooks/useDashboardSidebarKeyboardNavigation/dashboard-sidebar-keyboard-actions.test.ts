@@ -33,6 +33,7 @@ function makeVisible(element: HTMLElement): void {
 describe("dashboardSidebarKeyboardActionFromKey", () => {
 	const cases: Array<[string, DashboardSidebarKeyboardAction]> = [
 		["n", "create"],
+		[".", "menu"],
 		["p", "pin"],
 		["r", "reply"],
 		["o", "open-browser"],
@@ -63,6 +64,9 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 		);
 		expect(dashboardSidebarKeyboardActionSelector("delete")).toBe(
 			'[data-dashboard-sidebar-action="delete"]',
+		);
+		expect(dashboardSidebarKeyboardActionSelector("menu")).toBe(
+			'[data-dashboard-sidebar-action="menu"]',
 		);
 	});
 });
@@ -144,7 +148,7 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		for (const key of ["c", "d", "j", "k", "n", "p"]) {
+		for (const key of [".", "c", "d", "j", "k", "n", "p"]) {
 			expect(
 				dashboardSidebarTypeaheadSeedFromKey({
 					altKey: false,
