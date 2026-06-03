@@ -1,10 +1,11 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import {
 	type DashboardGlobalKeyboardAction,
 	handleDashboardGlobalKeyboardAction,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import { dispatchDashboardKeyboardChainReset } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { CommandContextProvider } from "./core/ContextProvider";
 import { useFrameStackStore } from "./core/frames";
 import { registerAllModules } from "./modules";
@@ -34,10 +35,14 @@ export function CommandPaletteHost({ children }: { children?: ReactNode }) {
 
 function CommandPaletteTrigger() {
 	const openRoot = useFrameStackStore((s) => s.openRoot);
-	useHotkey("OPEN_COMMAND_PALETTE", () => openRoot());
-	useHotkey("OPEN_CONTROL_PLANE", () => openRoot());
+	const openControlPlane = useCallback(() => {
+		dispatchDashboardKeyboardChainReset("control-plane");
+		openRoot();
+	}, [openRoot]);
+	useHotkey("OPEN_COMMAND_PALETTE", openControlPlane);
+	useHotkey("OPEN_CONTROL_PLANE", openControlPlane);
 	electronTrpc.browser.onOpenControlPlane.useSubscription(undefined, {
-		onData: () => openRoot(),
+		onData: openControlPlane,
 	});
 	return null;
 }
@@ -45,6 +50,7 @@ function CommandPaletteTrigger() {
 function GlobalKeyboardActionTrigger() {
 	electronTrpc.browser.onGlobalKeyboardAction.useSubscription(undefined, {
 		onData: ({ action }) => {
+			dispatchDashboardKeyboardChainReset("global-keyboard-action");
 			handleDashboardGlobalKeyboardAction(
 				action as DashboardGlobalKeyboardAction,
 			);

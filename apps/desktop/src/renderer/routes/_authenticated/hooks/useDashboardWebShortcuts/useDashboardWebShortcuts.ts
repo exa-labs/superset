@@ -6,6 +6,7 @@ import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
 	dashboardVimGlobalActionFromKey,
@@ -186,6 +187,11 @@ export function useDashboardWebShortcuts() {
 		}, VIM_PREFIX_TIMEOUT_MS);
 	}, []);
 
+	const clearPendingKeyboardChains = useCallback(() => {
+		clearPendingNativeProvider();
+		updatePendingVimPrefix(null);
+	}, [clearPendingNativeProvider, updatePendingVimPrefix]);
+
 	const openWebPage = useCallback(
 		(index: number) => {
 			const page = DASHBOARD_WEB_PAGES[index];
@@ -303,12 +309,12 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 			if (shortcut === "OPEN_CONTROL_PLANE") {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				useFrameStackStore.getState().openRoot();
 				return;
 			}
 			if (shortcut === "FOCUS_DASHBOARD_SHELL") {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 				return;
 			}
@@ -329,17 +335,17 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 			if (shortcut === "OPEN_CHROME") {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				openChrome();
 				return;
 			}
 			if (shortcut === "OPEN_WORKSPACES") {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				openWorkspaces();
 				return;
 			}
 			if (shortcut === "TOGGLE_DASHBOARD_SIDEBAR") {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				useWorkspaceSidebarStore.getState().toggleOpen();
 				return;
 			}
@@ -362,14 +368,14 @@ export function useDashboardWebShortcuts() {
 
 			const capyIndex = CAPY_INDEX_SHORTCUTS.indexOf(shortcut);
 			if (capyIndex !== -1) {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				openNativeProviderAtIndex("capy", capyIndex);
 				return;
 			}
 
 			const devinIndex = DEVIN_INDEX_SHORTCUTS.indexOf(shortcut);
 			if (devinIndex !== -1) {
-				clearPendingNativeProvider();
+				clearPendingKeyboardChains();
 				openNativeProviderAtIndex("devin", devinIndex);
 				return;
 			}
@@ -378,7 +384,7 @@ export function useDashboardWebShortcuts() {
 			if (pageIndex !== -1) openIndexedTarget(pageIndex);
 		},
 		[
-			clearPendingNativeProvider,
+			clearPendingKeyboardChains,
 			createNativeProviderSession,
 			openIndexedTarget,
 			openChrome,
@@ -402,6 +408,23 @@ export function useDashboardWebShortcuts() {
 	electronTrpc.browser.onDashboardWebShortcut.useSubscription(undefined, {
 		onData: ({ shortcut }) => runShortcut(shortcut),
 	});
+
+	useEffect(() => {
+		let lastRootOpenRequestId = useFrameStackStore.getState().rootOpenRequestId;
+		const unsubscribeFromRootOpen = useFrameStackStore.subscribe((state) => {
+			if (state.rootOpenRequestId === lastRootOpenRequestId) return;
+			lastRootOpenRequestId = state.rootOpenRequestId;
+			clearPendingKeyboardChains();
+		});
+		const unsubscribeFromChainReset = addDashboardKeyboardChainResetListener(
+			clearPendingKeyboardChains,
+		);
+
+		return () => {
+			unsubscribeFromRootOpen();
+			unsubscribeFromChainReset();
+		};
+	}, [clearPendingKeyboardChains]);
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
