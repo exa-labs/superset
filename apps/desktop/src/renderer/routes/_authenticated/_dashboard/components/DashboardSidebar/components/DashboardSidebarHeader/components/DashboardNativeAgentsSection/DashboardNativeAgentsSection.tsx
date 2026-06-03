@@ -69,6 +69,7 @@ import {
 import {
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
+	nativeAgentSidebarNavigationDeltaFromKey,
 	nativeAgentSidebarVimActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
@@ -1536,7 +1537,6 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "p" &&
 				vimKey !== "u" &&
 				vimKey !== "x" &&
-				vimKey !== "f" &&
 				vimKey !== "F"
 			) {
 				return;
@@ -1712,8 +1712,13 @@ export function DashboardNativeAgentsSection({
 				);
 				return;
 			}
+			const navigationDelta = nativeAgentSidebarNavigationDeltaFromKey({
+				eventKey: event.key,
+				vimKey,
+			});
+			if (navigationDelta === 0) return;
 			const nextIndex =
-				event.key === "ArrowDown" || vimKey === "j"
+				navigationDelta > 0
 					? Math.min(rows.length - 1, currentIndex + 1)
 					: Math.max(0, currentIndex - 1);
 			const row = rows[nextIndex];

@@ -115,6 +115,15 @@ export function nativeAgentUnreadVimActionFromKey(
 	return "none";
 }
 
+export function nativeAgentSidebarNavigationDeltaFromKey(input: {
+	eventKey: string;
+	vimKey: string | null;
+}): -1 | 0 | 1 {
+	if (input.eventKey === "ArrowDown" || input.vimKey === "j") return 1;
+	if (input.eventKey === "ArrowUp" || input.vimKey === "k") return -1;
+	return 0;
+}
+
 export function nativeAgentSelectedSessionVimActionFromKey(
 	key: string | null,
 ): NativeAgentSelectedSessionVimAction {

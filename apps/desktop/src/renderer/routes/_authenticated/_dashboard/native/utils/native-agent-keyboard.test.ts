@@ -7,6 +7,7 @@ import {
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
+	nativeAgentSidebarNavigationDeltaFromKey,
 	nativeAgentSidebarVimActionFromKey,
 	nativeAgentSplitPaneActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
@@ -100,6 +101,42 @@ describe("native agent keyboard helpers", () => {
 			handled: false,
 			nextLastGAt: 1000,
 		});
+	});
+
+	it("only moves native sidebar rows for arrow and j/k navigation keys", () => {
+		expect(
+			nativeAgentSidebarNavigationDeltaFromKey({
+				eventKey: "ArrowDown",
+				vimKey: null,
+			}),
+		).toBe(1);
+		expect(
+			nativeAgentSidebarNavigationDeltaFromKey({
+				eventKey: "ArrowUp",
+				vimKey: null,
+			}),
+		).toBe(-1);
+		expect(
+			nativeAgentSidebarNavigationDeltaFromKey({
+				eventKey: "j",
+				vimKey: "j",
+			}),
+		).toBe(1);
+		expect(
+			nativeAgentSidebarNavigationDeltaFromKey({
+				eventKey: "k",
+				vimKey: "k",
+			}),
+		).toBe(-1);
+
+		for (const key of ["f", "c", "d", "h", "l", "F"]) {
+			expect(
+				nativeAgentSidebarNavigationDeltaFromKey({
+					eventKey: key,
+					vimKey: key,
+				}),
+			).toBe(0);
+		}
 	});
 
 	it("maps selected-session vim actions", () => {
