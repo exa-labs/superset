@@ -5,8 +5,10 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar roving, activation, expansion, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"↑↓/jk",
+			"/",
 			"Enter",
 			"Space",
+			"p/x",
 			".",
 		]);
 	});
@@ -14,7 +16,9 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces global and Vim action hints from browser focus", () => {
 		expect(dashboardFocusIndicatorHints("browser")).toEqual([
 			"⌥K",
+			"?",
 			"f",
+			"⌥G",
 			"h/l",
 			"n/r",
 		]);
@@ -24,8 +28,17 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"r",
 			"o/b",
-			"p",
-			"x",
+			"m/e",
+			"p/x",
+			"?",
+		]);
+	});
+
+	it("surfaces command palette typing and dismissal hints", () => {
+		expect(dashboardFocusIndicatorHints("command-palette")).toEqual([
+			"type",
+			"Enter",
+			"Esc",
 		]);
 	});
 
