@@ -52,7 +52,7 @@ const NATIVE_AGENT_OVERVIEW_CARD_KEYBOARD_HINTS = [
 	{ key: "p", title: "Pin or unpin" },
 	{ key: "m", title: "Move to folder" },
 	{ key: "e", title: "Rename" },
-	{ key: "x", title: "Archive or hide" },
+	{ key: "a or x", title: "Archive or hide" },
 ] satisfies NativeAgentKeyboardHint[];
 
 export function nativeAgentProviderConfig(

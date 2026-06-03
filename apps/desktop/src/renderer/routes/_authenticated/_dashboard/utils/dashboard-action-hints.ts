@@ -145,7 +145,7 @@ const SIDEBAR_ACTION_HINT_LABELS: Record<
 	string,
 	{ displayLabel: string; label: string }
 > = {
-	archive: { displayLabel: "x", label: "x" },
+	archive: { displayLabel: "a/x", label: "a" },
 	color: { displayLabel: "c", label: "c" },
 	create: { displayLabel: "n", label: "n" },
 	"create-folder": { displayLabel: "N", label: "N" },

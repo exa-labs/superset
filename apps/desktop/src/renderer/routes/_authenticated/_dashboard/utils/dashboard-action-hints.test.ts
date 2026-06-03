@@ -165,14 +165,14 @@ describe("dashboard action hints", () => {
 			".",
 			"p",
 			"N",
-			"x",
+			"a",
 		]);
 		expect(targets.map((target) => target.displayLabel)).toEqual([
 			"↵",
 			".",
 			"p",
 			"N",
-			"x",
+			"a/x",
 		]);
 		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
 			"Open",

@@ -2264,7 +2264,7 @@ export function NativeAgentChatView({
 					section: "session",
 				},
 				{
-					key: "x",
+					key: nativeAgentShortcutDisplayLabel("a", "x"),
 					label: "Move to overview",
 					onSelect: () => void handleSetSidebarVisible(selectedItem, false),
 					section: "session",
@@ -2970,7 +2970,7 @@ export function NativeAgentChatView({
 												>
 													<LuKeyRound className="size-3 shrink-0" />
 													<span className="truncate">
-														Enter opens, p pins, x hides
+														Enter opens, p pins, a/x hides
 													</span>
 												</div>
 											</button>

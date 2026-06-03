@@ -16,6 +16,7 @@ describe("native agent shortcut formatting", () => {
 	it("uses readable alternatives instead of slash-joined shortcut strings", () => {
 		expect(nativeAgentShortcutDisplayLabel("⌥B", "b")).toBe("⌥B or b");
 		expect(nativeAgentShortcutDisplayLabel("Unassigned", "s")).toBe("s");
+		expect(nativeAgentShortcutDisplayLabel("a", "x")).toBe("a or x");
 	});
 
 	it("expands modifier glyphs in tooltip copy", () => {

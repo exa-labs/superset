@@ -580,7 +580,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Keep the current session in the sidebar or let it hide",
 				},
 				{
-					keys: ["x"],
+					keys: ["a", "x"],
 					label: "Archive or hide",
 					description: "Move the current session away from the active sidebar",
 				},
