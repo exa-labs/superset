@@ -21,5 +21,8 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"SHOW_DASHBOARD_KEYBOARD_HELP",
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (code === "keyw") return "OPEN_WORKSPACES"',
+		);
 	});
 });

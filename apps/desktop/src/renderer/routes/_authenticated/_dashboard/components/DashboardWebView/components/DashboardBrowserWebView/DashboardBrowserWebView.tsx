@@ -166,6 +166,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (code === "keyc") return "OPEN_CAPY";
 		if (code === "keyd") return "OPEN_DEVIN";
 		if (code === "keyg") return "OPEN_CHROME";
+		if (code === "keyw") return "OPEN_WORKSPACES";
 		if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
 		if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
 		return null;
