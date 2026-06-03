@@ -121,12 +121,18 @@ function DashboardRootTerminal({
 			},
 		);
 
-		void electronTrpcClient.terminal.createRootSession.mutate({
-			terminalId,
-			command: dashboardQuickTerminalCommand(target),
-			cols: runtime.terminal.cols,
-			rows: runtime.terminal.rows,
-		});
+		void electronTrpcClient.terminal.createRootSession
+			.mutate({
+				terminalId,
+				cols: runtime.terminal.cols,
+				rows: runtime.terminal.rows,
+			})
+			.then(() =>
+				electronTrpcClient.terminal.write.mutate({
+					paneId: terminalId,
+					data: `${dashboardQuickTerminalCommand(target)}\r`,
+				}),
+			);
 
 		return () => {
 			for (const timer of refitTimers) window.clearTimeout(timer);
