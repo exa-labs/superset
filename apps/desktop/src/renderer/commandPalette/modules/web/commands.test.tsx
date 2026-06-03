@@ -254,11 +254,17 @@ describe("web command provider", () => {
 		expect(commandIds.has("web.current.newClaude")).toBe(true);
 		expect(commandIds.has("web.current.toggleSplit")).toBe(true);
 		expect(commandIds.has("web.current.swapSplit")).toBe(true);
+		expect(commandIds.has("web.current.narrowActiveSplit")).toBe(true);
+		expect(commandIds.has("web.current.widenActiveSplit")).toBe(true);
+		expect(commandIds.has("web.current.equalizeSplit")).toBe(true);
 		expect(commandIds.has("web.current.close")).toBe(true);
 		expect(shortcutById.get("web.current.reload")).toBe("r");
 		expect(shortcutById.get("web.current.newFromCurrent")).toBe("n");
 		expect(shortcutById.get("web.current.toggleSplit")).toBe("s");
 		expect(shortcutById.get("web.current.swapSplit")).toBe("w");
+		expect(shortcutById.get("web.current.narrowActiveSplit")).toBe("[");
+		expect(shortcutById.get("web.current.widenActiveSplit")).toBe("]");
+		expect(shortcutById.get("web.current.equalizeSplit")).toBe("=");
 		expect(shortcutById.get("web.current.close")).toBe("x");
 		expect(reload?.when?.(webContext)).toBe(true);
 		expect(reload?.when?.(nativeContext)).toBe(false);

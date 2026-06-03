@@ -1,4 +1,5 @@
 import { cn } from "@superset/ui/utils";
+import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { recordDashboardBrowserPaneEvent } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-diagnostics";
@@ -68,6 +69,7 @@ interface DashboardBrowserWebViewProps {
 	isActive: boolean;
 	isViewActive: boolean;
 	placement: DashboardBrowserWebViewPlacement;
+	splitRatioPercent: number;
 	onStateChange: (
 		tabId: string,
 		state: Partial<DashboardBrowserWebViewState>,
@@ -91,6 +93,22 @@ function retentionStateForPlacement({
 	if (isActive) return "active";
 	if (placement === "left" || placement === "right") return "split";
 	return "warm";
+}
+
+function placementStyleForSplitRatio({
+	placement,
+	splitRatioPercent,
+}: {
+	placement: DashboardBrowserWebViewPlacement;
+	splitRatioPercent: number;
+}): CSSProperties | undefined {
+	if (placement === "left") {
+		return { right: `${100 - splitRatioPercent}%` };
+	}
+	if (placement === "right") {
+		return { left: `${splitRatioPercent}%` };
+	}
+	return undefined;
 }
 
 async function captureWebviewFaviconDataUrl(
@@ -187,6 +205,7 @@ export function DashboardBrowserWebView({
 	isActive,
 	isViewActive,
 	placement,
+	splitRatioPercent,
 	onStateChange,
 	onFaviconCaptured,
 	onReadyChange,
@@ -213,6 +232,10 @@ export function DashboardBrowserWebView({
 			isViewActive,
 			placement,
 		});
+	const placementStyle = placementStyleForSplitRatio({
+		placement,
+		splitRatioPercent,
+	});
 
 	useEffect(() => {
 		srcRef.current = src;
@@ -572,6 +595,7 @@ export function DashboardBrowserWebView({
 				placement === "hidden" ? "false" : "true"
 			}
 			data-dashboard-browser-tab-placement={placement}
+			style={placementStyle}
 			className={cn(
 				"absolute flex min-h-0 min-w-0",
 				placement === "full" && "inset-0",

@@ -87,6 +87,12 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Swap Chrome split focus")).toEqual(
 			expect.objectContaining({ keys: ["w"] }),
 		);
+		expect(entryByLabel.get("Resize Chrome split")).toEqual(
+			expect.objectContaining({ keys: ["[", "]"] }),
+		);
+		expect(entryByLabel.get("Equalize Chrome split")).toEqual(
+			expect.objectContaining({ keys: ["="] }),
+		);
 		expect(entryByLabel.get("Close Chrome tab")).toEqual(
 			expect.objectContaining({ keys: ["x"] }),
 		);

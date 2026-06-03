@@ -99,13 +99,16 @@ function dispatchNativeFolderAction(
 function dispatchBrowserAction(
 	action:
 		| "close-current-tab"
+		| "equalize-split"
+		| "narrow-active-split"
 		| "new-chatgpt-tab"
 		| "new-claude-tab"
 		| "new-current-url-tab"
 		| "new-google-tab"
 		| "reload"
 		| "swap-split"
-		| "toggle-split",
+		| "toggle-split"
+		| "widen-active-split",
 ) {
 	window.dispatchEvent(
 		new CustomEvent("dashboard-browser-current-action", {
@@ -323,6 +326,36 @@ export const webProvider: CommandProvider = {
 				shortcutLabel: "w",
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("swap-split"),
+			},
+			{
+				id: "web.current.narrowActiveSplit",
+				title: "Narrow active Chrome pane",
+				section: "web",
+				description: "Give the active embedded Chrome split pane less width",
+				keywords: ["chrome", "browser", "split", "narrow", "resize", "pane"],
+				shortcutLabel: "[",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("narrow-active-split"),
+			},
+			{
+				id: "web.current.widenActiveSplit",
+				title: "Widen active Chrome pane",
+				section: "web",
+				description: "Give the active embedded Chrome split pane more width",
+				keywords: ["chrome", "browser", "split", "widen", "resize", "pane"],
+				shortcutLabel: "]",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("widen-active-split"),
+			},
+			{
+				id: "web.current.equalizeSplit",
+				title: "Equalize Chrome split panes",
+				section: "web",
+				description: "Reset embedded Chrome split panes to equal widths",
+				keywords: ["chrome", "browser", "split", "equal", "resize", "pane"],
+				shortcutLabel: "=",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("equalize-split"),
 			},
 			{
 				id: "web.current.close",

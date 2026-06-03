@@ -47,6 +47,11 @@ const DEFAULT_BROWSER_TAB_ID = "default";
 const BROWSER_TABS_STORAGE_PREFIX = "dashboard-browser-tabs-v1:";
 const ACTIVE_BROWSER_TAB_STORAGE_PREFIX = "dashboard-browser-active-tab-v1:";
 const SPLIT_BROWSER_TAB_STORAGE_PREFIX = "dashboard-browser-split-tab-v1:";
+const SPLIT_BROWSER_RATIO_STORAGE_PREFIX = "dashboard-browser-split-ratio-v1:";
+const DEFAULT_SPLIT_BROWSER_RATIO = 50;
+const MIN_SPLIT_BROWSER_RATIO = 30;
+const MAX_SPLIT_BROWSER_RATIO = 70;
+const SPLIT_BROWSER_RATIO_STEP = 5;
 
 const COMMON_NEW_TAB_DESTINATIONS = [
 	{ label: "Google", url: "https://www.google.com/", title: "Google" },
@@ -56,13 +61,16 @@ const COMMON_NEW_TAB_DESTINATIONS = [
 
 type DashboardBrowserCurrentAction =
 	| "close-current-tab"
+	| "equalize-split"
+	| "narrow-active-split"
 	| "new-chatgpt-tab"
 	| "new-claude-tab"
 	| "new-current-url-tab"
 	| "new-google-tab"
 	| "reload"
 	| "swap-split"
-	| "toggle-split";
+	| "toggle-split"
+	| "widen-active-split";
 
 interface DashboardBrowserTab extends DashboardBrowserWebViewState {
 	id: string;
@@ -137,6 +145,36 @@ function activeBrowserTabStorageKey(id: string): string {
 
 function splitBrowserTabStorageKey(id: string): string {
 	return `${SPLIT_BROWSER_TAB_STORAGE_PREFIX}${id}`;
+}
+
+function splitBrowserRatioStorageKey(id: string): string {
+	return `${SPLIT_BROWSER_RATIO_STORAGE_PREFIX}${id}`;
+}
+
+function clampSplitBrowserRatio(value: number): number {
+	if (!Number.isFinite(value)) return DEFAULT_SPLIT_BROWSER_RATIO;
+	return Math.min(
+		MAX_SPLIT_BROWSER_RATIO,
+		Math.max(MIN_SPLIT_BROWSER_RATIO, value),
+	);
+}
+
+function readStoredSplitBrowserRatio(id: string): number {
+	if (typeof localStorage === "undefined") return DEFAULT_SPLIT_BROWSER_RATIO;
+	const storedRatio = Number.parseFloat(
+		localStorage.getItem(splitBrowserRatioStorageKey(id)) ?? "",
+	);
+	return clampSplitBrowserRatio(storedRatio);
+}
+
+function writeStoredSplitBrowserRatio(id: string, ratio: number) {
+	if (typeof localStorage === "undefined") return;
+	try {
+		localStorage.setItem(
+			splitBrowserRatioStorageKey(id),
+			String(clampSplitBrowserRatio(ratio)),
+		);
+	} catch {}
 }
 
 function normalizeStoredBrowserTab(
@@ -311,6 +349,9 @@ export function DashboardWebView({
 	const [splitBrowserTabId, setSplitBrowserTabId] = useState<string | null>(
 		() => restoredBrowserState.splitBrowserTabId,
 	);
+	const [splitBrowserRatio, setSplitBrowserRatio] = useState(() =>
+		readStoredSplitBrowserRatio(id),
+	);
 	const [retainedBrowserTabEntries, setRetainedBrowserTabEntries] = useState<
 		DashboardBrowserTabRetentionEntry[]
 	>(() =>
@@ -483,6 +524,10 @@ export function DashboardWebView({
 			splitBrowserTabId: splitBrowserTab?.id ?? null,
 		});
 	}, [activeBrowserTabId, browserTabs, id, splitBrowserTab]);
+
+	useEffect(() => {
+		writeStoredSplitBrowserRatio(id, splitBrowserRatio);
+	}, [id, splitBrowserRatio]);
 
 	useEffect(() => {
 		onFaviconCapturedRef.current = onFaviconCaptured;
@@ -682,6 +727,16 @@ export function DashboardWebView({
 		activateBrowserTab(splitTabId);
 	}, [activateBrowserTab]);
 
+	const resizeActiveSplitPane = useCallback((delta: number) => {
+		if (!splitBrowserTabIdRef.current) return;
+		setSplitBrowserRatio((current) => clampSplitBrowserRatio(current + delta));
+	}, []);
+
+	const equalizeSplitPanes = useCallback(() => {
+		if (!splitBrowserTabIdRef.current) return;
+		setSplitBrowserRatio(DEFAULT_SPLIT_BROWSER_RATIO);
+	}, []);
+
 	const getActiveWebview = useCallback(
 		() => webviewsRef.current.get(activeBrowserTabIdRef.current) ?? null,
 		[],
@@ -767,6 +822,18 @@ export function DashboardWebView({
 				swapSplitFocus();
 				return;
 			}
+			if (action === "narrow-active-split") {
+				resizeActiveSplitPane(-SPLIT_BROWSER_RATIO_STEP);
+				return;
+			}
+			if (action === "widen-active-split") {
+				resizeActiveSplitPane(SPLIT_BROWSER_RATIO_STEP);
+				return;
+			}
+			if (action === "equalize-split") {
+				equalizeSplitPanes();
+				return;
+			}
 			if (action === "close-current-tab") {
 				closeBrowserTab(activeBrowserTabIdRef.current);
 				return;
@@ -798,8 +865,10 @@ export function DashboardWebView({
 		closeBrowserTab,
 		createBrowserTab,
 		createTabFromCurrentUrl,
+		equalizeSplitPanes,
 		isActive,
 		reload,
+		resizeActiveSplitPane,
 		swapSplitFocus,
 		toggleSplitView,
 	]);
@@ -835,6 +904,21 @@ export function DashboardWebView({
 				return;
 			}
 
+			if (action === "narrow-active-split") {
+				resizeActiveSplitPane(-SPLIT_BROWSER_RATIO_STEP);
+				return;
+			}
+
+			if (action === "widen-active-split") {
+				resizeActiveSplitPane(SPLIT_BROWSER_RATIO_STEP);
+				return;
+			}
+
+			if (action === "equalize-split") {
+				equalizeSplitPanes();
+				return;
+			}
+
 			if (action === "close-tab") {
 				closeBrowserTab(activeBrowserTabId);
 				return;
@@ -860,8 +944,10 @@ export function DashboardWebView({
 		browserTabIds,
 		closeBrowserTab,
 		createTabFromCurrentUrl,
+		equalizeSplitPanes,
 		isActive,
 		reload,
+		resizeActiveSplitPane,
 		swapSplitFocus,
 		toggleSplitView,
 	]);
@@ -1077,6 +1163,7 @@ export function DashboardWebView({
 							isActive={isActive && tab.id === activeBrowserTabId}
 							isViewActive={isActive}
 							placement={placement}
+							splitRatioPercent={splitBrowserRatio}
 							onStateChange={handleStateChange}
 							onFaviconCaptured={handleFaviconCaptured}
 							onReadyChange={handleReadyChange}

@@ -1,12 +1,15 @@
 export type DashboardBrowserVimAction =
 	| "close-tab"
+	| "equalize-split"
 	| "new-tab"
+	| "narrow-active-split"
 	| "next-tab"
 	| "none"
 	| "previous-tab"
 	| "reload"
 	| "swap-split"
-	| "toggle-split";
+	| "toggle-split"
+	| "widen-active-split";
 
 export function dashboardBrowserVimActionFromKey(
 	key: string,
@@ -15,6 +18,9 @@ export function dashboardBrowserVimActionFromKey(
 	if (key === "r") return "reload";
 	if (key === "s") return "toggle-split";
 	if (key === "w") return "swap-split";
+	if (key === "[") return "narrow-active-split";
+	if (key === "]") return "widen-active-split";
+	if (key === "=") return "equalize-split";
 	if (key === "x") return "close-tab";
 	if (key === "h") return "previous-tab";
 	if (key === "l") return "next-tab";
