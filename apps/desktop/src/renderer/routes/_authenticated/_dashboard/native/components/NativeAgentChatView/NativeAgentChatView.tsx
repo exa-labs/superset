@@ -120,6 +120,10 @@ import {
 	selectNativeAgentOverviewItems,
 } from "../../utils/native-agent-overview";
 import {
+	nativeAgentShortcutDisplayLabel,
+	nativeAgentShortcutTitleSuffix,
+} from "../../utils/native-agent-shortcuts";
+import {
 	formatNativeAgentTimestamp,
 	isNativeAgentLiveStatus,
 	type NativeAgentProvider,
@@ -259,18 +263,6 @@ const markdownComponents = {
 	},
 } satisfies ReactMarkdownComponents;
 
-function shortcutSequence(...keys: Array<string | null | undefined>): string {
-	const seen = new Set<string>();
-	return keys
-		.filter((key): key is string => Boolean(key) && key !== "Unassigned")
-		.filter((key) => {
-			if (seen.has(key)) return false;
-			seen.add(key);
-			return true;
-		})
-		.join(" / ");
-}
-
 function NativeAgentHeaderViewSwitcher({
 	nativeBrowserShortcut,
 	nativeSplitShortcut,
@@ -286,28 +278,28 @@ function NativeAgentHeaderViewSwitcher({
 		icon: ReactNode;
 		key: NativeViewMode;
 		label: string;
-		shortcut: string;
+		shortcutTitle: string;
 		title: string;
 	}> = [
 		{
 			icon: <LuMessageSquare className="size-3.5 shrink-0" />,
 			key: "native",
 			label: "Native",
-			shortcut: "",
+			shortcutTitle: "",
 			title: "Native chat",
 		},
 		{
 			icon: <LuGlobe className="size-3.5 shrink-0" />,
 			key: "browser",
 			label: "Browser",
-			shortcut: shortcutSequence(nativeBrowserShortcut, "b"),
+			shortcutTitle: nativeAgentShortcutTitleSuffix(nativeBrowserShortcut, "b"),
 			title: "Browser view",
 		},
 		{
 			icon: <LuColumns2 className="size-3.5 shrink-0" />,
 			key: "split",
 			label: "Split",
-			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
+			shortcutTitle: nativeAgentShortcutTitleSuffix(nativeSplitShortcut, "s"),
 			title: "Split native chat and browser",
 		},
 	];
@@ -319,14 +311,15 @@ function NativeAgentHeaderViewSwitcher({
 		>
 			{options.map((option) => {
 				const selected = option.key === viewMode;
-				const shortcutSuffix = option.shortcut ? ` (${option.shortcut})` : "";
 				return (
 					<button
 						key={option.key}
 						type="button"
 						aria-pressed={selected}
 						onClick={() => onSelectViewMode(option.key)}
-						title={`${option.title}${shortcutSuffix}`}
+						title={[option.title, option.shortcutTitle]
+							.filter(Boolean)
+							.join(". ")}
 						className={cn(
 							"flex h-7 min-w-7 items-center justify-center gap-1.5 rounded px-1.5 text-xs font-medium transition-colors xl:px-2",
 							selected
@@ -2289,7 +2282,10 @@ export function NativeAgentChatView({
 				...(selectedItem.url
 					? [
 							{
-								key: shortcutSequence(nativeBrowserShortcut, "b"),
+								key: nativeAgentShortcutDisplayLabel(
+									nativeBrowserShortcut,
+									"b",
+								),
 								label: "Toggle native/browser",
 								onSelect: () =>
 									handleSelectViewMode(
@@ -2298,7 +2294,7 @@ export function NativeAgentChatView({
 								section: "view" as const,
 							},
 							{
-								key: shortcutSequence(nativeSplitShortcut, "s"),
+								key: nativeAgentShortcutDisplayLabel(nativeSplitShortcut, "s"),
 								label: "Toggle split",
 								onSelect: () =>
 									handleSelectViewMode(
