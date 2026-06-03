@@ -270,6 +270,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Focus the composer using a Vim-style insert key",
 				},
 				{
+					keys: ["g", "g", "G", "Home", "End"],
+					label: "Jump native overview",
+					description:
+						"Jump to the first or last visible Capy/Devin overview card",
+				},
+				{
 					keys: ["u"],
 					label: "Open unread reply",
 					description: "Jump to the next unread Capy or Devin response",

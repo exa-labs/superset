@@ -38,6 +38,7 @@ export type NativeAgentFolderVimAction =
 
 export type NativeAgentViewMode = "browser" | "native" | "split";
 export type NativeAgentSidebarJumpAction = "bottom" | "none" | "top";
+export type NativeAgentOverviewJumpAction = "bottom" | "none" | "top";
 export type NativeAgentCreateVimAction =
 	| "create-folder"
 	| "create-session"
@@ -125,6 +126,25 @@ export function nativeAgentSidebarJumpFromKey(input: {
 		return { action: "top", handled: true, nextLastGAt: 0 };
 	}
 	return { action: "none", handled: true, nextLastGAt: input.now };
+}
+
+export function nativeAgentOverviewJumpFromKey(input: {
+	key: string | null;
+	lastGAt: number;
+	now: number;
+	thresholdMs?: number;
+}): {
+	action: NativeAgentOverviewJumpAction;
+	handled: boolean;
+	nextLastGAt: number;
+} {
+	if (input.key === "home") {
+		return { action: "top", handled: true, nextLastGAt: 0 };
+	}
+	if (input.key === "end") {
+		return { action: "bottom", handled: true, nextLastGAt: 0 };
+	}
+	return nativeAgentSidebarJumpFromKey(input);
 }
 
 export function nativeAgentUnreadVimActionFromKey(
@@ -231,6 +251,8 @@ export function nativeAgentPlainNavigationKey(
 	if (event.key === "ArrowRight") return "l";
 	if (event.key === "Escape") return "escape";
 	if (event.key === "Enter") return "enter";
+	if (event.key === "Home") return "home";
+	if (event.key === "End") return "end";
 	return null;
 }
 

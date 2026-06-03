@@ -58,6 +58,7 @@ import {
 import {
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
+	nativeAgentOverviewJumpFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
@@ -642,6 +643,7 @@ export function NativeAgentChatView({
 	const overviewSearchRef = useRef<HTMLInputElement | null>(null);
 	const renameInputRef = useRef<HTMLInputElement | null>(null);
 	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
+	const overviewLastGAtRef = useRef(0);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -1520,6 +1522,12 @@ export function NativeAgentChatView({
 			rows[nextIndex]?.focus();
 		};
 
+		const moveOverviewFocusToBoundary = (action: "bottom" | "top") => {
+			const { rows } = currentOverviewItem();
+			const nextRow = action === "top" ? rows[0] : rows[rows.length - 1];
+			nextRow?.focus();
+		};
+
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (activeDashboardNativeAgentSidebarRow()) return;
 
@@ -1558,6 +1566,20 @@ export function NativeAgentChatView({
 						detail: { provider },
 					}),
 				);
+				return;
+			}
+
+			const overviewJump = nativeAgentOverviewJumpFromKey({
+				key,
+				lastGAt: overviewLastGAtRef.current,
+				now: Date.now(),
+			});
+			if (!selectedItem && overviewJump.handled) {
+				consumeNativeAgentKeyboardEvent(event);
+				overviewLastGAtRef.current = overviewJump.nextLastGAt;
+				if (overviewJump.action !== "none") {
+					moveOverviewFocusToBoundary(overviewJump.action);
+				}
 				return;
 			}
 

@@ -5,6 +5,7 @@ import {
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
 	nativeAgentOverviewFocusDeltaFromKey,
+	nativeAgentOverviewJumpFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
@@ -109,6 +110,53 @@ describe("native agent keyboard helpers", () => {
 			action: "none",
 			handled: false,
 			nextLastGAt: 1000,
+		});
+	});
+
+	it("maps native overview top and bottom jump keys", () => {
+		expect(
+			nativeAgentOverviewJumpFromKey({
+				key: "home",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "top",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentOverviewJumpFromKey({
+				key: "end",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "bottom",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentOverviewJumpFromKey({
+				key: "g",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "top",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentOverviewJumpFromKey({
+				key: "G",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "bottom",
+			handled: true,
+			nextLastGAt: 0,
 		});
 	});
 
@@ -270,6 +318,10 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "Enter" }))).toBe(
 			"enter",
 		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "Home" }))).toBe(
+			"home",
+		);
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "End" }))).toBe("end");
 		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "x" }))).toBeNull();
 		expect(
 			nativeAgentPlainNavigationKey(
