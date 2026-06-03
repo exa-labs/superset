@@ -27,6 +27,11 @@ const PRIMARY_ROVING_SELECTOR = [
 	"[data-native-agent-session-row-id]",
 ].join(",");
 
+const SIDEBAR_ROVING_SELECTOR = [
+	PRIMARY_ROVING_SELECTOR,
+	INTERACTIVE_SELECTOR,
+].join(",");
+
 function isHTMLElement(value: Element | null): value is HTMLElement {
 	return value instanceof HTMLElement;
 }
@@ -66,6 +71,7 @@ function collectFocusableItems(
 }
 
 function isAuxiliarySidebarAction(element: HTMLElement): boolean {
+	if (element.matches(PRIMARY_ROVING_SELECTOR)) return false;
 	if (element.matches("[data-dashboard-sidebar-action]")) return true;
 	const scope = element.closest<HTMLElement>(
 		"[data-dashboard-sidebar-action-scope]",
@@ -76,9 +82,7 @@ function isAuxiliarySidebarAction(element: HTMLElement): boolean {
 export function getDashboardSidebarFocusableItems(
 	root: HTMLElement,
 ): HTMLElement[] {
-	const primaryItems = collectFocusableItems(root, PRIMARY_ROVING_SELECTOR);
-	if (primaryItems.length > 0) return primaryItems;
-	return collectFocusableItems(root, INTERACTIVE_SELECTOR).filter(
+	return collectFocusableItems(root, SIDEBAR_ROVING_SELECTOR).filter(
 		(element) => !isAuxiliarySidebarAction(element),
 	);
 }

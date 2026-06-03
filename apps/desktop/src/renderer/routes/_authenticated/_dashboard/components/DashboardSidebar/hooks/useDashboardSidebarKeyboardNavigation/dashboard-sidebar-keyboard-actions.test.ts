@@ -165,7 +165,7 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 });
 
 describe("getDashboardSidebarFocusableItems", () => {
-	test("prefers primary sidebar rows over nested hover actions", () => {
+	test("includes primary rows and ordinary controls while skipping nested hover actions", () => {
 		if (typeof document === "undefined") return;
 
 		const root = document.createElement("div");
@@ -210,7 +210,7 @@ describe("getDashboardSidebarFocusableItems", () => {
 
 		expect(
 			getDashboardSidebarFocusableItems(root).map((element) => element.id),
-		).toEqual(["project", "chrome", "session"]);
+		).toEqual(["project", "chrome", "session", "settings"]);
 	});
 
 	test("falls back to normal controls while excluding scoped action buttons", () => {
@@ -238,5 +238,30 @@ describe("getDashboardSidebarFocusableItems", () => {
 		expect(
 			getDashboardSidebarFocusableItems(root).map((element) => element.id),
 		).toEqual(["row", "footer"]);
+	});
+
+	test("keeps primary row buttons inside action scopes but skips their actions", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const rowScope = document.createElement("li");
+		rowScope.dataset.dashboardSidebarActionScope = "";
+
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		session.id = "session";
+		makeVisible(session);
+
+		const pin = document.createElement("button");
+		pin.dataset.dashboardSidebarAction = "pin";
+		pin.id = "pin";
+		makeVisible(pin);
+
+		rowScope.append(session, pin);
+		root.append(rowScope);
+
+		expect(
+			getDashboardSidebarFocusableItems(root).map((element) => element.id),
+		).toEqual(["session"]);
 	});
 });

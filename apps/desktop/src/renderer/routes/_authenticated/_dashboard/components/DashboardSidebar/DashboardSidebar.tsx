@@ -252,6 +252,7 @@ export function DashboardSidebar({
 							"flex h-full min-h-0 flex-col border-r border-border bg-muted/45 dark:bg-muted/35",
 							"[&_button:focus-visible]:outline-none [&_button:focus-visible]:ring-2 [&_button:focus-visible]:ring-primary/70 [&_button:focus-visible]:ring-offset-1 [&_button:focus-visible]:ring-offset-background",
 							"[&_[role=button]:focus-visible]:outline-none [&_[role=button]:focus-visible]:ring-2 [&_[role=button]:focus-visible]:ring-primary/70 [&_[role=button]:focus-visible]:ring-offset-1 [&_[role=button]:focus-visible]:ring-offset-background",
+							"[&_button:focus-visible]:bg-primary/10 [&_button:focus-visible]:text-foreground [&_[role=button]:focus-visible]:bg-primary/10 [&_[role=button]:focus-visible]:text-foreground",
 						)}
 					>
 						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
