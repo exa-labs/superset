@@ -29,6 +29,18 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CAPY")).toBe(true);
 		expect(hotkeyIds.has("OPEN_DEVIN")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
+		expect(entryByLabel.get("Open workspaces in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["g", "w"] }),
+		);
+		expect(entryByLabel.get("Open Capy in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["g", "c"] }),
+		);
+		expect(entryByLabel.get("Open Devin in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["g", "d"] }),
+		);
+		expect(entryByLabel.get("Open Chrome in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["g", "g"] }),
+		);
 		expect(labels.has("Search sidebar")).toBe(true);
 		expect(entryByLabel.get("Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/", "type"] }),

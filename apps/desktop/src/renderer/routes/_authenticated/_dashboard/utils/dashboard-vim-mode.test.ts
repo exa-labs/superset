@@ -100,6 +100,10 @@ describe("dashboard vim mode", () => {
 			pendingPrefix: null,
 			sequence: "g g",
 		});
+		expect(nextDashboardVimSequence("g", "w")).toEqual({
+			pendingPrefix: null,
+			sequence: "g w",
+		});
 		expect(nextDashboardVimSequence("g", "x")).toEqual({
 			pendingPrefix: null,
 			sequence: null,
@@ -117,6 +121,9 @@ describe("dashboard vim mode", () => {
 		expect(dashboardVimNavigationActionFromSequence("g c")).toBe("open-capy");
 		expect(dashboardVimNavigationActionFromSequence("g d")).toBe("open-devin");
 		expect(dashboardVimNavigationActionFromSequence("g g")).toBe("open-chrome");
+		expect(dashboardVimNavigationActionFromSequence("g w")).toBe(
+			"open-workspaces",
+		);
 		expect(dashboardVimNavigationActionFromSequence(null)).toBe("none");
 	});
 });

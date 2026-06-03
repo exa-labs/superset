@@ -89,6 +89,27 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Jump to Devin; chain a number for visible sessions",
 				},
 				{
+					keys: ["g", "w"],
+					label: "Open workspaces in Vim mode",
+					description:
+						"Jump to the workspace overview without leaving Vim mode",
+				},
+				{
+					keys: ["g", "c"],
+					label: "Open Capy in Vim mode",
+					description: "Jump to the Capy native inbox",
+				},
+				{
+					keys: ["g", "d"],
+					label: "Open Devin in Vim mode",
+					description: "Jump to the Devin native inbox",
+				},
+				{
+					keys: ["g", "g"],
+					label: "Open Chrome in Vim mode",
+					description: "Jump to the embedded Chrome tab set",
+				},
+				{
 					keys: ["⌥", "C", "1"],
 					label: "Open Capy thread 1",
 					description: "Use the visible sidebar number after the Capy chord",

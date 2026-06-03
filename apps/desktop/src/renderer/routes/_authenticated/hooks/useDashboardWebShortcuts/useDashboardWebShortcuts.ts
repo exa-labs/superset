@@ -157,6 +157,10 @@ export function useDashboardWebShortcuts() {
 		});
 	}, [navigate]);
 
+	const openWorkspaces = useCallback(() => {
+		void navigate({ to: "/v2-workspaces" });
+	}, [navigate]);
+
 	const openNativeProviderAtIndex = useCallback(
 		(provider: NativeAgentProvider, index: number) => {
 			const rows = Array.from(
@@ -324,6 +328,7 @@ export function useDashboardWebShortcuts() {
 				if (navigationAction === "open-capy") openNativeProvider("capy");
 				if (navigationAction === "open-devin") openNativeProvider("devin");
 				if (navigationAction === "open-chrome") openChrome();
+				if (navigationAction === "open-workspaces") openWorkspaces();
 				if (navigationAction !== "none") return;
 			}
 
@@ -353,6 +358,7 @@ export function useDashboardWebShortcuts() {
 		openChrome,
 		openNativeProvider,
 		openNativeProviderAtIndex,
+		openWorkspaces,
 		updatePendingVimPrefix,
 	]);
 }
