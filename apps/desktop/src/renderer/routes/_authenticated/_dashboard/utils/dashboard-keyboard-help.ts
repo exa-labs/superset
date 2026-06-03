@@ -152,6 +152,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Activate the focused sidebar item",
 				},
 				{
+					keys: ["."],
+					label: "Show selected item actions",
+					description:
+						"Open a keyboard-navigable action menu for the focused session or folder",
+				},
+				{
 					keys: ["Space"],
 					label: "Toggle selected item",
 					description: "Open, collapse, or expand the focused item",

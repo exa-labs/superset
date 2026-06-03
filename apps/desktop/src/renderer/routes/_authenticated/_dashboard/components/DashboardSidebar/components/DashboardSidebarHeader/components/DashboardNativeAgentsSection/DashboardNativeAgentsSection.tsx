@@ -424,6 +424,7 @@ function NativeCreateDialog({
 }
 
 const SESSION_ROW_KEY_HINTS = [
+	{ key: ".", title: "Actions" },
 	{ key: "r", title: "Reply" },
 	{ key: "o", title: "Browser" },
 	{ key: "b", title: "Toggle native/browser" },

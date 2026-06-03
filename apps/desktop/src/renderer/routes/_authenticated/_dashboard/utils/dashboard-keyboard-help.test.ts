@@ -45,6 +45,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open Chrome in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "g"] }),
 		);
+		expect(entryByLabel.get("Show selected item actions")).toEqual(
+			expect.objectContaining({ keys: ["."] }),
+		);
 		expect(labels.has("Search sidebar")).toBe(true);
 		expect(entryByLabel.get("Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/", "type"] }),
