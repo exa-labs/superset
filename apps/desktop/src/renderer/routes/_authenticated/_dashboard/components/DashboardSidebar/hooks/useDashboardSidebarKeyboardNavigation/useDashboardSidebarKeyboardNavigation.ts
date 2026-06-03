@@ -5,6 +5,7 @@ import {
 	type DashboardSidebarKeyboardAction,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
 
 const INTERACTIVE_SELECTOR = [
@@ -75,6 +76,7 @@ export function useDashboardSidebarKeyboardNavigation(
 	options: {
 		onClearSearch?: () => void;
 		onCreateWorkspace?: () => void;
+		onTypeaheadSearch?: (seed: string) => void;
 		searchInputRef?: RefObject<HTMLInputElement | null>;
 	} = {},
 ): void {
@@ -94,6 +96,14 @@ export function useDashboardSidebarKeyboardNavigation(
 				event.key === "ArrowUp" || event.key === "ArrowDown";
 			const sidebarAction = dashboardSidebarKeyboardActionFromKey(event.key);
 			const sidebarActionKey = focusInsideSidebar && sidebarAction !== "none";
+			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
+				altKey: event.altKey,
+				ctrlKey: event.ctrlKey,
+				focusInsideSidebar,
+				key: event.key,
+				metaKey: event.metaKey,
+				vimModeEnabled,
+			});
 			const vimNavigation =
 				vimModeEnabled &&
 				[
@@ -110,8 +120,28 @@ export function useDashboardSidebarKeyboardNavigation(
 					"Escape",
 				].includes(event.key);
 
-			if (!arrowNavigation && !vimNavigation && !sidebarActionKey) return;
+			if (
+				!arrowNavigation &&
+				!vimNavigation &&
+				!sidebarActionKey &&
+				!typeaheadSeed
+			) {
+				return;
+			}
 			if (!vimModeEnabled && !focusInsideSidebar) return;
+
+			if (typeaheadSeed) {
+				event.preventDefault();
+				options.onTypeaheadSearch?.(typeaheadSeed);
+				window.setTimeout(() => {
+					options.searchInputRef?.current?.focus();
+					options.searchInputRef?.current?.setSelectionRange(
+						typeaheadSeed.length,
+						typeaheadSeed.length,
+					);
+				}, 0);
+				return;
+			}
 
 			const items = getFocusableItems(root);
 			if (items.length === 0) return;
@@ -224,6 +254,7 @@ export function useDashboardSidebarKeyboardNavigation(
 	}, [
 		options.onClearSearch,
 		options.onCreateWorkspace,
+		options.onTypeaheadSearch,
 		options.searchInputRef,
 		rootRef,
 		vimModeEnabled,

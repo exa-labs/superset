@@ -144,9 +144,14 @@ export function DashboardSidebar({
 	const sidebarRootRef = useRef<HTMLDivElement | null>(null);
 	const sidebarSearchInputRef = useRef<HTMLInputElement | null>(null);
 	const clearSidebarSearch = useCallback(() => setSidebarSearchQuery(""), []);
+	const startSidebarTypeaheadSearch = useCallback(
+		(seed: string) => setSidebarSearchQuery(seed),
+		[],
+	);
 	useDashboardSidebarKeyboardNavigation(sidebarRootRef, {
 		onClearSearch: clearSidebarSearch,
 		onCreateWorkspace: openNewWorkspaceModal,
+		onTypeaheadSearch: startSidebarTypeaheadSearch,
 		searchInputRef: sidebarSearchInputRef,
 	});
 

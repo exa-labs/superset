@@ -114,9 +114,10 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Open, collapse, or expand the focused item",
 				},
 				{
-					keys: ["/"],
+					keys: ["/", "type"],
 					label: "Search sidebar",
-					description: "Filter long workspace, Capy, and Devin lists",
+					description:
+						"Filter long workspace, Capy, and Devin lists; typing starts search outside Vim mode",
 				},
 				{
 					keys: ["G", "G"],

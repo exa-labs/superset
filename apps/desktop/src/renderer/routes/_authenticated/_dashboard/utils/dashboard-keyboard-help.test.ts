@@ -26,6 +26,9 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_DEVIN")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
 		expect(labels.has("Search sidebar")).toBe(true);
+		expect(entryByLabel.get("Search sidebar")).toEqual(
+			expect.objectContaining({ keys: ["/", "type"] }),
+		);
 		expect(labels.has("Split native/browser")).toBe(true);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),
