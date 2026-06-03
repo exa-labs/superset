@@ -12,6 +12,7 @@ import { useIsV2CloudEnabled } from "renderer/hooks/useIsV2CloudEnabled";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { DashboardActionHintsOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardActionHintsOverlay";
+import { DashboardFocusIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardFocusIndicator";
 import { DashboardKeyboardShortcutsDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardKeyboardShortcutsDialog";
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
@@ -240,6 +241,7 @@ function DashboardLayout() {
 				open={keyboardHelpOpen}
 				onOpenChange={setKeyboardHelpOpen}
 			/>
+			<DashboardFocusIndicator />
 			<DashboardVimModeIndicator />
 			<DashboardActionHintsOverlay />
 			{deleteTarget?.version === "v1" && (
