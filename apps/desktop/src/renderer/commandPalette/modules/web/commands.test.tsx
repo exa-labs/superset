@@ -291,6 +291,8 @@ describe("web command provider", () => {
 		const commands = webProvider.provide(sessionContext);
 
 		for (const id of [
+			"native.current.reply",
+			"native.current.openBrowser",
 			"native.current.pin",
 			"native.current.unpin",
 			"native.current.rename",
@@ -307,6 +309,12 @@ describe("web command provider", () => {
 			expect(command?.when?.(overviewContext)).toBe(false);
 			expect(command?.when?.(unrelatedContext)).toBe(false);
 		}
+
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+		expect(shortcutById.get("native.current.reply")).toBe("r");
+		expect(shortcutById.get("native.current.openBrowser")).toBe("o");
 	});
 
 	it("dispatches provider-scoped native control-plane events", () => {
@@ -324,6 +332,12 @@ describe("web command provider", () => {
 				.find((command) => command.id === "native.current.rename")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "native.current.reply")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.current.openBrowser")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "native.current.narrowSplit")
 				?.run?.(context);
 
@@ -337,6 +351,14 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "rename", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "focus-composer", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "open-browser", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 			expect(events).toContainEqual({

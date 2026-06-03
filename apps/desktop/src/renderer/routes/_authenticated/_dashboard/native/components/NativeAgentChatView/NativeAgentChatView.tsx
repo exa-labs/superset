@@ -148,9 +148,11 @@ type NativeViewMode = "browser" | "native" | "split";
 
 type NativeAgentCurrentAction =
 	| "equalize-split"
+	| "focus-composer"
 	| "hide"
 	| "narrow-native-split"
 	| "new"
+	| "open-browser"
 	| "pin"
 	| "refresh"
 	| "rename"
@@ -1791,6 +1793,14 @@ export function NativeAgentChatView({
 			}
 			if (detail?.action === "show") {
 				void handleSetSidebarVisible(selectedItem, true);
+				return;
+			}
+			if (detail?.action === "focus-composer") {
+				composerRef.current?.focus();
+				return;
+			}
+			if (detail?.action === "open-browser" && selectedItem.url) {
+				handleSelectViewMode("browser");
 				return;
 			}
 			if (detail?.action === "toggle-browser" && selectedItem.url) {

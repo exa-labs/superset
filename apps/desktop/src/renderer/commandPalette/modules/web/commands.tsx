@@ -45,9 +45,11 @@ type NativeOverviewFilter =
 function dispatchNativeAgentAction(
 	action:
 		| "equalize-split"
+		| "focus-composer"
 		| "hide"
 		| "narrow-native-split"
 		| "new"
+		| "open-browser"
 		| "pin"
 		| "refresh"
 		| "rename"
@@ -547,6 +549,36 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"refresh",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.reply",
+				title: "Reply to current native session",
+				section: "web",
+				description: "Focus the composer for the current Capy/Devin session",
+				keywords: ["capy", "devin", "reply", "composer", "message", "native"],
+				shortcutLabel: "r",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"focus-composer",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.openBrowser",
+				title: "Open current native session in browser",
+				section: "web",
+				description: "Switch the current Capy/Devin session to browser view",
+				keywords: ["capy", "devin", "open", "browser", "native", "session"],
+				shortcutLabel: "o",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"open-browser",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},
