@@ -9,6 +9,7 @@ import {
 	dashboardVimKey,
 	dashboardVimNavigationActionFromSequence,
 	nextDashboardVimSequence,
+	setDashboardVimPendingPrefix,
 	shouldHandleDashboardVimKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages";
@@ -82,6 +83,7 @@ const DEVIN_INDEX_SHORTCUTS: DashboardWebShortcut[] = [
 ];
 
 const WEB_TAB_PREFIX_TIMEOUT_MS = 1_500;
+const VIM_PREFIX_TIMEOUT_MS = 900;
 
 function digitIndexFromEvent(event: KeyboardEvent): number | null {
 	const digitMatch = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
@@ -100,12 +102,28 @@ export function useDashboardWebShortcuts() {
 		timeoutId: number;
 	} | null>(null);
 	const pendingVimPrefixRef = useRef<string | null>(null);
+	const pendingVimPrefixTimeoutRef = useRef<number | null>(null);
 
 	const clearPendingNativeProvider = useCallback(() => {
 		const pending = pendingNativeProviderRef.current;
 		if (!pending) return;
 		window.clearTimeout(pending.timeoutId);
 		pendingNativeProviderRef.current = null;
+	}, []);
+
+	const updatePendingVimPrefix = useCallback((prefix: string | null) => {
+		if (pendingVimPrefixTimeoutRef.current != null) {
+			window.clearTimeout(pendingVimPrefixTimeoutRef.current);
+			pendingVimPrefixTimeoutRef.current = null;
+		}
+		pendingVimPrefixRef.current = prefix;
+		setDashboardVimPendingPrefix(prefix);
+		if (!prefix) return;
+		pendingVimPrefixTimeoutRef.current = window.setTimeout(() => {
+			pendingVimPrefixRef.current = null;
+			pendingVimPrefixTimeoutRef.current = null;
+			setDashboardVimPendingPrefix(null);
+		}, VIM_PREFIX_TIMEOUT_MS);
 	}, []);
 
 	const openWebPage = useCallback(
@@ -273,6 +291,7 @@ export function useDashboardWebShortcuts() {
 				const key = dashboardVimKey(event);
 				const globalAction = dashboardVimGlobalActionFromKey(key);
 				if (globalAction === "show-keyboard-help") {
+					updatePendingVimPrefix(null);
 					event.preventDefault();
 					event.stopPropagation();
 					event.stopImmediatePropagation();
@@ -280,6 +299,7 @@ export function useDashboardWebShortcuts() {
 					return;
 				}
 				if (globalAction === "toggle-sidebar") {
+					updatePendingVimPrefix(null);
 					event.preventDefault();
 					event.stopPropagation();
 					event.stopImmediatePropagation();
@@ -291,7 +311,7 @@ export function useDashboardWebShortcuts() {
 					pendingVimPrefixRef.current,
 					key,
 				);
-				pendingVimPrefixRef.current = parsed.pendingPrefix;
+				updatePendingVimPrefix(parsed.pendingPrefix);
 				if (parsed.pendingPrefix || parsed.sequence) {
 					event.preventDefault();
 					event.stopPropagation();
@@ -326,11 +346,13 @@ export function useDashboardWebShortcuts() {
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 			clearPendingNativeProvider();
+			updatePendingVimPrefix(null);
 		};
 	}, [
 		clearPendingNativeProvider,
 		openChrome,
 		openNativeProvider,
 		openNativeProviderAtIndex,
+		updatePendingVimPrefix,
 	]);
 }

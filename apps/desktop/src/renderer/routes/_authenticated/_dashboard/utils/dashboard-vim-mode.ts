@@ -15,7 +15,9 @@ export type DashboardVimNavigationAction =
 
 interface DashboardVimModeState {
 	enabled: boolean;
+	pendingPrefix: string | null;
 	setEnabled: (enabled: boolean) => void;
+	setPendingPrefix: (prefix: string | null) => void;
 	toggle: () => void;
 }
 
@@ -51,8 +53,20 @@ export const useDashboardVimModeStore = create<DashboardVimModeState>()(
 		persist(
 			(set, get) => ({
 				enabled: false,
-				setEnabled: (enabled) => set({ enabled }),
-				toggle: () => set({ enabled: !get().enabled }),
+				pendingPrefix: null,
+				setEnabled: (enabled) =>
+					set({
+						enabled,
+						pendingPrefix: enabled ? get().pendingPrefix : null,
+					}),
+				setPendingPrefix: (pendingPrefix) => set({ pendingPrefix }),
+				toggle: () => {
+					const enabled = !get().enabled;
+					set({
+						enabled,
+						pendingPrefix: enabled ? get().pendingPrefix : null,
+					});
+				},
 			}),
 			{
 				name: "dashboard-vim-mode-v1",
@@ -76,6 +90,10 @@ export function toggleDashboardVimMode(): boolean {
 
 export function setDashboardVimModeEnabled(enabled: boolean): void {
 	useDashboardVimModeStore.getState().setEnabled(enabled);
+}
+
+export function setDashboardVimPendingPrefix(prefix: string | null): void {
+	useDashboardVimModeStore.getState().setPendingPrefix(prefix);
 }
 
 export function isDashboardVimEditableTarget(

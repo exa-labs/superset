@@ -4,7 +4,9 @@ import {
 	dashboardVimNavigationActionFromSequence,
 	nextDashboardVimSequence,
 	setDashboardVimModeEnabled,
+	setDashboardVimPendingPrefix,
 	shouldHandleDashboardVimKey,
+	useDashboardVimModeStore,
 } from "./dashboard-vim-mode";
 
 function keyEvent(
@@ -28,6 +30,14 @@ describe("dashboard vim mode", () => {
 	it("does not handle keys when disabled", () => {
 		setDashboardVimModeEnabled(false);
 		expect(shouldHandleDashboardVimKey(keyEvent())).toBe(false);
+	});
+
+	it("tracks pending Vim chord state and clears it when disabling Vim mode", () => {
+		setDashboardVimModeEnabled(true);
+		setDashboardVimPendingPrefix("g");
+		expect(useDashboardVimModeStore.getState().pendingPrefix).toBe("g");
+		setDashboardVimModeEnabled(false);
+		expect(useDashboardVimModeStore.getState().pendingPrefix).toBeNull();
 	});
 
 	it("guards editable targets and modified chords", () => {

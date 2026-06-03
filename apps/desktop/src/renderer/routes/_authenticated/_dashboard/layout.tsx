@@ -15,6 +15,7 @@ import { DashboardActionHintsOverlay } from "renderer/routes/_authenticated/_das
 import { DashboardKeyboardShortcutsDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardKeyboardShortcutsDialog";
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
+import { DashboardVimModeIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardVimModeIndicator";
 import { DASHBOARD_KEYBOARD_HELP_OPEN_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useDevSeedV2Sidebar } from "renderer/routes/_authenticated/hooks/useDevSeedV2Sidebar";
@@ -239,6 +240,7 @@ function DashboardLayout() {
 				open={keyboardHelpOpen}
 				onOpenChange={setKeyboardHelpOpen}
 			/>
+			<DashboardVimModeIndicator />
 			<DashboardActionHintsOverlay />
 			{deleteTarget?.version === "v1" && (
 				<DeleteWorkspaceDialog
