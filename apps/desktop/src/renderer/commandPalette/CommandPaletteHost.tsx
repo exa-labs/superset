@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { focusDashboardNavigationShell } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	isDashboardVimModeEnabled,
@@ -51,6 +52,9 @@ function GlobalKeyboardActionTrigger() {
 			}
 			if (action === "FOCUS_DASHBOARD_SHELL" && isDashboardVimModeEnabled()) {
 				focusDashboardNavigationShell();
+			}
+			if (action === "SHOW_DASHBOARD_KEYBOARD_HELP") {
+				openDashboardKeyboardHelp();
 			}
 		},
 	});

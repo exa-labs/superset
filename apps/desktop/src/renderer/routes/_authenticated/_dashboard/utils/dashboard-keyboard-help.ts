@@ -41,10 +41,10 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Enable keyboard-native dashboard navigation",
 				},
 				{
-					hotkeyId: "SHOW_HOTKEYS",
+					hotkeyId: "SHOW_DASHBOARD_KEYBOARD_HELP",
 					label: "Show this overlay",
 					description:
-						"Review the dashboard keyboard map without leaving context",
+						"Review the dashboard keyboard map from browsers and terminals",
 				},
 			],
 		},

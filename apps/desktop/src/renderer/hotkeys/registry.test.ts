@@ -135,5 +135,11 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+v",
 		});
+		expect(HOTKEYS_REGISTRY.SHOW_DASHBOARD_KEYBOARD_HELP.key.mac).toMatchObject(
+			{
+				mode: "logical",
+				chord: "alt+slash",
+			},
+		);
 	});
 });

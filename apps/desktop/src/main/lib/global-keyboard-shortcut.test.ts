@@ -44,6 +44,24 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
 	});
 
+	it("matches Option+/ dashboard keyboard help by physical code and question key", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Slash",
+				key: "/",
+			}),
+		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Slash",
+				key: "?",
+				shift: true,
+			}),
+		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
+	});
+
 	it("matches raw key down and char events emitted by focused webviews", () => {
 		expect(
 			globalKeyboardActionFromInput({
@@ -57,6 +75,14 @@ describe("globalKeyboardActionFromInput", () => {
 				type: "char",
 			}),
 		).toBe("TOGGLE_VIM_MODE");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Slash",
+				key: "/",
+				type: "rawKeyDown",
+			}),
+		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
 	});
 
 	it("emits a non-preventing dashboard shell focus action for bare Escape", () => {
@@ -94,6 +120,14 @@ describe("globalKeyboardActionFromInput", () => {
 		expect(
 			globalKeyboardActionFromInput({
 				...baseInput,
+				code: "Slash",
+				key: "/",
+				isAutoRepeat: true,
+			}),
+		).toBeNull();
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
 				alt: false,
 				code: "Escape",
 				key: "Escape",
@@ -109,5 +143,10 @@ describe("globalKeyboardActionFromInput", () => {
 		expect(shouldPreventDefaultForGlobalKeyboardAction("TOGGLE_VIM_MODE")).toBe(
 			true,
 		);
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction(
+				"SHOW_DASHBOARD_KEYBOARD_HELP",
+			),
+		).toBe(true);
 	});
 });

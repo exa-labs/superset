@@ -833,6 +833,17 @@ export const HOTKEYS_REGISTRY = {
 		label: "Show Keyboard Shortcuts",
 		category: "Help",
 	},
+	SHOW_DASHBOARD_KEYBOARD_HELP: {
+		key: {
+			mac: L("alt+slash"),
+			windows: L("ctrl+alt+slash"),
+			linux: L("ctrl+alt+slash"),
+		},
+		label: "Show Dashboard Keyboard Help",
+		category: "Help",
+		description:
+			"Open the dashboard keyboard overlay from browsers and terminals",
+	},
 	OPEN_COMMAND_PALETTE: {
 		key: {
 			mac: L("meta+shift+k"),
