@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { HOTKEYS_REGISTRY } from "renderer/hotkeys/registry";
 import {
 	isOpenControlPlaneShortcutInput,
 	openControlPlaneAccelerator,
@@ -16,6 +17,21 @@ const baseInput = {
 };
 
 describe("isOpenControlPlaneShortcutInput", () => {
+	it("keeps Option+K aligned with the renderer hotkey registry", () => {
+		const binding = HOTKEYS_REGISTRY.OPEN_CONTROL_PLANE.key.mac;
+		expect(typeof binding === "string" ? binding : binding.chord).toBe("alt+k");
+		expect(
+			isOpenControlPlaneShortcutInput(
+				{
+					...baseInput,
+					code: "KeyK",
+					key: "Dead",
+				},
+				"darwin",
+			),
+		).toBe(true);
+	});
+
 	it("uses the same platform accelerators as the renderer advertises", () => {
 		expect(openControlPlaneAccelerator("darwin")).toBe("Alt+K");
 		expect(openControlPlaneAccelerator("linux")).toBe("Ctrl+Alt+K");

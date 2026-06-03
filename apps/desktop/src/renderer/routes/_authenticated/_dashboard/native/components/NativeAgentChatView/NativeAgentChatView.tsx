@@ -373,12 +373,12 @@ function NativeAgentHeaderActionsMenu({
 				<button
 					type="button"
 					aria-label="Show native agent shortcuts and actions"
-					title="Keyboard shortcuts and actions"
+					title="Session actions and shortcuts"
 					data-dashboard-action-hint-exclude="true"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
 					<LuKeyRound className="size-3.5" />
-					<span className="hidden xl:inline">Keyboard</span>
+					<span className="hidden xl:inline">Actions</span>
 					<LuChevronDown className="size-3.5 opacity-70" />
 				</button>
 			</DropdownMenuTrigger>
@@ -390,10 +390,6 @@ function NativeAgentHeaderActionsMenu({
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">
 						Session controls
-					</div>
-					<div className="text-[11px] text-muted-foreground">
-						Keyboard shortcuts live here; the header only keeps primary controls
-						visible.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {

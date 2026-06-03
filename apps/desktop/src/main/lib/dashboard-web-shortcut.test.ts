@@ -1,6 +1,8 @@
 import { describe, expect, it } from "bun:test";
+import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
 import {
 	DASHBOARD_WEB_SHORTCUTS,
+	type DashboardWebShortcut,
 	dashboardWebCreateShortcutFromInput,
 	dashboardWebDigitIndexFromInput,
 	dashboardWebIndexedShortcut,
@@ -25,7 +27,82 @@ function input(
 	} satisfies Parameters<typeof dashboardWebShortcutFromInput>[0];
 }
 
+function macChordForHotkey(hotkeyId: HotkeyId): string {
+	const binding = HOTKEYS_REGISTRY[hotkeyId].key.mac;
+	if (binding === null) throw new Error(`${hotkeyId} has no macOS shortcut`);
+	return typeof binding === "string" ? binding : binding.chord;
+}
+
+function inputFromMacChord(
+	chord: string,
+): Parameters<typeof dashboardWebShortcutFromInput>[0] {
+	const parts = chord.toLowerCase().split("+");
+	const token = parts.at(-1);
+	if (!token) throw new Error(`Invalid shortcut chord: ${chord}`);
+
+	if (/^[a-z]$/i.test(token)) {
+		return input({
+			alt: parts.includes("alt"),
+			code: `Key${token.toUpperCase()}`,
+			control: parts.includes("ctrl") || parts.includes("control"),
+			key: "Dead",
+			meta: parts.includes("meta") || parts.includes("cmd"),
+			shift: parts.includes("shift"),
+		});
+	}
+
+	if (/^[1-9]$/.test(token)) {
+		return input({
+			alt: parts.includes("alt"),
+			code: `Digit${token}`,
+			control: parts.includes("ctrl") || parts.includes("control"),
+			key: token,
+			meta: parts.includes("meta") || parts.includes("cmd"),
+			shift: parts.includes("shift"),
+		});
+	}
+
+	throw new Error(
+		`Unsupported dashboard web shortcut terminal token: ${token}`,
+	);
+}
+
 describe("dashboardWebShortcutFromInput", () => {
+	it("keeps fast-switcher Option shortcuts aligned with renderer registry mac defaults", () => {
+		const cases: Array<{
+			hotkeyId: HotkeyId;
+			shortcut: DashboardWebShortcut;
+		}> = [
+			{ hotkeyId: "OPEN_WEB_PAGE_1", shortcut: "OPEN_WEB_PAGE_1" },
+			{ hotkeyId: "OPEN_WEB_PAGE_2", shortcut: "OPEN_WEB_PAGE_2" },
+			{ hotkeyId: "OPEN_WEB_PAGE_3", shortcut: "OPEN_WEB_PAGE_3" },
+			{ hotkeyId: "OPEN_WEB_PAGE_4", shortcut: "OPEN_WEB_PAGE_4" },
+			{ hotkeyId: "OPEN_WEB_PAGE_5", shortcut: "OPEN_WEB_PAGE_5" },
+			{ hotkeyId: "OPEN_WEB_PAGE_6", shortcut: "OPEN_WEB_PAGE_6" },
+			{ hotkeyId: "OPEN_CAPY", shortcut: "OPEN_CAPY" },
+			{ hotkeyId: "OPEN_DEVIN", shortcut: "OPEN_DEVIN" },
+			{ hotkeyId: "OPEN_CHROME", shortcut: "OPEN_CHROME" },
+			{ hotkeyId: "OPEN_WORKSPACES", shortcut: "OPEN_WORKSPACES" },
+			{
+				hotkeyId: "TOGGLE_NATIVE_BROWSER_VIEW",
+				shortcut: "TOGGLE_NATIVE_BROWSER_VIEW",
+			},
+			{
+				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
+				shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
+			},
+		];
+
+		for (const testCase of cases) {
+			expect(
+				dashboardWebShortcutFromInput(
+					inputFromMacChord(macChordForHotkey(testCase.hotkeyId)),
+				),
+				`${testCase.hotkeyId} registry chord should resolve through the Electron dashboard shortcut bridge`,
+			).toBe(testCase.shortcut);
+		}
+	});
+
 	it("matches Option+number shortcuts by physical digit code", () => {
 		expect(dashboardWebShortcutFromInput(input({ code: "Digit1" }))).toBe(
 			"OPEN_WEB_PAGE_1",

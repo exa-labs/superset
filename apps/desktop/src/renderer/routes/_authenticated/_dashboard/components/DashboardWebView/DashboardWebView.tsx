@@ -120,9 +120,6 @@ function DashboardBrowserKeyboardMenu({
 					<div className="text-xs font-medium text-foreground">
 						Browser controls
 					</div>
-					<div className="text-[11px] text-muted-foreground">
-						Visible labels for the browser Vim keys.
-					</div>
 				</div>
 				{sectionOrder.map((section) => {
 					const sectionShortcuts = shortcuts.filter(

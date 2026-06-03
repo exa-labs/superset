@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
 import {
+	type GlobalKeyboardAction,
 	globalKeyboardActionFromInput,
 	shouldPreventDefaultForGlobalKeyboardAction,
 } from "./global-keyboard-shortcut";
@@ -15,7 +17,89 @@ const baseInput = {
 	type: "keyDown",
 };
 
+type GlobalKeyboardShortcutInput = Parameters<
+	typeof globalKeyboardActionFromInput
+>[0];
+
+function macChordForHotkey(hotkeyId: HotkeyId): string {
+	const binding = HOTKEYS_REGISTRY[hotkeyId].key.mac;
+	if (binding === null) throw new Error(`${hotkeyId} has no macOS shortcut`);
+	return typeof binding === "string" ? binding : binding.chord;
+}
+
+function keyTokenInput(
+	token: string,
+): Pick<GlobalKeyboardShortcutInput, "code" | "key"> {
+	if (/^[a-z]$/i.test(token)) {
+		return {
+			code: `Key${token.toUpperCase()}`,
+			key: "Dead",
+		};
+	}
+	if (token === "slash") return { code: "Slash", key: "/" };
+	if (token === "tab") return { code: "Tab", key: "Tab" };
+	throw new Error(`Unsupported global shortcut terminal token: ${token}`);
+}
+
+function inputFromMacChord(chord: string): GlobalKeyboardShortcutInput {
+	const parts = chord.toLowerCase().split("+");
+	const token = parts.at(-1);
+	if (!token) throw new Error(`Invalid shortcut chord: ${chord}`);
+
+	return {
+		...baseInput,
+		alt: parts.includes("alt"),
+		code: keyTokenInput(token).code,
+		control: parts.includes("ctrl") || parts.includes("control"),
+		key: keyTokenInput(token).key,
+		meta: parts.includes("meta") || parts.includes("cmd"),
+		shift: parts.includes("shift"),
+	};
+}
+
 describe("globalKeyboardActionFromInput", () => {
+	it("keeps globally captured shortcuts aligned with renderer registry mac defaults", () => {
+		const cases: Array<{
+			action: GlobalKeyboardAction;
+			hotkeyId: HotkeyId;
+		}> = [
+			{
+				action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+				hotkeyId: "SHOW_DASHBOARD_KEYBOARD_HELP",
+			},
+			{
+				action: "SHOW_DASHBOARD_ACTION_HINTS",
+				hotkeyId: "SHOW_DASHBOARD_ACTION_HINTS",
+			},
+			{
+				action: "OPEN_UNREAD_NATIVE_REPLY",
+				hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
+			},
+			{
+				action: "MARK_LATEST_NATIVE_REPLY_READ",
+				hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ",
+			},
+			{
+				action: "SWITCH_DASHBOARD_VIEW_NEXT",
+				hotkeyId: "SWITCH_DASHBOARD_VIEW_NEXT",
+			},
+			{
+				action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+				hotkeyId: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+			},
+			{ action: "TOGGLE_VIM_MODE", hotkeyId: "TOGGLE_VIM_MODE" },
+		];
+
+		for (const testCase of cases) {
+			expect(
+				globalKeyboardActionFromInput(
+					inputFromMacChord(macChordForHotkey(testCase.hotkeyId)),
+				),
+				`${testCase.hotkeyId} registry chord should be captured by Electron bridge`,
+			).toBe(testCase.action);
+		}
+	});
+
 	it("matches Option+V by physical code", () => {
 		expect(
 			globalKeyboardActionFromInput({
