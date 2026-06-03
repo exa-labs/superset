@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type MouseEvent as ReactMouseEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useDiffStats } from "renderer/hooks/host-service/useDiffStats";
 import { useOptimisticCollectionActions } from "renderer/routes/_authenticated/hooks/useOptimisticCollectionActions";
 import { useDeletingWorkspaces } from "renderer/routes/_authenticated/providers/DeletingWorkspacesProvider";
@@ -102,6 +109,24 @@ export function DashboardSidebarWorkspaceItem({
 		if (!hoverEligible) return;
 		hoverRequestClose(id);
 	}, [hoverEligible, hoverRequestClose, id]);
+	const openWorkspaceContextMenu = useCallback(
+		(event: ReactMouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation();
+			const row = rowRef.current;
+			if (!row) return;
+			const rect = row.getBoundingClientRect();
+			row.dispatchEvent(
+				new MouseEvent("contextmenu", {
+					bubbles: true,
+					cancelable: true,
+					clientX: rect.left + Math.max(8, Math.min(rect.width - 8, 220)),
+					clientY: rect.top + rect.height / 2,
+					view: window,
+				}),
+			);
+		},
+		[],
+	);
 
 	const isHovered = hoverHoveredId === id;
 	useEffect(() => {
@@ -117,6 +142,7 @@ export function DashboardSidebarWorkspaceItem({
 			// biome-ignore lint/a11y/noStaticElementInteractions: hover handlers drive a non-interactive popover, no new keyboard semantics
 			<div
 				ref={rowRef}
+				data-dashboard-sidebar-action-scope
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
 				className="relative flex w-full justify-center"
@@ -140,6 +166,88 @@ export function DashboardSidebarWorkspaceItem({
 					pullRequestState={pullRequest?.state ?? null}
 					aria-label={isPending ? `Creating workspace: ${name}` : undefined}
 				/>
+				{!isPending && (
+					<>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="menu"
+							tabIndex={-1}
+							aria-keyshortcuts="."
+							onClick={openWorkspaceContextMenu}
+							className="sr-only"
+						>
+							Show workspace actions
+						</button>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="create-folder"
+							tabIndex={-1}
+							aria-keyshortcuts="N"
+							onClick={(event) => {
+								event.stopPropagation();
+								handleCreateSection();
+							}}
+							className="sr-only"
+						>
+							Create group from workspace
+						</button>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="move"
+							tabIndex={-1}
+							aria-keyshortcuts="m"
+							onClick={openWorkspaceContextMenu}
+							className="sr-only"
+						>
+							Move workspace to group
+						</button>
+						{isInSection && (
+							<button
+								type="button"
+								data-dashboard-sidebar-action="remove-from-folder"
+								tabIndex={-1}
+								aria-keyshortcuts="F"
+								onClick={(event) => {
+									event.stopPropagation();
+									moveWorkspaceToSection(id, projectId, null);
+								}}
+								className="sr-only"
+							>
+								Ungroup workspace
+							</button>
+						)}
+						{!isMainWorkspace && (
+							<>
+								<button
+									type="button"
+									data-dashboard-sidebar-action="archive"
+									tabIndex={-1}
+									aria-keyshortcuts="a x"
+									onClick={(event) => {
+										event.stopPropagation();
+										handleRemoveFromSidebar();
+									}}
+									className="sr-only"
+								>
+									Remove workspace from sidebar
+								</button>
+								<button
+									type="button"
+									data-dashboard-sidebar-action="delete"
+									tabIndex={-1}
+									aria-keyshortcuts="d"
+									onClick={(event) => {
+										event.stopPropagation();
+										setIsDeleteDialogOpen(true);
+									}}
+									className="sr-only"
+								>
+									Delete workspace
+								</button>
+							</>
+						)}
+					</>
+				)}
 			</div>
 		);
 
@@ -217,6 +325,14 @@ export function DashboardSidebarWorkspaceItem({
 				isInSection={isInSection}
 				onClick={handleClick}
 				onDoubleClick={isPending ? undefined : startRename}
+				onCreateSectionClick={handleCreateSection}
+				onMenuClick={openWorkspaceContextMenu}
+				onMoveClick={openWorkspaceContextMenu}
+				onRemoveFromSectionClick={
+					isInSection
+						? () => moveWorkspaceToSection(id, projectId, null)
+						: undefined
+				}
 				onRemoveFromSidebarClick={handleRemoveFromSidebar}
 				onCloseWorkspaceClick={() => setIsDeleteDialogOpen(true)}
 				onRenameClick={isPending ? undefined : startRename}

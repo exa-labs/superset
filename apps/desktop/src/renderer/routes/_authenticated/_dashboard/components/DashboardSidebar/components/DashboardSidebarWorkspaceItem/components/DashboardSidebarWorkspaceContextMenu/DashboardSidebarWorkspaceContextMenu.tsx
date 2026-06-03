@@ -93,6 +93,7 @@ export function DashboardSidebarWorkspaceContextMenu({
 				<ContextMenuItem onSelect={onRename}>
 					<LuPencil className="size-4 mr-2" />
 					Rename
+					<ContextMenuShortcut>e</ContextMenuShortcut>
 				</ContextMenuItem>
 				{isLocalWorkspace && (
 					<>
@@ -132,6 +133,7 @@ export function DashboardSidebarWorkspaceContextMenu({
 						<ContextMenuItem onSelect={onCreateSection}>
 							<LuFolderPlus className="size-4 mr-2" />
 							New group from workspace
+							<ContextMenuShortcut>N</ContextMenuShortcut>
 						</ContextMenuItem>
 						{(sections.length > 0 || isInSection) && <ContextMenuSeparator />}
 						{sections.length > 0 && (
@@ -139,6 +141,7 @@ export function DashboardSidebarWorkspaceContextMenu({
 								<ContextMenuSubTrigger>
 									<LuArrowRightLeft className="size-4 mr-2" />
 									Move to group
+									<ContextMenuShortcut>m</ContextMenuShortcut>
 								</ContextMenuSubTrigger>
 								<ContextMenuSubContent>
 									{sections.map((section) => (
@@ -162,6 +165,7 @@ export function DashboardSidebarWorkspaceContextMenu({
 							<ContextMenuItem onSelect={() => onMoveToSection(null)}>
 								<LuArrowUp className="size-4 mr-2" />
 								Ungroup
+								<ContextMenuShortcut>F</ContextMenuShortcut>
 							</ContextMenuItem>
 						)}
 					</>
@@ -173,6 +177,7 @@ export function DashboardSidebarWorkspaceContextMenu({
 				>
 					<LuX className="size-4 mr-2 text-destructive" />
 					Remove from Sidebar
+					<ContextMenuShortcut>a/x</ContextMenuShortcut>
 				</ContextMenuItem>
 				{onDelete ? (
 					<ContextMenuItem
@@ -181,9 +186,9 @@ export function DashboardSidebarWorkspaceContextMenu({
 					>
 						<LuTrash2 className="size-4 mr-2 text-destructive" />
 						Delete
-						{showDeleteShortcut && (
-							<ContextMenuShortcut>{deleteHotkeyText}</ContextMenuShortcut>
-						)}
+						<ContextMenuShortcut>
+							{showDeleteShortcut ? `${deleteHotkeyText} / d` : "d"}
+						</ContextMenuShortcut>
 					</ContextMenuItem>
 				) : null}
 			</ContextMenuContent>

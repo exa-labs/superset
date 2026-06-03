@@ -3,6 +3,7 @@ import { cn } from "@superset/ui/utils";
 import {
 	type ComponentPropsWithoutRef,
 	forwardRef,
+	type MouseEvent as ReactMouseEvent,
 	useEffect,
 	useRef,
 } from "react";
@@ -42,6 +43,10 @@ interface DashboardSidebarExpandedWorkspaceRowProps
 	onClick?: () => void;
 	onDoubleClick?: () => void;
 	onCloseWorkspaceClick: () => void;
+	onCreateSectionClick: () => void;
+	onMenuClick: (event: ReactMouseEvent<HTMLButtonElement>) => void;
+	onMoveClick: (event: ReactMouseEvent<HTMLButtonElement>) => void;
+	onRemoveFromSectionClick?: () => void;
 	onRemoveFromSidebarClick: () => void;
 	onRenameClick?: () => void;
 	onRenameValueChange: (value: string) => void;
@@ -66,6 +71,10 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 			onClick,
 			onDoubleClick,
 			onCloseWorkspaceClick,
+			onCreateSectionClick,
+			onMenuClick,
+			onMoveClick,
+			onRemoveFromSectionClick,
 			onRemoveFromSidebarClick,
 			onRenameClick,
 			onRenameValueChange,
@@ -283,6 +292,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 											<button
 												type="button"
 												data-dashboard-sidebar-action="archive"
+												aria-keyshortcuts="a x"
 												onClick={(event) => {
 													event.stopPropagation();
 													onRemoveFromSidebarClick();
@@ -311,6 +321,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 										<TooltipTrigger asChild>
 											<button
 												type="button"
+												aria-keyshortcuts="d"
 												onClick={(event) => {
 													event.stopPropagation();
 													onCloseWorkspaceClick();
@@ -344,24 +355,89 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 				</div>
 				{!isPending && (
 					<>
-						{!isMainWorkspace && (
+						<button
+							type="button"
+							data-dashboard-sidebar-action="menu"
+							tabIndex={-1}
+							aria-keyshortcuts="."
+							onClick={onMenuClick}
+							className="sr-only"
+						>
+							Show workspace actions
+						</button>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="create-folder"
+							tabIndex={-1}
+							aria-keyshortcuts="N"
+							onClick={(event) => {
+								event.stopPropagation();
+								onCreateSectionClick();
+							}}
+							className="sr-only"
+						>
+							Create group from workspace
+						</button>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="move"
+							tabIndex={-1}
+							aria-keyshortcuts="m"
+							onClick={onMoveClick}
+							className="sr-only"
+						>
+							Move workspace to group
+						</button>
+						{isInSection && onRemoveFromSectionClick && (
 							<button
 								type="button"
-								data-dashboard-sidebar-action="archive"
+								data-dashboard-sidebar-action="remove-from-folder"
 								tabIndex={-1}
+								aria-keyshortcuts="F"
 								onClick={(event) => {
 									event.stopPropagation();
-									onRemoveFromSidebarClick();
+									onRemoveFromSectionClick();
 								}}
 								className="sr-only"
 							>
-								Remove workspace from sidebar
+								Ungroup workspace
 							</button>
+						)}
+						{!isMainWorkspace && (
+							<>
+								<button
+									type="button"
+									data-dashboard-sidebar-action="archive"
+									tabIndex={-1}
+									aria-keyshortcuts="a x"
+									onClick={(event) => {
+										event.stopPropagation();
+										onRemoveFromSidebarClick();
+									}}
+									className="sr-only"
+								>
+									Remove workspace from sidebar
+								</button>
+								<button
+									type="button"
+									data-dashboard-sidebar-action="delete"
+									tabIndex={-1}
+									aria-keyshortcuts="d"
+									onClick={(event) => {
+										event.stopPropagation();
+										onCloseWorkspaceClick();
+									}}
+									className="sr-only"
+								>
+									Delete workspace
+								</button>
+							</>
 						)}
 						<button
 							type="button"
 							data-dashboard-sidebar-action="rename"
 							tabIndex={-1}
+							aria-keyshortcuts="e"
 							onClick={(event) => {
 								event.stopPropagation();
 								onRenameClick?.();

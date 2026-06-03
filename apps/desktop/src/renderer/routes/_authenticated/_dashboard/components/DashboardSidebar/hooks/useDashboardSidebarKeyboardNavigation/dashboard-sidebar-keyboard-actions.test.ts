@@ -529,6 +529,72 @@ describe("findDashboardSidebarActionButton", () => {
 		);
 	});
 
+	test("resolves workspace row menu and management actions from the focused workspace row", () => {
+		if (typeof document === "undefined") return;
+
+		const workspaceScope = document.createElement("div");
+		workspaceScope.dataset.dashboardSidebarActionScope = "";
+
+		const workspace = document.createElement("div");
+		workspace.dataset.dashboardSidebarRovingItem = "true";
+		makeVisible(workspace);
+
+		const menu = document.createElement("button");
+		menu.dataset.dashboardSidebarAction = "menu";
+		makeVisible(menu);
+
+		const createFolder = document.createElement("button");
+		createFolder.dataset.dashboardSidebarAction = "create-folder";
+		makeVisible(createFolder);
+
+		const move = document.createElement("button");
+		move.dataset.dashboardSidebarAction = "move";
+		makeVisible(move);
+
+		const removeFromFolder = document.createElement("button");
+		removeFromFolder.dataset.dashboardSidebarAction = "remove-from-folder";
+		makeVisible(removeFromFolder);
+
+		const archive = document.createElement("button");
+		archive.dataset.dashboardSidebarAction = "archive";
+		makeVisible(archive);
+
+		const rename = document.createElement("button");
+		rename.dataset.dashboardSidebarAction = "rename";
+		makeVisible(rename);
+
+		const deleteButton = document.createElement("button");
+		deleteButton.dataset.dashboardSidebarAction = "delete";
+		makeVisible(deleteButton);
+
+		workspaceScope.append(
+			workspace,
+			menu,
+			createFolder,
+			move,
+			removeFromFolder,
+			archive,
+			rename,
+			deleteButton,
+		);
+
+		expect(findDashboardSidebarActionButton(workspace, "menu")).toBe(menu);
+		expect(findDashboardSidebarActionButton(workspace, "create-folder")).toBe(
+			createFolder,
+		);
+		expect(findDashboardSidebarActionButton(workspace, "move")).toBe(move);
+		expect(
+			findDashboardSidebarActionButton(workspace, "remove-from-folder"),
+		).toBe(removeFromFolder);
+		expect(findDashboardSidebarActionButton(workspace, "archive")).toBe(
+			archive,
+		);
+		expect(findDashboardSidebarActionButton(workspace, "rename")).toBe(rename);
+		expect(findDashboardSidebarActionButton(workspace, "delete")).toBe(
+			deleteButton,
+		);
+	});
+
 	test("resolves native provider folder creation from the focused provider row", () => {
 		if (typeof document === "undefined") return;
 
