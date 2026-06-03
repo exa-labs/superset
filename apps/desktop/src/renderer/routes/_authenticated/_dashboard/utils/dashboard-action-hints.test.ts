@@ -3,9 +3,11 @@ import {
 	activateDashboardActionHintTarget,
 	collectDashboardActionHintTargets,
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
+	dashboardActionHintDisplayTitle,
 	dashboardActionHintKeyFromInput,
 	dashboardActionHintLabelForIndex,
 	dashboardActionHintRootForElement,
+	dashboardActionHintSidebarScopeForTargets,
 	openDashboardActionHints,
 } from "./dashboard-action-hints";
 
@@ -58,6 +60,13 @@ describe("dashboard action hints", () => {
 		expect(
 			dashboardActionHintKeyFromInput({ ...baseInput, key: "Enter" }),
 		).toBe("enter");
+		expect(
+			dashboardActionHintKeyFromInput({
+				...baseInput,
+				key: "N",
+				shiftKey: true,
+			}),
+		).toBe("N");
 		expect(dashboardActionHintKeyFromInput({ ...baseInput, key: "Tab" })).toBe(
 			null,
 		);
@@ -139,11 +148,15 @@ describe("dashboard action hints", () => {
 		pin.setAttribute("data-dashboard-sidebar-action", "pin");
 		pin.setAttribute("aria-label", "Pin");
 		setRect(pin, visibleRect({ top: 70 }));
+		const createFolder = document.createElement("button");
+		createFolder.setAttribute("data-dashboard-sidebar-action", "create-folder");
+		createFolder.setAttribute("aria-label", "New folder");
+		setRect(createFolder, visibleRect({ top: 100 }));
 		const archive = document.createElement("button");
 		archive.setAttribute("data-dashboard-sidebar-action", "archive");
 		archive.setAttribute("aria-label", "Move to overview");
-		setRect(archive, visibleRect({ top: 100 }));
-		root.append(row, menu, pin, archive);
+		setRect(archive, visibleRect({ top: 130 }));
+		root.append(row, menu, pin, createFolder, archive);
 
 		const targets = collectDashboardActionHintTargets(root);
 
@@ -151,13 +164,22 @@ describe("dashboard action hints", () => {
 			"enter",
 			".",
 			"p",
+			"N",
 			"x",
 		]);
 		expect(targets.map((target) => target.displayLabel)).toEqual([
 			"↵",
 			".",
 			"p",
+			"N",
 			"x",
+		]);
+		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
+			"Open",
+			"Actions",
+			"Pin or unpin",
+			"New folder",
+			"Move to overview",
 		]);
 	});
 
@@ -175,7 +197,38 @@ describe("dashboard action hints", () => {
 		expect(dashboardActionHintRootForElement(focusedButton, root)).toBe(
 			focusedRow,
 		);
-		expect(dashboardActionHintRootForElement(null, root)).toBe(root);
+		expect(dashboardActionHintRootForElement(null, root)).toBe(null);
+	});
+
+	it("uses the sidebar keyboard focus marker before showing whole-app hints", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const focusedRow = document.createElement("div");
+		focusedRow.setAttribute("data-dashboard-sidebar-action-scope", "true");
+		const focusedButton = document.createElement("button");
+		focusedButton.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+		focusedRow.append(focusedButton);
+		const otherButton = document.createElement("button");
+		root.append(focusedRow, otherButton);
+
+		expect(dashboardActionHintRootForElement(null, root)).toBe(focusedRow);
+	});
+
+	it("recognizes sidebar scoped action hint panels", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		root.setAttribute("data-dashboard-sidebar-action-scope", "true");
+		const row = document.createElement("button");
+		row.setAttribute("data-native-agent-session-row-id", "session-1");
+		setRect(row, visibleRect());
+		const menu = document.createElement("button");
+		menu.setAttribute("data-dashboard-sidebar-action", "menu");
+		setRect(menu, visibleRect({ top: 40 }));
+		root.append(row, menu);
+
+		const targets = collectDashboardActionHintTargets(root);
+
+		expect(dashboardActionHintSidebarScopeForTargets(targets)).toBe(root);
 	});
 
 	it("focuses and clicks the selected target", () => {

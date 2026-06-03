@@ -4,8 +4,10 @@ import {
 	collectDashboardActionHintTargets,
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	type DashboardActionHintTarget,
+	dashboardActionHintDisplayTitle,
 	dashboardActionHintKeyFromInput,
 	dashboardActionHintRootForElement,
+	dashboardActionHintSidebarScopeForTargets,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
@@ -24,6 +26,32 @@ function consume(event: KeyboardEvent): void {
 	event.preventDefault();
 	event.stopPropagation();
 	event.stopImmediatePropagation();
+}
+
+function sidebarPanelPosition(scope: HTMLElement): {
+	left: number;
+	maxHeight: number;
+	top: number;
+} {
+	const rect = scope.getBoundingClientRect();
+	const viewportWidth =
+		typeof window === "undefined" ? rect.right + 228 : window.innerWidth;
+	const viewportHeight =
+		typeof window === "undefined" ? rect.top + 180 : window.innerHeight;
+	const width = 212;
+	const left = Math.min(
+		Math.max(8, rect.right + 8),
+		Math.max(8, viewportWidth - width - 8),
+	);
+	const top = Math.min(
+		Math.max(8, rect.top),
+		Math.max(8, viewportHeight - 180),
+	);
+	return {
+		left,
+		maxHeight: Math.max(96, viewportHeight - top - 12),
+		top,
+	};
 }
 
 export function DashboardActionHintsOverlay() {
@@ -48,6 +76,7 @@ export function DashboardActionHintsOverlay() {
 				activeElement,
 				root ?? document.body,
 			);
+			if (!targetRoot) return;
 			const targets = collectDashboardActionHintTargets(targetRoot);
 			if (targets.length === 0) return;
 			setActiveHints({ prefix: "", targets });
@@ -122,6 +151,50 @@ export function DashboardActionHintsOverlay() {
 			.filter((target) => target.label.startsWith(activeHints.prefix))
 			.map((target) => target.label),
 	);
+	const sidebarScope = dashboardActionHintSidebarScopeForTargets(
+		activeHints.targets,
+	);
+
+	if (sidebarScope) {
+		const position = sidebarPanelPosition(sidebarScope);
+
+		return (
+			<div
+				data-dashboard-action-hints-overlay="true"
+				className="pointer-events-none fixed inset-0 z-[1000]"
+			>
+				<div
+					data-dashboard-sidebar-action-hints-panel="true"
+					className="absolute w-[212px] overflow-hidden rounded-md border border-border/85 bg-background/95 p-1.5 text-[11px] shadow-2xl backdrop-blur"
+					style={{
+						left: position.left,
+						maxHeight: position.maxHeight,
+						top: position.top,
+					}}
+				>
+					<div className="grid max-h-full gap-1 overflow-y-auto">
+						{activeHints.targets.map((target) => (
+							<div
+								key={target.label}
+								title={target.title}
+								className="grid grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded px-1 py-0.5 text-muted-foreground transition-opacity"
+								style={{
+									opacity: matchedLabels.has(target.label) ? 1 : 0.32,
+								}}
+							>
+								<kbd className="flex h-5 min-w-5 items-center justify-center rounded border border-border/80 bg-muted/70 px-1 font-mono text-[10px] font-semibold leading-none text-foreground shadow-sm">
+									{target.displayLabel}
+								</kbd>
+								<span className="truncate text-[11px] leading-4 text-foreground/90">
+									{dashboardActionHintDisplayTitle(target)}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div
