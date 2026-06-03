@@ -202,4 +202,37 @@ describe("dashboard view MRU", () => {
 			}).map((entry) => entry.index),
 		).toEqual([5, 6, 7, 8, 9]);
 	});
+
+	it("uses a custom label resolver for visible switcher entries", () => {
+		const entries = [
+			{ path: "/web/overseer", viewedAt: 2 },
+			{ path: "/native/devin/session-1", viewedAt: 1 },
+		];
+
+		expect(
+			dashboardViewMruVisibleEntries({
+				activeIndex: 0,
+				entries,
+				labelResolver: (path) =>
+					path === "/native/devin/session-1"
+						? { subtitle: "session-1", title: "QES dashboard" }
+						: null,
+			}),
+		).toEqual([
+			{
+				index: 0,
+				path: "/web/overseer",
+				subtitle: "Pinned web",
+				title: "Overseer",
+				viewedAt: 2,
+			},
+			{
+				index: 1,
+				path: "/native/devin/session-1",
+				subtitle: "session-1",
+				title: "QES dashboard",
+				viewedAt: 1,
+			},
+		]);
+	});
 });

@@ -11,6 +11,15 @@ export interface DashboardViewMruDisplayEntry extends DashboardViewMruEntry {
 	title: string;
 }
 
+export interface DashboardViewMruEntryLabel {
+	subtitle: string;
+	title: string;
+}
+
+export type DashboardViewMruEntryLabelResolver = (
+	path: string,
+) => DashboardViewMruEntryLabel | null;
+
 type DashboardViewMruStorage = Pick<Storage, "getItem" | "setItem">;
 
 export const DASHBOARD_VIEW_MRU_STORAGE_KEY = "dashboard-view-mru-v1";
@@ -158,10 +167,9 @@ function segmentAt(path: string, index: number): string | null {
 	return path.split("/").filter(Boolean)[index] ?? null;
 }
 
-export function dashboardViewMruEntryLabel(path: string): {
-	subtitle: string;
-	title: string;
-} {
+export function dashboardViewMruEntryLabel(
+	path: string,
+): DashboardViewMruEntryLabel {
 	const normalized = normalizeDashboardViewMruPath(path) ?? path;
 	const first = segmentAt(normalized, 0);
 	const second = segmentAt(normalized, 1);
@@ -208,6 +216,7 @@ export function dashboardViewMruEntryLabel(path: string): {
 export function dashboardViewMruVisibleEntries(input: {
 	activeIndex: number;
 	entries: DashboardViewMruEntry[];
+	labelResolver?: DashboardViewMruEntryLabelResolver;
 	maxEntries?: number;
 }): DashboardViewMruDisplayEntry[] {
 	const maxEntries = Math.max(
@@ -218,7 +227,8 @@ export function dashboardViewMruVisibleEntries(input: {
 		return input.entries.map((entry, index) => ({
 			...entry,
 			index,
-			...dashboardViewMruEntryLabel(entry.path),
+			...(input.labelResolver?.(entry.path) ??
+				dashboardViewMruEntryLabel(entry.path)),
 		}));
 	}
 
@@ -236,7 +246,8 @@ export function dashboardViewMruVisibleEntries(input: {
 		return {
 			...entry,
 			index,
-			...dashboardViewMruEntryLabel(entry.path),
+			...(input.labelResolver?.(entry.path) ??
+				dashboardViewMruEntryLabel(entry.path)),
 		};
 	});
 }

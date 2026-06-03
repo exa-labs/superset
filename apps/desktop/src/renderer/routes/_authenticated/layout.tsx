@@ -42,6 +42,7 @@ import {
 	recordDashboardViewMruPath,
 	resolveDashboardViewMruPathname,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
+import { dashboardViewMruRegistryLabelResolver } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru-labels";
 import { DaemonAutoUpdateFailureDialog } from "renderer/routes/_authenticated/components/DaemonAutoUpdateFailureDialog";
 import { DashboardNewWorkspaceModal } from "renderer/routes/_authenticated/components/DashboardNewWorkspaceModal";
 import { V1ImportModal } from "renderer/routes/_authenticated/components/V1ImportModal";
@@ -387,6 +388,7 @@ function AuthenticatedLayout() {
 									activeIndex={dashboardViewMruOverlay.activeIndex}
 									direction={dashboardViewMruOverlay.direction}
 									entries={dashboardViewMruOverlay.entries}
+									labelResolver={dashboardViewMruRegistryLabelResolver}
 								/>
 							)}
 							<DashboardWebViewDeck

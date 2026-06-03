@@ -3,6 +3,7 @@ import { cn } from "@superset/ui/utils";
 import {
 	type DashboardViewMruDirection,
 	type DashboardViewMruEntry,
+	type DashboardViewMruEntryLabelResolver,
 	dashboardViewMruVisibleEntries,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
 
@@ -10,24 +11,28 @@ interface DashboardMruSwitcherOverlayProps {
 	activeIndex: number;
 	direction: DashboardViewMruDirection;
 	entries: DashboardViewMruEntry[];
+	labelResolver?: DashboardViewMruEntryLabelResolver;
 }
 
 export function DashboardMruSwitcherOverlay({
 	activeIndex,
 	direction,
 	entries,
+	labelResolver,
 }: DashboardMruSwitcherOverlayProps) {
 	if (entries.length < 2) return null;
 
 	const visibleEntries = dashboardViewMruVisibleEntries({
 		activeIndex,
 		entries,
+		labelResolver,
 	});
 	const activeEntry = entries[activeIndex];
 	const activeLabel = activeEntry
 		? dashboardViewMruVisibleEntries({
 				activeIndex,
 				entries: [activeEntry],
+				labelResolver,
 			})[0]
 		: null;
 
