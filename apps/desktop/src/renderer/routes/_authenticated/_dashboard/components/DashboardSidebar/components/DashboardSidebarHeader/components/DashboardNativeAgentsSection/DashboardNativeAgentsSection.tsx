@@ -105,6 +105,10 @@ import {
 	writeNativeAgentReadState,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
+	type NativeAgentIndexedShortcutHint,
+	nativeAgentIndexedShortcutHint,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcuts";
+import {
 	formatNativeAgentTimestamp,
 	isFreshNativeAgentResponse,
 	isNativeAgentLiveStatus,
@@ -423,7 +427,7 @@ function SessionRow({
 	onSessionAction,
 	onSidebarVisible,
 	readState,
-	shortcutLabel,
+	shortcutHint,
 	variant,
 }: {
 	activeId: string | null;
@@ -438,7 +442,7 @@ function SessionRow({
 	) => void;
 	onSidebarVisible: (item: NativeAgentItem, visible: boolean) => void;
 	readState: Record<string, number>;
-	shortcutLabel: string | null;
+	shortcutHint: NativeAgentIndexedShortcutHint | null;
 	variant: "collapsed" | "expanded";
 }) {
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -500,7 +504,7 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nShown: ${inclusionReasons.join(", ")}\nEnter opens. Press . for menu or f for action hints.`}
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nShown: ${inclusionReasons.join(", ")}${shortcutHint ? `\nShortcut: ${shortcutHint.titleLabel}` : ""}\nEnter opens. Press . for menu or f for action hints.`}
 				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-16 text-left"
 			>
 				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
@@ -533,9 +537,12 @@ function SessionRow({
 					<span className="max-w-10 shrink-0 overflow-hidden truncate text-right tabular-nums">
 						{formatNativeAgentTimestamp(item.updatedAt)}
 					</span>
-					{shortcutLabel && (
-						<span className="max-w-8 shrink-0 overflow-hidden truncate text-right font-mono text-[10px] text-muted-foreground/60">
-							{shortcutLabel}
+					{shortcutHint && (
+						<span
+							className="min-w-4 shrink-0 rounded border border-border/60 bg-background/65 px-1 text-center font-mono text-[10px] text-muted-foreground/70 tabular-nums"
+							title={shortcutHint.titleLabel}
+						>
+							{shortcutHint.displayLabel}
 						</span>
 					)}
 				</span>
@@ -1888,13 +1895,14 @@ export function DashboardNativeAgentsSection({
 					providerConfig.id === "capy" ? capyShortcut : devinShortcut;
 				const providerShortcutLabel =
 					providerShortcut === "Unassigned" ? null : providerShortcut;
-				const shortcutLabelForItem = (item: NativeAgentItem) => {
-					if (!providerShortcutLabel) return null;
+				const shortcutHintForItem = (item: NativeAgentItem) => {
 					const index = displayedItems.findIndex(
 						(candidate) => candidate.id === item.id,
 					);
-					if (index < 0 || index > 8) return null;
-					return `${providerShortcutLabel}${index + 1}`;
+					return nativeAgentIndexedShortcutHint({
+						index,
+						providerShortcutLabel,
+					});
 				};
 
 				if (variant === "collapsed") {
@@ -2254,7 +2262,7 @@ export function DashboardNativeAgentsSection({
 																onSessionAction={handleSessionAction}
 																onSidebarVisible={handleSidebarVisible}
 																readState={readState}
-																shortcutLabel={shortcutLabelForItem(item)}
+																shortcutHint={shortcutHintForItem(item)}
 																variant={variant}
 															/>
 														))}
@@ -2275,7 +2283,7 @@ export function DashboardNativeAgentsSection({
 										onSessionAction={handleSessionAction}
 										onSidebarVisible={handleSidebarVisible}
 										readState={readState}
-										shortcutLabel={shortcutLabelForItem(item)}
+										shortcutHint={shortcutHintForItem(item)}
 										variant={variant}
 									/>
 								))}

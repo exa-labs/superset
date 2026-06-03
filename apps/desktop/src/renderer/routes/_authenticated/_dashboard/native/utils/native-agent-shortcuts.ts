@@ -45,3 +45,26 @@ export function nativeAgentShortcutTitleSuffix(
 	if (readableKeys.length === 0) return "";
 	return `Press ${readableKeys.join(" or ")}.`;
 }
+
+export interface NativeAgentIndexedShortcutHint {
+	displayLabel: string;
+	titleLabel: string;
+}
+
+export function nativeAgentIndexedShortcutHint({
+	index,
+	providerShortcutLabel,
+}: {
+	index: number;
+	providerShortcutLabel: string | null | undefined;
+}): NativeAgentIndexedShortcutHint | null {
+	const shortcutLabel = providerShortcutLabel?.trim();
+	if (!shortcutLabel || shortcutLabel === UNASSIGNED_SHORTCUT_LABEL)
+		return null;
+	if (index < 0 || index > 8) return null;
+	const displayLabel = String(index + 1);
+	return {
+		displayLabel,
+		titleLabel: `${shortcutLabel} ${displayLabel}`,
+	};
+}

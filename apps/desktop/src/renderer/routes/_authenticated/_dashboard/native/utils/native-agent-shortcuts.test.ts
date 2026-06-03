@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
+	nativeAgentIndexedShortcutHint,
 	nativeAgentShortcutDisplayLabel,
 	nativeAgentShortcutKeys,
 	nativeAgentShortcutTitleSuffix,
@@ -25,5 +26,47 @@ describe("native agent shortcut formatting", () => {
 			"Press Command+Shift+N.",
 		);
 		expect(nativeAgentShortcutTitleSuffix("Unassigned")).toBe("");
+	});
+
+	it("uses compact indexed sidebar hints for provider chords", () => {
+		expect(
+			nativeAgentIndexedShortcutHint({
+				index: 0,
+				providerShortcutLabel: "⌥C",
+			}),
+		).toEqual({
+			displayLabel: "1",
+			titleLabel: "⌥C 1",
+		});
+		expect(
+			nativeAgentIndexedShortcutHint({
+				index: 8,
+				providerShortcutLabel: "⌥D",
+			}),
+		).toEqual({
+			displayLabel: "9",
+			titleLabel: "⌥D 9",
+		});
+	});
+
+	it("omits indexed hints outside the supported visible chord range", () => {
+		expect(
+			nativeAgentIndexedShortcutHint({
+				index: -1,
+				providerShortcutLabel: "⌥C",
+			}),
+		).toBeNull();
+		expect(
+			nativeAgentIndexedShortcutHint({
+				index: 9,
+				providerShortcutLabel: "⌥C",
+			}),
+		).toBeNull();
+		expect(
+			nativeAgentIndexedShortcutHint({
+				index: 0,
+				providerShortcutLabel: "Unassigned",
+			}),
+		).toBeNull();
 	});
 });
