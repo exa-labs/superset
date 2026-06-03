@@ -49,7 +49,6 @@ import {
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { authClient } from "renderer/lib/auth-client";
 import { electronTrpc } from "renderer/lib/electron-trpc";
-import { persistentHistory } from "renderer/lib/persistent-hash-history";
 import { isDashboardSidebarSpaceKey } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-actions";
 import {
 	createNativeAgentFolder,
@@ -309,19 +308,6 @@ function activeNativeRoute(pathname: string): {
 	if (pathname.includes("/native/devin"))
 		return { id: null, provider: "devin" };
 	return { id: null, provider: null };
-}
-
-function nativeProviderPath(provider: NativeAgentProvider): string {
-	return provider === "capy" ? "/native/capy" : "/native/devin";
-}
-
-function nativeSessionPath(item: {
-	id: string;
-	provider: NativeAgentProvider;
-}): string {
-	return item.provider === "capy"
-		? `/native/capy/${encodeURIComponent(item.id)}`
-		: `/native/devin/${encodeURIComponent(item.id)}`;
 }
 
 function dispatchNativeAgentCurrentAction(
@@ -1045,29 +1031,19 @@ export function DashboardNativeAgentsSection({
 		[setProviderCollapsed],
 	);
 
-	const ensureNativeHashPath = useCallback((path: string) => {
-		if (getDashboardHashPathname() !== path) {
-			persistentHistory.replace(path);
-		}
-	}, []);
-
 	const navigateToNativeProvider = useCallback(
 		(provider: NativeAgentProvider) => {
-			const path = nativeProviderPath(provider);
-			ensureNativeHashPath(path);
 			if (provider === "capy") {
 				navigate({ to: "/native/capy" });
 			} else {
 				navigate({ to: "/native/devin" });
 			}
 		},
-		[ensureNativeHashPath, navigate],
+		[navigate],
 	);
 
 	const navigateToNativeSession = useCallback(
 		(item: { id: string; provider: NativeAgentProvider }) => {
-			const path = nativeSessionPath(item);
-			ensureNativeHashPath(path);
 			if (item.provider === "capy") {
 				navigate({
 					to: "/native/capy/$threadId",
@@ -1080,7 +1056,7 @@ export function DashboardNativeAgentsSection({
 				});
 			}
 		},
-		[ensureNativeHashPath, navigate],
+		[navigate],
 	);
 
 	const moveDraggedSessionToFolder = useCallback(

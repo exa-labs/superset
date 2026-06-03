@@ -20,7 +20,7 @@ export function DashboardVimModeIndicator() {
 			)}
 			title="Vim mode active. Press ? for keyboard shortcuts."
 		>
-			<span className="font-mono font-semibold text-foreground">VIM</span>
+			<span className="font-semibold text-foreground">Vim</span>
 			<span className="h-3 w-px bg-border" />
 			{pendingPrefix ? (
 				<KbdGroup>
@@ -28,10 +28,16 @@ export function DashboardVimModeIndicator() {
 					<span className="font-mono text-muted-foreground">...</span>
 				</KbdGroup>
 			) : (
-				<KbdGroup>
-					<Kbd>?</Kbd>
-					<Kbd>f</Kbd>
-				</KbdGroup>
+				<div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+					<span className="inline-flex items-center gap-1">
+						<Kbd>?</Kbd>
+						Help
+					</span>
+					<span className="inline-flex items-center gap-1">
+						<Kbd>f</Kbd>
+						Actions
+					</span>
+				</div>
 			)}
 		</div>
 	);

@@ -70,11 +70,14 @@ export function DashboardFocusIndicator() {
 			<span className="font-mono font-semibold text-foreground">
 				{scope.label}
 			</span>
-			<KbdGroup>
+			<KbdGroup className="hidden sm:flex">
 				{hints.map((hint) => (
 					<Kbd key={hint}>{hint}</Kbd>
 				))}
 			</KbdGroup>
+			<span className="hidden text-[11px] text-muted-foreground md:inline">
+				{hints.includes("⌥K") ? "Commands" : "Shortcuts"}
+			</span>
 		</div>
 	);
 }

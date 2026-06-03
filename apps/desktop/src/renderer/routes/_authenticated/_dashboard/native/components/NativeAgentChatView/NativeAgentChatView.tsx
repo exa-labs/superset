@@ -35,6 +35,7 @@ import {
 	LuPin,
 	LuRefreshCw,
 	LuSend,
+	LuSparkles,
 } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -311,7 +312,10 @@ function NativeAgentHeaderViewSwitcher({
 	];
 
 	return (
-		<div className="flex h-8 shrink-0 items-center overflow-hidden rounded-md border border-border/70 bg-muted/20 p-0.5">
+		<div
+			className="flex h-8 shrink-0 items-center overflow-hidden rounded-md border border-border/70 bg-muted/20 p-0.5"
+			data-dashboard-action-hint-exclude="true"
+		>
 			{options.map((option) => {
 				const selected = option.key === viewMode;
 				const shortcutSuffix = option.shortcut ? ` (${option.shortcut})` : "";
@@ -381,17 +385,18 @@ function NativeAgentHeaderActionsMenu({
 					title="Actions and shortcuts"
 					data-dashboard-action-hint-label="."
 					data-dashboard-action-hint-title="Open actions menu"
-					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
-					<LuEllipsis className="size-4" />
-					<span className="hidden xl:inline">Actions</span>
+					<LuSparkles className="size-3.5" />
+					<span className="hidden lg:inline">Actions</span>
+					<LuEllipsis className="size-3.5 opacity-70" />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-72">
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">Actions</div>
 					<div className="text-[11px] text-muted-foreground">
-						Keyboard shortcuts are shown here instead of crowding the header.
+						Keyboard shortcuts live here instead of crowding the header.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {
@@ -2216,6 +2221,12 @@ export function NativeAgentChatView({
 					section: "utility",
 				},
 				{
+					key: "i",
+					label: showDiagnostics ? "Hide diagnostics" : "Show diagnostics",
+					onSelect: () => setShowDiagnostics((current) => !current),
+					section: "utility",
+				},
+				{
 					key: "p",
 					label: selectedItem.sidebarPinned ? "Unpin" : "Pin",
 					onSelect: () =>
@@ -2428,6 +2439,7 @@ export function NativeAgentChatView({
 					title="Refresh"
 					data-dashboard-action-hint-label="R"
 					data-dashboard-action-hint-title="Refresh session data"
+					data-dashboard-action-hint-exclude="true"
 					className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label="Refresh native agent data"
 				>
@@ -2446,6 +2458,7 @@ export function NativeAgentChatView({
 							title="Diagnostics"
 							data-dashboard-action-hint-label="i"
 							data-dashboard-action-hint-title="Show diagnostics"
+							data-dashboard-action-hint-exclude="true"
 						>
 							<LuInfo className="size-4" />
 						</button>
