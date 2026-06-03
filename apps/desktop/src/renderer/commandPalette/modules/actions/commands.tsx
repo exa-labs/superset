@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
+import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
@@ -135,6 +136,18 @@ export const actionsProvider: CommandProvider = {
 				icon: PanelLeftIcon,
 				hotkeyId: "TOGGLE_WORKSPACE_SIDEBAR",
 				run: () => useWorkspaceSidebarStore.getState().toggleOpen(),
+			},
+			{
+				id: "actions.focusNavigationShell",
+				title: "Focus navigation sidebar",
+				section: "actions",
+				description: "Return keyboard focus to the left sidebar",
+				icon: PanelLeftIcon,
+				keywords: ["escape", "sidebar", "focus", "navigation", "shell"],
+				shortcutLabel: "Esc",
+				run: () => {
+					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+				},
 			},
 		];
 

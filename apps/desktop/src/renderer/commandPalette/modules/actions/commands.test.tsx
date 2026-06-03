@@ -89,6 +89,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.switchDashboardViewPrevious")).toBe(true);
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
+		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
 	});
 
@@ -122,6 +123,10 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.toggleLeftSidebar")
 				?.hotkeyId,
 		).toBe("TOGGLE_WORKSPACE_SIDEBAR");
+		expect(
+			commands.find((command) => command.id === "actions.focusNavigationShell")
+				?.shortcutLabel,
+		).toBe("Esc");
 	});
 
 	it("runs the dashboard Vim toggle command", () => {
