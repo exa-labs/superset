@@ -32,6 +32,7 @@ export type NativeAgentFolderVimAction =
 	| "toggle";
 
 export type NativeAgentViewMode = "browser" | "native" | "split";
+export type NativeAgentSidebarJumpAction = "bottom" | "none" | "top";
 
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
@@ -46,7 +47,7 @@ export type NativeAgentSelectedSessionVimAction =
 export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
 ): NativeAgentSidebarVimAction {
-	if (key === "enter" || key === "o") return "open";
+	if (key === "enter" || key === " " || key === "o") return "open";
 	if (key === "p") return "pin";
 	if (key === "f" || key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
@@ -57,13 +58,40 @@ export function nativeAgentSidebarVimActionFromKey(
 export function nativeAgentFolderVimActionFromKey(
 	key: string | null,
 ): NativeAgentFolderVimAction {
-	if (key === "enter" || key === "o") return "toggle";
+	if (key === "enter" || key === " " || key === "o") return "toggle";
 	if (key === "h") return "collapse";
 	if (key === "l") return "expand";
 	if (key === "e") return "rename";
 	if (key === "c") return "color";
 	if (key === "d") return "delete";
 	return "none";
+}
+
+export function nativeAgentSidebarJumpFromKey(input: {
+	key: string | null;
+	lastGAt: number;
+	now: number;
+	thresholdMs?: number;
+}): {
+	action: NativeAgentSidebarJumpAction;
+	handled: boolean;
+	nextLastGAt: number;
+} {
+	if (input.key === "G") {
+		return { action: "bottom", handled: true, nextLastGAt: 0 };
+	}
+	if (input.key !== "g") {
+		return {
+			action: "none",
+			handled: false,
+			nextLastGAt: input.lastGAt,
+		};
+	}
+	const thresholdMs = input.thresholdMs ?? 450;
+	if (input.now - input.lastGAt < thresholdMs) {
+		return { action: "top", handled: true, nextLastGAt: 0 };
+	}
+	return { action: "none", handled: true, nextLastGAt: input.now };
 }
 
 export function nativeAgentSelectedSessionVimActionFromKey(

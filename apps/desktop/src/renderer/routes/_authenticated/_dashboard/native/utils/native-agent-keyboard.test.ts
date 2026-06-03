@@ -6,6 +6,7 @@ import {
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
+	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
@@ -41,6 +42,7 @@ describe("native agent keyboard helpers", () => {
 
 	it("maps native sidebar vim row actions", () => {
 		expect(nativeAgentSidebarVimActionFromKey("enter")).toBe("open");
+		expect(nativeAgentSidebarVimActionFromKey(" ")).toBe("open");
 		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open");
 		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
@@ -54,6 +56,7 @@ describe("native agent keyboard helpers", () => {
 
 	it("maps native folder vim row actions", () => {
 		expect(nativeAgentFolderVimActionFromKey("enter")).toBe("toggle");
+		expect(nativeAgentFolderVimActionFromKey(" ")).toBe("toggle");
 		expect(nativeAgentFolderVimActionFromKey("o")).toBe("toggle");
 		expect(nativeAgentFolderVimActionFromKey("h")).toBe("collapse");
 		expect(nativeAgentFolderVimActionFromKey("l")).toBe("expand");
@@ -61,6 +64,37 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentFolderVimActionFromKey("c")).toBe("color");
 		expect(nativeAgentFolderVimActionFromKey("d")).toBe("delete");
 		expect(nativeAgentFolderVimActionFromKey("p")).toBe("none");
+	});
+
+	it("maps native sidebar top and bottom jump keys", () => {
+		expect(
+			nativeAgentSidebarJumpFromKey({ key: "G", lastGAt: 1000, now: 1200 }),
+		).toEqual({
+			action: "bottom",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentSidebarJumpFromKey({ key: "g", lastGAt: 0, now: 1000 }),
+		).toEqual({
+			action: "none",
+			handled: true,
+			nextLastGAt: 1000,
+		});
+		expect(
+			nativeAgentSidebarJumpFromKey({ key: "g", lastGAt: 1000, now: 1200 }),
+		).toEqual({
+			action: "top",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentSidebarJumpFromKey({ key: "j", lastGAt: 1000, now: 1200 }),
+		).toEqual({
+			action: "none",
+			handled: false,
+			nextLastGAt: 1000,
+		});
 	});
 
 	it("maps selected-session vim actions", () => {

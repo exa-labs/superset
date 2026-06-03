@@ -68,6 +68,7 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
 import {
 	nativeAgentFolderVimActionFromKey,
+	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarVimActionFromKey,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
 import {
@@ -608,6 +609,7 @@ export function DashboardNativeAgentsSection({
 	const [notifiedState, setNotifiedState] = useState(() => readNotifiedState());
 	const hasInitializedReplyNotificationsRef = useRef(false);
 	const hasStartedCapyBackgroundSyncRef = useRef(false);
+	const lastNativeSidebarGRef = useRef(0);
 	const [lastFolderIds, setLastFolderIds] = useState(() => readLastFolderIds());
 	const [createProvider, setCreateProvider] =
 		useState<NativeAgentProvider | null>(null);
@@ -1370,6 +1372,9 @@ export function DashboardNativeAgentsSection({
 			if (
 				event.key !== "ArrowDown" &&
 				event.key !== "ArrowUp" &&
+				vimKey !== " " &&
+				vimKey !== "G" &&
+				vimKey !== "g" &&
 				vimKey !== "h" &&
 				vimKey !== "j" &&
 				vimKey !== "k" &&
@@ -1403,6 +1408,33 @@ export function DashboardNativeAgentsSection({
 				),
 			);
 			if (rows.length === 0) return;
+
+			const focusNativeRow = (row: HTMLButtonElement) => {
+				row.focus({ preventScroll: true });
+				row.scrollIntoView({ block: "nearest" });
+			};
+
+			const jumpAction = nativeAgentSidebarJumpFromKey({
+				key: vimKey,
+				lastGAt: lastNativeSidebarGRef.current,
+				now: Date.now(),
+			});
+			if (jumpAction.handled) {
+				event.preventDefault();
+				event.stopPropagation();
+				lastNativeSidebarGRef.current = jumpAction.nextLastGAt;
+				if (jumpAction.action === "top") {
+					const firstRow = rows[0];
+					if (firstRow) focusNativeRow(firstRow);
+					return;
+				}
+				if (jumpAction.action === "bottom") {
+					const lastRow = rows.at(-1);
+					if (lastRow) focusNativeRow(lastRow);
+					return;
+				}
+				return;
+			}
 
 			const activeIndex = rows.findIndex(
 				(row) => row.dataset.nativeAgentSessionRowId === activeRoute.id,
