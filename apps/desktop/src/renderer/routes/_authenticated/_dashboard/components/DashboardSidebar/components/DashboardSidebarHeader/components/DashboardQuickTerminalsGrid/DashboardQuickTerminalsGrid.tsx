@@ -24,9 +24,10 @@ export function DashboardQuickTerminalsGrid({
 						<TooltipTrigger asChild>
 							<button
 								type="button"
-								aria-label={`Open ${terminal.label} terminal`}
+								aria-label={`Open ${terminal.label} root terminal running ${dashboardQuickTerminalCommand(terminal.id)}`}
 								data-testid={`dashboard-quick-terminal-${terminal.id}`}
 								data-dashboard-quick-terminal-trigger={terminal.id}
+								title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}
 								onClick={() => onOpenTerminal(terminal.id)}
 								className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 							>
@@ -34,7 +35,8 @@ export function DashboardQuickTerminalsGrid({
 							</button>
 						</TooltipTrigger>
 						<TooltipContent side="right">
-							{terminal.label} ({dashboardQuickTerminalCommand(terminal.id)})
+							{terminal.label} root terminal -{" "}
+							{dashboardQuickTerminalCommand(terminal.id)} via Option+K
 						</TooltipContent>
 					</Tooltip>
 				))}
@@ -49,9 +51,10 @@ export function DashboardQuickTerminalsGrid({
 					<TooltipTrigger asChild>
 						<button
 							type="button"
-							aria-label={`Open ${terminal.label} terminal`}
+							aria-label={`Open ${terminal.label} root terminal running ${dashboardQuickTerminalCommand(terminal.id)}`}
 							data-testid={`dashboard-quick-terminal-${terminal.id}`}
 							data-dashboard-quick-terminal-trigger={terminal.id}
+							title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}
 							onClick={() => onOpenTerminal(terminal.id)}
 							className={cn(
 								"flex h-7 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent px-1.5 text-xs font-medium transition-colors",
@@ -63,7 +66,8 @@ export function DashboardQuickTerminalsGrid({
 						</button>
 					</TooltipTrigger>
 					<TooltipContent side="right">
-						{dashboardQuickTerminalCommand(terminal.id)}
+						{dashboardQuickTerminalCommand(terminal.id)} in repo root via
+						Option+K
 					</TooltipContent>
 				</Tooltip>
 			))}
