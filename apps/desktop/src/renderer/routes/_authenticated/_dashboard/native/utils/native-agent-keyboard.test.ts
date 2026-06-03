@@ -163,9 +163,9 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("F")).toBe(
 			"remove-from-folder",
 		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("archive");
-		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("none");
 	});
 
 	it("maps unread vim action keys", () => {

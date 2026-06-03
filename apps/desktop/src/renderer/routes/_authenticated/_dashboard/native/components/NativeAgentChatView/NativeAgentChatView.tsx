@@ -1623,6 +1623,13 @@ export function NativeAgentChatView({
 						openRenameDialog(selectedItem);
 						return;
 					}
+					if (selectedSessionAction === "pin") {
+						void handleSetPinned(
+							selectedItem,
+							selectedItem.sidebarPinned !== true,
+						);
+						return;
+					}
 					if (selectedSessionAction === "archive") {
 						void handleSetSidebarVisible(selectedItem, false);
 						return;
