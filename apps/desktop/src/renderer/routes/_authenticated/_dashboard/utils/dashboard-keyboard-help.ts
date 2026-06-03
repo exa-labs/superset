@@ -250,6 +250,37 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 			],
 		},
+		{
+			id: "browser",
+			title: "Browser",
+			entries: [
+				{
+					keys: ["n"],
+					label: "Duplicate Chrome tab",
+					description: "Create a new embedded Chrome tab from the current URL",
+				},
+				{
+					keys: ["r"],
+					label: "Reload Chrome tab",
+					description: "Reload the active embedded Chrome tab",
+				},
+				{
+					keys: ["s"],
+					label: "Split Chrome view",
+					description: "Toggle side-by-side embedded Chrome tabs",
+				},
+				{
+					keys: ["x"],
+					label: "Close Chrome tab",
+					description: "Close the active embedded Chrome tab",
+				},
+				{
+					keys: ["h", "l"],
+					label: "Previous or next Chrome tab",
+					description: "Move left or right through embedded Chrome tabs",
+				},
+			],
+		},
 	];
 
 export function openDashboardKeyboardHelp(): boolean {

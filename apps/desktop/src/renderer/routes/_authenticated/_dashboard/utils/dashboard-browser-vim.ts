@@ -1,4 +1,5 @@
 export type DashboardBrowserVimAction =
+	| "close-tab"
 	| "new-tab"
 	| "next-tab"
 	| "none"
@@ -12,6 +13,7 @@ export function dashboardBrowserVimActionFromKey(
 	if (key === "n") return "new-tab";
 	if (key === "r") return "reload";
 	if (key === "s") return "toggle-split";
+	if (key === "x") return "close-tab";
 	if (key === "h") return "previous-tab";
 	if (key === "l") return "next-tab";
 	return "none";

@@ -9,6 +9,7 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("n")).toBe("new-tab");
 		expect(dashboardBrowserVimActionFromKey("r")).toBe("reload");
 		expect(dashboardBrowserVimActionFromKey("s")).toBe("toggle-split");
+		expect(dashboardBrowserVimActionFromKey("x")).toBe("close-tab");
 		expect(dashboardBrowserVimActionFromKey("h")).toBe("previous-tab");
 		expect(dashboardBrowserVimActionFromKey("l")).toBe("next-tab");
 		expect(dashboardBrowserVimActionFromKey("j")).toBe("none");

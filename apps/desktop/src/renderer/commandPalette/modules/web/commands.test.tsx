@@ -240,6 +240,9 @@ describe("web command provider", () => {
 		const nativeContext = commandContext("/native/capy");
 		const commands = webProvider.provide(webContext);
 		const commandIds = new Set(commands.map((command) => command.id));
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
 		const reload = commands.find(
 			(command) => command.id === "web.current.reload",
 		);
@@ -251,6 +254,10 @@ describe("web command provider", () => {
 		expect(commandIds.has("web.current.newClaude")).toBe(true);
 		expect(commandIds.has("web.current.toggleSplit")).toBe(true);
 		expect(commandIds.has("web.current.close")).toBe(true);
+		expect(shortcutById.get("web.current.reload")).toBe("r");
+		expect(shortcutById.get("web.current.newFromCurrent")).toBe("n");
+		expect(shortcutById.get("web.current.toggleSplit")).toBe("s");
+		expect(shortcutById.get("web.current.close")).toBe("x");
 		expect(reload?.when?.(webContext)).toBe(true);
 		expect(reload?.when?.(nativeContext)).toBe(false);
 	});

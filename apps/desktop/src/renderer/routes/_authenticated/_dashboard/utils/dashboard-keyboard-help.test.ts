@@ -75,6 +75,21 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Delete folder")).toEqual(
 			expect.objectContaining({ keys: ["d"] }),
 		);
+		expect(entryByLabel.get("Duplicate Chrome tab")).toEqual(
+			expect.objectContaining({ keys: ["n"] }),
+		);
+		expect(entryByLabel.get("Reload Chrome tab")).toEqual(
+			expect.objectContaining({ keys: ["r"] }),
+		);
+		expect(entryByLabel.get("Split Chrome view")).toEqual(
+			expect.objectContaining({ keys: ["s"] }),
+		);
+		expect(entryByLabel.get("Close Chrome tab")).toEqual(
+			expect.objectContaining({ keys: ["x"] }),
+		);
+		expect(entryByLabel.get("Previous or next Chrome tab")).toEqual(
+			expect.objectContaining({ keys: ["h", "l"] }),
+		);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {

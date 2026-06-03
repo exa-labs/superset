@@ -818,6 +818,11 @@ export function DashboardWebView({
 				return;
 			}
 
+			if (action === "close-tab") {
+				closeBrowserTab(activeBrowserTabId);
+				return;
+			}
+
 			const nextTabId = nextDashboardBrowserTabId(
 				browserTabIds,
 				activeBrowserTabId,
@@ -836,6 +841,7 @@ export function DashboardWebView({
 		activateBrowserTab,
 		activeBrowserTabId,
 		browserTabIds,
+		closeBrowserTab,
 		createTabFromCurrentUrl,
 		isActive,
 		reload,
