@@ -471,6 +471,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Create a Capy thread or Devin session for the current native provider",
 				keywords: ["capy", "devin", "new", "create", "native", "agent"],
+				shortcutLabel: "n",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) => {
 					const provider = nativeProviderFromPathname(context.route.pathname);
@@ -483,6 +484,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Refresh Capy or Devin data for the current view",
 				keywords: ["capy", "devin", "refresh", "reload", "native"],
+				shortcutLabel: "R",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeAgentAction(
@@ -496,6 +498,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Keep the current Capy/Devin conversation in the sidebar",
 				keywords: ["capy", "devin", "pin", "sidebar", "native"],
+				shortcutLabel: "p",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -511,6 +514,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Let the current conversation leave the sidebar automatically",
 				keywords: ["capy", "devin", "unpin", "sidebar", "native"],
+				shortcutLabel: "p",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -525,6 +529,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Set a local title for the current Capy/Devin session",
 				keywords: ["capy", "devin", "rename", "title", "session", "native"],
+				shortcutLabel: "e",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -540,6 +545,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Hide the current Capy/Devin conversation from the sidebar",
 				keywords: ["capy", "devin", "hide", "overview", "sidebar"],
+				shortcutLabel: "x",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -555,6 +561,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Move the current Capy/Devin conversation back to the sidebar",
 				keywords: ["capy", "devin", "show", "overview", "sidebar"],
+				shortcutLabel: "p",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -667,6 +674,7 @@ export const webProvider: CommandProvider = {
 				description:
 					"Move the current Capy/Devin session to the last selected folder",
 				keywords: ["capy", "devin", "folder", "move", "native"],
+				shortcutLabel: "m",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -689,6 +697,7 @@ export const webProvider: CommandProvider = {
 					"overview",
 					"native",
 				],
+				shortcutLabel: "F",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>

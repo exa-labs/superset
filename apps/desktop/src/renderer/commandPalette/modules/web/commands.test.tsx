@@ -173,6 +173,25 @@ describe("web command provider", () => {
 		expect(toggleSplit?.hotkeyId).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
 	});
 
+	it("exposes local native session shortcuts in command palette rows", () => {
+		const commands = webProvider.provide(
+			commandContext("/native/devin/session-1"),
+		);
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+
+		expect(shortcutById.get("native.current.new")).toBe("n");
+		expect(shortcutById.get("native.current.refresh")).toBe("R");
+		expect(shortcutById.get("native.current.pin")).toBe("p");
+		expect(shortcutById.get("native.current.unpin")).toBe("p");
+		expect(shortcutById.get("native.current.rename")).toBe("e");
+		expect(shortcutById.get("native.current.hide")).toBe("x");
+		expect(shortcutById.get("native.current.show")).toBe("p");
+		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
+		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
+	});
+
 	it("registers Chrome creation and tab jump commands", () => {
 		const commandIds = new Set(
 			webProvider

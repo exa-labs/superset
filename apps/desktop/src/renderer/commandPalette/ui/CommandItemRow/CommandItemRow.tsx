@@ -10,8 +10,11 @@ interface CommandItemRowProps {
 export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 	const display = useHotkeyDisplay(command.hotkeyId ?? "");
 	const Icon = command.icon;
-	const hasShortcut =
-		Boolean(command.hotkeyId) && display.text && display.text !== "Unassigned";
+	const shortcutText =
+		command.shortcutLabel ??
+		(Boolean(command.hotkeyId) && display.text !== "Unassigned"
+			? display.text
+			: null);
 	return (
 		<CommandItem
 			data-command-palette-command-id={command.id}
@@ -35,7 +38,7 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 					</span>
 				) : null}
 			</span>
-			{hasShortcut ? <CommandShortcut>{display.text}</CommandShortcut> : null}
+			{shortcutText ? <CommandShortcut>{shortcutText}</CommandShortcut> : null}
 		</CommandItem>
 	);
 }
