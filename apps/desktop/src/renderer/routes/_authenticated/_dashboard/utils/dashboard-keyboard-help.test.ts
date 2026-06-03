@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	DASHBOARD_KEYBOARD_HELP_SECTIONS,
+	filterDashboardKeyboardHelpSections,
+	normalizeDashboardKeyboardHelpQuery,
 	openDashboardKeyboardHelp,
 } from "./dashboard-keyboard-help";
 
@@ -235,5 +237,41 @@ describe("dashboard keyboard help", () => {
 
 		expect(openDashboardKeyboardHelp()).toBe(true);
 		expect(seen).toBe(true);
+	});
+
+	it("normalizes shortcut search queries into lowercase tokens", () => {
+		expect(normalizeDashboardKeyboardHelpQuery("  Folder   Color ")).toEqual([
+			"folder",
+			"color",
+		]);
+		expect(normalizeDashboardKeyboardHelpQuery("")).toEqual([]);
+	});
+
+	it("filters shortcut help by action, section, and key aliases", () => {
+		const labelsForQuery = (query: string) =>
+			filterDashboardKeyboardHelpSections({ query }).flatMap((section) =>
+				section.entries.map((entry) => entry.label),
+			);
+
+		expect(labelsForQuery("folder")).toEqual(
+			expect.arrayContaining([
+				"Create folder or group",
+				"Move selected to folder",
+				"Delete folder",
+			]),
+		);
+		expect(labelsForQuery("native reply")).toEqual(
+			expect.arrayContaining([
+				"Open unread native reply",
+				"Mark latest native reply read",
+			]),
+		);
+		expect(labelsForQuery("option c")).toEqual(
+			expect.arrayContaining(["Open Capy thread 1", "Create Capy thread"]),
+		);
+		expect(labelsForQuery("option c")).not.toEqual(
+			expect.arrayContaining(["Open Devin session 1", "Create Devin session"]),
+		);
+		expect(labelsForQuery("does-not-exist")).toEqual([]);
 	});
 });

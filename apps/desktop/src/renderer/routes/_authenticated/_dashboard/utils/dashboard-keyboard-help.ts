@@ -23,6 +23,122 @@ export interface DashboardKeyboardHelpSection {
 	title: string;
 }
 
+const DASHBOARD_KEYBOARD_HELP_KEY_ALIASES: Record<string, string[]> = {
+	"⌥": ["option", "opt", "alt"],
+	"⌘": ["command", "cmd"],
+	"⇧": ["shift"],
+	"⌃": ["control", "ctrl"],
+	"↑": ["up", "arrow up", "arrowup"],
+	"↓": ["down", "arrow down", "arrowdown"],
+	"←": ["left", "arrow left", "arrowleft"],
+	"→": ["right", "arrow right", "arrowright"],
+	Esc: ["escape"],
+};
+
+function keysSearchText(keys: string[]) {
+	return keys
+		.flatMap((key) => [
+			key,
+			...(DASHBOARD_KEYBOARD_HELP_KEY_ALIASES[key] ?? []),
+		])
+		.join(" ");
+}
+
+function normalizedSearchWords(value: string): string[] {
+	return value
+		.toLowerCase()
+		.split(/[^a-z0-9⌥⌘⇧⌃↑↓←→[\]/.=]+/u)
+		.filter(Boolean);
+}
+
+function keySearchTokens(keys: string[]): Set<string> {
+	return new Set(normalizedSearchWords(keysSearchText(keys)));
+}
+
+export function normalizeDashboardKeyboardHelpQuery(query: string): string[] {
+	return query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+function dashboardKeyboardHelpEntrySearchParts({
+	entry,
+	section,
+}: {
+	entry: DashboardKeyboardHelpEntry;
+	section: DashboardKeyboardHelpSection;
+}) {
+	const keysText = entry.keys ? keysSearchText(entry.keys) : entry.hotkeyId;
+	const text = [
+		section.id,
+		section.title,
+		entry.label,
+		entry.description,
+		keysText,
+	]
+		.join(" ")
+		.toLowerCase();
+
+	return {
+		keyTokens: entry.keys
+			? keySearchTokens(entry.keys)
+			: new Set(normalizedSearchWords(entry.hotkeyId)),
+		text,
+		textTokens: new Set(normalizedSearchWords(text)),
+	};
+}
+
+function dashboardKeyboardHelpEntryMatchesToken({
+	keyTokens,
+	text,
+	textTokens,
+	token,
+}: {
+	keyTokens: Set<string>;
+	text: string;
+	textTokens: Set<string>;
+	token: string;
+}) {
+	if (token.length === 1) {
+		return keyTokens.has(token) || textTokens.has(token);
+	}
+
+	return (
+		text.includes(token) ||
+		keyTokens.has(token) ||
+		Array.from(keyTokens).some((keyToken) => keyToken.includes(token))
+	);
+}
+
+export function filterDashboardKeyboardHelpSections({
+	query,
+	sections = DASHBOARD_KEYBOARD_HELP_SECTIONS,
+}: {
+	query: string;
+	sections?: DashboardKeyboardHelpSection[];
+}): DashboardKeyboardHelpSection[] {
+	const tokens = normalizeDashboardKeyboardHelpQuery(query);
+
+	if (tokens.length === 0) return sections;
+
+	return sections
+		.map((section) => ({
+			...section,
+			entries: section.entries.filter((entry) => {
+				const searchParts = dashboardKeyboardHelpEntrySearchParts({
+					entry,
+					section,
+				});
+
+				return tokens.every((token) =>
+					dashboardKeyboardHelpEntryMatchesToken({
+						...searchParts,
+						token,
+					}),
+				);
+			}),
+		}))
+		.filter((section) => section.entries.length > 0);
+}
+
 export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 	[
 		{

@@ -24,6 +24,8 @@ import type {
 } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	LuCheck,
+	LuColumns2,
 	LuEllipsis,
 	LuExternalLink,
 	LuFileText,
@@ -302,6 +304,87 @@ function NativeAgentHeaderShortcutsMenu({
 					>
 						{shortcut.label}
 						<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
+					</DropdownMenuItem>
+				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
+
+function NativeAgentHeaderViewMenu({
+	nativeBrowserShortcut,
+	nativeSplitShortcut,
+	onSelectViewMode,
+	viewMode,
+}: {
+	nativeBrowserShortcut: string;
+	nativeSplitShortcut: string;
+	onSelectViewMode: (mode: NativeViewMode) => void;
+	viewMode: NativeViewMode;
+}) {
+	const options: Array<{
+		key: NativeViewMode;
+		label: string;
+		shortcut: string;
+	}> = [
+		{
+			key: "native",
+			label: "Native",
+			shortcut: "b",
+		},
+		{
+			key: "browser",
+			label: "Browser",
+			shortcut: shortcutSequence(nativeBrowserShortcut, "b"),
+		},
+		{
+			key: "split",
+			label: "Split",
+			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
+		},
+	];
+	const currentOption = options.find((option) => option.key === viewMode);
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					aria-label={`Current native agent view: ${currentOption?.label ?? viewMode}`}
+					title="Switch native, browser, or split view"
+					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+				>
+					<LuColumns2 className="size-4" />
+					<span className="hidden 2xl:inline">
+						View: {currentOption?.label ?? viewMode}
+					</span>
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" className="w-56">
+				<div className="px-2 py-1.5">
+					<div className="text-xs font-medium text-foreground">View</div>
+					<div className="text-[11px] text-muted-foreground">
+						Switch chat, browser, or side-by-side mode.
+					</div>
+				</div>
+				<DropdownMenuSeparator />
+				{options.map((option) => (
+					<DropdownMenuItem
+						key={option.key}
+						onSelect={() => onSelectViewMode(option.key)}
+					>
+						<span className="flex min-w-0 items-center gap-2">
+							<LuCheck
+								className={cn(
+									"size-3.5 shrink-0",
+									viewMode === option.key
+										? "text-foreground"
+										: "text-transparent",
+								)}
+							/>
+							{option.label}
+						</span>
+						<DropdownMenuShortcut>{option.shortcut}</DropdownMenuShortcut>
 					</DropdownMenuItem>
 				))}
 			</DropdownMenuContent>
@@ -2344,47 +2427,12 @@ export function NativeAgentChatView({
 					</p>
 				</div>
 				{selectedItem?.url && (
-					<div
-						className="flex h-8 shrink-0 rounded-md border border-border bg-muted/30 p-0.5"
-						title="b toggles native/browser, s toggles split view"
-					>
-						<button
-							type="button"
-							onClick={() => handleSelectViewMode("native")}
-							className={cn(
-								"rounded px-2.5 text-xs font-medium transition-colors",
-								viewMode === "native"
-									? "bg-background text-foreground shadow-sm"
-									: "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							Native
-						</button>
-						<button
-							type="button"
-							onClick={() => handleSelectViewMode("browser")}
-							className={cn(
-								"rounded px-2.5 text-xs font-medium transition-colors",
-								viewMode === "browser"
-									? "bg-background text-foreground shadow-sm"
-									: "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							Browser
-						</button>
-						<button
-							type="button"
-							onClick={() => handleSelectViewMode("split")}
-							className={cn(
-								"rounded px-2.5 text-xs font-medium transition-colors",
-								viewMode === "split"
-									? "bg-background text-foreground shadow-sm"
-									: "text-muted-foreground hover:text-foreground",
-							)}
-						>
-							Split
-						</button>
-					</div>
+					<NativeAgentHeaderViewMenu
+						nativeBrowserShortcut={nativeBrowserShortcut}
+						nativeSplitShortcut={nativeSplitShortcut}
+						onSelectViewMode={handleSelectViewMode}
+						viewMode={viewMode}
+					/>
 				)}
 				{selectedItem && (
 					<NativeAgentHeaderShortcutsMenu shortcuts={selectedHeaderShortcuts} />
