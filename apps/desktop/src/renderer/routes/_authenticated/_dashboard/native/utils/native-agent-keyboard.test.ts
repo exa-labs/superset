@@ -148,6 +148,9 @@ describe("native agent keyboard helpers", () => {
 	});
 
 	it("maps selected-session vim actions", () => {
+		expect(nativeAgentSelectedSessionVimActionFromKey("escape")).toBe(
+			"focus-navigation-shell",
+		);
 		expect(nativeAgentSelectedSessionVimActionFromKey("r")).toBe(
 			"focus-composer",
 		);

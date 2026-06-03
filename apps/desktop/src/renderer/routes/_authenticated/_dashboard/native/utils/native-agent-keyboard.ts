@@ -55,6 +55,7 @@ export type NativeAgentSplitPaneAction =
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
 	| "focus-composer"
+	| "focus-navigation-shell"
 	| "move-to-folder"
 	| "none"
 	| "open-browser"
@@ -146,6 +147,7 @@ export function nativeAgentSidebarNavigationDeltaFromKey(input: {
 export function nativeAgentSelectedSessionVimActionFromKey(
 	key: string | null,
 ): NativeAgentSelectedSessionVimAction {
+	if (key === "escape") return "focus-navigation-shell";
 	if (key === "r") return "focus-composer";
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";

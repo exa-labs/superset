@@ -49,6 +49,7 @@ import {
 	createNativeAgentSessionDragPayload,
 	NATIVE_AGENT_SESSION_DRAG_MIME,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
+import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import {
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
@@ -1598,15 +1599,14 @@ export function NativeAgentChatView({
 						return;
 					}
 				}
-				if (key === "escape") {
-					consumeNativeAgentKeyboardEvent(event);
-					(document.activeElement as HTMLElement | null)?.blur?.();
-					return;
-				}
 				const selectedSessionAction =
 					nativeAgentSelectedSessionVimActionFromKey(key);
 				if (selectedSessionAction !== "none") {
 					consumeNativeAgentKeyboardEvent(event);
+					if (selectedSessionAction === "focus-navigation-shell") {
+						handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+						return;
+					}
 					if (selectedSessionAction === "focus-composer") {
 						composerRef.current?.focus();
 						return;
@@ -1681,14 +1681,6 @@ export function NativeAgentChatView({
 					handleSelectViewMode(nextViewMode);
 					return;
 				}
-				if (key === "p") {
-					consumeNativeAgentKeyboardEvent(event);
-					void handleSetPinned(
-						selectedItem,
-						selectedItem.sidebarPinned !== true,
-					);
-					return;
-				}
 				if (key === "O" && selectedItem.url) {
 					consumeNativeAgentKeyboardEvent(event);
 					openExternal.mutate(selectedItem.url);
@@ -1713,7 +1705,7 @@ export function NativeAgentChatView({
 					active.matches("[data-native-agent-overview-card-id]")
 				) {
 					consumeNativeAgentKeyboardEvent(event);
-					active.blur();
+					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 				}
 				return;
 			}
