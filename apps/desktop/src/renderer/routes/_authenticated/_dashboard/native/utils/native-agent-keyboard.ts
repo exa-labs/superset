@@ -53,6 +53,7 @@ export type NativeAgentSplitPaneAction =
 	| "equalize"
 	| "narrow-native"
 	| "none"
+	| "swap"
 	| "widen-native";
 export type NativeAgentOverviewCardVimAction =
 	| "archive"
@@ -220,6 +221,7 @@ export function nativeAgentSplitPaneActionFromKey(
 	key: string | null,
 ): NativeAgentSplitPaneAction {
 	if (key === "q") return "close";
+	if (key === "w") return "swap";
 	if (key === "[") return "narrow-native";
 	if (key === "]") return "widen-native";
 	if (key === "=") return "equalize";

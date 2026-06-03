@@ -320,6 +320,7 @@ describe("native agent keyboard helpers", () => {
 
 	it("maps native split pane resize keys", () => {
 		expect(nativeAgentSplitPaneActionFromKey("q")).toBe("close");
+		expect(nativeAgentSplitPaneActionFromKey("w")).toBe("swap");
 		expect(nativeAgentSplitPaneActionFromKey("[")).toBe("narrow-native");
 		expect(nativeAgentSplitPaneActionFromKey("]")).toBe("widen-native");
 		expect(nativeAgentSplitPaneActionFromKey("=")).toBe("equalize");

@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
+import { useFrameStackStore } from "renderer/commandPalette/core/frames";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
@@ -22,6 +23,7 @@ import {
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 
 type DashboardWebShortcut =
+	| "OPEN_CONTROL_PLANE"
 	| "OPEN_WEB_PAGE_1"
 	| "OPEN_WEB_PAGE_2"
 	| "OPEN_WEB_PAGE_3"
@@ -297,6 +299,11 @@ export function useDashboardWebShortcuts() {
 
 			if (shortcut === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 				openDashboardKeyboardHelp();
+				return;
+			}
+			if (shortcut === "OPEN_CONTROL_PLANE") {
+				clearPendingNativeProvider();
+				useFrameStackStore.getState().openRoot();
 				return;
 			}
 			if (shortcut === "FOCUS_DASHBOARD_SHELL") {

@@ -6,6 +6,7 @@ import {
 	type DashboardFocusScope,
 	dashboardFocusScopeForDocument,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
+import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 
 function currentDashboardFocusScope(): DashboardFocusScope {
 	if (typeof document === "undefined") {
@@ -16,6 +17,7 @@ function currentDashboardFocusScope(): DashboardFocusScope {
 
 export function DashboardFocusIndicator() {
 	const [scope, setScope] = useState(currentDashboardFocusScope);
+	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 
 	useEffect(() => {
 		if (typeof document === "undefined" || typeof window === "undefined") {
@@ -51,7 +53,7 @@ export function DashboardFocusIndicator() {
 		};
 	}, []);
 
-	const hints = dashboardFocusIndicatorHints(scope.id);
+	const hints = dashboardFocusIndicatorHints(scope.id, { vimModeEnabled });
 
 	return (
 		<div

@@ -31,6 +31,9 @@ describe("dashboard browser webview bridge", () => {
 			'return "FOCUS_DASHBOARD_SHELL"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (code === "keyk") return "OPEN_CONTROL_PLANE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (code === "keyw") return "OPEN_WORKSPACES"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

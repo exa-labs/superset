@@ -58,6 +58,9 @@ class FakeElement {
 	}
 
 	matches(selector: string) {
+		if (selector.includes("data-dashboard-sidebar-roving-item")) {
+			return this.options.roving === true;
+		}
 		if (selector.includes("data-dashboard-sidebar-action")) {
 			return this.options.action === true;
 		}
@@ -145,7 +148,7 @@ describe("focusDashboardNavigationShell", () => {
 	});
 
 	it("keeps the preserved keyboard focus marker when returning to the shell", () => {
-		const preserved = new FakeElement("preserved");
+		const preserved = new FakeElement("preserved", { roving: true });
 		const active = new FakeElement("active", { active: true });
 		preserved.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
 
@@ -183,7 +186,7 @@ describe("focusDashboardNavigationShell", () => {
 	});
 
 	it("returns to the preserved keyboard focus marker before the active route row", () => {
-		const focused = new FakeElement("keyboard focused");
+		const focused = new FakeElement("keyboard focused", { roving: true });
 		const active = new FakeElement("active route", { active: true });
 		focused.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
 
@@ -202,6 +205,7 @@ describe("focusDashboardNavigationShell", () => {
 	it("ignores hidden keyboard focus markers and falls back to the active route row", () => {
 		const hiddenFocused = new FakeElement("hidden keyboard focused", {
 			height: 0,
+			roving: true,
 		});
 		const active = new FakeElement("active route", { active: true });
 		hiddenFocused.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
@@ -215,6 +219,26 @@ describe("focusDashboardNavigationShell", () => {
 		expect(active.focusCount).toBe(1);
 		expect(
 			hiddenFocused.getAttribute("data-dashboard-sidebar-keyboard-focus"),
+		).toBeNull();
+		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
+			"true",
+		);
+	});
+
+	it("ignores preserved focus markers on utility buttons", () => {
+		const utilityButton = new FakeElement("resource meter");
+		const active = new FakeElement("active route", { active: true });
+		utilityButton.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([utilityButton, active])),
+			),
+		).toBe(true);
+		expect(utilityButton.focusCount).toBe(0);
+		expect(active.focusCount).toBe(1);
+		expect(
+			utilityButton.getAttribute("data-dashboard-sidebar-keyboard-focus"),
 		).toBeNull();
 		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
 			"true",

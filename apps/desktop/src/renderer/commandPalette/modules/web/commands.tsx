@@ -81,6 +81,7 @@ function dispatchNativeAgentAction(
 		| "rename"
 		| "show"
 		| "sync-capy"
+		| "swap-split"
 		| "toggle-browser"
 		| "toggle-diagnostics"
 		| "toggle-split"
@@ -938,6 +939,22 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"narrow-native-split",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.swapSplit",
+				title: "Swap native split panes",
+				section: "web",
+				description: "Move the native chat pane to the opposite side",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
+				keywords: ["capy", "devin", "native", "split", "swap", "side"],
+				shortcutLabel: "w",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"swap-split",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

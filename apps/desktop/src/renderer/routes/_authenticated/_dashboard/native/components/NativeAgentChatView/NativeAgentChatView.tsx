@@ -156,6 +156,7 @@ type NativeItem = {
 };
 
 type NativeViewMode = "browser" | "native" | "split";
+type NativeAgentSplitPlacement = "native-left" | "native-right";
 
 type NativeAgentCurrentAction =
 	| "close-split"
@@ -171,6 +172,7 @@ type NativeAgentCurrentAction =
 	| "rename"
 	| "show"
 	| "sync-capy"
+	| "swap-split"
 	| "toggle-browser"
 	| "toggle-diagnostics"
 	| "toggle-split"
@@ -192,7 +194,10 @@ const NATIVE_AGENT_LIST_STALE_MS = 60_000;
 const NATIVE_AGENT_DETAIL_STALE_MS = 30_000;
 const NATIVE_AGENT_CACHE_MS = 2 * 60 * 60 * 1000;
 const SPLIT_RATIO_STORAGE_KEY = "dashboard-native-agent-split-ratio-v1";
+const SPLIT_PLACEMENT_STORAGE_KEY = "dashboard-native-agent-split-placement-v1";
 const DEFAULT_NATIVE_AGENT_SPLIT_RATIO = 50;
+const DEFAULT_NATIVE_AGENT_SPLIT_PLACEMENT: NativeAgentSplitPlacement =
+	"native-left";
 const MIN_NATIVE_AGENT_SPLIT_RATIO = 30;
 const MAX_NATIVE_AGENT_SPLIT_RATIO = 70;
 const NATIVE_AGENT_SPLIT_RATIO_STEP = 5;
@@ -310,19 +315,53 @@ function writeNativeAgentSplitRatios(ratios: Record<string, number>) {
 	writeJson(SPLIT_RATIO_STORAGE_KEY, ratios);
 }
 
+function isNativeAgentSplitPlacement(
+	value: unknown,
+): value is NativeAgentSplitPlacement {
+	return value === "native-left" || value === "native-right";
+}
+
+function readNativeAgentSplitPlacements(): Record<
+	string,
+	NativeAgentSplitPlacement
+> {
+	const stored = readJson<Record<string, unknown>>(
+		SPLIT_PLACEMENT_STORAGE_KEY,
+		{},
+	);
+	return Object.fromEntries(
+		Object.entries(stored).filter(
+			(entry): entry is [string, NativeAgentSplitPlacement] =>
+				isNativeAgentSplitPlacement(entry[1]),
+		),
+	);
+}
+
+function writeNativeAgentSplitPlacements(
+	placements: Record<string, NativeAgentSplitPlacement>,
+) {
+	writeJson(SPLIT_PLACEMENT_STORAGE_KEY, placements);
+}
+
 function nativeAgentSplitPaneStyle({
-	placement,
+	pane,
 	ratio,
+	splitPlacement,
 	viewMode,
 }: {
-	placement: "browser" | "native";
+	pane: "browser" | "native";
 	ratio: number;
+	splitPlacement: NativeAgentSplitPlacement;
 	viewMode: NativeViewMode;
 }): CSSProperties | undefined {
 	if (viewMode !== "split") return undefined;
-	return placement === "native"
-		? { right: `${100 - ratio}%` }
-		: { left: `${ratio}%` };
+	const nativeIsLeft = splitPlacement === "native-left";
+	if (pane === "native") {
+		return nativeIsLeft
+			? { right: `${100 - ratio}%` }
+			: { left: `${100 - ratio}%` };
+	}
+	return nativeIsLeft ? { left: `${ratio}%` } : { right: `${ratio}%` };
 }
 
 function latestAgentMessageTime(item: NativeItem): number | null {
@@ -608,6 +647,9 @@ export function NativeAgentChatView({
 	const [splitRatios, setSplitRatios] = useState(() =>
 		readNativeAgentSplitRatios(),
 	);
+	const [splitPlacements, setSplitPlacements] = useState(() =>
+		readNativeAgentSplitPlacements(),
+	);
 	const [showDiagnostics, setShowDiagnostics] = useState(false);
 	const isVimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 	const nativeBrowserShortcut = useHotkeyDisplay(
@@ -623,14 +665,18 @@ export function NativeAgentChatView({
 		viewState.key === selectedViewKey ? viewState.mode : "native";
 	const nativeSplitRatio =
 		splitRatios[selectedViewKey] ?? DEFAULT_NATIVE_AGENT_SPLIT_RATIO;
+	const nativeSplitPlacement =
+		splitPlacements[selectedViewKey] ?? DEFAULT_NATIVE_AGENT_SPLIT_PLACEMENT;
 	const nativePaneStyle = nativeAgentSplitPaneStyle({
-		placement: "native",
+		pane: "native",
 		ratio: nativeSplitRatio,
+		splitPlacement: nativeSplitPlacement,
 		viewMode,
 	});
 	const browserPaneStyle = nativeAgentSplitPaneStyle({
-		placement: "browser",
+		pane: "browser",
 		ratio: nativeSplitRatio,
+		splitPlacement: nativeSplitPlacement,
 		viewMode,
 	});
 	const overviewCardKeyboardHints = useMemo(
@@ -1475,9 +1521,26 @@ export function NativeAgentChatView({
 		}));
 	}, [selectedItem?.url, selectedViewKey, viewMode]);
 
+	const swapNativeSplitPanes = useCallback(() => {
+		if (viewMode !== "split" || !selectedItem?.url) return;
+		setSplitPlacements((current) => {
+			const currentPlacement =
+				current[selectedViewKey] ?? DEFAULT_NATIVE_AGENT_SPLIT_PLACEMENT;
+			return {
+				...current,
+				[selectedViewKey]:
+					currentPlacement === "native-left" ? "native-right" : "native-left",
+			};
+		});
+	}, [selectedItem?.url, selectedViewKey, viewMode]);
+
 	useEffect(() => {
 		writeNativeAgentSplitRatios(splitRatios);
 	}, [splitRatios]);
+
+	useEffect(() => {
+		writeNativeAgentSplitPlacements(splitPlacements);
+	}, [splitPlacements]);
 
 	useEffect(() => {
 		const openItem = (item: NativeItem) => {
@@ -1702,6 +1765,10 @@ export function NativeAgentChatView({
 						handleSelectViewMode("native");
 						return;
 					}
+					if (splitPaneAction === "swap") {
+						swapNativeSplitPanes();
+						return;
+					}
 					if (splitPaneAction === "narrow-native") {
 						resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
 						return;
@@ -1808,6 +1875,7 @@ export function NativeAgentChatView({
 		provider,
 		resizeNativeSplitPane,
 		selectedItem,
+		swapNativeSplitPanes,
 		unreadWorkspaceItems,
 		viewMode,
 		workspaceItems,
@@ -1887,6 +1955,10 @@ export function NativeAgentChatView({
 				handleSelectViewMode(viewMode === "split" ? "native" : "split");
 				return;
 			}
+			if (detail?.action === "swap-split" && selectedItem.url) {
+				swapNativeSplitPanes();
+				return;
+			}
 			if (detail?.action === "close-split" && selectedItem.url) {
 				if (viewMode === "split") handleSelectViewMode("native");
 				return;
@@ -1922,6 +1994,7 @@ export function NativeAgentChatView({
 		provider,
 		resizeNativeSplitPane,
 		selectedItem,
+		swapNativeSplitPanes,
 		syncCapyThreads,
 		viewMode,
 		handleSetPinned,
@@ -2087,6 +2160,7 @@ export function NativeAgentChatView({
 						)}
 						{selectedItem.url && viewMode === "split" && (
 							<>
+								<ShortcutHint title="Swap native/browser panes">w</ShortcutHint>
 								<ShortcutHint title="Narrow native chat pane">[</ShortcutHint>
 								<ShortcutHint title="Widen native chat pane">]</ShortcutHint>
 								<ShortcutHint title="Equalize native split panes">
@@ -2462,7 +2536,10 @@ export function NativeAgentChatView({
 						style={nativePaneStyle}
 						className={cn(
 							"absolute inset-0 flex min-h-0 flex-col",
-							viewMode === "split" && "border-r border-border",
+							viewMode === "split" &&
+								(nativeSplitPlacement === "native-left"
+									? "border-r border-border"
+									: "border-l border-border"),
 							viewMode === "native" || viewMode === "split"
 								? "pointer-events-auto opacity-100"
 								: "pointer-events-none opacity-0",

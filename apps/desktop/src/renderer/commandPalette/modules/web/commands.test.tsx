@@ -588,6 +588,9 @@ describe("web command provider", () => {
 				.find((command) => command.id === "native.current.narrowSplit")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "native.current.swapSplit")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "native.current.closeSplit")
 				?.run?.(context);
 
@@ -617,6 +620,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "narrow-native-split", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "swap-split", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 			expect(events).toContainEqual({

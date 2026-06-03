@@ -1,6 +1,7 @@
 import type { Input } from "electron";
 
 export type DashboardWebShortcut =
+	| "OPEN_CONTROL_PLANE"
 	| "OPEN_WEB_PAGE_1"
 	| "OPEN_WEB_PAGE_2"
 	| "OPEN_WEB_PAGE_3"

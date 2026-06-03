@@ -52,6 +52,22 @@ function firstVisible(elements: Iterable<Element>): HTMLElement | null {
 	return null;
 }
 
+function firstPreservedSidebarItem(root: HTMLElement): HTMLElement | null {
+	for (const element of root.querySelectorAll(
+		SIDEBAR_KEYBOARD_FOCUS_SELECTOR,
+	)) {
+		if (
+			!isHTMLElement(element) ||
+			!isVisible(element) ||
+			!element.matches(PRIMARY_SIDEBAR_SELECTOR)
+		) {
+			continue;
+		}
+		return element;
+	}
+	return null;
+}
+
 function isAuxiliarySidebarAction(element: HTMLElement): boolean {
 	if (element.matches("[data-dashboard-sidebar-action]")) return true;
 	const scope = element.closest<HTMLElement>(
@@ -101,7 +117,7 @@ export function focusDashboardNavigationShell(
 	if (!root) return false;
 
 	const target =
-		firstVisible(root.querySelectorAll(SIDEBAR_KEYBOARD_FOCUS_SELECTOR)) ??
+		firstPreservedSidebarItem(root) ??
 		firstVisible(root.querySelectorAll(ACTIVE_NATIVE_AGENT_ROW_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_SIDEBAR_SELECTOR)) ??
 		firstPrimarySidebarItem(root) ??

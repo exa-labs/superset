@@ -5,6 +5,7 @@ import {
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	dashboardActionHintKeyFromInput,
 	dashboardActionHintLabelForIndex,
+	dashboardActionHintRootForElement,
 	openDashboardActionHints,
 } from "./dashboard-action-hints";
 
@@ -54,6 +55,9 @@ describe("dashboard action hints", () => {
 		expect(
 			dashboardActionHintKeyFromInput({ ...baseInput, key: "Escape" }),
 		).toBe("escape");
+		expect(
+			dashboardActionHintKeyFromInput({ ...baseInput, key: "Enter" }),
+		).toBe("enter");
 		expect(dashboardActionHintKeyFromInput({ ...baseInput, key: "Tab" })).toBe(
 			null,
 		);
@@ -84,6 +88,15 @@ describe("dashboard action hints", () => {
 		link.href = "https://example.com";
 		link.textContent = "Open";
 		setRect(link, visibleRect({ top: 40 }));
+		const screenReaderOnlyButton = document.createElement("button");
+		screenReaderOnlyButton.className = "sr-only";
+		setRect(screenReaderOnlyButton, visibleRect({ top: 80, width: 1 }));
+		const explicitlyExcludedButton = document.createElement("button");
+		explicitlyExcludedButton.setAttribute(
+			"data-dashboard-action-hint-exclude",
+			"true",
+		);
+		setRect(explicitlyExcludedButton, visibleRect({ top: 100 }));
 		const excluded = document.createElement("button");
 		setRect(excluded, visibleRect());
 		const excludedParent = document.createElement("div");
@@ -95,6 +108,8 @@ describe("dashboard action hints", () => {
 			hiddenButton,
 			disabledButton,
 			link,
+			screenReaderOnlyButton,
+			explicitlyExcludedButton,
 			excludedParent,
 		);
 
@@ -105,7 +120,62 @@ describe("dashboard action hints", () => {
 			link,
 		]);
 		expect(targets.map((target) => target.label)).toEqual(["a", "s"]);
+		expect(targets.map((target) => target.displayLabel)).toEqual(["a", "s"]);
 		expect(targets.map((target) => target.title)).toEqual(["Refresh", "Open"]);
+	});
+
+	it("uses semantic sidebar shortcuts for scoped row action hints", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const row = document.createElement("button");
+		row.setAttribute("data-native-agent-session-row-id", "session-1");
+		row.textContent = "Session";
+		setRect(row, visibleRect());
+		const menu = document.createElement("button");
+		menu.setAttribute("data-dashboard-sidebar-action", "menu");
+		menu.setAttribute("aria-label", "Show actions");
+		setRect(menu, visibleRect({ top: 40 }));
+		const pin = document.createElement("button");
+		pin.setAttribute("data-dashboard-sidebar-action", "pin");
+		pin.setAttribute("aria-label", "Pin");
+		setRect(pin, visibleRect({ top: 70 }));
+		const archive = document.createElement("button");
+		archive.setAttribute("data-dashboard-sidebar-action", "archive");
+		archive.setAttribute("aria-label", "Move to overview");
+		setRect(archive, visibleRect({ top: 100 }));
+		root.append(row, menu, pin, archive);
+
+		const targets = collectDashboardActionHintTargets(root);
+
+		expect(targets.map((target) => target.label)).toEqual([
+			"enter",
+			".",
+			"p",
+			"x",
+		]);
+		expect(targets.map((target) => target.displayLabel)).toEqual([
+			"↵",
+			".",
+			"p",
+			"x",
+		]);
+	});
+
+	it("scopes action hints to the focused sidebar row when available", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const focusedRow = document.createElement("div");
+		focusedRow.setAttribute("data-dashboard-sidebar-action-scope", "true");
+		const focusedButton = document.createElement("button");
+		focusedRow.append(focusedButton);
+		const otherRow = document.createElement("div");
+		otherRow.setAttribute("data-dashboard-sidebar-action-scope", "true");
+		root.append(focusedRow, otherRow);
+
+		expect(dashboardActionHintRootForElement(focusedButton, root)).toBe(
+			focusedRow,
+		);
+		expect(dashboardActionHintRootForElement(null, root)).toBe(root);
 	});
 
 	it("focuses and clicks the selected target", () => {

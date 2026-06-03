@@ -5,6 +5,7 @@ import {
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	type DashboardActionHintTarget,
 	dashboardActionHintKeyFromInput,
+	dashboardActionHintRootForElement,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
@@ -39,7 +40,15 @@ export function DashboardActionHintsOverlay() {
 			const root = document.querySelector<HTMLElement>(
 				"[data-dashboard-action-hints-root]",
 			);
-			const targets = collectDashboardActionHintTargets(root ?? document.body);
+			const activeElement =
+				document.activeElement instanceof Element
+					? document.activeElement
+					: null;
+			const targetRoot = dashboardActionHintRootForElement(
+				activeElement,
+				root ?? document.body,
+			);
+			const targets = collectDashboardActionHintTargets(targetRoot);
 			if (targets.length === 0) return;
 			setActiveHints({ prefix: "", targets });
 		};
@@ -130,7 +139,7 @@ export function DashboardActionHintsOverlay() {
 						top: Math.max(4, target.rect.top),
 					}}
 				>
-					{target.label}
+					{target.displayLabel}
 				</div>
 			))}
 		</div>

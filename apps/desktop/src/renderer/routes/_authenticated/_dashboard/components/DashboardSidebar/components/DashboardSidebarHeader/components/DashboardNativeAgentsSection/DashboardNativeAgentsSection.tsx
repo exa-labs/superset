@@ -430,75 +430,6 @@ function NativeCreateDialog({
 	);
 }
 
-const SESSION_ROW_KEY_HINTS = [
-	{ key: ".", title: "Actions" },
-	{ key: "r", title: "Reply" },
-	{ key: "o", title: "Browser" },
-	{ key: "b", title: "Toggle native/browser" },
-	{ key: "e", title: "Rename" },
-	{ key: "m", title: "Move to folder" },
-	{ key: "F", title: "Remove from folder" },
-	{ key: "p", title: "Pin" },
-	{ key: "x", title: "Hide" },
-];
-
-const FOLDER_ROW_KEY_HINTS = [
-	{ key: ".", title: "Actions" },
-	{ key: "n", title: "Create session" },
-	{ key: "N", title: "Create folder" },
-	{ key: "e", title: "Rename" },
-	{ key: "c", title: "Cycle color" },
-	{ key: "d", title: "Delete" },
-];
-
-function SessionRowKeyHints({ visible }: { visible: boolean }) {
-	return (
-		<div
-			aria-hidden="true"
-			className={cn(
-				"pointer-events-none absolute right-1 bottom-1 flex max-w-[12rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
-				visible
-					? "opacity-100"
-					: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-			)}
-		>
-			{SESSION_ROW_KEY_HINTS.map((hint) => (
-				<span
-					key={hint.key}
-					title={hint.title}
-					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
-				>
-					{hint.key}
-				</span>
-			))}
-		</div>
-	);
-}
-
-function FolderRowKeyHints({ visible }: { visible: boolean }) {
-	return (
-		<div
-			aria-hidden="true"
-			className={cn(
-				"pointer-events-none absolute top-full right-1 z-10 mt-0.5 flex max-w-[8rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/95 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
-				visible
-					? "opacity-100"
-					: "opacity-0 group-hover/folder:opacity-100 group-focus-within/folder:opacity-100",
-			)}
-		>
-			{FOLDER_ROW_KEY_HINTS.map((hint) => (
-				<span
-					key={hint.key}
-					title={hint.title}
-					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
-				>
-					{hint.key}
-				</span>
-			))}
-		</div>
-	);
-}
-
 function SessionRow({
 	activeId,
 	item,
@@ -585,7 +516,7 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, . actions, r reply, o browser, b toggle browser, e rename, m move, F remove folder, p pin, x hide`}
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nShown: ${inclusionReasons.join(", ")}\nEnter opens. Press . for menu or f for action hints.`}
 				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-16 text-left"
 			>
 				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
@@ -743,7 +674,6 @@ function SessionRow({
 					<LuArchive className="size-3" />
 				</button>
 			</div>
-			<SessionRowKeyHints visible={isActive || hasFreshAgentResponse} />
 			<button
 				type="button"
 				data-dashboard-sidebar-action="create"
@@ -2370,7 +2300,6 @@ export function DashboardNativeAgentsSection({
 														<LuFolderX className="size-3 shrink-0" />
 													</button>
 												</span>
-												<FolderRowKeyHints visible={folderHasUnread} />
 											</fieldset>
 											{(!folder.isCollapsed || isNativeSidebarSearchActive) &&
 												folderItems.length > 0 && (

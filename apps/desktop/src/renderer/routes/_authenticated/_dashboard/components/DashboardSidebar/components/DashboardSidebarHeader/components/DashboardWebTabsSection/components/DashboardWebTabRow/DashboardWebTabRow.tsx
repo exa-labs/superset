@@ -29,37 +29,6 @@ interface DashboardWebTabRowProps {
 	onPinnedChange: (tabId: string, isPinned: boolean) => void;
 }
 
-const WEB_TAB_ROW_KEY_HINTS = [
-	{ key: ".", title: "Actions" },
-	{ key: "p", title: "Pin" },
-	{ key: "e", title: "Rename" },
-	{ key: "a/x", title: "Close" },
-];
-
-function WebTabRowKeyHints({ visible }: { visible: boolean }) {
-	return (
-		<div
-			aria-hidden="true"
-			className={cn(
-				"pointer-events-none absolute top-1 right-[4.5rem] flex max-w-[5rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
-				visible
-					? "opacity-100"
-					: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-			)}
-		>
-			{WEB_TAB_ROW_KEY_HINTS.map((hint) => (
-				<span
-					key={hint.key}
-					title={hint.title}
-					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
-				>
-					{hint.key}
-				</span>
-			))}
-		</div>
-	);
-}
-
 export function DashboardWebTabRow({
 	tab,
 	isActive,
@@ -247,7 +216,6 @@ export function DashboardWebTabRow({
 					<LuX className="size-3" />
 				</button>
 			</div>
-			<WebTabRowKeyHints visible={menuOpen} />
 		</li>
 	);
 }

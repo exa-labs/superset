@@ -5,50 +5,48 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar roving, activation, expansion, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"Esc",
+			"⌥K",
 			"⌥Tab",
-			"↑↓/jk",
-			"gg/G",
-			"/",
-			"Enter/Space",
-			"h/l",
-			"n/N",
-			"r/o/b",
-			"e/m",
-			"p/a/x",
-			"c/d",
+			"↑↓",
+			"jk",
+			"Enter",
 			".",
+			"?",
 		]);
 	});
 
 	it("surfaces global and Vim action hints from browser focus", () => {
-		expect(dashboardFocusIndicatorHints("browser")).toEqual([
-			"Esc",
-			"⌥K",
-			"⌥Tab",
-			"?",
-			"f",
-			"⌥G",
-			"gg/gc/gd/gw",
-			"h/l",
-			"n/r",
-			"s/q",
-			"p/x",
-		]);
+		expect(
+			dashboardFocusIndicatorHints("browser", { vimModeEnabled: true }),
+		).toEqual(["Esc", "⌥K", "⌥Tab", "⌥G", "h/l", "s/q", "?", "f"]);
+	});
+
+	it("hides Vim-only action hints when Vim mode is disabled", () => {
+		expect(
+			dashboardFocusIndicatorHints("app", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K", "⌥V", "⌥Tab"]);
+		expect(
+			dashboardFocusIndicatorHints("browser", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K", "⌥Tab", "⌥G"]);
+		expect(
+			dashboardFocusIndicatorHints("native-agent", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K", "⌥V", "⌥Tab"]);
+		expect(
+			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K", "⌥Tab", "↑↓", "Enter", "."]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"Esc",
+			"⌥K",
+			"⌥V",
 			"⌥Tab",
-			"n/N",
-			"u/U",
-			"f",
 			"r",
-			"o/O/b",
-			"s/[/]/=",
-			"m/e",
+			"s/b",
 			"p/x",
 			"?",
+			"f",
 		]);
 	});
 

@@ -27,6 +27,7 @@ const DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX =
 	"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:";
 const DASHBOARD_WEB_SHORTCUT_URL_PROTOCOL = "clankee-dashboard-shortcut:";
 const DASHBOARD_WEB_SHORTCUTS = new Set<DashboardWebShortcut>([
+	"OPEN_CONTROL_PLANE",
 	"OPEN_WEB_PAGE_1",
 	"OPEN_WEB_PAGE_2",
 	"OPEN_WEB_PAGE_3",
@@ -505,6 +506,10 @@ class BrowserManager extends EventEmitter {
 				const shortcut = message.slice(
 					DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX.length,
 				) as DashboardWebShortcut;
+				if (shortcut === "OPEN_CONTROL_PLANE") {
+					this.openControlPlane();
+					return;
+				}
 				if (DASHBOARD_WEB_SHORTCUTS.has(shortcut)) {
 					this.openDashboardWebShortcut(shortcut);
 					return;

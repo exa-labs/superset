@@ -186,6 +186,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
 		if (digit) return digitShortcuts[Number.parseInt(digit[1], 10) - 1] || null;
 		const code = String(event.code || "").toLowerCase();
+		if (code === "keyk") return "OPEN_CONTROL_PLANE";
 		if (code === "keyc") return "OPEN_CAPY";
 		if (code === "keyd") return "OPEN_DEVIN";
 		if (code === "keyg") return "OPEN_CHROME";
@@ -717,6 +718,7 @@ export function DashboardBrowserWebView({
 	useEffect(() => {
 		const webview = webviewRef.current;
 		if (!webview) return;
+		const bridgeInstallTimeouts: number[] = [];
 
 		const syncNavigationState = () => {
 			if (!isReadyRef.current) return;
@@ -746,6 +748,36 @@ export function DashboardBrowserWebView({
 				})
 				.catch(() => undefined);
 		};
+		const markReady = () => {
+			const wasReady = isReadyRef.current;
+			isReadyRef.current = true;
+			registerWebview();
+			if (!wasReady) {
+				onReadyChangeRef.current(tabId, true);
+			}
+			syncNavigationState();
+		};
+		const installShortcutBridge = () => {
+			let bridgeInstall: Promise<unknown>;
+			try {
+				bridgeInstall = webview.executeJavaScript(
+					DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT,
+				);
+			} catch {
+				return;
+			}
+			void bridgeInstall
+				.then(() => {
+					markReady();
+					syncDashboardVimMode();
+				})
+				.catch(() => undefined);
+		};
+		const scheduleShortcutBridgeInstall = (delayMs: number) => {
+			bridgeInstallTimeouts.push(
+				window.setTimeout(installShortcutBridge, delayMs),
+			);
+		};
 
 		const handleStartLoading = () => {
 			recordDashboardBrowserPaneEvent({
@@ -770,14 +802,11 @@ export function DashboardBrowserWebView({
 			onStateChangeRef.current(tabId, { isLoading: false });
 			syncNavigationState();
 			captureAndStoreFavicon();
+			installShortcutBridge();
 		};
 		const handleDomReady = () => {
-			isReadyRef.current = true;
-			registerWebview();
-			void webview
-				.executeJavaScript(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT)
-				.then(syncDashboardVimMode)
-				.catch(() => undefined);
+			markReady();
+			installShortcutBridge();
 			recordDashboardBrowserPaneEvent({
 				paneId,
 				tabId,
@@ -786,7 +815,6 @@ export function DashboardBrowserWebView({
 				url: safeGetWebviewUrl(webview, srcRef.current),
 				title: safeGetWebviewTitle(webview, labelRef.current),
 			});
-			onReadyChangeRef.current(tabId, true);
 			syncNavigationState();
 			captureAndStoreFavicon();
 			focusActiveWebview();
@@ -873,8 +901,15 @@ export function DashboardBrowserWebView({
 			handleFaviconUpdated as EventListener,
 		);
 		registerWebview();
+		scheduleShortcutBridgeInstall(0);
+		scheduleShortcutBridgeInstall(250);
+		scheduleShortcutBridgeInstall(1000);
+		scheduleShortcutBridgeInstall(3000);
 
 		return () => {
+			for (const timeoutId of bridgeInstallTimeouts) {
+				window.clearTimeout(timeoutId);
+			}
 			isReadyRef.current = false;
 			onReadyChangeRef.current(tabId, false);
 			if (registeredWebContentsIdRef.current !== null) {
