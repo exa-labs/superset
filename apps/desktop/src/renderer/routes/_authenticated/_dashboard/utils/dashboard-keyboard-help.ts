@@ -63,6 +63,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					label: "Show action hints",
 					description: "Label visible dashboard buttons and links by key",
 				},
+				{
+					hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
+					label: "Open unread native reply",
+					description:
+						"Jump to the newest unread Capy or Devin response from any dashboard view",
+				},
 			],
 		},
 		{

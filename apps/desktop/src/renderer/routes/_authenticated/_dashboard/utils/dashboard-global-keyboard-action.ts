@@ -5,17 +5,22 @@ import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-stat
 
 export type DashboardGlobalKeyboardAction =
 	| "FOCUS_DASHBOARD_SHELL"
+	| "OPEN_UNREAD_NATIVE_REPLY"
 	| "SHOW_DASHBOARD_KEYBOARD_HELP"
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
 	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
 	| "TOGGLE_VIM_MODE";
 type DashboardMruSwitchDirection = "next" | "previous";
 
+export const DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT =
+	"dashboard-native-agent-open-unread-reply";
+
 interface DashboardGlobalKeyboardActionHandlers {
 	defer: (callback: () => void) => void;
 	focusNavigationShell: () => boolean;
 	openKeyboardHelp: () => boolean;
 	openNavigationShell: () => void;
+	openUnreadNativeReply: () => boolean;
 	switchMruView: (direction: DashboardMruSwitchDirection) => boolean;
 	toggleVimMode: () => boolean;
 }
@@ -40,11 +45,22 @@ export function dispatchDashboardViewMruSwitch(
 	return true;
 }
 
+export function dispatchDashboardOpenUnreadNativeReply(): boolean {
+	if (typeof window === "undefined") return false;
+	window.dispatchEvent(
+		new CustomEvent(DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT, {
+			cancelable: true,
+		}),
+	);
+	return true;
+}
+
 const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	defer,
 	focusNavigationShell: focusDashboardNavigationShell,
 	openKeyboardHelp: openDashboardKeyboardHelp,
 	openNavigationShell: () => useWorkspaceSidebarStore.getState().setOpen(true),
+	openUnreadNativeReply: dispatchDashboardOpenUnreadNativeReply,
 	switchMruView: dispatchDashboardViewMruSwitch,
 	toggleVimMode: toggleDashboardVimMode,
 };
@@ -62,6 +78,10 @@ export function handleDashboardGlobalKeyboardAction(
 
 	if (action === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 		return resolved.openKeyboardHelp();
+	}
+
+	if (action === "OPEN_UNREAD_NATIVE_REPLY") {
+		return resolved.openUnreadNativeReply();
 	}
 
 	if (action === "SWITCH_DASHBOARD_VIEW_NEXT") {

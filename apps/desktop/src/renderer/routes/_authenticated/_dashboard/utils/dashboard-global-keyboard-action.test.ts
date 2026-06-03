@@ -8,6 +8,7 @@ function handlers(
 	overrides: {
 		focusNavigationShell?: () => boolean;
 		openKeyboardHelp?: () => boolean;
+		openUnreadNativeReply?: () => boolean;
 		onDefer?: (callback: () => void) => void;
 		onOpenNavigationShell?: () => void;
 		onSwitchMruView?: (direction: "next" | "previous") => boolean;
@@ -19,6 +20,7 @@ function handlers(
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
 		openKeyboardHelp: overrides.openKeyboardHelp ?? (() => true),
 		openNavigationShell: overrides.onOpenNavigationShell ?? (() => undefined),
+		openUnreadNativeReply: overrides.openUnreadNativeReply ?? (() => true),
 		switchMruView: overrides.onSwitchMruView ?? (() => true),
 		toggleVimMode: overrides.onToggleVimMode ?? (() => true),
 	};
@@ -50,6 +52,23 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 				"SHOW_DASHBOARD_KEYBOARD_HELP",
 				handlers({
 					openKeyboardHelp: () => {
+						opened = true;
+						return true;
+					},
+				}),
+			),
+		).toBe(true);
+		expect(opened).toBe(true);
+	});
+
+	it("opens the newest unread native reply from the global main-process action", () => {
+		let opened = false;
+
+		expect(
+			handleDashboardGlobalKeyboardAction(
+				"OPEN_UNREAD_NATIVE_REPLY",
+				handlers({
+					openUnreadNativeReply: () => {
 						opened = true;
 						return true;
 					},

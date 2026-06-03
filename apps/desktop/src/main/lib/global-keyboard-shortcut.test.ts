@@ -26,6 +26,35 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("TOGGLE_VIM_MODE");
 	});
 
+	it("matches Option+N as a global unread native reply jump", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "KeyN",
+				key: "Dead",
+			}),
+		).toBe("OPEN_UNREAD_NATIVE_REPLY");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "",
+				key: "n",
+				type: "rawKeyDown",
+			}),
+		).toBe("OPEN_UNREAD_NATIVE_REPLY");
+	});
+
+	it("keeps unmodified N available for pending Capy and Devin create chords", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				alt: false,
+				code: "KeyN",
+				key: "n",
+			}),
+		).toBeNull();
+	});
+
 	it("matches Option+Tab MRU switching in both directions", () => {
 		expect(
 			globalKeyboardActionFromInput({
@@ -143,6 +172,9 @@ describe("globalKeyboardActionFromInput", () => {
 		expect(shouldPreventDefaultForGlobalKeyboardAction("TOGGLE_VIM_MODE")).toBe(
 			true,
 		);
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction("OPEN_UNREAD_NATIVE_REPLY"),
+		).toBe(true);
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction(
 				"SHOW_DASHBOARD_KEYBOARD_HELP",

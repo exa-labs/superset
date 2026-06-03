@@ -239,6 +239,42 @@ export function getUnreadNativeAgentReplyNotifications(input: {
 		.sort((left, right) => right.latestTime - left.latestTime);
 }
 
+export function getLatestUnreadNativeAgentReplyItem<
+	TItem extends NativeAgentNotificationItem,
+>(input: {
+	itemsByProvider: Record<NativeAgentProvider, TItem[]>;
+	readState: Record<string, number>;
+}): TItem | null {
+	return (
+		Object.values(input.itemsByProvider)
+			.flat()
+			.map((item) => {
+				const latestMessage = item.latestMessage;
+				if (!latestMessage) return null;
+				if (
+					normalizeNativeAgentRole(latestMessage.role, item.provider).isUser
+				) {
+					return null;
+				}
+				const latestTime = nativeAgentTimestampMs(latestMessage.createdAt);
+				if (latestTime == null) return null;
+				const key = nativeAgentNotificationKey(item.provider, item.id);
+				if (latestTime <= (input.readState[key] ?? 0)) return null;
+				return { item, latestTime };
+			})
+			.filter(
+				(
+					candidate,
+				): candidate is {
+					item: TItem;
+					latestTime: number;
+				} => candidate != null,
+			)
+			.sort((left, right) => right.latestTime - left.latestTime)[0]?.item ??
+		null
+	);
+}
+
 export function writeLatestNativeAgentReplyNotification(
 	notification: NativeAgentReplyNotification,
 ): void {

@@ -21,6 +21,7 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CONTROL_PLANE")).toBe(true);
 		expect(hotkeyIds.has("TOGGLE_VIM_MODE")).toBe(true);
 		expect(hotkeyIds.has("SHOW_DASHBOARD_KEYBOARD_HELP")).toBe(true);
+		expect(hotkeyIds.has("OPEN_UNREAD_NATIVE_REPLY")).toBe(true);
 		expect(entryByLabel.get("Return focus to sidebar")).toEqual(
 			expect.objectContaining({ keys: ["Esc"] }),
 		);
@@ -110,6 +111,9 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(entryByLabel.get("Open unread reply")).toEqual(
 			expect.objectContaining({ keys: ["u"] }),
+		);
+		expect(entryByLabel.get("Open unread native reply")).toEqual(
+			expect.objectContaining({ hotkeyId: "OPEN_UNREAD_NATIVE_REPLY" }),
 		);
 		expect(entryByLabel.get("Mark latest reply read")).toEqual(
 			expect.objectContaining({ keys: ["U"] }),

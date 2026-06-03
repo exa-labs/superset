@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	compactNativeAgentReplyPreview,
+	getLatestUnreadNativeAgentReplyItem,
 	getUnreadNativeAgentReplyNotifications,
 	isNativeAgentReplyNotificationRead,
 	markNativeAgentReplyNotificationRead,
@@ -119,6 +120,62 @@ describe("native agent reply notifications", () => {
 		});
 
 		expect(notifications).toEqual([]);
+	});
+
+	it("selects the newest unread agent-authored reply for global keyboard jumps", () => {
+		const readCapyKey = nativeAgentNotificationKey("capy", "read-thread");
+		const latest = getLatestUnreadNativeAgentReplyItem({
+			itemsByProvider: {
+				capy: [
+					{
+						id: "read-thread",
+						latestMessage: {
+							body: "already read",
+							createdAt: "2026-06-01T12:00:00.000Z",
+							role: "assistant",
+						},
+						provider: "capy",
+						title: "Read Capy",
+					},
+					{
+						id: "human-thread",
+						latestMessage: {
+							body: "human typed most recently",
+							createdAt: "2026-06-01T12:05:00.000Z",
+							role: "human",
+						},
+						provider: "capy",
+						title: "Human Capy",
+					},
+				],
+				devin: [
+					{
+						id: "newest-unread",
+						latestMessage: {
+							body: "newest agent reply",
+							createdAt: "2026-06-01T12:04:00.000Z",
+							role: "devin_message",
+						},
+						provider: "devin",
+						title: "Newest Devin",
+					},
+					{
+						id: "older-unread",
+						latestMessage: {
+							body: "older agent reply",
+							createdAt: "2026-06-01T12:01:00.000Z",
+							role: "devin_message",
+						},
+						provider: "devin",
+						title: "Older Devin",
+					},
+				],
+			},
+			readState: { [readCapyKey]: Date.parse("2026-06-01T12:00:00.000Z") },
+		});
+
+		expect(latest?.id).toBe("newest-unread");
+		expect(latest?.provider).toBe("devin");
 	});
 
 	it("compacts noisy provider payloads for toast previews", () => {

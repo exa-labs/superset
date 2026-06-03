@@ -285,6 +285,12 @@ describe("web command provider", () => {
 				expect(commandIds.indexOf("native.latestReply.open")).toBeLessThan(
 					commandIds.indexOf("native.current.reply"),
 				);
+				expect(
+					webProvider
+						.provide(commandContext("/native/devin/session-1"))
+						.find((command) => command.id === "native.latestReply.open")
+						?.hotkeyId,
+				).toBe("OPEN_UNREAD_NATIVE_REPLY");
 			},
 		);
 	});
@@ -670,7 +676,7 @@ describe("web command provider", () => {
 					.find((candidate) => candidate.id === "native.latestReply.open");
 
 				expect(command?.title).toBe("Open latest Devin reply");
-				expect(command?.shortcutLabel).toBe("u");
+				expect(command?.hotkeyId).toBe("OPEN_UNREAD_NATIVE_REPLY");
 				expect(
 					webProvider
 						.provide(context)

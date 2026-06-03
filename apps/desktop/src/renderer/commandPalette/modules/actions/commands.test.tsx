@@ -90,6 +90,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.toggleDashboardVimMode")).toBe(true);
 		expect(commandIds.has("actions.switchDashboardViewNext")).toBe(true);
 		expect(commandIds.has("actions.switchDashboardViewPrevious")).toBe(true);
+		expect(commandIds.has("actions.openUnreadNativeReply")).toBe(true);
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
@@ -116,6 +117,10 @@ describe("actions command provider", () => {
 				(command) => command.id === "actions.switchDashboardViewPrevious",
 			)?.hotkeyId,
 		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
+		expect(
+			commands.find((command) => command.id === "actions.openUnreadNativeReply")
+				?.hotkeyId,
+		).toBe("OPEN_UNREAD_NATIVE_REPLY");
 		expect(
 			commands.find((command) => command.id === "actions.newWorkspace")
 				?.hotkeyId,
@@ -179,6 +184,29 @@ describe("actions command provider", () => {
 		}
 
 		expect(directions).toEqual(["next", "previous"]);
+	});
+
+	it("routes unread native reply command-palette action through the global event", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener(
+			"dashboard-native-agent-open-unread-reply",
+			listener,
+		);
+		const command = actionsProvider
+			.provide(commandContext("/web-tabs/google"))
+			.find((candidate) => candidate.id === "actions.openUnreadNativeReply");
+
+		command?.run?.(commandContext("/web-tabs/google"));
+		window.removeEventListener(
+			"dashboard-native-agent-open-unread-reply",
+			listener,
+		);
+
+		expect(openEventCount).toBe(1);
 	});
 
 	it("runs the dashboard Vim toggle command", () => {

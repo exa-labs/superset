@@ -68,6 +68,15 @@ describe("control plane shortcut bridge resolver", () => {
 				},
 			},
 			{
+				input: { code: "KeyN", key: "Dead" },
+				name: "Option+N opens the newest unread native reply",
+				result: {
+					action: "OPEN_UNREAD_NATIVE_REPLY",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
 				input: { code: "Tab", key: "Tab" },
 				name: "Option+Tab switches recent dashboard views",
 				result: {

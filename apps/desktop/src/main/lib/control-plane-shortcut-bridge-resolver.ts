@@ -136,6 +136,17 @@ export function createControlPlaneShortcutBridgeInputResolver(
 				return { preventDefault: true, type: "open-control-plane" };
 			}
 
+			const pendingDashboardWebShortcut = pendingDashboardWebAppShortcut
+				? resolveDashboardWebShortcut(input)
+				: null;
+			if (pendingDashboardWebShortcut) {
+				return {
+					preventDefault: true,
+					shortcut: pendingDashboardWebShortcut,
+					type: "dashboard-web-shortcut",
+				};
+			}
+
 			const globalKeyboardAction = globalKeyboardActionFromInput(input);
 			if (globalKeyboardAction) {
 				clearPending();

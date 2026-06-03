@@ -96,6 +96,7 @@ import {
 	selectNativeAgentSidebarItems,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
 import {
+	getLatestUnreadNativeAgentReplyItem,
 	getUnreadNativeAgentReplyNotifications,
 	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
@@ -116,6 +117,7 @@ import {
 	nativeAgentTimestampMs,
 	normalizeNativeAgentRole,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
+import { DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import {
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
@@ -1503,6 +1505,32 @@ export function DashboardNativeAgentsSection({
 		notifiedState,
 		readState,
 	]);
+
+	useEffect(() => {
+		const handleOpenUnreadNativeReply = (event: Event) => {
+			const unreadItem = getLatestUnreadNativeAgentReplyItem({
+				itemsByProvider,
+				readState,
+			});
+			if (!unreadItem) {
+				toast.message("No unread Capy or Devin replies");
+				return;
+			}
+			event.preventDefault();
+			handleOpen(unreadItem);
+		};
+
+		window.addEventListener(
+			DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT,
+			handleOpenUnreadNativeReply,
+		);
+		return () => {
+			window.removeEventListener(
+				DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT,
+				handleOpenUnreadNativeReply,
+			);
+		};
+	}, [handleOpen, itemsByProvider, readState]);
 
 	useEffect(() => {
 		const handleCreate = (event: Event) => {

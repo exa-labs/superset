@@ -401,11 +401,21 @@ class BrowserManager extends EventEmitter {
 				return;
 			}
 
+			const pendingDashboardWebShortcut = this.pendingDashboardWebAppShortcut
+				? this.dashboardWebShortcutFromInput(input)
+				: null;
+			if (pendingDashboardWebShortcut) {
+				event.preventDefault();
+				this.openDashboardWebShortcut(pendingDashboardWebShortcut);
+				return;
+			}
+
 			const globalKeyboardAction = globalKeyboardActionFromInput(input);
 			if (globalKeyboardAction) {
 				if (shouldPreventDefaultForGlobalKeyboardAction(globalKeyboardAction)) {
 					event.preventDefault();
 				}
+				this.clearPendingDashboardWebAppShortcut();
 				this.dispatchGlobalKeyboardAction(globalKeyboardAction);
 				return;
 			}

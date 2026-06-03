@@ -27,6 +27,7 @@ const ACTION_COMMAND_PRIORITY = {
 	focusRecovery: 180,
 	keyboardHelp: 170,
 	newWorkspace: 160,
+	unreadNativeReply: 190,
 	vimMode: 150,
 	viewSwitching: 140,
 } as const;
@@ -112,6 +113,27 @@ export const actionsProvider: CommandProvider = {
 				keywords: ["mru", "recent", "switch", "tab", "back", "view"],
 				run: () => {
 					handleDashboardGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_PREVIOUS");
+				},
+			},
+			{
+				id: "actions.openUnreadNativeReply",
+				title: "Open unread native reply",
+				section: "actions",
+				description: "Jump to the newest unread Capy or Devin response",
+				icon: BellIcon,
+				hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
+				priority: ACTION_COMMAND_PRIORITY.unreadNativeReply,
+				keywords: [
+					"capy",
+					"devin",
+					"unread",
+					"reply",
+					"notification",
+					"inbox",
+					"agent",
+				],
+				run: () => {
+					handleDashboardGlobalKeyboardAction("OPEN_UNREAD_NATIVE_REPLY");
 				},
 			},
 			{

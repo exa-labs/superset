@@ -874,6 +874,16 @@ export const HOTKEYS_REGISTRY = {
 		description:
 			"Open the dashboard keyboard overlay from browsers and terminals",
 	},
+	OPEN_UNREAD_NATIVE_REPLY: {
+		key: {
+			mac: L("alt+n"),
+			windows: L("ctrl+alt+n"),
+			linux: L("ctrl+alt+n"),
+		},
+		label: "Open Unread Native Reply",
+		category: "Help",
+		description: "Jump to the newest unread Capy or Devin response",
+	},
 	OPEN_COMMAND_PALETTE: {
 		key: {
 			mac: L("meta+shift+k"),
