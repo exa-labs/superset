@@ -4,6 +4,9 @@ import { createControlPlaneShortcutBridgeInputResolver } from "./control-plane-s
 type ResolverInput = Parameters<
 	ReturnType<typeof createControlPlaneShortcutBridgeInputResolver>["resolve"]
 >[0];
+type ResolverResult = ReturnType<
+	ReturnType<typeof createControlPlaneShortcutBridgeInputResolver>["resolve"]
+>;
 
 function input(overrides: Partial<ResolverInput>): ResolverInput {
 	return {
@@ -38,6 +41,58 @@ describe("control plane shortcut bridge resolver", () => {
 			preventDefault: true,
 			type: "open-control-plane",
 		});
+	});
+
+	it("routes the keyboard-native global shortcuts through the main bridge", () => {
+		const cases: Array<{
+			input: Partial<ResolverInput>;
+			name: string;
+			result: ResolverResult;
+		}> = [
+			{
+				input: { code: "KeyV", key: "Dead" },
+				name: "Option+V toggles Vim mode",
+				result: {
+					action: "TOGGLE_VIM_MODE",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "Slash", key: "/", type: "rawKeyDown" },
+				name: "Option+/ opens dashboard keyboard help from webviews",
+				result: {
+					action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "Tab", key: "Tab" },
+				name: "Option+Tab switches recent dashboard views",
+				result: {
+					action: "SWITCH_DASHBOARD_VIEW_NEXT",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "Tab", key: "Tab", shift: true },
+				name: "Option+Shift+Tab switches recent dashboard views backward",
+				result: {
+					action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+		];
+
+		for (const testCase of cases) {
+			const { resolver } = createResolverHarness();
+			expect(resolver.resolve(input(testCase.input)), testCase.name).toEqual(
+				testCase.result,
+			);
+		}
 	});
 
 	it("keeps C/D numeric chains for dashboard web shortcuts", () => {
@@ -111,21 +166,48 @@ describe("control plane shortcut bridge resolver", () => {
 	});
 
 	it("clears pending dashboard web chains when global Vim/help/MRU actions run", () => {
-		const { resolver } = createResolverHarness();
+		const cases: Array<{
+			input: Partial<ResolverInput>;
+			result: ResolverResult;
+		}> = [
+			{
+				input: { code: "KeyV", key: "v" },
+				result: {
+					action: "TOGGLE_VIM_MODE",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "Slash", key: "/", type: "rawKeyDown" },
+				result: {
+					action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "Tab", key: "Tab" },
+				result: {
+					action: "SWITCH_DASHBOARD_VIEW_NEXT",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+		];
 
-		expect(resolver.resolve(input({ code: "KeyD", key: "d" })).type).toBe(
-			"dashboard-web-shortcut",
-		);
-		expect(resolver.resolve(input({ code: "KeyV", key: "v" }))).toEqual({
-			action: "TOGGLE_VIM_MODE",
-			preventDefault: true,
-			type: "global-keyboard-action",
-		});
-		expect(resolver.resolve(input({ code: "Digit3", key: "3" }))).toEqual({
-			preventDefault: true,
-			shortcut: "OPEN_WEB_PAGE_3",
-			type: "dashboard-web-shortcut",
-		});
+		for (const testCase of cases) {
+			const { resolver } = createResolverHarness();
+			expect(resolver.resolve(input({ code: "KeyD", key: "d" })).type).toBe(
+				"dashboard-web-shortcut",
+			);
+			expect(resolver.resolve(input(testCase.input))).toEqual(testCase.result);
+			expect(resolver.resolve(input({ code: "Digit3", key: "3" }))).toEqual({
+				preventDefault: true,
+				shortcut: "OPEN_WEB_PAGE_3",
+				type: "dashboard-web-shortcut",
+			});
+		}
 	});
 
 	it("does not prevent default for bare Escape focus-shell action", () => {
