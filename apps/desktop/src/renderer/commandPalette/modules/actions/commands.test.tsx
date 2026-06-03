@@ -138,6 +138,43 @@ describe("actions command provider", () => {
 		).toBe("f");
 	});
 
+	it("routes MRU command-palette actions through the dashboard switch event", () => {
+		const directions: unknown[] = [];
+		const originalWindow = globalThis.window;
+		const testWindow = new EventTarget();
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: testWindow,
+		});
+		const listener = (event: Event) => {
+			directions.push(
+				(event as CustomEvent<{ direction?: unknown }>).detail?.direction,
+			);
+		};
+		window.addEventListener("dashboard-view-mru-switch", listener);
+		try {
+			const commands = actionsProvider.provide(commandContext());
+			commands
+				.find((command) => command.id === "actions.switchDashboardViewNext")
+				?.run?.(commandContext());
+			commands
+				.find((command) => command.id === "actions.switchDashboardViewPrevious")
+				?.run?.(commandContext());
+		} finally {
+			window.removeEventListener("dashboard-view-mru-switch", listener);
+			if (originalWindow) {
+				Object.defineProperty(globalThis, "window", {
+					configurable: true,
+					value: originalWindow,
+				});
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+
+		expect(directions).toEqual(["next", "previous"]);
+	});
+
 	it("runs the dashboard Vim toggle command", () => {
 		setDashboardVimModeEnabled(false);
 		const command = actionsProvider

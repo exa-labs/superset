@@ -10,6 +10,7 @@ function handlers(
 		openKeyboardHelp?: () => boolean;
 		onDefer?: (callback: () => void) => void;
 		onOpenNavigationShell?: () => void;
+		onSwitchMruView?: (direction: "next" | "previous") => boolean;
 		onToggleVimMode?: () => boolean;
 	} = {},
 ) {
@@ -18,6 +19,7 @@ function handlers(
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
 		openKeyboardHelp: overrides.openKeyboardHelp ?? (() => true),
 		openNavigationShell: overrides.onOpenNavigationShell ?? (() => undefined),
+		switchMruView: overrides.onSwitchMruView ?? (() => true),
 		toggleVimMode: overrides.onToggleVimMode ?? (() => true),
 	};
 }
@@ -104,12 +106,31 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 		expect(focusCount).toBe(2);
 	});
 
-	it("ignores MRU switch actions because the authenticated layout handles them", () => {
+	it("dispatches MRU switch actions through the shared global handler", () => {
+		const directions: Array<"next" | "previous"> = [];
+
 		expect(
 			handleDashboardGlobalKeyboardAction(
 				"SWITCH_DASHBOARD_VIEW_NEXT" satisfies DashboardGlobalKeyboardAction,
-				handlers(),
+				handlers({
+					onSwitchMruView: (direction) => {
+						directions.push(direction);
+						return true;
+					},
+				}),
 			),
-		).toBe(false);
+		).toBe(true);
+		expect(
+			handleDashboardGlobalKeyboardAction(
+				"SWITCH_DASHBOARD_VIEW_PREVIOUS" satisfies DashboardGlobalKeyboardAction,
+				handlers({
+					onSwitchMruView: (direction) => {
+						directions.push(direction);
+						return true;
+					},
+				}),
+			),
+		).toBe(true);
+		expect(directions).toEqual(["next", "previous"]);
 	});
 });

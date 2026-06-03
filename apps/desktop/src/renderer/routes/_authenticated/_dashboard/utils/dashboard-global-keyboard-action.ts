@@ -9,12 +9,14 @@ export type DashboardGlobalKeyboardAction =
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
 	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
 	| "TOGGLE_VIM_MODE";
+type DashboardMruSwitchDirection = "next" | "previous";
 
 interface DashboardGlobalKeyboardActionHandlers {
 	defer: (callback: () => void) => void;
 	focusNavigationShell: () => boolean;
 	openKeyboardHelp: () => boolean;
 	openNavigationShell: () => void;
+	switchMruView: (direction: DashboardMruSwitchDirection) => boolean;
 	toggleVimMode: () => boolean;
 }
 
@@ -26,11 +28,24 @@ function defer(callback: () => void): void {
 	setTimeout(callback, 0);
 }
 
+export function dispatchDashboardViewMruSwitch(
+	direction: DashboardMruSwitchDirection,
+): boolean {
+	if (typeof window === "undefined") return false;
+	window.dispatchEvent(
+		new CustomEvent("dashboard-view-mru-switch", {
+			detail: { direction },
+		}),
+	);
+	return true;
+}
+
 const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	defer,
 	focusNavigationShell: focusDashboardNavigationShell,
 	openKeyboardHelp: openDashboardKeyboardHelp,
 	openNavigationShell: () => useWorkspaceSidebarStore.getState().setOpen(true),
+	switchMruView: dispatchDashboardViewMruSwitch,
 	toggleVimMode: toggleDashboardVimMode,
 };
 
@@ -47,6 +62,14 @@ export function handleDashboardGlobalKeyboardAction(
 
 	if (action === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 		return resolved.openKeyboardHelp();
+	}
+
+	if (action === "SWITCH_DASHBOARD_VIEW_NEXT") {
+		return resolved.switchMruView("next");
+	}
+
+	if (action === "SWITCH_DASHBOARD_VIEW_PREVIOUS") {
+		return resolved.switchMruView("previous");
 	}
 
 	if (action !== "FOCUS_DASHBOARD_SHELL") return false;

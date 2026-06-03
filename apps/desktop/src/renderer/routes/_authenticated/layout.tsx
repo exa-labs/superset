@@ -220,17 +220,6 @@ function AuthenticatedLayout() {
 			window.removeEventListener("dashboard-view-mru-switch", handleSwitch);
 	}, [switchDashboardViewMru]);
 
-	electronTrpc.browser.onGlobalKeyboardAction.useSubscription(undefined, {
-		onData: ({ action }) => {
-			if (action === "SWITCH_DASHBOARD_VIEW_NEXT") {
-				switchDashboardViewMru("next");
-			}
-			if (action === "SWITCH_DASHBOARD_VIEW_PREVIOUS") {
-				switchDashboardViewMru("previous");
-			}
-		},
-	});
-
 	// Update workspace-run pane state on terminal exit
 	electronTrpc.notifications.subscribe.useSubscription(undefined, {
 		onData: (event) => {

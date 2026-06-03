@@ -34,14 +34,6 @@ function cycleTheme(): void {
 	useThemeStore.getState().setTheme(next);
 }
 
-function dispatchDashboardViewMruSwitch(direction: "next" | "previous"): void {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-view-mru-switch", {
-			detail: { direction },
-		}),
-	);
-}
-
 function showKeyboardShortcuts(
 	context: Parameters<NonNullable<Command["run"]>>[0],
 ): void {
@@ -95,7 +87,9 @@ export const actionsProvider: CommandProvider = {
 				icon: KeyboardIcon,
 				hotkeyId: "SWITCH_DASHBOARD_VIEW_NEXT",
 				keywords: ["mru", "recent", "switch", "tab", "view", "keyboard"],
-				run: () => dispatchDashboardViewMruSwitch("next"),
+				run: () => {
+					handleDashboardGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_NEXT");
+				},
 			},
 			{
 				id: "actions.switchDashboardViewPrevious",
@@ -104,7 +98,9 @@ export const actionsProvider: CommandProvider = {
 				icon: KeyboardIcon,
 				hotkeyId: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
 				keywords: ["mru", "recent", "switch", "tab", "back", "view"],
-				run: () => dispatchDashboardViewMruSwitch("previous"),
+				run: () => {
+					handleDashboardGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_PREVIOUS");
+				},
 			},
 			{
 				id: "actions.openSettings",
