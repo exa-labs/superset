@@ -1,11 +1,18 @@
 import {
 	ArchiveIcon,
+	Columns2Icon,
+	EqualIcon,
 	FileIcon,
+	GlobeIcon,
 	LinkIcon,
+	MessageSquareIcon,
+	PanelBottomIcon,
 	PlusIcon,
 	Trash2Icon,
+	XIcon,
 } from "lucide-react";
 import { useQuickOpenStore } from "renderer/commandPalette/ui/QuickOpen/quickOpenStore";
+import { dispatchDashboardWorkspacePaneAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-actions";
 import { useDeleteWorkspaceIntent } from "renderer/stores/delete-workspace-intent";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRemoveFromSidebarIntent } from "renderer/stores/remove-workspace-from-sidebar-intent";
@@ -48,6 +55,72 @@ export const workspaceProvider: CommandProvider = {
 				icon: LinkIcon,
 				keywords: ["issue", "linear"],
 				renderFrame: () => <LinkTaskFrame workspaceId={workspace.id} />,
+			},
+			{
+				id: "workspace.pane.splitAuto",
+				title: "Split pane automatically",
+				section: "workspace",
+				description: "Split the focused workspace pane along its longer side",
+				icon: Columns2Icon,
+				hotkeyId: "SPLIT_AUTO",
+				keywords: ["pane", "layout", "keyboard"],
+				run: () => dispatchDashboardWorkspacePaneAction("split-auto"),
+			},
+			{
+				id: "workspace.pane.splitRight",
+				title: "Split pane right",
+				section: "workspace",
+				description: "Open a new terminal pane to the right",
+				icon: Columns2Icon,
+				hotkeyId: "SPLIT_RIGHT",
+				keywords: ["vertical", "pane", "layout"],
+				run: () => dispatchDashboardWorkspacePaneAction("split-right"),
+			},
+			{
+				id: "workspace.pane.splitDown",
+				title: "Split pane down",
+				section: "workspace",
+				description: "Open a new terminal pane below",
+				icon: PanelBottomIcon,
+				hotkeyId: "SPLIT_DOWN",
+				keywords: ["horizontal", "pane", "layout"],
+				run: () => dispatchDashboardWorkspacePaneAction("split-down"),
+			},
+			{
+				id: "workspace.pane.splitChat",
+				title: "Split with new chat",
+				section: "workspace",
+				icon: MessageSquareIcon,
+				hotkeyId: "SPLIT_WITH_CHAT",
+				keywords: ["pane", "agent", "chat"],
+				run: () => dispatchDashboardWorkspacePaneAction("split-chat"),
+			},
+			{
+				id: "workspace.pane.splitBrowser",
+				title: "Split with new browser",
+				section: "workspace",
+				icon: GlobeIcon,
+				hotkeyId: "SPLIT_WITH_BROWSER",
+				keywords: ["pane", "chrome", "browser"],
+				run: () => dispatchDashboardWorkspacePaneAction("split-browser"),
+			},
+			{
+				id: "workspace.pane.equalize",
+				title: "Equalize pane splits",
+				section: "workspace",
+				icon: EqualIcon,
+				hotkeyId: "EQUALIZE_PANE_SPLITS",
+				keywords: ["pane", "layout", "resize"],
+				run: () => dispatchDashboardWorkspacePaneAction("equalize"),
+			},
+			{
+				id: "workspace.pane.close",
+				title: "Close focused pane",
+				section: "workspace",
+				icon: XIcon,
+				hotkeyId: "CLOSE_PANE",
+				keywords: ["pane", "remove"],
+				run: () => dispatchDashboardWorkspacePaneAction("close-pane"),
 			},
 		];
 

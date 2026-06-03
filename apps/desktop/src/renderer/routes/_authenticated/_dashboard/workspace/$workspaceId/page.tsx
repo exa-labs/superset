@@ -7,6 +7,10 @@ import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { electronTrpcClient as trpcClient } from "renderer/lib/trpc-client";
 import { usePresets } from "renderer/react-query/presets";
+import {
+	addDashboardWorkspacePaneActionListener,
+	type DashboardWorkspacePaneAction,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-actions";
 import type { WorkspaceSearchParams } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { navigateToWorkspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { usePresetHotkeys } from "renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePresetHotkeys";
@@ -224,11 +228,13 @@ function WorkspacePage() {
 
 	useHotkey("RUN_WORKSPACE_COMMAND", () => toggleWorkspaceRun());
 
-	useHotkey("CLOSE_TERMINAL", () => {
+	const handleClosePane = useCallback(() => {
 		if (focusedPaneId) {
 			requestPaneClose(focusedPaneId);
 		}
-	});
+	}, [focusedPaneId]);
+	useHotkey("CLOSE_TERMINAL", handleClosePane);
+	useHotkey("CLOSE_PANE", handleClosePane);
 	useHotkey("CLOSE_TAB", () => {
 		if (activeTabId) {
 			requestTabClose(activeTabId);
@@ -362,8 +368,7 @@ function WorkspacePage() {
 		[setFocusedPane],
 	);
 
-	// Pane splitting shortcuts
-	useHotkey("SPLIT_AUTO", () => {
+	const handleSplitAuto = useCallback(() => {
 		if (activeTabId && focusedPaneId && activeTab) {
 			const target = resolveSplitTarget(focusedPaneId, activeTabId, activeTab);
 			if (!target) return;
@@ -372,25 +377,43 @@ function WorkspacePage() {
 				splitPaneAuto(activeTabId, target.paneId, dimensions, target.path);
 			}
 		}
-	});
+	}, [
+		activeTab,
+		activeTabId,
+		focusedPaneId,
+		resolveSplitTarget,
+		splitPaneAuto,
+	]);
 
-	useHotkey("SPLIT_RIGHT", () => {
+	const handleSplitRight = useCallback(() => {
 		if (activeTabId && focusedPaneId && activeTab) {
 			const target = resolveSplitTarget(focusedPaneId, activeTabId, activeTab);
 			if (!target) return;
 			splitPaneVertical(activeTabId, target.paneId, target.path);
 		}
-	});
+	}, [
+		activeTab,
+		activeTabId,
+		focusedPaneId,
+		resolveSplitTarget,
+		splitPaneVertical,
+	]);
 
-	useHotkey("SPLIT_DOWN", () => {
+	const handleSplitDown = useCallback(() => {
 		if (activeTabId && focusedPaneId && activeTab) {
 			const target = resolveSplitTarget(focusedPaneId, activeTabId, activeTab);
 			if (!target) return;
 			splitPaneHorizontal(activeTabId, target.paneId, target.path);
 		}
-	});
+	}, [
+		activeTab,
+		activeTabId,
+		focusedPaneId,
+		resolveSplitTarget,
+		splitPaneHorizontal,
+	]);
 
-	useHotkey("SPLIT_WITH_CHAT", () => {
+	const handleSplitWithChat = useCallback(() => {
 		if (activeTabId && focusedPaneId && activeTab) {
 			const target = resolveSplitTarget(focusedPaneId, activeTabId, activeTab);
 			if (!target) return;
@@ -398,9 +421,15 @@ function WorkspacePage() {
 				paneType: "chat",
 			});
 		}
-	});
+	}, [
+		activeTab,
+		activeTabId,
+		focusedPaneId,
+		resolveSplitTarget,
+		splitPaneVertical,
+	]);
 
-	useHotkey("SPLIT_WITH_BROWSER", () => {
+	const handleSplitWithBrowser = useCallback(() => {
 		if (activeTabId && focusedPaneId && activeTab) {
 			const target = resolveSplitTarget(focusedPaneId, activeTabId, activeTab);
 			if (!target) return;
@@ -408,14 +437,69 @@ function WorkspacePage() {
 				paneType: "webview",
 			});
 		}
-	});
+	}, [
+		activeTab,
+		activeTabId,
+		focusedPaneId,
+		resolveSplitTarget,
+		splitPaneVertical,
+	]);
 
 	const equalizePaneSplits = useTabsStore((s) => s.equalizePaneSplits);
-	useHotkey("EQUALIZE_PANE_SPLITS", () => {
+	const handleEqualizePaneSplits = useCallback(() => {
 		if (activeTabId) {
 			equalizePaneSplits(activeTabId);
 		}
-	});
+	}, [activeTabId, equalizePaneSplits]);
+
+	useHotkey("SPLIT_AUTO", handleSplitAuto);
+	useHotkey("SPLIT_RIGHT", handleSplitRight);
+	useHotkey("SPLIT_DOWN", handleSplitDown);
+	useHotkey("SPLIT_WITH_CHAT", handleSplitWithChat);
+	useHotkey("SPLIT_WITH_BROWSER", handleSplitWithBrowser);
+	useHotkey("EQUALIZE_PANE_SPLITS", handleEqualizePaneSplits);
+
+	const handleWorkspacePaneAction = useCallback(
+		(action: DashboardWorkspacePaneAction) => {
+			switch (action) {
+				case "close-pane":
+					handleClosePane();
+					break;
+				case "equalize":
+					handleEqualizePaneSplits();
+					break;
+				case "split-auto":
+					handleSplitAuto();
+					break;
+				case "split-browser":
+					handleSplitWithBrowser();
+					break;
+				case "split-chat":
+					handleSplitWithChat();
+					break;
+				case "split-down":
+					handleSplitDown();
+					break;
+				case "split-right":
+					handleSplitRight();
+					break;
+			}
+		},
+		[
+			handleClosePane,
+			handleEqualizePaneSplits,
+			handleSplitAuto,
+			handleSplitDown,
+			handleSplitRight,
+			handleSplitWithBrowser,
+			handleSplitWithChat,
+		],
+	);
+
+	useEffect(
+		() => addDashboardWorkspacePaneActionListener(handleWorkspacePaneAction),
+		[handleWorkspacePaneAction],
+	);
 
 	const moveFocusDirectional = useCallback(
 		(dir: FocusDirection) => {

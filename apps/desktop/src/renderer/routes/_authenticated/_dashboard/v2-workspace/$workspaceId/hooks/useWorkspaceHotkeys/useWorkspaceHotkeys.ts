@@ -8,6 +8,10 @@ import {
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useV2UserPreferences } from "renderer/hooks/useV2UserPreferences";
 import { useHotkey } from "renderer/hotkeys";
+import {
+	addDashboardWorkspacePaneActionListener,
+	type DashboardWorkspacePaneAction,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-actions";
 import type { V2TerminalPresetRow } from "renderer/routes/_authenticated/providers/CollectionsProvider/dashboardSidebarLocal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import type { StoreApi } from "zustand";
@@ -104,7 +108,7 @@ export function useWorkspaceHotkeys({
 	// --- Tab management ---
 
 	const isClosingPaneRef = useRef(false);
-	useHotkey("CLOSE_PANE", async () => {
+	const handleClosePane = useCallback(async () => {
 		if (isClosingPaneRef.current) return;
 		isClosingPaneRef.current = true;
 		try {
@@ -120,7 +124,9 @@ export function useWorkspaceHotkeys({
 		} finally {
 			isClosingPaneRef.current = false;
 		}
-	});
+	}, [paneRegistry, store]);
+
+	useHotkey("CLOSE_PANE", handleClosePane);
 
 	useHotkey("CLOSE_TAB", () => {
 		const state = store.getState();
@@ -204,7 +210,7 @@ export function useWorkspaceHotkeys({
 	useHotkey("FOCUS_PANE_UP", () => moveFocusDirectional("up"));
 	useHotkey("FOCUS_PANE_DOWN", () => moveFocusDirectional("down"));
 
-	useHotkey("SPLIT_AUTO", async () => {
+	const handleSplitAuto = useCallback(async () => {
 		const state = store.getState();
 		const active = state.getActivePane();
 		if (!active) return;
@@ -223,9 +229,9 @@ export function useWorkspaceHotkeys({
 				data: { terminalId } as TerminalPaneData,
 			},
 		});
-	});
+	}, [launcher, store]);
 
-	useHotkey("SPLIT_RIGHT", async () => {
+	const handleSplitRight = useCallback(async () => {
 		const state = store.getState();
 		const active = state.getActivePane();
 		if (!active) return;
@@ -239,9 +245,9 @@ export function useWorkspaceHotkeys({
 				data: { terminalId } as TerminalPaneData,
 			},
 		});
-	});
+	}, [launcher, store]);
 
-	useHotkey("SPLIT_DOWN", async () => {
+	const handleSplitDown = useCallback(async () => {
 		const state = store.getState();
 		const active = state.getActivePane();
 		if (!active) return;
@@ -255,9 +261,9 @@ export function useWorkspaceHotkeys({
 				data: { terminalId } as TerminalPaneData,
 			},
 		});
-	});
+	}, [launcher, store]);
 
-	useHotkey("SPLIT_WITH_CHAT", () => {
+	const handleSplitWithChat = useCallback(() => {
 		const state = store.getState();
 		const active = state.getActivePane();
 		if (!active) return;
@@ -270,9 +276,9 @@ export function useWorkspaceHotkeys({
 				data: { sessionId: null } as ChatPaneData,
 			},
 		});
-	});
+	}, [store]);
 
-	useHotkey("SPLIT_WITH_BROWSER", () => {
+	const handleSplitWithBrowser = useCallback(() => {
 		const state = store.getState();
 		const active = state.getActivePane();
 		if (!active) return;
@@ -287,14 +293,63 @@ export function useWorkspaceHotkeys({
 				} as BrowserPaneData,
 			},
 		});
-	});
+	}, [store]);
 
-	useHotkey("EQUALIZE_PANE_SPLITS", () => {
+	const handleEqualizePaneSplits = useCallback(() => {
 		const state = store.getState();
 		const tab = state.getActiveTab();
 		if (!tab) return;
 		state.equalizeTab({ tabId: tab.id });
-	});
+	}, [store]);
+
+	useHotkey("SPLIT_AUTO", handleSplitAuto);
+	useHotkey("SPLIT_RIGHT", handleSplitRight);
+	useHotkey("SPLIT_DOWN", handleSplitDown);
+	useHotkey("SPLIT_WITH_CHAT", handleSplitWithChat);
+	useHotkey("SPLIT_WITH_BROWSER", handleSplitWithBrowser);
+	useHotkey("EQUALIZE_PANE_SPLITS", handleEqualizePaneSplits);
+
+	const handleWorkspacePaneAction = useCallback(
+		(action: DashboardWorkspacePaneAction) => {
+			switch (action) {
+				case "close-pane":
+					void handleClosePane();
+					break;
+				case "equalize":
+					handleEqualizePaneSplits();
+					break;
+				case "split-auto":
+					void handleSplitAuto();
+					break;
+				case "split-browser":
+					handleSplitWithBrowser();
+					break;
+				case "split-chat":
+					handleSplitWithChat();
+					break;
+				case "split-down":
+					void handleSplitDown();
+					break;
+				case "split-right":
+					void handleSplitRight();
+					break;
+			}
+		},
+		[
+			handleClosePane,
+			handleEqualizePaneSplits,
+			handleSplitAuto,
+			handleSplitDown,
+			handleSplitRight,
+			handleSplitWithBrowser,
+			handleSplitWithChat,
+		],
+	);
+
+	useEffect(
+		() => addDashboardWorkspacePaneActionListener(handleWorkspacePaneAction),
+		[handleWorkspacePaneAction],
+	);
 
 	// --- Preset hotkeys ---
 
