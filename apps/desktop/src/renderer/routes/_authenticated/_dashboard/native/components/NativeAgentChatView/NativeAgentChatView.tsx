@@ -57,6 +57,7 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
 	nativeAgentChatScrollDeltaFromKey,
+	nativeAgentOverviewCardVimActionFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
@@ -1722,7 +1723,8 @@ export function NativeAgentChatView({
 				openItem(item);
 				return;
 			}
-			if (key === "p" || key === "m" || key === "F") {
+			const overviewCardAction = nativeAgentOverviewCardVimActionFromKey(key);
+			if (overviewCardAction !== "none") {
 				const active = document.activeElement;
 				if (!(active instanceof HTMLButtonElement)) return;
 				const item = workspaceItems.find(
@@ -1731,14 +1733,25 @@ export function NativeAgentChatView({
 				);
 				if (!item) return;
 				consumeNativeAgentKeyboardEvent(event);
-				if (key === "p") {
+				if (overviewCardAction === "pin") {
 					void handleSetPinned(item, item.sidebarPinned !== true);
+					return;
+				}
+				if (overviewCardAction === "rename") {
+					openRenameDialog(item);
+					return;
+				}
+				if (overviewCardAction === "archive") {
+					void handleSetSidebarVisible(item, false);
 					return;
 				}
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-folder-action", {
 						detail: {
-							action: key === "F" ? "remove-active" : "move-active",
+							action:
+								overviewCardAction === "remove-from-folder"
+									? "remove-active"
+									: "move-active",
 							provider,
 							sessionId: item.id,
 						},

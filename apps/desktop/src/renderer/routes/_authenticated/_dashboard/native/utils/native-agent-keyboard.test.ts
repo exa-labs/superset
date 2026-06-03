@@ -3,6 +3,7 @@ import {
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
+	nativeAgentOverviewCardVimActionFromKey,
 	nativeAgentOverviewFocusDeltaFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
@@ -172,6 +173,18 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("archive");
+	});
+
+	it("maps overview card vim actions for inbox management", () => {
+		expect(nativeAgentOverviewCardVimActionFromKey("p")).toBe("pin");
+		expect(nativeAgentOverviewCardVimActionFromKey("e")).toBe("rename");
+		expect(nativeAgentOverviewCardVimActionFromKey("m")).toBe("move-to-folder");
+		expect(nativeAgentOverviewCardVimActionFromKey("F")).toBe(
+			"remove-from-folder",
+		);
+		expect(nativeAgentOverviewCardVimActionFromKey("a")).toBe("archive");
+		expect(nativeAgentOverviewCardVimActionFromKey("x")).toBe("archive");
+		expect(nativeAgentOverviewCardVimActionFromKey("j")).toBe("none");
 	});
 
 	it("maps unread vim action keys", () => {

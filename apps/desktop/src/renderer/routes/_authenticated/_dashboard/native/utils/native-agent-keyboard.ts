@@ -51,6 +51,13 @@ export type NativeAgentSplitPaneAction =
 	| "narrow-native"
 	| "none"
 	| "widen-native";
+export type NativeAgentOverviewCardVimAction =
+	| "archive"
+	| "move-to-folder"
+	| "none"
+	| "pin"
+	| "remove-from-folder"
+	| "rename";
 
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
@@ -182,6 +189,17 @@ export function nativeAgentSplitPaneActionFromKey(
 	if (key === "[") return "narrow-native";
 	if (key === "]") return "widen-native";
 	if (key === "=") return "equalize";
+	return "none";
+}
+
+export function nativeAgentOverviewCardVimActionFromKey(
+	key: string | null,
+): NativeAgentOverviewCardVimAction {
+	if (key === "p") return "pin";
+	if (key === "e") return "rename";
+	if (key === "m") return "move-to-folder";
+	if (key === "F") return "remove-from-folder";
+	if (key === "a" || key === "x") return "archive";
 	return "none";
 }
 
