@@ -9,10 +9,12 @@ import {
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import {
+	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
 	dashboardSidebarExpansionValue,
 	findDashboardSidebarActionButton,
 	findDashboardSidebarActivationTarget,
 	findDashboardSidebarExpansionTarget,
+	focusDashboardSidebarItem,
 	focusFirstDashboardSidebarItem,
 	getDashboardSidebarFocusableItems,
 	shouldToggleDashboardSidebarExpansion,
@@ -390,6 +392,9 @@ describe("focusFirstDashboardSidebarItem", () => {
 		try {
 			expect(focusFirstDashboardSidebarItem(root)).toBe(first);
 			expect(document.activeElement).toBe(first);
+			expect(
+				first.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
+			).toBe("true");
 		} finally {
 			root.remove();
 		}
@@ -400,6 +405,39 @@ describe("focusFirstDashboardSidebarItem", () => {
 
 		const root = document.createElement("div");
 		expect(focusFirstDashboardSidebarItem(root)).toBeNull();
+	});
+
+	test("keeps one explicit keyboard focus marker as roving focus moves", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const first = document.createElement("button");
+		first.id = "first";
+		makeVisible(first);
+		const second = document.createElement("button");
+		second.id = "second";
+		makeVisible(second);
+		root.append(first, second);
+		document.body.append(root);
+		try {
+			focusDashboardSidebarItem(first);
+			expect(
+				first.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
+			).toBe("true");
+
+			focusDashboardSidebarItem(second);
+
+			expect(
+				first.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
+			).toBeNull();
+			expect(
+				second.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
+			).toBe("true");
+			expect(document.activeElement).toBe(second);
+		} finally {
+			root.remove();
+		}
 	});
 });
 

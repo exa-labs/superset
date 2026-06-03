@@ -259,6 +259,8 @@ export function DashboardSidebar({
 							"[&_button:focus-visible]:outline-none [&_button:focus-visible]:ring-2 [&_button:focus-visible]:ring-primary/70 [&_button:focus-visible]:ring-offset-1 [&_button:focus-visible]:ring-offset-background",
 							"[&_[role=button]:focus-visible]:outline-none [&_[role=button]:focus-visible]:ring-2 [&_[role=button]:focus-visible]:ring-primary/70 [&_[role=button]:focus-visible]:ring-offset-1 [&_[role=button]:focus-visible]:ring-offset-background",
 							"[&_button:focus-visible]:bg-primary/10 [&_button:focus-visible]:text-foreground [&_[role=button]:focus-visible]:bg-primary/10 [&_[role=button]:focus-visible]:text-foreground",
+							"[&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:outline-none [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:ring-2 [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:ring-primary/80 [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:ring-offset-1 [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:ring-offset-background",
+							"[&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:bg-primary/10 [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:text-foreground",
 						)}
 					>
 						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">

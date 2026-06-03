@@ -33,6 +33,11 @@ const SIDEBAR_ROVING_SELECTOR = [
 	PRIMARY_ROVING_SELECTOR,
 	INTERACTIVE_SELECTOR,
 ].join(",");
+const SIDEBAR_KEYBOARD_FOCUS_SELECTOR =
+	'[data-dashboard-sidebar-keyboard-focus="true"]';
+
+export const DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE =
+	"data-dashboard-sidebar-keyboard-focus";
 
 function isHTMLElement(value: Element | null): value is HTMLElement {
 	return value instanceof HTMLElement;
@@ -89,7 +94,22 @@ export function getDashboardSidebarFocusableItems(
 	);
 }
 
-function focusItem(item: HTMLElement): void {
+export function markDashboardSidebarKeyboardFocus(item: HTMLElement): void {
+	const root =
+		item.closest<HTMLElement>('[data-dashboard-sidebar-root="true"]') ??
+		item.parentElement;
+	for (const element of root?.querySelectorAll<HTMLElement>(
+		SIDEBAR_KEYBOARD_FOCUS_SELECTOR,
+	) ?? []) {
+		if (element !== item) {
+			element.removeAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE);
+		}
+	}
+	item.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+}
+
+export function focusDashboardSidebarItem(item: HTMLElement): void {
+	markDashboardSidebarKeyboardFocus(item);
 	item.focus({ preventScroll: true });
 	item.scrollIntoView({ block: "nearest" });
 }
@@ -100,7 +120,7 @@ export function focusFirstDashboardSidebarItem(
 	if (!root) return null;
 	const firstItem = getDashboardSidebarFocusableItems(root)[0] ?? null;
 	if (!firstItem) return null;
-	focusItem(firstItem);
+	focusDashboardSidebarItem(firstItem);
 	return firstItem;
 }
 
@@ -262,7 +282,7 @@ export function useDashboardSidebarKeyboardNavigation(
 			const focusByDelta = (delta: number) => {
 				const nextIndex =
 					(safeActiveIndex + delta + items.length) % items.length;
-				focusItem(items[nextIndex]);
+				focusDashboardSidebarItem(items[nextIndex]);
 			};
 
 			if (rovingNavigationDelta !== 0) {
@@ -273,7 +293,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (rovingBoundary) {
 				event.preventDefault();
-				focusItem(
+				focusDashboardSidebarItem(
 					rovingBoundary === "first" ? items[0] : items[items.length - 1],
 				);
 				return;
@@ -289,7 +309,7 @@ export function useDashboardSidebarKeyboardNavigation(
 					activationTarget.click();
 					return;
 				}
-				focusItem(items[0]);
+				focusDashboardSidebarItem(items[0]);
 				return;
 			}
 
@@ -300,7 +320,7 @@ export function useDashboardSidebarKeyboardNavigation(
 						options.onCreateWorkspace?.();
 						return;
 					}
-					focusItem(items[0]);
+					focusDashboardSidebarItem(items[0]);
 					return;
 				}
 
@@ -324,7 +344,7 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (event.key === "Escape") {
 				event.preventDefault();
 				options.onClearSearch?.();
-				focusItem(items[Math.max(0, activeIndex)]);
+				focusDashboardSidebarItem(items[Math.max(0, activeIndex)]);
 				return;
 			}
 
@@ -343,7 +363,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (event.key === "G") {
 				event.preventDefault();
-				focusItem(items[items.length - 1]);
+				focusDashboardSidebarItem(items[items.length - 1]);
 				return;
 			}
 
@@ -351,7 +371,7 @@ export function useDashboardSidebarKeyboardNavigation(
 				event.preventDefault();
 				const now = Date.now();
 				if (now - lastGRef.current < 450) {
-					focusItem(items[0]);
+					focusDashboardSidebarItem(items[0]);
 					lastGRef.current = 0;
 					return;
 				}
@@ -361,7 +381,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (activeIndex < 0) {
 				event.preventDefault();
-				focusItem(items[0]);
+				focusDashboardSidebarItem(items[0]);
 				return;
 			}
 

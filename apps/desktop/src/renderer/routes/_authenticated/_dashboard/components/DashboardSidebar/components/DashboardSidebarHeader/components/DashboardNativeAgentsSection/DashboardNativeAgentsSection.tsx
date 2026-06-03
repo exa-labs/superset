@@ -126,6 +126,7 @@ import {
 	getDashboardHashPathname,
 	subscribeDashboardHashPathname,
 } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
+import { markDashboardSidebarKeyboardFocus } from "../../../../hooks/useDashboardSidebarKeyboardNavigation/useDashboardSidebarKeyboardNavigation";
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {
@@ -1718,6 +1719,7 @@ export function DashboardNativeAgentsSection({
 			if (rows.length === 0) return;
 
 			const focusNativeRow = (row: HTMLButtonElement) => {
+				markDashboardSidebarKeyboardFocus(row);
 				row.focus({ preventScroll: true });
 				row.scrollIntoView({ block: "nearest" });
 			};
