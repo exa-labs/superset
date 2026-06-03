@@ -306,10 +306,12 @@ describe("web command provider", () => {
 			commandContext("/web-tabs/chrome-default"),
 		);
 
-		expect(commandIds.slice(0, 6)).toEqual([
+		expect(commandIds.slice(0, 8)).toEqual([
 			"web.current.reload",
 			"web.current.goBack",
 			"web.current.goForward",
+			"web.current.previousTab",
+			"web.current.nextTab",
 			"web.current.newFromCurrent",
 			"web.current.newGoogle",
 			"web.current.newChatGPT",
@@ -497,6 +499,8 @@ describe("web command provider", () => {
 		expect(commandIds.has("web.current.reload")).toBe(true);
 		expect(commandIds.has("web.current.goBack")).toBe(true);
 		expect(commandIds.has("web.current.goForward")).toBe(true);
+		expect(commandIds.has("web.current.previousTab")).toBe(true);
+		expect(commandIds.has("web.current.nextTab")).toBe(true);
 		expect(commandIds.has("web.current.newFromCurrent")).toBe(true);
 		expect(commandIds.has("web.current.newGoogle")).toBe(true);
 		expect(commandIds.has("web.current.newChatGPT")).toBe(true);
@@ -511,6 +515,8 @@ describe("web command provider", () => {
 		expect(shortcutById.get("web.current.reload")).toBe("r");
 		expect(shortcutById.get("web.current.goBack")).toBe("H");
 		expect(shortcutById.get("web.current.goForward")).toBe("L");
+		expect(shortcutById.get("web.current.previousTab")).toBe("h");
+		expect(shortcutById.get("web.current.nextTab")).toBe("l");
 		expect(shortcutById.get("web.current.newFromCurrent")).toBe("n");
 		expect(shortcutById.get("web.current.toggleSplit")).toBe("s");
 		expect(shortcutById.get("web.current.swapSplit")).toBe("w");
@@ -535,6 +541,12 @@ describe("web command provider", () => {
 				.find((command) => command.id === "web.current.goForward")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "web.current.previousTab")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "web.current.nextTab")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "web.current.closeSplit")
 				?.run?.(context);
 
@@ -544,6 +556,14 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "go-forward" },
+				type: "dashboard-browser-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "previous-tab" },
+				type: "dashboard-browser-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "next-tab" },
 				type: "dashboard-browser-current-action",
 			});
 			expect(events).toContainEqual({

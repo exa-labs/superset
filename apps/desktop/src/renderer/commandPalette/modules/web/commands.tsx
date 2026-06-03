@@ -140,6 +140,8 @@ function dispatchBrowserAction(
 		| "new-claude-tab"
 		| "new-current-url-tab"
 		| "new-google-tab"
+		| "next-tab"
+		| "previous-tab"
 		| "reload"
 		| "swap-split"
 		| "toggle-tab-pin"
@@ -353,6 +355,28 @@ export const webProvider: CommandProvider = {
 				shortcutLabel: "L",
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("go-forward"),
+			},
+			{
+				id: "web.current.previousTab",
+				title: "Go to previous Chrome tab",
+				section: "web",
+				description: "Switch left to the previous embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "previous", "left", "switch", "tab"],
+				shortcutLabel: "h",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("previous-tab"),
+			},
+			{
+				id: "web.current.nextTab",
+				title: "Go to next Chrome tab",
+				section: "web",
+				description: "Switch right to the next embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "next", "right", "switch", "tab"],
+				shortcutLabel: "l",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("next-tab"),
 			},
 			{
 				id: "web.current.newFromCurrent",
