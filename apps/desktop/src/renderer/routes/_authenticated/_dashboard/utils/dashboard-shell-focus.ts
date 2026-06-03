@@ -101,6 +101,7 @@ export function focusDashboardNavigationShell(
 	if (!root) return false;
 
 	const target =
+		firstVisible(root.querySelectorAll(SIDEBAR_KEYBOARD_FOCUS_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_NATIVE_AGENT_ROW_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_SIDEBAR_SELECTOR)) ??
 		firstPrimarySidebarItem(root) ??

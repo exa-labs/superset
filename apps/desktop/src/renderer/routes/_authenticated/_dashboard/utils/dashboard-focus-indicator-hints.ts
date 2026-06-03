@@ -1,14 +1,15 @@
 import type { DashboardFocusScopeId } from "./dashboard-focus-scope";
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Esc", "⌥K", "⌥V", "?", "f"],
+	app: ["Esc", "⌥K", "⌥V", "⌥Tab", "?", "f"],
 	browser: [
 		"Esc",
 		"⌥K",
+		"⌥Tab",
 		"?",
 		"f",
 		"⌥G",
-		"gc/gd/gw",
+		"gg/gc/gd/gw",
 		"h/l",
 		"n/r",
 		"s/q",
@@ -17,11 +18,23 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	"command-palette": ["type", "↑↓", "Enter", "Backspace", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["?", "Esc"],
-	"native-agent": ["Esc", "n/N", "u/U", "r", "o/O/b", "m/e", "p/x", "?"],
+	"native-agent": [
+		"Esc",
+		"⌥Tab",
+		"n/N",
+		"u/U",
+		"r",
+		"o/O/b",
+		"s/[/]/=",
+		"m/e",
+		"p/x",
+		"?",
+	],
 	sidebar: [
 		"Esc",
+		"⌥Tab",
 		"↑↓/jk",
-		"Home/End",
+		"gg/G",
 		"/",
 		"Enter/Space",
 		"h/l",

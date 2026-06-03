@@ -144,8 +144,28 @@ describe("focusDashboardNavigationShell", () => {
 		);
 	});
 
-	it("moves the keyboard focus marker when returning to the shell", () => {
-		const stale = new FakeElement("stale");
+	it("keeps the preserved keyboard focus marker when returning to the shell", () => {
+		const preserved = new FakeElement("preserved");
+		const active = new FakeElement("active", { active: true });
+		preserved.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([preserved, active])),
+			),
+		).toBe(true);
+		expect(
+			preserved.getAttribute("data-dashboard-sidebar-keyboard-focus"),
+		).toBe("true");
+		expect(
+			active.getAttribute("data-dashboard-sidebar-keyboard-focus"),
+		).toBeNull();
+		expect(preserved.focusCount).toBe(1);
+		expect(active.focusCount).toBe(0);
+	});
+
+	it("moves the keyboard focus marker when the preserved target is not visible", () => {
+		const stale = new FakeElement("stale", { height: 0 });
 		const active = new FakeElement("active", { active: true });
 		stale.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
 
@@ -156,6 +176,45 @@ describe("focusDashboardNavigationShell", () => {
 		).toBe(true);
 		expect(
 			stale.getAttribute("data-dashboard-sidebar-keyboard-focus"),
+		).toBeNull();
+		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
+			"true",
+		);
+	});
+
+	it("returns to the preserved keyboard focus marker before the active route row", () => {
+		const focused = new FakeElement("keyboard focused");
+		const active = new FakeElement("active route", { active: true });
+		focused.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([focused, active])),
+			),
+		).toBe(true);
+		expect(focused.focusCount).toBe(1);
+		expect(active.focusCount).toBe(0);
+		expect(focused.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
+			"true",
+		);
+	});
+
+	it("ignores hidden keyboard focus markers and falls back to the active route row", () => {
+		const hiddenFocused = new FakeElement("hidden keyboard focused", {
+			height: 0,
+		});
+		const active = new FakeElement("active route", { active: true });
+		hiddenFocused.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([hiddenFocused, active])),
+			),
+		).toBe(true);
+		expect(hiddenFocused.focusCount).toBe(0);
+		expect(active.focusCount).toBe(1);
+		expect(
+			hiddenFocused.getAttribute("data-dashboard-sidebar-keyboard-focus"),
 		).toBeNull();
 		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
 			"true",

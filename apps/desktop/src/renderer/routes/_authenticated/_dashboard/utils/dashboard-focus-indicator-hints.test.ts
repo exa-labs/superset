@@ -5,8 +5,9 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar roving, activation, expansion, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"Esc",
+			"⌥Tab",
 			"↑↓/jk",
-			"Home/End",
+			"gg/G",
 			"/",
 			"Enter/Space",
 			"h/l",
@@ -23,10 +24,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("browser")).toEqual([
 			"Esc",
 			"⌥K",
+			"⌥Tab",
 			"?",
 			"f",
 			"⌥G",
-			"gc/gd/gw",
+			"gg/gc/gd/gw",
 			"h/l",
 			"n/r",
 			"s/q",
@@ -37,10 +39,12 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces native agent inbox actions", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"Esc",
+			"⌥Tab",
 			"n/N",
 			"u/U",
 			"r",
 			"o/O/b",
+			"s/[/]/=",
 			"m/e",
 			"p/x",
 			"?",
