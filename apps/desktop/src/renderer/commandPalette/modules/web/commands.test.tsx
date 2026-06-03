@@ -233,6 +233,14 @@ describe("web command provider", () => {
 		expect(commandIds.has("terminal.root.stag")).toBe(true);
 		expect(commandIds.has("terminal.root.prod")).toBe(true);
 		expect(commandIds.has("terminal.root.heph")).toBe(true);
+		expect(
+			commands.find((command) => command.id === "terminal.root.heph")
+				?.shortcutLabel,
+		).toBe("⌥K");
+		expect(
+			commands.find((command) => command.id === "terminal.root.heph")
+				?.description,
+		).toBe("kr9 in repo root");
 
 		commands
 			.find((command) => command.id === "terminal.root.heph")

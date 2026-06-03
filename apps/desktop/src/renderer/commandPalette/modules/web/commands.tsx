@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, TerminalIcon } from "lucide-react";
 import type { HotkeyId } from "renderer/hotkeys/registry";
 import {
 	NATIVE_AGENT_FOLDER_COLORS,
@@ -247,16 +247,19 @@ export const webProvider: CommandProvider = {
 				id: `terminal.root.${terminal.id}`,
 				title: `Open ${terminal.label} root terminal`,
 				section: "web",
+				icon: TerminalIcon,
 				description: `${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
 				keywords: [
 					terminal.id,
 					terminal.label,
 					"kr9",
+					"quick",
 					"terminal",
 					"shell",
 					"repo",
 					"root",
 				],
+				shortcutLabel: "⌥K",
 				run: (context) => context.navigate(`/root-terminal/${terminal.id}`),
 			});
 		}

@@ -317,6 +317,27 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 			],
 		},
+		{
+			id: "root-terminals",
+			title: "Root Terminals",
+			entries: [
+				{
+					keys: ["⌥", "K"],
+					label: "Open stag kr9",
+					description: "Run kr9 in a root terminal from the control plane",
+				},
+				{
+					keys: ["⌥", "K"],
+					label: "Open prod kr9",
+					description: "Run kr9 in a root terminal from the control plane",
+				},
+				{
+					keys: ["⌥", "K"],
+					label: "Open heph kr9",
+					description: "Run kr9 in a root terminal from the control plane",
+				},
+			],
+		},
 	];
 
 export function openDashboardKeyboardHelp(): boolean {

@@ -109,6 +109,15 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Previous or next Chrome tab")).toEqual(
 			expect.objectContaining({ keys: ["h", "l"] }),
 		);
+		expect(entryByLabel.get("Open stag kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "K"] }),
+		);
+		expect(entryByLabel.get("Open prod kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "K"] }),
+		);
+		expect(entryByLabel.get("Open heph kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "K"] }),
+		);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {
