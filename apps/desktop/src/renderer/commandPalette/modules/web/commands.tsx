@@ -19,6 +19,7 @@ import {
 	DASHBOARD_QUICK_TERMINALS,
 	dashboardQuickTerminalCommand,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
+import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import { getDashboardWebPageFavicon } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-page-favicons";
 import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages";
 import {
@@ -176,6 +177,7 @@ function closeWebTabFromCommand(context: CommandContext, tabId: string) {
 	const nextTab = closeDashboardWebTab(tabId);
 	if (currentTabId !== tabId) return;
 	context.navigate(nextTab ? `/web-tabs/${nextTab.id}` : "/v2-workspaces");
+	scheduleDashboardNavigationShellFocus();
 }
 
 function openNativeOverviewFilter(
@@ -184,8 +186,14 @@ function openNativeOverviewFilter(
 	filter: NativeOverviewFilter,
 ) {
 	context.navigate(provider === "capy" ? "/native/capy" : "/native/devin");
+	scheduleDashboardNavigationShellFocus();
 	window.setTimeout(() => dispatchNativeOverviewFilter(provider, filter), 0);
 	window.setTimeout(() => dispatchNativeOverviewFilter(provider, filter), 150);
+}
+
+function navigateDashboardCommand(context: CommandContext, path: string) {
+	context.navigate(path);
+	scheduleDashboardNavigationShellFocus();
 }
 
 const NATIVE_FILTER_COMMANDS: Array<{
@@ -273,7 +281,7 @@ export const webProvider: CommandProvider = {
 				"pinned",
 				"web",
 			],
-			run: (context) => context.navigate(`/web/${page.id}`),
+			run: (context) => navigateDashboardCommand(context, `/web/${page.id}`),
 		}));
 		const webTabs = getDashboardWebTabs();
 		const webFolders = getDashboardWebTabFolders();
@@ -298,7 +306,7 @@ export const webProvider: CommandProvider = {
 				keywords: [app.label, app.id, "google", "new", "browser", "tab", "web"],
 				run: (context) => {
 					const tab = createDashboardWebTab(app.id);
-					context.navigate(`/web-tabs/${tab.id}`);
+					navigateDashboardCommand(context, `/web-tabs/${tab.id}`);
 				},
 			});
 		}
@@ -602,7 +610,7 @@ export const webProvider: CommandProvider = {
 				description: "Use the Capy API in a native chat interface",
 				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["capy", "capi", "native", "thread", "agent"],
-				run: (context) => context.navigate("/native/capy"),
+				run: (context) => navigateDashboardCommand(context, "/native/capy"),
 			},
 			{
 				id: "native.devin.open",
@@ -613,7 +621,7 @@ export const webProvider: CommandProvider = {
 				description: "Use the Devin API in a native chat interface",
 				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["devin", "native", "session", "agent"],
-				run: (context) => context.navigate("/native/devin"),
+				run: (context) => navigateDashboardCommand(context, "/native/devin"),
 			},
 			{
 				id: "native.capy.create",
@@ -743,7 +751,7 @@ export const webProvider: CommandProvider = {
 					hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
 					run: (context) => {
 						markNativeAgentReplyNotificationRead(actionableLatestNativeReply);
-						context.navigate(nativePath);
+						navigateDashboardCommand(context, nativePath);
 					},
 				},
 				{
@@ -1314,7 +1322,8 @@ export const webProvider: CommandProvider = {
 					description: tab.url,
 					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: tabKeywords,
-					run: (context) => context.navigate(`/web-tabs/${tab.id}`),
+					run: (context) =>
+						navigateDashboardCommand(context, `/web-tabs/${tab.id}`),
 				},
 				{
 					id: `web.tab.${tab.id}.togglePin`,

@@ -73,6 +73,31 @@ function withLocalStorage(
 	}
 }
 
+function withWindowTimerCalls(run: (timerCalls: number[]) => void): void {
+	const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+	const timerCalls: number[] = [];
+	const windowLike = {
+		setTimeout: (_callback: () => void, ms = 0) => {
+			timerCalls.push(ms);
+			return ms;
+		},
+	};
+
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: windowLike,
+	});
+	try {
+		run(timerCalls);
+	} finally {
+		if (previousWindow) {
+			Object.defineProperty(globalThis, "window", previousWindow);
+		} else {
+			delete (globalThis as { window?: unknown }).window;
+		}
+	}
+}
+
 function activeOrderedCommandIds(context: CommandContext): string[] {
 	return orderCommandsByPriority(
 		webProvider
@@ -483,6 +508,33 @@ describe("web command provider", () => {
 			?.run?.(context);
 
 		expect(navigations).toEqual(["/root-terminal/heph"]);
+	});
+
+	it("refocuses the sidebar after palette view jumps without stealing terminal focus", () => {
+		withWindowTimerCalls((timerCalls) => {
+			const navigations: string[] = [];
+			const context = commandContextWithNavigate("/native/capy", (path) => {
+				navigations.push(path);
+			});
+			const commands = webProvider.provide(context);
+
+			commands
+				.find((command) => command.id === "web.page.overseer")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.devin.open")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "terminal.root.heph")
+				?.run?.(context);
+
+			expect(navigations).toEqual([
+				"/web/overseer",
+				"/native/devin",
+				"/root-terminal/heph",
+			]);
+			expect(timerCalls).toEqual([0, 120, 0, 120]);
+		});
 	});
 
 	it("registers current Chrome tab control commands only on web routes", () => {
