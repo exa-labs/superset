@@ -230,6 +230,7 @@ export function DashboardWebTabAppGroup({
 									</span>
 									<button
 										type="button"
+										data-dashboard-sidebar-action="delete"
 										aria-label={`Delete ${folder.title}`}
 										onClick={() => onDeleteFolder(folder.id)}
 										className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"

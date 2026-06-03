@@ -1954,6 +1954,7 @@ export function DashboardNativeAgentsSection({
 													</button>
 													<button
 														type="button"
+														data-dashboard-sidebar-action="color"
 														aria-label={`Change ${folder.title} color`}
 														onClick={(event) => {
 															event.stopPropagation();
@@ -1973,6 +1974,7 @@ export function DashboardNativeAgentsSection({
 													</button>
 													<button
 														type="button"
+														data-dashboard-sidebar-action="delete"
 														aria-label={`Delete ${folder.title}`}
 														onClick={(event) => {
 															event.stopPropagation();

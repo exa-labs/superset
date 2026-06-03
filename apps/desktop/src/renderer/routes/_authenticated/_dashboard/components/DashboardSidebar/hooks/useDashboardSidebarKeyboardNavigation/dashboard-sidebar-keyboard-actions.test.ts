@@ -40,6 +40,8 @@ describe("dashboardSidebarKeyboardActionFromKey", () => {
 		["a", "archive"],
 		["x", "archive"],
 		["e", "rename"],
+		["c", "color"],
+		["d", "delete"],
 		["j", "none"],
 		["Enter", "none"],
 	];
@@ -53,6 +55,12 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 	test("targets row-scoped action buttons", () => {
 		expect(dashboardSidebarKeyboardActionSelector("archive")).toBe(
 			'[data-dashboard-sidebar-action="archive"]',
+		);
+		expect(dashboardSidebarKeyboardActionSelector("color")).toBe(
+			'[data-dashboard-sidebar-action="color"]',
+		);
+		expect(dashboardSidebarKeyboardActionSelector("delete")).toBe(
+			'[data-dashboard-sidebar-action="delete"]',
 		);
 	});
 });
@@ -72,11 +80,11 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 				altKey: false,
 				ctrlKey: false,
 				focusInsideSidebar: true,
-				key: "d",
+				key: "q",
 				metaKey: false,
 				vimModeEnabled: false,
 			}),
-		).toBe("d");
+		).toBe("q");
 	});
 
 	test("preserves Vim command keys and modified shortcuts", () => {
@@ -123,26 +131,18 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		expect(
-			dashboardSidebarTypeaheadSeedFromKey({
-				altKey: false,
-				ctrlKey: false,
-				focusInsideSidebar: true,
-				key: "n",
-				metaKey: false,
-				vimModeEnabled: false,
-			}),
-		).toBeNull();
-		expect(
-			dashboardSidebarTypeaheadSeedFromKey({
-				altKey: false,
-				ctrlKey: false,
-				focusInsideSidebar: true,
-				key: "p",
-				metaKey: false,
-				vimModeEnabled: false,
-			}),
-		).toBeNull();
+		for (const key of ["c", "d", "n", "p"]) {
+			expect(
+				dashboardSidebarTypeaheadSeedFromKey({
+					altKey: false,
+					ctrlKey: false,
+					focusInsideSidebar: true,
+					key,
+					metaKey: false,
+					vimModeEnabled: false,
+				}),
+			).toBeNull();
+		}
 	});
 
 	test("ignores non-printable keys and focus outside the sidebar", () => {
@@ -268,6 +268,46 @@ describe("getDashboardSidebarFocusableItems", () => {
 		expect(
 			getDashboardSidebarFocusableItems(root).map((element) => element.id),
 		).toEqual(["session"]);
+	});
+
+	test("skips folder color and delete buttons during roving navigation", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const folderScope = document.createElement("div");
+		folderScope.dataset.dashboardSidebarActionScope = "";
+
+		const folder = document.createElement("button");
+		folder.dataset.nativeAgentFolderRowId = "folder-1";
+		folder.id = "folder";
+		makeVisible(folder);
+
+		const color = document.createElement("button");
+		color.dataset.dashboardSidebarAction = "color";
+		color.id = "color";
+		makeVisible(color);
+
+		const deleteButton = document.createElement("button");
+		deleteButton.dataset.dashboardSidebarAction = "delete";
+		deleteButton.id = "delete";
+		makeVisible(deleteButton);
+
+		folderScope.append(folder, color, deleteButton);
+		root.append(folderScope);
+
+		expect(
+			getDashboardSidebarFocusableItems(root).map((element) => element.id),
+		).toEqual(["folder"]);
+		expect(
+			folderScope.querySelector(
+				dashboardSidebarKeyboardActionSelector("color"),
+			),
+		).toBe(color);
+		expect(
+			folderScope.querySelector(
+				dashboardSidebarKeyboardActionSelector("delete"),
+			),
+		).toBe(deleteButton);
 	});
 });
 

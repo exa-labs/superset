@@ -1,6 +1,8 @@
 export type DashboardSidebarKeyboardAction =
 	| "archive"
+	| "color"
 	| "create"
+	| "delete"
 	| "move"
 	| "none"
 	| "open-browser"
@@ -23,6 +25,8 @@ export function dashboardSidebarKeyboardActionFromKey(
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	if (key === "e") return "rename";
+	if (key === "c") return "color";
+	if (key === "d") return "delete";
 	return "none";
 }
 
