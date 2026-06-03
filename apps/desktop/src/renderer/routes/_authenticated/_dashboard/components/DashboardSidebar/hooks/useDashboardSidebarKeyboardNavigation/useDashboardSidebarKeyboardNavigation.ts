@@ -108,6 +108,39 @@ function findActionButton(
 	return null;
 }
 
+export function findDashboardSidebarExpansionTarget(
+	activeItem: HTMLElement,
+): HTMLElement | null {
+	if (dashboardSidebarExpansionValue(activeItem) !== null) return activeItem;
+	const scope = activeItem.closest<HTMLElement>(
+		"[data-dashboard-sidebar-action-scope]",
+	);
+	if (!scope) return null;
+	const scopedToggle = scope.querySelector<HTMLElement>(
+		"[aria-expanded], [data-dashboard-sidebar-expanded]",
+	);
+	if (!scopedToggle || !isVisible(scopedToggle)) return null;
+	return scopedToggle;
+}
+
+export function dashboardSidebarExpansionValue(
+	element: HTMLElement,
+): string | null {
+	return (
+		element.getAttribute("aria-expanded") ??
+		element.getAttribute("data-dashboard-sidebar-expanded")
+	);
+}
+
+export function shouldToggleDashboardSidebarExpansion(input: {
+	expanded: string | null;
+	key: string;
+}): boolean {
+	if (input.key === "h") return input.expanded === "true";
+	if (input.key === "l") return input.expanded === "false";
+	return false;
+}
+
 export function useDashboardSidebarKeyboardNavigation(
 	rootRef: React.RefObject<HTMLElement | null>,
 	options: {
@@ -299,14 +332,18 @@ export function useDashboardSidebarKeyboardNavigation(
 			}
 
 			if (event.key === "h" || event.key === "l") {
-				const expanded = activeItem.getAttribute("aria-expanded");
-				if (expanded === null) return;
-				const shouldClick =
-					(event.key === "h" && expanded === "true") ||
-					(event.key === "l" && expanded === "false");
-				if (shouldClick) {
+				const expansionTarget = findDashboardSidebarExpansionTarget(activeItem);
+				const expanded = expansionTarget
+					? dashboardSidebarExpansionValue(expansionTarget)
+					: null;
+				if (
+					shouldToggleDashboardSidebarExpansion({
+						expanded,
+						key: event.key,
+					})
+				) {
 					event.preventDefault();
-					activeItem.click();
+					expansionTarget?.click();
 				}
 			}
 		};

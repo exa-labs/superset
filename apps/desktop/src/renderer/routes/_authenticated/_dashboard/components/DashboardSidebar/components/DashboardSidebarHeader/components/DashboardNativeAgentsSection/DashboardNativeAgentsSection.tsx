@@ -1921,6 +1921,7 @@ export function DashboardNativeAgentsSection({
 													data-native-agent-folder-row-provider={
 														folder.provider
 													}
+													aria-expanded={!folder.isCollapsed}
 													onClick={() => toggleFolder(folder.id)}
 													onDoubleClick={(event) => {
 														event.preventDefault();

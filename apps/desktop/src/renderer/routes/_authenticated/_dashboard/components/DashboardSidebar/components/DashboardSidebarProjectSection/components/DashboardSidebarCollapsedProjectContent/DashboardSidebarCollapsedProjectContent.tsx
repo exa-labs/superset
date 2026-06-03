@@ -50,6 +50,7 @@ export const DashboardSidebarCollapsedProjectContent = forwardRef<
 					<TooltipTrigger asChild>
 						<button
 							type="button"
+							aria-expanded={!isCollapsed}
 							onClick={onToggleCollapse}
 							className={cn(
 								"flex items-center justify-center size-8 rounded-md",

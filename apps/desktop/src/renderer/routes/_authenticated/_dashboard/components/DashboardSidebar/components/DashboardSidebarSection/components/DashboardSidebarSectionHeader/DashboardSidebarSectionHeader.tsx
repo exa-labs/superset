@@ -45,6 +45,9 @@ export const DashboardSidebarSectionHeader = forwardRef<
 			<div
 				ref={ref}
 				data-dashboard-sidebar-roving-item={isRenaming ? undefined : "true"}
+				data-dashboard-sidebar-expanded={
+					isRenaming ? undefined : String(!section.isCollapsed)
+				}
 				role={isRenaming ? undefined : "button"}
 				tabIndex={isRenaming ? undefined : 0}
 				onClick={isRenaming ? undefined : onToggleCollapse}

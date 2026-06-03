@@ -217,6 +217,7 @@ export function DashboardWebTabAppGroup({
 									<button
 										type="button"
 										data-dashboard-sidebar-roving-item="true"
+										aria-expanded={!folder.isCollapsed}
 										onClick={() =>
 											onFolderCollapsedChange(folder.id, !folder.isCollapsed)
 										}

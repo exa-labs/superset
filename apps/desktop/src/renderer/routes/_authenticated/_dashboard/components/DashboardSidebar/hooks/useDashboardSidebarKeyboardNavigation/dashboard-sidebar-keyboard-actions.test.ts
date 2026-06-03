@@ -6,7 +6,12 @@ import {
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
-import { getDashboardSidebarFocusableItems } from "./useDashboardSidebarKeyboardNavigation";
+import {
+	dashboardSidebarExpansionValue,
+	findDashboardSidebarExpansionTarget,
+	getDashboardSidebarFocusableItems,
+	shouldToggleDashboardSidebarExpansion,
+} from "./useDashboardSidebarKeyboardNavigation";
 
 function makeVisible(element: HTMLElement): void {
 	element.getBoundingClientRect = () =>
@@ -263,5 +268,81 @@ describe("getDashboardSidebarFocusableItems", () => {
 		expect(
 			getDashboardSidebarFocusableItems(root).map((element) => element.id),
 		).toEqual(["session"]);
+	});
+});
+
+describe("findDashboardSidebarExpansionTarget", () => {
+	test("uses the focused item when it exposes aria-expanded directly", () => {
+		if (typeof document === "undefined") return;
+
+		const row = document.createElement("button");
+		row.setAttribute("aria-expanded", "false");
+		makeVisible(row);
+
+		expect(findDashboardSidebarExpansionTarget(row)).toBe(row);
+	});
+
+	test("uses the focused item when it exposes sidebar expansion data", () => {
+		if (typeof document === "undefined") return;
+
+		const row = document.createElement("div");
+		row.dataset.dashboardSidebarExpanded = "true";
+		makeVisible(row);
+
+		expect(findDashboardSidebarExpansionTarget(row)).toBe(row);
+		expect(dashboardSidebarExpansionValue(row)).toBe("true");
+	});
+
+	test("uses a row-scoped expansion control when focus is on the label row", () => {
+		if (typeof document === "undefined") return;
+
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const row = document.createElement("button");
+		row.id = "row";
+		makeVisible(row);
+		const countToggle = document.createElement("button");
+		countToggle.id = "count";
+		countToggle.setAttribute("aria-expanded", "true");
+		makeVisible(countToggle);
+
+		scope.append(row, countToggle);
+
+		expect(findDashboardSidebarExpansionTarget(row)).toBe(countToggle);
+	});
+});
+
+describe("shouldToggleDashboardSidebarExpansion", () => {
+	test("maps h to collapse and l to expand", () => {
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "true",
+				key: "h",
+			}),
+		).toBe(true);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "false",
+				key: "l",
+			}),
+		).toBe(true);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "false",
+				key: "h",
+			}),
+		).toBe(false);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "true",
+				key: "l",
+			}),
+		).toBe(false);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: null,
+				key: "l",
+			}),
+		).toBe(false);
 	});
 });

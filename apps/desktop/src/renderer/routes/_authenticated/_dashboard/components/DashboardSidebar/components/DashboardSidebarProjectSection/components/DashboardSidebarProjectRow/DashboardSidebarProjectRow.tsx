@@ -50,6 +50,9 @@ export const DashboardSidebarProjectRow = forwardRef<
 				ref={ref}
 				data-dashboard-sidebar-roving-item={isRenaming ? undefined : "true"}
 				data-dashboard-sidebar-action-scope
+				data-dashboard-sidebar-expanded={
+					isRenaming ? undefined : String(!isCollapsed)
+				}
 				role={isRenaming ? undefined : "button"}
 				tabIndex={isRenaming ? undefined : 0}
 				onClick={isRenaming ? undefined : onToggleCollapse}
