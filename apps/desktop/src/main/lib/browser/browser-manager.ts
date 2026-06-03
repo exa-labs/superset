@@ -105,7 +105,7 @@ function dashboardWebShortcutFromBridgeUrl(
 	}
 }
 
-class BrowserManager extends EventEmitter {
+export class BrowserManager extends EventEmitter {
 	private paneWebContentsIds = new Map<string, number>();
 	private consoleLogs = new Map<string, ConsoleEntry[]>();
 	private consoleListeners = new Map<string, () => void>();
@@ -183,6 +183,7 @@ class BrowserManager extends EventEmitter {
 	}
 
 	openControlPlane(): void {
+		this.clearPendingDashboardWebAppShortcut();
 		this.emit("open-control-plane");
 	}
 
