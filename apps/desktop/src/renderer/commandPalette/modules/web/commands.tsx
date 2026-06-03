@@ -308,6 +308,7 @@ export const webProvider: CommandProvider = {
 				icon: TerminalIcon,
 				description: `Run ${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
 				priority: CONTROL_PLANE_PRIORITY.quickTerminal,
+				shortcutLabel: "⌥K kr9",
 				keywords: [
 					terminal.id,
 					terminal.label,

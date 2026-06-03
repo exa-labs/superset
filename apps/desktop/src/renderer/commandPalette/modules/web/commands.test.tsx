@@ -471,7 +471,7 @@ describe("web command provider", () => {
 		expect(
 			commands.find((command) => command.id === "terminal.root.heph")
 				?.shortcutLabel,
-		).toBeUndefined();
+		).toBe("⌥K kr9");
 		expect(
 			commands.find((command) => command.id === "terminal.root.heph")
 				?.description,
