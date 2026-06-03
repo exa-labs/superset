@@ -201,9 +201,18 @@ const markdownComponents = {
 	},
 } satisfies ReactMarkdownComponents;
 
-function ShortcutHint({ children }: { children: ReactNode }) {
+function ShortcutHint({
+	children,
+	title,
+}: {
+	children: ReactNode;
+	title?: string;
+}) {
 	return (
-		<span className="rounded border border-border/70 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+		<span
+			className="rounded border border-border/70 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
+			title={title}
+		>
 			{children}
 		</span>
 	);
@@ -1700,15 +1709,24 @@ export function NativeAgentChatView({
 				)}
 				{selectedItem && (
 					<div className="hidden items-center gap-1 xl:flex">
+						<ShortcutHint title="Reply">r</ShortcutHint>
 						{nativeBrowserShortcut && (
-							<ShortcutHint>{nativeBrowserShortcut}</ShortcutHint>
+							<ShortcutHint title="Toggle native/browser view">
+								{nativeBrowserShortcut}
+							</ShortcutHint>
 						)}
 						{nativeSplitShortcut && (
-							<ShortcutHint>{nativeSplitShortcut}</ShortcutHint>
+							<ShortcutHint title="Toggle split view">
+								{nativeSplitShortcut}
+							</ShortcutHint>
 						)}
-						<ShortcutHint>i</ShortcutHint>
-						<ShortcutHint>p</ShortcutHint>
-						<ShortcutHint>H</ShortcutHint>
+						{selectedItem.url && (
+							<ShortcutHint title="Open browser version">o</ShortcutHint>
+						)}
+						<ShortcutHint title="Pin or unpin">p</ShortcutHint>
+						<ShortcutHint title="Move to folder">m</ShortcutHint>
+						<ShortcutHint title="Archive or hide">x</ShortcutHint>
+						<ShortcutHint title="Refresh native data">R</ShortcutHint>
 					</div>
 				)}
 				<button
