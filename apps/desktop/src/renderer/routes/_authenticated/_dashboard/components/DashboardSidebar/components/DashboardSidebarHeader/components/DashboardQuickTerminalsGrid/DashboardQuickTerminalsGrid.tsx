@@ -25,6 +25,7 @@ export function DashboardQuickTerminalsGrid({
 							<button
 								type="button"
 								aria-label={`Open ${terminal.label} root terminal running ${dashboardQuickTerminalCommand(terminal.id)}`}
+								data-dashboard-sidebar-typeahead-label={`${terminal.label} root terminal ${dashboardQuickTerminalCommand(terminal.id)}`}
 								data-testid={`dashboard-quick-terminal-${terminal.id}`}
 								data-dashboard-quick-terminal-trigger={terminal.id}
 								title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}
@@ -52,6 +53,7 @@ export function DashboardQuickTerminalsGrid({
 						<button
 							type="button"
 							aria-label={`Open ${terminal.label} root terminal running ${dashboardQuickTerminalCommand(terminal.id)}`}
+							data-dashboard-sidebar-typeahead-label={`${terminal.label} root terminal ${dashboardQuickTerminalCommand(terminal.id)}`}
 							data-testid={`dashboard-quick-terminal-${terminal.id}`}
 							data-dashboard-quick-terminal-trigger={terminal.id}
 							title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}

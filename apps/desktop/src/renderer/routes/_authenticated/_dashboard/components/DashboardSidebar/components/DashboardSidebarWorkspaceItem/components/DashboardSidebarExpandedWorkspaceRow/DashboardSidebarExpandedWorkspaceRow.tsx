@@ -122,6 +122,24 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 			<div
 				data-dashboard-sidebar-active={isActive ? "true" : undefined}
 				data-dashboard-sidebar-roving-item={onClick ? "true" : undefined}
+				data-dashboard-sidebar-typeahead-label={
+					onClick
+						? [
+								name,
+								branch,
+								workspace.id,
+								workspace.repoUrl,
+								workspace.previewUrl,
+								pullRequest?.title,
+								pullRequest ? `pr ${pullRequest.number}` : null,
+							]
+								.filter(
+									(value): value is string =>
+										value != null && value.trim() !== "",
+								)
+								.join(" ")
+						: undefined
+				}
 				data-dashboard-sidebar-action-scope
 				role={onClick ? "button" : undefined}
 				tabIndex={onClick ? 0 : undefined}

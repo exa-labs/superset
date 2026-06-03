@@ -498,6 +498,34 @@ describe("findDashboardSidebarTypeaheadMatch", () => {
 		).toBe(capy);
 	});
 
+	test("prefers explicit typeahead labels over noisy title and text content", () => {
+		if (typeof document === "undefined") return;
+
+		const session = document.createElement("button");
+		session.setAttribute(
+			"data-dashboard-sidebar-typeahead-label",
+			"Devin QES dashboard",
+		);
+		session.title = "Tooltip text with hidden metadata and stale shortcuts";
+		session.textContent = "visible clipped title";
+		makeVisible(session);
+
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: -1,
+				items: [session],
+				query: "dev",
+			}),
+		).toBe(session);
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: -1,
+				items: [session],
+				query: "metadata",
+			}),
+		).toBeNull();
+	});
+
 	test("wraps from the focused row when cycling a single-character query", () => {
 		if (typeof document === "undefined") return;
 

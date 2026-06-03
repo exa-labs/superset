@@ -496,6 +496,7 @@ function SessionRow({
 			<button
 				type="button"
 				data-dashboard-sidebar-active={isActive ? "true" : undefined}
+				data-dashboard-sidebar-typeahead-label={`${nativeAgentProviderConfig(item.provider).title} ${item.title} ${item.subtitle}`}
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
@@ -1902,6 +1903,7 @@ export function DashboardNativeAgentsSection({
 								<button
 									type="button"
 									data-dashboard-native-provider-trigger={providerConfig.id}
+									data-dashboard-sidebar-typeahead-label={providerConfig.title}
 									onClick={() => openProvider(providerConfig.id)}
 									className={cn(
 										"flex size-8 items-center justify-center rounded-md transition-colors",
@@ -1934,6 +1936,7 @@ export function DashboardNativeAgentsSection({
 								type="button"
 								data-dashboard-sidebar-active={isActive ? "true" : undefined}
 								data-dashboard-native-provider-trigger={providerConfig.id}
+								data-dashboard-sidebar-typeahead-label={providerConfig.title}
 								onClick={() => openProvider(providerConfig.id)}
 								className={cn(
 									"flex h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-sm font-semibold transition-colors",
@@ -2086,6 +2089,7 @@ export function DashboardNativeAgentsSection({
 												<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
 												<button
 													type="button"
+													data-dashboard-sidebar-typeahead-label={`${nativeAgentProviderConfig(folder.provider).title} folder ${folder.title}`}
 													data-native-agent-folder-row-id={folder.id}
 													data-native-agent-folder-row-provider={
 														folder.provider

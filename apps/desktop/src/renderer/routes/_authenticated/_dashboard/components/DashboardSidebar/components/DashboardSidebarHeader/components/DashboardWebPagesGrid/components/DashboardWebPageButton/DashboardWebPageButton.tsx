@@ -42,6 +42,7 @@ export function DashboardWebPageButton({
 						type="button"
 						aria-label={page.label}
 						data-dashboard-sidebar-active={isActive ? "true" : undefined}
+						data-dashboard-sidebar-typeahead-label={`${page.label} ${page.shortLabel} ${page.url}`}
 						data-dashboard-web-page-trigger={page.id}
 						onFocus={() => warmDashboardWebUrl(page.url)}
 						onMouseEnter={() => warmDashboardWebUrl(page.url)}
@@ -75,6 +76,7 @@ export function DashboardWebPageButton({
 				<button
 					type="button"
 					data-dashboard-sidebar-active={isActive ? "true" : undefined}
+					data-dashboard-sidebar-typeahead-label={`${page.label} ${page.shortLabel} ${page.url}`}
 					data-dashboard-web-page-trigger={page.id}
 					onFocus={() => warmDashboardWebUrl(page.url)}
 					onMouseEnter={() => warmDashboardWebUrl(page.url)}

@@ -164,6 +164,19 @@ export function DashboardSidebarWorkspaceItem({
 					onClick={handleClick}
 					isCreatePending={isPending}
 					pullRequestState={pullRequest?.state ?? null}
+					data-dashboard-sidebar-typeahead-label={[
+						name,
+						branch,
+						workspace.id,
+						workspace.repoUrl,
+						workspace.previewUrl,
+						pullRequest?.title,
+						pullRequest ? `pr ${pullRequest.number}` : null,
+					]
+						.filter(
+							(value): value is string => value != null && value.trim() !== "",
+						)
+						.join(" ")}
 					aria-label={isPending ? `Creating workspace: ${name}` : undefined}
 				/>
 				{!isPending && (

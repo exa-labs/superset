@@ -86,9 +86,15 @@ function normalizeTypeaheadText(value: string): string {
 }
 
 function typeaheadTextForItem(item: HTMLElement): string {
+	const explicitLabel = item.getAttribute(
+		"data-dashboard-sidebar-typeahead-label",
+	);
+	if (explicitLabel?.trim()) {
+		return normalizeTypeaheadText(explicitLabel);
+	}
+
 	return normalizeTypeaheadText(
 		[
-			item.getAttribute("data-dashboard-sidebar-typeahead-label"),
 			item.getAttribute("aria-label"),
 			item.getAttribute("title"),
 			item.textContent,

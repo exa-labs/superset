@@ -49,6 +49,9 @@ export const DashboardSidebarProjectRow = forwardRef<
 			<div
 				ref={ref}
 				data-dashboard-sidebar-roving-item={isRenaming ? undefined : "true"}
+				data-dashboard-sidebar-typeahead-label={
+					isRenaming ? undefined : projectName
+				}
 				data-dashboard-sidebar-action-scope
 				data-dashboard-sidebar-expanded={
 					isRenaming ? undefined : String(!isCollapsed)

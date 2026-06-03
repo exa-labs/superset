@@ -37,7 +37,6 @@ import {
 	LuPin,
 	LuRefreshCw,
 	LuSend,
-	LuSparkles,
 } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -385,22 +384,24 @@ function NativeAgentHeaderActionsMenu({
 			<DropdownMenuTrigger asChild>
 				<button
 					type="button"
-					aria-label="Show native agent actions"
-					title="Actions and shortcuts"
+					aria-label="Show native agent shortcuts and actions"
+					title="Shortcuts and actions"
 					data-dashboard-action-hint-label="."
 					data-dashboard-action-hint-title="Open actions menu"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
-					<LuSparkles className="size-3.5" />
-					<span className="hidden lg:inline">Actions</span>
+					<LuKeyRound className="size-3.5" />
+					<span className="hidden lg:inline">Shortcuts</span>
 					<LuEllipsis className="size-3.5 opacity-70" />
 				</button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-72">
 				<div className="px-2 py-1.5">
-					<div className="text-xs font-medium text-foreground">Actions</div>
+					<div className="text-xs font-medium text-foreground">
+						Shortcuts and actions
+					</div>
 					<div className="text-[11px] text-muted-foreground">
-						Keyboard shortcuts live here instead of crowding the header.
+						Use the menu or press the matching key while the session is focused.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {
