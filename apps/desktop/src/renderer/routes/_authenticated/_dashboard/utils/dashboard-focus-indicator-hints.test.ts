@@ -8,10 +8,13 @@ describe("dashboardFocusIndicatorHints", () => {
 			"↑↓/jk",
 			"Home/End",
 			"/",
-			"Enter",
-			"Space",
+			"Enter/Space",
+			"h/l",
 			"n/N",
-			"p/x",
+			"r/o/b",
+			"e/m",
+			"p/a/x",
+			"c/d",
 			".",
 		]);
 	});

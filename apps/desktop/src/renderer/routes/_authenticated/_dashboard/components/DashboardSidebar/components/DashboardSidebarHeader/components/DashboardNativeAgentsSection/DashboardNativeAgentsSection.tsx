@@ -2122,7 +2122,9 @@ export function DashboardNativeAgentsSection({
 									<button
 										type="button"
 										data-dashboard-sidebar-action="create"
+										aria-keyshortcuts="n"
 										aria-label={`New ${providerConfig.title}`}
+										title={`New ${nativeAgentConversationLabel(providerConfig.id)} (n)`}
 										onClick={() => setCreateProvider(providerConfig.id)}
 										className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 									>
@@ -2130,7 +2132,7 @@ export function DashboardNativeAgentsSection({
 									</button>
 								</TooltipTrigger>
 								<TooltipContent side="right">
-									New {nativeAgentConversationLabel(providerConfig.id)}
+									New {nativeAgentConversationLabel(providerConfig.id)} (n)
 								</TooltipContent>
 							</Tooltip>
 							<Tooltip delayDuration={300}>
