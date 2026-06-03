@@ -892,7 +892,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Create a folder for the current Capy/Devin section",
 				keywords: ["capy", "devin", "folder", "create", "native"],
-				shortcutLabel: "n",
+				shortcutLabel: "N",
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
 					dispatchNativeFolderAction(

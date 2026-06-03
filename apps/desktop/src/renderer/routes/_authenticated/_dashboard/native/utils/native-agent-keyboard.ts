@@ -38,6 +38,10 @@ export type NativeAgentFolderVimAction =
 
 export type NativeAgentViewMode = "browser" | "native" | "split";
 export type NativeAgentSidebarJumpAction = "bottom" | "none" | "top";
+export type NativeAgentCreateVimAction =
+	| "create-folder"
+	| "create-session"
+	| "none";
 export type NativeAgentUnreadVimAction = "none" | "open-unread";
 export type NativeAgentSplitPaneAction =
 	| "equalize"
@@ -114,6 +118,14 @@ export function nativeAgentUnreadVimActionFromKey(
 	key: string | null,
 ): NativeAgentUnreadVimAction {
 	if (key === "u") return "open-unread";
+	return "none";
+}
+
+export function nativeAgentCreateVimActionFromKey(
+	key: string | null,
+): NativeAgentCreateVimAction {
+	if (key === "n") return "create-session";
+	if (key === "N") return "create-folder";
 	return "none";
 }
 

@@ -76,6 +76,7 @@ import {
 	toggleNativeAgentFolderCollapsed,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
 import {
+	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarNavigationDeltaFromKey,
@@ -1659,6 +1660,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "enter" &&
 				vimKey !== "m" &&
 				vimKey !== "n" &&
+				vimKey !== "N" &&
 				vimKey !== "o" &&
 				vimKey !== "p" &&
 				vimKey !== "u" &&
@@ -1738,10 +1740,17 @@ export function DashboardNativeAgentsSection({
 						(item) => item.id === currentRow.dataset.nativeAgentSessionRowId,
 					)
 				: null;
-			if (vimKey === "n") {
+			const createAction = nativeAgentCreateVimActionFromKey(vimKey);
+			if (createAction === "create-session") {
 				event.preventDefault();
 				event.stopPropagation();
 				setCreateProvider(rowProvider);
+				return;
+			}
+			if (createAction === "create-folder") {
+				event.preventDefault();
+				event.stopPropagation();
+				createFolder(rowProvider);
 				return;
 			}
 			if (nativeAgentUnreadVimActionFromKey(vimKey) === "open-unread") {
@@ -1875,6 +1884,7 @@ export function DashboardNativeAgentsSection({
 	}, [
 		activeRoute.id,
 		activeRoute.provider,
+		createFolder,
 		folders,
 		handlePin,
 		handleSessionAction,

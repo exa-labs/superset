@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	nativeAgentChatScrollDeltaFromKey,
+	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentOverviewFocusDeltaFromKey,
 	nativeAgentPlainNavigationKey,
@@ -71,6 +72,12 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentFolderVimActionFromKey("c")).toBe("color");
 		expect(nativeAgentFolderVimActionFromKey("d")).toBe("delete");
 		expect(nativeAgentFolderVimActionFromKey("p")).toBe("none");
+	});
+
+	it("separates new-session and new-folder vim actions", () => {
+		expect(nativeAgentCreateVimActionFromKey("n")).toBe("create-session");
+		expect(nativeAgentCreateVimActionFromKey("N")).toBe("create-folder");
+		expect(nativeAgentCreateVimActionFromKey("m")).toBe("none");
 	});
 
 	it("maps native sidebar top and bottom jump keys", () => {

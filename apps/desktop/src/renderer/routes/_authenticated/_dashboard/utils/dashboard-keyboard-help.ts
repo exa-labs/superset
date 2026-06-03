@@ -298,6 +298,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Reload the active Capy or Devin session list",
 				},
 				{
+					keys: ["N"],
+					label: "Create folder",
+					description:
+						"Create a sidebar folder for the focused native provider",
+				},
+				{
 					keys: ["c"],
 					label: "Cycle folder color",
 					description: "Recolor the focused native sidebar folder",

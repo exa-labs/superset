@@ -26,6 +26,7 @@ describe("dashboardFocusIndicatorHints", () => {
 
 	it("surfaces native agent inbox actions", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
+			"n/N",
 			"r",
 			"o/b",
 			"m/e",

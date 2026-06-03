@@ -217,7 +217,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.equalizeSplit")).toBe("=");
 		expect(shortcutById.get("native.capy.unread")).toBe("u");
 		expect(shortcutById.get("native.devin.unread")).toBe("u");
-		expect(shortcutById.get("native.folder.create")).toBe("n");
+		expect(shortcutById.get("native.folder.create")).toBe("N");
 		expect(shortcutById.get("native.folder.rename")).toBe("e");
 		expect(shortcutById.get("native.folder.color")).toBe("c");
 		expect(shortcutById.get("native.folder.delete")).toBe("d");
