@@ -4,6 +4,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@superset/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@superset/ui/dropdown-menu";
 import { toast } from "@superset/ui/sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
@@ -23,6 +31,7 @@ import {
 	LuImage,
 	LuInfo,
 	LuKeyRound,
+	LuPanelLeft,
 	LuPencil,
 	LuPin,
 	LuRefreshCw,
@@ -116,7 +125,6 @@ import {
 	type NativeAgentProvider,
 	nativeAgentConversationLabel,
 	nativeAgentConversationSetLabel,
-	nativeAgentOverviewCardKeyboardHints,
 	nativeAgentProviderTitle,
 	nativeAgentStatusBadgeLabel,
 	nativeAgentStatusTone,
@@ -178,6 +186,12 @@ type NativeAgentCurrentAction =
 	| "toggle-split"
 	| "unpin"
 	| "widen-native-split";
+
+interface NativeAgentHeaderShortcut {
+	key: string;
+	label: string;
+	onSelect?: () => void;
+}
 
 type NativeBrowserTarget = {
 	id: string;
@@ -244,20 +258,57 @@ const markdownComponents = {
 	},
 } satisfies ReactMarkdownComponents;
 
-function ShortcutHint({
-	children,
-	title,
+function shortcutSequence(...keys: Array<string | null | undefined>): string {
+	const seen = new Set<string>();
+	return keys
+		.filter((key): key is string => Boolean(key) && key !== "Unassigned")
+		.filter((key) => {
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		})
+		.join(" / ");
+}
+
+function NativeAgentHeaderShortcutsMenu({
+	shortcuts,
 }: {
-	children: ReactNode;
-	title?: string;
+	shortcuts: NativeAgentHeaderShortcut[];
 }) {
+	if (shortcuts.length === 0) return null;
+
 	return (
-		<span
-			className="rounded border border-border/70 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
-			title={title}
-		>
-			{children}
-		</span>
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					aria-label="Show native agent shortcuts"
+					title="Show shortcuts"
+					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+				>
+					<LuKeyRound className="size-4" />
+					<span className="hidden 2xl:inline">Shortcuts</span>
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" className="w-64">
+				<div className="px-2 py-1.5">
+					<div className="text-xs font-medium text-foreground">Shortcuts</div>
+					<div className="text-[11px] text-muted-foreground">
+						These work when the native session has focus.
+					</div>
+				</div>
+				<DropdownMenuSeparator />
+				{shortcuts.map((shortcut) => (
+					<DropdownMenuItem
+						key={`${shortcut.label}-${shortcut.key}`}
+						onSelect={shortcut.onSelect}
+					>
+						{shortcut.label}
+						<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
+					</DropdownMenuItem>
+				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 
@@ -679,10 +730,6 @@ export function NativeAgentChatView({
 		splitPlacement: nativeSplitPlacement,
 		viewMode,
 	});
-	const overviewCardKeyboardHints = useMemo(
-		() => nativeAgentOverviewCardKeyboardHints(),
-		[],
-	);
 	const [openedBrowserTargets, setOpenedBrowserTargets] = useState<
 		NativeBrowserTarget[]
 	>([]);
@@ -2030,6 +2077,130 @@ export function NativeAgentChatView({
 		};
 	}, [provider, selectedViewKey]);
 
+	const selectedHeaderShortcuts: NativeAgentHeaderShortcut[] = selectedItem
+		? [
+				{
+					key: "r",
+					label: "Reply",
+					onSelect: () => composerRef.current?.focus(),
+				},
+				{
+					key: "R",
+					label: "Refresh",
+					onSelect: () => void invalidateProvider(),
+				},
+				{
+					key: "p",
+					label: selectedItem.sidebarPinned ? "Unpin" : "Pin",
+					onSelect: () =>
+						void handleSetPinned(
+							selectedItem,
+							selectedItem.sidebarPinned !== true,
+						),
+				},
+				{
+					key: "e",
+					label: "Rename",
+					onSelect: () => openRenameDialog(selectedItem),
+				},
+				{
+					key: "m",
+					label: "Move to folder",
+					onSelect: () =>
+						window.dispatchEvent(
+							new CustomEvent("dashboard-native-agent-folder-action", {
+								detail: {
+									action: "move-active",
+									provider,
+									sessionId: selectedItem.id,
+								},
+							}),
+						),
+				},
+				{
+					key: "F",
+					label: "Remove from folder",
+					onSelect: () =>
+						window.dispatchEvent(
+							new CustomEvent("dashboard-native-agent-folder-action", {
+								detail: {
+									action: "remove-active",
+									provider,
+									sessionId: selectedItem.id,
+								},
+							}),
+						),
+				},
+				{
+					key: "x",
+					label: "Move to overview",
+					onSelect: () => void handleSetSidebarVisible(selectedItem, false),
+				},
+				{
+					key: "Esc",
+					label: "Focus sidebar",
+					onSelect: () =>
+						handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+				},
+				...(selectedItem.url
+					? [
+							{
+								key: shortcutSequence(nativeBrowserShortcut, "b"),
+								label: "Toggle native/browser",
+								onSelect: () =>
+									handleSelectViewMode(
+										viewMode === "native" ? "browser" : "native",
+									),
+							},
+							{
+								key: shortcutSequence(nativeSplitShortcut, "s"),
+								label: "Toggle split",
+								onSelect: () =>
+									handleSelectViewMode(
+										viewMode === "split" ? "native" : "split",
+									),
+							},
+							{
+								key: "o",
+								label: "Open browser view",
+								onSelect: () => handleSelectViewMode("browser"),
+							},
+							{
+								key: "O",
+								label: "Open externally",
+								onSelect: () => openExternal.mutate(selectedItem.url ?? ""),
+							},
+							...(viewMode === "split"
+								? [
+										{
+											key: "w",
+											label: "Swap panes",
+											onSelect: () => swapNativeSplitPanes(),
+										},
+										{
+											key: "[",
+											label: "Narrow native pane",
+											onSelect: () =>
+												resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP),
+										},
+										{
+											key: "]",
+											label: "Widen native pane",
+											onSelect: () =>
+												resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP),
+										},
+										{
+											key: "=",
+											label: "Equalize panes",
+											onSelect: () => equalizeNativeSplitPanes(),
+										},
+									]
+								: []),
+						]
+					: []),
+			]
+		: [];
+
 	return (
 		<div
 			ref={nativeAgentViewRootRef}
@@ -2146,45 +2317,13 @@ export function NativeAgentChatView({
 					</div>
 				)}
 				{selectedItem && (
-					<div className="hidden items-center gap-1 xl:flex">
-						<ShortcutHint title="Reply">r</ShortcutHint>
-						{nativeBrowserShortcut && (
-							<ShortcutHint title="Toggle native/browser view">
-								{nativeBrowserShortcut}
-							</ShortcutHint>
-						)}
-						{nativeSplitShortcut && (
-							<ShortcutHint title="Toggle split view">
-								{nativeSplitShortcut}
-							</ShortcutHint>
-						)}
-						{selectedItem.url && viewMode === "split" && (
-							<>
-								<ShortcutHint title="Swap native/browser panes">w</ShortcutHint>
-								<ShortcutHint title="Narrow native chat pane">[</ShortcutHint>
-								<ShortcutHint title="Widen native chat pane">]</ShortcutHint>
-								<ShortcutHint title="Equalize native split panes">
-									=
-								</ShortcutHint>
-							</>
-						)}
-						{selectedItem.url && (
-							<ShortcutHint title="Open browser version">o</ShortcutHint>
-						)}
-						{selectedItem.url && (
-							<ShortcutHint title="Open externally">O</ShortcutHint>
-						)}
-						<ShortcutHint title="Pin or unpin">p</ShortcutHint>
-						<ShortcutHint title="Move to folder">m</ShortcutHint>
-						<ShortcutHint title="Rename">e</ShortcutHint>
-						<ShortcutHint title="Archive or hide">x</ShortcutHint>
-						<ShortcutHint title="Refresh native data">R</ShortcutHint>
-					</div>
+					<NativeAgentHeaderShortcutsMenu shortcuts={selectedHeaderShortcuts} />
 				)}
 				<button
 					type="button"
 					onClick={() => void invalidateProvider()}
 					disabled={!isConfigured}
+					title="Refresh"
 					className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label="Refresh native agent data"
 				>
@@ -2200,6 +2339,7 @@ export function NativeAgentChatView({
 								showDiagnostics && "bg-accent text-foreground",
 							)}
 							aria-label="Toggle native diagnostics"
+							title="Diagnostics"
 						>
 							<LuInfo className="size-4" />
 						</button>
@@ -2230,12 +2370,7 @@ export function NativeAgentChatView({
 										: "Move to overview"
 								}
 							>
-								<LuPin
-									className={cn(
-										"size-4",
-										selectedItem.sidebarHidden !== true && "fill-current",
-									)}
-								/>
+								<LuPanelLeft className="size-4" />
 								<span>
 									{selectedItem.sidebarHidden ? "Show" : "In sidebar"}
 								</span>
@@ -2811,13 +2946,12 @@ export function NativeAgentChatView({
 												</div>
 												<div
 													aria-hidden="true"
-													className="mt-2 flex flex-wrap items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+													className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground/70 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
 												>
-													{overviewCardKeyboardHints.map((hint) => (
-														<ShortcutHint key={hint.key} title={hint.title}>
-															{hint.key}
-														</ShortcutHint>
-													))}
+													<LuKeyRound className="size-3 shrink-0" />
+													<span className="truncate">
+														Enter opens, p pins, x hides
+													</span>
 												</div>
 											</button>
 											<div className="mt-3 flex items-center justify-between gap-2">
@@ -2849,7 +2983,6 @@ export function NativeAgentChatView({
 													<span>
 														{item.sidebarHidden ? "Show in sidebar" : "Hide"}
 													</span>
-													<ShortcutHint title="Archive or hide">x</ShortcutHint>
 												</button>
 												{item.sidebarHidden !== true && (
 													<button
@@ -2868,7 +3001,6 @@ export function NativeAgentChatView({
 															)}
 														/>
 														<span>{item.sidebarPinned ? "Unpin" : "Pin"}</span>
-														<ShortcutHint title="Pin or unpin">p</ShortcutHint>
 													</button>
 												)}
 											</div>
