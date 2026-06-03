@@ -210,6 +210,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.rename")).toBe("e");
 		expect(shortcutById.get("native.current.hide")).toBe("a/x");
 		expect(shortcutById.get("native.current.show")).toBe("p");
+		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
 		expect(shortcutById.get("native.current.narrowSplit")).toBe("[");
@@ -416,6 +417,7 @@ describe("web command provider", () => {
 		for (const id of [
 			"native.current.reply",
 			"native.current.openBrowser",
+			"native.current.openExternal",
 			"native.current.pin",
 			"native.current.unpin",
 			"native.current.rename",
@@ -438,6 +440,7 @@ describe("web command provider", () => {
 		);
 		expect(shortcutById.get("native.current.reply")).toBe("r");
 		expect(shortcutById.get("native.current.openBrowser")).toBe("o");
+		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 	});
 
 	it("dispatches provider-scoped native control-plane events", () => {
@@ -461,6 +464,9 @@ describe("web command provider", () => {
 				.find((command) => command.id === "native.current.openBrowser")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "native.current.openExternal")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "native.current.narrowSplit")
 				?.run?.(context);
 
@@ -482,6 +488,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "open-browser", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "open-external", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 			expect(events).toContainEqual({

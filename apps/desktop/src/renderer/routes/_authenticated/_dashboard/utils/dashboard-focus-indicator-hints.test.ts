@@ -33,7 +33,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"n/N",
 			"u/U",
 			"r",
-			"o/b",
+			"o/O/b",
 			"m/e",
 			"p/x",
 			"?",

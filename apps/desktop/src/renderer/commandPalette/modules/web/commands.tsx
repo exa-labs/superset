@@ -59,6 +59,7 @@ function dispatchNativeAgentAction(
 		| "narrow-native-split"
 		| "new"
 		| "open-browser"
+		| "open-external"
 		| "pin"
 		| "refresh"
 		| "rename"
@@ -705,6 +706,30 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"open-browser",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.openExternal",
+				title: "Open current native session externally",
+				section: "web",
+				description:
+					"Open the current Capy/Devin session in the system browser",
+				keywords: [
+					"capy",
+					"devin",
+					"open",
+					"external",
+					"browser",
+					"native",
+					"session",
+				],
+				shortcutLabel: "O",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"open-external",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

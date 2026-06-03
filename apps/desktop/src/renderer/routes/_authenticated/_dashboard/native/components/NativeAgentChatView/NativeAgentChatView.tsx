@@ -161,6 +161,7 @@ type NativeAgentCurrentAction =
 	| "narrow-native-split"
 	| "new"
 	| "open-browser"
+	| "open-external"
 	| "pin"
 	| "refresh"
 	| "rename"
@@ -1619,6 +1620,10 @@ export function NativeAgentChatView({
 						if (selectedItem.url) handleSelectViewMode("browser");
 						return;
 					}
+					if (selectedSessionAction === "open-external") {
+						if (selectedItem.url) openExternal.mutate(selectedItem.url);
+						return;
+					}
 					if (selectedSessionAction === "rename") {
 						openRenameDialog(selectedItem);
 						return;
@@ -1680,10 +1685,6 @@ export function NativeAgentChatView({
 					consumeNativeAgentKeyboardEvent(event);
 					handleSelectViewMode(nextViewMode);
 					return;
-				}
-				if (key === "O" && selectedItem.url) {
-					consumeNativeAgentKeyboardEvent(event);
-					openExternal.mutate(selectedItem.url);
 				}
 				return;
 			}
@@ -1825,6 +1826,10 @@ export function NativeAgentChatView({
 				handleSelectViewMode("browser");
 				return;
 			}
+			if (detail?.action === "open-external" && selectedItem.url) {
+				openExternal.mutate(selectedItem.url);
+				return;
+			}
 			if (detail?.action === "toggle-browser" && selectedItem.url) {
 				handleSelectViewMode(viewMode === "native" ? "browser" : "native");
 				return;
@@ -1869,6 +1874,7 @@ export function NativeAgentChatView({
 		handleSetPinned,
 		handleSetSidebarVisible,
 		openRenameDialog,
+		openExternal,
 	]);
 
 	useEffect(() => {
@@ -2037,6 +2043,9 @@ export function NativeAgentChatView({
 						)}
 						{selectedItem.url && (
 							<ShortcutHint title="Open browser version">o</ShortcutHint>
+						)}
+						{selectedItem.url && (
+							<ShortcutHint title="Open externally">O</ShortcutHint>
 						)}
 						<ShortcutHint title="Pin or unpin">p</ShortcutHint>
 						<ShortcutHint title="Move to folder">m</ShortcutHint>

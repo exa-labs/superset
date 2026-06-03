@@ -59,6 +59,7 @@ export type NativeAgentSelectedSessionVimAction =
 	| "move-to-folder"
 	| "none"
 	| "open-browser"
+	| "open-external"
 	| "pin"
 	| "refresh"
 	| "rename"
@@ -151,6 +152,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "r") return "focus-composer";
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";
+	if (key === "O") return "open-external";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
