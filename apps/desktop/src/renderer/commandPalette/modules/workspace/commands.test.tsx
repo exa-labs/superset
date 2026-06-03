@@ -1,5 +1,27 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterAll, describe, expect, it, mock } from "bun:test";
 import type { CommandContext } from "../../core/types";
+
+const testGlobal = globalThis as typeof globalThis & {
+	electronTRPC?: {
+		onMessage: (callback: (message: unknown) => void) => void;
+		sendMessage: (message: unknown) => void;
+	};
+};
+
+const previousElectronTRPC = testGlobal.electronTRPC;
+
+testGlobal.electronTRPC = {
+	onMessage: () => {},
+	sendMessage: () => {},
+};
+
+afterAll(() => {
+	if (previousElectronTRPC === undefined) {
+		delete testGlobal.electronTRPC;
+		return;
+	}
+	testGlobal.electronTRPC = previousElectronTRPC;
+});
 
 mock.module("renderer/commandPalette/ui/QuickOpen/quickOpenStore", () => ({
 	useQuickOpenStore: {
@@ -146,6 +168,26 @@ describe("workspace command provider", () => {
 		expect(shortcutById.get("workspace.pane.swapRight")).toBe("L");
 		expect(shortcutById.get("workspace.pane.swapUp")).toBe("K");
 		expect(shortcutById.get("workspace.pane.swapDown")).toBe("J");
+	});
+
+	it("surfaces current workspace management shortcuts in the command palette", () => {
+		const commands = workspaceProvider.provide(commandContext());
+		const removeCommand = commands.find(
+			(command) => command.id === "workspace.removeFromSidebar:workspace-1",
+		);
+		const deleteCommand = commands.find(
+			(command) => command.id === "workspace.delete:workspace-1",
+		);
+
+		expect(removeCommand?.title).toBe("Remove current workspace from sidebar");
+		expect(removeCommand?.shortcutLabel).toBe("a/x");
+		expect(removeCommand?.keywords).toContain("archive");
+		expect(deleteCommand?.title).toBe(
+			"Delete current workspace: Test workspace",
+		);
+		expect(deleteCommand?.hotkeyId).toBe("CLOSE_WORKSPACE");
+		expect(deleteCommand?.shortcutLabel).toBe("d");
+		expect(deleteCommand?.keywords).toContain("delete");
 	});
 
 	it("dispatches workspace pane action events", () => {

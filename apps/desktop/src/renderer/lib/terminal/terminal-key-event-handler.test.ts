@@ -85,6 +85,22 @@ describe("createTerminalKeyEventHandler", () => {
 		expect(xterm.input).not.toHaveBeenCalled();
 	});
 
+	it("bubbles keyboard-native app shortcuts before xterm can consume them", () => {
+		const xterm = terminal();
+		const handler = createTerminalKeyEventHandler(xterm, {
+			platform: "MacIntel",
+		});
+
+		for (const event of [
+			keyboardEvent({ altKey: true, code: "KeyK", key: "k" }),
+			keyboardEvent({ altKey: true, code: "KeyV", key: "v" }),
+		]) {
+			expect(handler(event)).toBe(false);
+			expect(event.preventDefault).not.toHaveBeenCalled();
+		}
+		expect(xterm.input).not.toHaveBeenCalled();
+	});
+
 	it('treats Node-style "darwin" platform as Mac, not Windows', () => {
 		const xterm = terminal();
 		const event = keyboardEvent({

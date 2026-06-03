@@ -232,10 +232,13 @@ export const workspaceProvider: CommandProvider = {
 		if (workspace.projectId) {
 			commands.push({
 				id: `workspace.removeFromSidebar:${workspace.id}`,
-				title: "Remove from sidebar",
+				title: "Remove current workspace from sidebar",
 				section: "workspace",
+				description:
+					"Archive this workspace from the sidebar without deleting it",
 				icon: ArchiveIcon,
-				keywords: ["hide"],
+				keywords: ["archive", "hide", "move away", "sidebar", "workspace"],
+				shortcutLabel: "a/x",
 				run: () =>
 					useRemoveFromSidebarIntent.getState().request({
 						workspaceId: workspace.id,
@@ -249,11 +252,13 @@ export const workspaceProvider: CommandProvider = {
 		if (!isMain) {
 			commands.push({
 				id: `workspace.delete:${workspace.id}`,
-				title: `Delete ${workspace.name}`,
+				title: `Delete current workspace: ${workspace.name}`,
 				section: "workspace",
+				description: "Open the workspace delete confirmation",
 				icon: Trash2Icon,
-				keywords: ["archive", "remove", "close"],
+				keywords: ["delete", "destroy", "archive", "remove", "close"],
 				hotkeyId: "CLOSE_WORKSPACE",
+				shortcutLabel: "d",
 				run: () =>
 					useDeleteWorkspaceIntent.getState().request({
 						workspaceId: workspace.id,
