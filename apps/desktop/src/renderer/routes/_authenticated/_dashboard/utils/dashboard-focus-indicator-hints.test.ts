@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { dashboardFocusIndicatorHints } from "./dashboard-focus-indicator-hints";
+import {
+	dashboardFocusIndicatorHints,
+	dashboardFocusIndicatorShortcutTitle,
+	dashboardFocusIndicatorVisibleHintLabels,
+} from "./dashboard-focus-indicator-hints";
 
 describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar roving, activation, expansion, and action keys", () => {
@@ -76,5 +80,36 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toContain("Esc");
 		expect(dashboardFocusIndicatorHints("terminal")).toContain("Esc");
 		expect(dashboardFocusIndicatorHints("editor")).toContain("Esc");
+	});
+
+	it("advertises the shortcut that works in the current keyboard mode", () => {
+		expect(
+			dashboardFocusIndicatorShortcutTitle("Browser focus", {
+				vimModeEnabled: true,
+			}),
+		).toBe("Browser focus. Press ? for keyboard shortcuts.");
+		expect(
+			dashboardFocusIndicatorShortcutTitle("Browser focus", {
+				vimModeEnabled: false,
+			}),
+		).toBe("Browser focus. Press Option+/ for keyboard shortcuts.");
+	});
+
+	it("shows visible command and shortcut labels without Vim-only clutter", () => {
+		expect(
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "f", "?"], {
+				vimModeEnabled: true,
+			}),
+		).toEqual(["⌥K Commands", "? Shortcuts"]);
+		expect(
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K"], {
+				vimModeEnabled: false,
+			}),
+		).toEqual(["⌥K Commands", "⌥/ Shortcuts"]);
+		expect(
+			dashboardFocusIndicatorVisibleHintLabels(["↑↓", "↵", "."], {
+				vimModeEnabled: false,
+			}),
+		).toEqual([]);
 	});
 });

@@ -40,3 +40,27 @@ export function dashboardFocusIndicatorHints(
 	if (options.vimModeEnabled !== false) return hints;
 	return hints.filter((hint) => !VIM_ONLY_HINTS.has(hint));
 }
+
+export function dashboardFocusIndicatorVisibleHintLabels(
+	hints: string[],
+	options: DashboardFocusIndicatorHintOptions = {},
+): string[] {
+	const showCommandsHint = hints.includes("⌥K");
+	const showVimShortcutsHint = hints.includes("?");
+	const showOptionShortcutsHint =
+		options.vimModeEnabled === false && showCommandsHint;
+
+	return [
+		showCommandsHint ? "⌥K Commands" : null,
+		showVimShortcutsHint ? "? Shortcuts" : null,
+		!showVimShortcutsHint && showOptionShortcutsHint ? "⌥/ Shortcuts" : null,
+	].filter((hint): hint is string => hint !== null);
+}
+
+export function dashboardFocusIndicatorShortcutTitle(
+	scopeDescription: string,
+	options: DashboardFocusIndicatorHintOptions = {},
+): string {
+	const shortcut = options.vimModeEnabled === false ? "Option+/" : "?";
+	return `${scopeDescription}. Press ${shortcut} for keyboard shortcuts.`;
+}

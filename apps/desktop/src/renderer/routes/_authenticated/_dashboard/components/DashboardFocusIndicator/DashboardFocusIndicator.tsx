@@ -1,6 +1,10 @@
 import { cn } from "@superset/ui/utils";
 import { useEffect, useState } from "react";
-import { dashboardFocusIndicatorHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-indicator-hints";
+import {
+	dashboardFocusIndicatorHints,
+	dashboardFocusIndicatorShortcutTitle,
+	dashboardFocusIndicatorVisibleHintLabels,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-indicator-hints";
 import {
 	type DashboardFocusScope,
 	dashboardFocusScopeForDocument,
@@ -53,12 +57,9 @@ export function DashboardFocusIndicator() {
 	}, []);
 
 	const hints = dashboardFocusIndicatorHints(scope.id, { vimModeEnabled });
-	const showCommandsHint = hints.includes("⌥K");
-	const showShortcutsHint = hints.includes("?");
-	const visibleHints = [
-		showCommandsHint ? "⌥K Commands" : null,
-		showShortcutsHint ? "? Shortcuts" : null,
-	].filter((hint): hint is string => hint !== null);
+	const visibleHints = dashboardFocusIndicatorVisibleHintLabels(hints, {
+		vimModeEnabled,
+	});
 
 	return (
 		<div
@@ -68,7 +69,9 @@ export function DashboardFocusIndicator() {
 				"bg-background/88 px-2.5 py-1.5 text-xs shadow-lg backdrop-blur",
 			)}
 			data-dashboard-focus-indicator="true"
-			title={`${scope.description}. Press ? for keyboard shortcuts.`}
+			title={dashboardFocusIndicatorShortcutTitle(scope.description, {
+				vimModeEnabled,
+			})}
 		>
 			<span className="shrink-0 text-muted-foreground">Focus</span>
 			<span className="h-3 w-px bg-border" />
