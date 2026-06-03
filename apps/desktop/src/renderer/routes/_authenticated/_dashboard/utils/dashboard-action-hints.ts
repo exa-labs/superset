@@ -28,6 +28,16 @@ export interface DashboardActionHintTarget {
 	title: string;
 }
 
+export type DashboardActionHintKey = "escape" | string;
+
+export interface DashboardActionHintKeyboardInput {
+	altKey: boolean;
+	ctrlKey: boolean;
+	defaultPrevented: boolean;
+	key: string;
+	metaKey: boolean;
+}
+
 export function dashboardActionHintLabelForIndex(index: number): string {
 	if (!Number.isInteger(index) || index < 0) return "";
 	const keyCount = DASHBOARD_ACTION_HINT_KEYS.length;
@@ -38,6 +48,16 @@ export function dashboardActionHintLabelForIndex(index: number): string {
 	const firstKey = DASHBOARD_ACTION_HINT_KEYS[first];
 	const secondKey = DASHBOARD_ACTION_HINT_KEYS[second];
 	return firstKey && secondKey ? `${firstKey}${secondKey}` : "";
+}
+
+export function dashboardActionHintKeyFromInput(
+	input: DashboardActionHintKeyboardInput,
+): DashboardActionHintKey | null {
+	if (input.defaultPrevented) return null;
+	if (input.altKey || input.ctrlKey || input.metaKey) return null;
+	if (input.key === "Escape") return "escape";
+	if (input.key.length !== 1) return null;
+	return input.key.toLowerCase();
 }
 
 function isHTMLElement(value: Element | null): value is HTMLElement {

@@ -3,6 +3,7 @@ import {
 	activateDashboardActionHintTarget,
 	collectDashboardActionHintTargets,
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
+	dashboardActionHintKeyFromInput,
 	dashboardActionHintLabelForIndex,
 	openDashboardActionHints,
 } from "./dashboard-action-hints";
@@ -38,6 +39,34 @@ describe("dashboard action hints", () => {
 		expect(dashboardActionHintLabelForIndex(26)).toBe("aa");
 		expect(dashboardActionHintLabelForIndex(27)).toBe("as");
 		expect(dashboardActionHintLabelForIndex(-1)).toBe("");
+	});
+
+	it("normalizes action hint key input while preserving global shortcuts", () => {
+		const baseInput = {
+			altKey: false,
+			ctrlKey: false,
+			defaultPrevented: false,
+			key: "A",
+			metaKey: false,
+		};
+
+		expect(dashboardActionHintKeyFromInput(baseInput)).toBe("a");
+		expect(
+			dashboardActionHintKeyFromInput({ ...baseInput, key: "Escape" }),
+		).toBe("escape");
+		expect(dashboardActionHintKeyFromInput({ ...baseInput, key: "Tab" })).toBe(
+			null,
+		);
+		expect(
+			dashboardActionHintKeyFromInput({ ...baseInput, altKey: true, key: "k" }),
+		).toBe(null);
+		expect(
+			dashboardActionHintKeyFromInput({
+				...baseInput,
+				defaultPrevented: true,
+				key: "f",
+			}),
+		).toBe(null);
 	});
 
 	it("collects only visible enabled dashboard action targets", () => {

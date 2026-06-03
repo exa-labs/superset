@@ -4,6 +4,7 @@ import {
 	collectDashboardActionHintTargets,
 	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	type DashboardActionHintTarget,
+	dashboardActionHintKeyFromInput,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import {
 	dashboardVimKey,
@@ -19,12 +20,7 @@ interface ActiveHints {
 function consume(event: KeyboardEvent): void {
 	event.preventDefault();
 	event.stopPropagation();
-}
-
-function normalizedHintKey(event: KeyboardEvent): string | null {
-	if (event.key === "Escape") return "escape";
-	if (event.key.length !== 1) return null;
-	return event.key.toLowerCase();
+	event.stopImmediatePropagation();
 }
 
 export function DashboardActionHintsOverlay() {
@@ -45,12 +41,13 @@ export function DashboardActionHintsOverlay() {
 			if (targets.length === 0) return;
 			setActiveHints({ prefix: "", targets });
 		};
+		const closeActionHints = () => setActiveHints(null);
 
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const currentHints = activeHintsRef.current;
 
 			if (currentHints) {
-				const key = normalizedHintKey(event);
+				const key = dashboardActionHintKeyFromInput(event);
 				if (!key) return;
 				consume(event);
 				if (key === "escape") {
@@ -86,12 +83,16 @@ export function DashboardActionHintsOverlay() {
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
 		window.addEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, openActionHints);
+		window.addEventListener("scroll", closeActionHints, true);
+		window.addEventListener("resize", closeActionHints, true);
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 			window.removeEventListener(
 				DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 				openActionHints,
 			);
+			window.removeEventListener("scroll", closeActionHints, true);
+			window.removeEventListener("resize", closeActionHints, true);
 		};
 	}, [vimModeEnabled]);
 
