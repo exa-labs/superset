@@ -748,8 +748,16 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description: "Focus the composer for the current Capy/Devin session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: ["capy", "devin", "reply", "composer", "message", "native"],
-				shortcutLabel: "r",
+				keywords: [
+					"capy",
+					"devin",
+					"reply",
+					"insert",
+					"composer",
+					"message",
+					"native",
+				],
+				shortcutLabel: "r/i",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>

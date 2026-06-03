@@ -214,6 +214,7 @@ describe("web command provider", () => {
 
 		expect(shortcutById.get("native.current.new")).toBe("n");
 		expect(shortcutById.get("native.current.refresh")).toBe("R");
+		expect(shortcutById.get("native.current.reply")).toBe("r/i");
 		expect(shortcutById.get("native.current.pin")).toBe("p");
 		expect(shortcutById.get("native.current.unpin")).toBe("p");
 		expect(shortcutById.get("native.current.rename")).toBe("e");
@@ -238,6 +239,10 @@ describe("web command provider", () => {
 			commands.find((command) => command.id === "native.current.hide")
 				?.keywords,
 		).toContain("archive");
+		expect(
+			commands.find((command) => command.id === "native.current.reply")
+				?.keywords,
+		).toContain("insert");
 	});
 
 	it("prioritizes current native session actions above generic native commands", () => {
@@ -559,7 +564,7 @@ describe("web command provider", () => {
 		const shortcutById = new Map(
 			commands.map((command) => [command.id, command.shortcutLabel] as const),
 		);
-		expect(shortcutById.get("native.current.reply")).toBe("r");
+		expect(shortcutById.get("native.current.reply")).toBe("r/i");
 		expect(shortcutById.get("native.current.openBrowser")).toBe("o");
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 	});
