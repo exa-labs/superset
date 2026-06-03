@@ -23,8 +23,11 @@ describe("dashboardFocusIndicatorHints", () => {
 			"?",
 			"f",
 			"⌥G",
+			"gc/gd/gw",
 			"h/l",
 			"n/r",
+			"s/q",
+			"p/x",
 		]);
 	});
 
