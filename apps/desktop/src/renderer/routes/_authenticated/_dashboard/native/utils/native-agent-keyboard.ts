@@ -55,7 +55,7 @@ export function nativeAgentSidebarVimActionFromKey(
 ): NativeAgentSidebarVimAction {
 	if (key === "enter" || key === " " || key === "o") return "open";
 	if (key === "p") return "pin";
-	if (key === "f" || key === "m") return "move-to-folder";
+	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	return "none";
@@ -114,7 +114,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";
 	if (key === "e") return "rename";
-	if (key === "f" || key === "m") return "move-to-folder";
+	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	return "none";

@@ -46,6 +46,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description:
 						"Review the dashboard keyboard map from browsers and terminals",
 				},
+				{
+					keys: ["f"],
+					label: "Show action hints",
+					description: "Label visible dashboard buttons and links by key",
+				},
 			],
 		},
 		{

@@ -21,6 +21,9 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CONTROL_PLANE")).toBe(true);
 		expect(hotkeyIds.has("TOGGLE_VIM_MODE")).toBe(true);
 		expect(hotkeyIds.has("SHOW_DASHBOARD_KEYBOARD_HELP")).toBe(true);
+		expect(entryByLabel.get("Show action hints")).toEqual(
+			expect.objectContaining({ keys: ["f"] }),
+		);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_NEXT")).toBe(true);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_PREVIOUS")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CAPY")).toBe(true);

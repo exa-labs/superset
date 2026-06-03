@@ -1697,7 +1697,7 @@ export function NativeAgentChatView({
 				openItem(item);
 				return;
 			}
-			if (key === "p" || key === "f" || key === "F") {
+			if (key === "p" || key === "m" || key === "F") {
 				const active = document.activeElement;
 				if (!(active instanceof HTMLButtonElement)) return;
 				const item = workspaceItems.find(
