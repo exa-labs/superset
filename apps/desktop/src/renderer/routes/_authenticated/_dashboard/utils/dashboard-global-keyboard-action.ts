@@ -1,3 +1,4 @@
+import { toast } from "@superset/ui/sonner";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { focusDashboardNavigationShell } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
@@ -30,6 +31,7 @@ interface DashboardGlobalKeyboardActionHandlers {
 	openUnreadNativeReply: () => boolean;
 	switchMruView: (direction: DashboardMruSwitchDirection) => boolean;
 	toggleVimMode: () => boolean;
+	announceVimModeChange: (enabled: boolean) => void;
 }
 
 function defer(callback: () => void): void {
@@ -82,6 +84,9 @@ const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	openUnreadNativeReply: dispatchDashboardOpenUnreadNativeReply,
 	switchMruView: dispatchDashboardViewMruSwitch,
 	toggleVimMode: toggleDashboardVimMode,
+	announceVimModeChange: (enabled) => {
+		toast.success(enabled ? "Vim mode enabled" : "Vim mode disabled");
+	},
 };
 
 export function handleDashboardGlobalKeyboardAction(
@@ -91,7 +96,8 @@ export function handleDashboardGlobalKeyboardAction(
 	const resolved = { ...defaultHandlers, ...handlers };
 
 	if (action === "TOGGLE_VIM_MODE") {
-		resolved.toggleVimMode();
+		const enabled = resolved.toggleVimMode();
+		resolved.announceVimModeChange(enabled);
 		return true;
 	}
 

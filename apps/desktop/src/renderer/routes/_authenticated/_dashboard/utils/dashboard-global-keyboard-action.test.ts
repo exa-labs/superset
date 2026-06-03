@@ -12,12 +12,15 @@ function handlers(
 		openKeyboardHelp?: () => boolean;
 		openUnreadNativeReply?: () => boolean;
 		onDefer?: (callback: () => void) => void;
+		onAnnounceVimModeChange?: (enabled: boolean) => void;
 		onOpenNavigationShell?: () => void;
 		onSwitchMruView?: (direction: "next" | "previous") => boolean;
 		onToggleVimMode?: () => boolean;
 	} = {},
 ) {
 	return {
+		announceVimModeChange:
+			overrides.onAnnounceVimModeChange ?? (() => undefined),
 		defer: overrides.onDefer ?? ((callback: () => void) => callback()),
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
 		markLatestNativeReplyRead:
@@ -32,13 +35,17 @@ function handlers(
 }
 
 describe("handleDashboardGlobalKeyboardAction", () => {
-	it("toggles Vim mode from the global main-process action", () => {
+	it("toggles and announces Vim mode from the global main-process action", () => {
 		let toggled = false;
+		const announcements: boolean[] = [];
 
 		expect(
 			handleDashboardGlobalKeyboardAction(
 				"TOGGLE_VIM_MODE",
 				handlers({
+					onAnnounceVimModeChange: (enabled) => {
+						announcements.push(enabled);
+					},
 					onToggleVimMode: () => {
 						toggled = true;
 						return true;
@@ -47,6 +54,7 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 			),
 		).toBe(true);
 		expect(toggled).toBe(true);
+		expect(announcements).toEqual([true]);
 	});
 
 	it("opens keyboard help from the global main-process action", () => {

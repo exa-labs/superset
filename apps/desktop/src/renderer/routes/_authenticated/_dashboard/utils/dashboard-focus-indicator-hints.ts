@@ -11,8 +11,8 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["?", "Esc"],
-	"native-agent": ["Esc", "⌥K", "r", "?"],
-	sidebar: ["↑↓", "↵", ".", "?"],
+	"native-agent": ["Esc", "⌥K", "r", "b/p/x"],
+	sidebar: ["↑↓", "↵", ".", "p/x"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -24,8 +24,8 @@ const VIM_ONLY_HINTS = new Set([
 	"m/e",
 	"n/r",
 	"n/N",
+	"b/p/x",
 	"o/O/b",
-	"p/x",
 	"r",
 	"s/b",
 	"s/q",
@@ -42,6 +42,17 @@ export function dashboardFocusIndicatorHints(
 	return hints.filter((hint) => !VIM_ONLY_HINTS.has(hint));
 }
 
+function visibleDashboardFocusHintLabel(hint: string): string | null {
+	if (hint === "↑↓") return "↑↓ Move";
+	if (hint === "↵") return "↵ Open";
+	if (hint === ".") return ". Actions";
+	if (hint === "p/x") return "p/x Pin/Hide";
+	if (hint === "r") return "r Reply";
+	if (hint === "b/p/x") return "b/p/x View/Pin";
+	if (hint === "f") return "f Hints";
+	return null;
+}
+
 export function dashboardFocusIndicatorVisibleHintLabels(
 	hints: string[],
 	options: DashboardFocusIndicatorHintOptions = {},
@@ -50,9 +61,13 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	const showVimShortcutsHint = hints.includes("?");
 	const showOptionShortcutsHint =
 		options.vimModeEnabled === false && showCommandsHint;
+	const localHintLabels = hints
+		.map(visibleDashboardFocusHintLabel)
+		.filter((hint): hint is string => hint !== null);
 
 	return [
 		showCommandsHint ? "⌥K Commands" : null,
+		...localHintLabels,
 		showVimShortcutsHint ? "? Shortcuts" : null,
 		!showVimShortcutsHint && showOptionShortcutsHint ? "⌥/ Shortcuts" : null,
 	].filter((hint): hint is string => hint !== null);
@@ -63,6 +78,8 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "⌥/") return "Option+/";
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↵") return "Enter";
+	if (hint === "b/p/x") return "b/p/x";
+	if (hint === "p/x") return "p/x";
 	return hint;
 }
 
