@@ -322,6 +322,14 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				}
 				return;
 			}
+			const browserVimShortcut = browserVimShortcutFromEvent(event);
+			if (browserVimShortcut) {
+				clearDashboardVimPrefix();
+				event.preventDefault();
+				event.stopPropagation();
+				invokeShortcut(browserVimShortcut);
+				return;
+			}
 			const dashboardVimShortcut = dashboardVimShortcutFromEvent(event);
 			if (dashboardVimShortcut) {
 				event.preventDefault();
@@ -329,14 +337,6 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				if (dashboardVimShortcut !== "__PENDING__") {
 					invokeShortcut(dashboardVimShortcut);
 				}
-				return;
-			}
-			const browserVimShortcut = browserVimShortcutFromEvent(event);
-			if (browserVimShortcut) {
-				clearDashboardVimPrefix();
-				event.preventDefault();
-				event.stopPropagation();
-				invokeShortcut(browserVimShortcut);
 				return;
 			}
 			const shortcut = shortcutFromEvent(event);

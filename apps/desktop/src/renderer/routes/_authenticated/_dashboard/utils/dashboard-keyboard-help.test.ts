@@ -57,7 +57,10 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["f"] }),
 		);
 		expect(entryByLabel.get("Toggle sidebar in Vim mode")).toEqual(
-			expect.objectContaining({ keys: ["H"] }),
+			expect.objectContaining({
+				description: expect.stringContaining("embedded Chrome keeps H/L"),
+				keys: ["H"],
+			}),
 		);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_NEXT")).toBe(true);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_PREVIOUS")).toBe(true);
@@ -101,6 +104,9 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(entryByLabel.get("Jump to bottom")).toEqual(
 			expect.objectContaining({ keys: ["G", "End"] }),
+		);
+		expect(entryByLabel.get("Collapse or expand")).toEqual(
+			expect.objectContaining({ keys: ["h", "l"] }),
 		);
 		expect(labels.has("Split native/browser")).toBe(true);
 		expect(hotkeyIds.has("SPLIT_RIGHT")).toBe(true);

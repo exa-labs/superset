@@ -19,7 +19,7 @@ export function DashboardQuickTerminalsGrid({
 	const terminalTitle = (
 		terminal: (typeof DASHBOARD_QUICK_TERMINALS)[number],
 	) =>
-		`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Keyboard: Option+K, search kr9.`;
+		`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}`;
 
 	if (variant === "collapsed") {
 		return (
@@ -42,8 +42,7 @@ export function DashboardQuickTerminalsGrid({
 						</TooltipTrigger>
 						<TooltipContent side="right">
 							{terminal.label} root terminal -{" "}
-							{dashboardQuickTerminalCommand(terminal.id)}. Keyboard: Option+K,
-							search kr9
+							{dashboardQuickTerminalCommand(terminal.id)}
 						</TooltipContent>
 					</Tooltip>
 				))}
@@ -74,8 +73,7 @@ export function DashboardQuickTerminalsGrid({
 						</button>
 					</TooltipTrigger>
 					<TooltipContent side="right">
-						{dashboardQuickTerminalCommand(terminal.id)} in repo root. Keyboard:
-						Option+K, search kr9
+						{dashboardQuickTerminalCommand(terminal.id)} in repo root
 					</TooltipContent>
 				</Tooltip>
 			))}

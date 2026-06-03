@@ -39,6 +39,15 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"browserVimShortcutFromEvent",
 		);
+		expect(
+			DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT.indexOf(
+				"const browserVimShortcut = browserVimShortcutFromEvent(event)",
+			),
+		).toBeLessThan(
+			DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT.indexOf(
+				"const dashboardVimShortcut = dashboardVimShortcutFromEvent(event)",
+			),
+		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "p") return "BROWSER_TOGGLE_PIN"',
 		);

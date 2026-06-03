@@ -289,7 +289,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					keys: ["H"],
 					label: "Toggle sidebar in Vim mode",
 					description:
-						"Show or hide the navigation shell from embedded browsers and dashboard views",
+						"Show or hide the navigation shell from dashboard views; embedded Chrome keeps H/L for history",
 				},
 				{
 					hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
@@ -438,7 +438,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Use Shift+G in Vim mode, or End from sidebar focus",
 				},
 				{
-					keys: ["H", "L"],
+					keys: ["h", "l"],
 					label: "Collapse or expand",
 					description: "Collapse or expand focused folders and sidebar groups",
 				},
