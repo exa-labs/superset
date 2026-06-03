@@ -6,7 +6,11 @@ import {
 	readNativeAgentFoldersFromLocalStorage,
 	readNativeAgentRecentFolderColorsFromLocalStorage,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
-import { readLatestNativeAgentReplyNotification } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import {
+	isNativeAgentReplyNotificationRead,
+	markNativeAgentReplyNotificationRead,
+	readLatestNativeAgentReplyNotification,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
 	DASHBOARD_QUICK_TERMINALS,
 	dashboardQuickTerminalCommand,
@@ -476,6 +480,11 @@ export const webProvider: CommandProvider = {
 		);
 		const nativeFolders = readNativeAgentFoldersFromLocalStorage();
 		const latestNativeReply = readLatestNativeAgentReplyNotification();
+		const actionableLatestNativeReply =
+			latestNativeReply &&
+			!isNativeAgentReplyNotificationRead(latestNativeReply)
+				? latestNativeReply
+				: null;
 
 		commands.push(
 			{
@@ -590,32 +599,53 @@ export const webProvider: CommandProvider = {
 			}
 		}
 
-		if (latestNativeReply) {
-			commands.push({
-				id: "native.latestReply.open",
-				title: `Open latest ${latestNativeReply.provider === "capy" ? "Capy" : "Devin"} reply`,
-				section: "web",
-				iconUrl:
-					latestNativeReply.provider === "capy"
-						? "https://capy.ai/_marketing/favicon/favicon-96x96.png"
-						: "https://app.devin.ai/favicon.ico",
-				description: `${latestNativeReply.title}: ${latestNativeReply.preview}`,
-				keywords: [
-					latestNativeReply.provider,
-					"latest",
-					"reply",
-					"notification",
-					"jump",
-					"agent",
-				],
-				shortcutLabel: "u",
-				run: (context) =>
-					context.navigate(
-						latestNativeReply.provider === "capy"
-							? `/native/capy/${latestNativeReply.id}`
-							: `/native/devin/${latestNativeReply.id}`,
-					),
-			});
+		if (actionableLatestNativeReply) {
+			const providerTitle =
+				actionableLatestNativeReply.provider === "capy" ? "Capy" : "Devin";
+			const iconUrl =
+				actionableLatestNativeReply.provider === "capy"
+					? "https://capy.ai/_marketing/favicon/favicon-96x96.png"
+					: "https://app.devin.ai/favicon.ico";
+			const nativePath =
+				actionableLatestNativeReply.provider === "capy"
+					? `/native/capy/${actionableLatestNativeReply.id}`
+					: `/native/devin/${actionableLatestNativeReply.id}`;
+			const keywords = [
+				actionableLatestNativeReply.provider,
+				"latest",
+				"reply",
+				"notification",
+				"unread",
+				"acknowledge",
+				"agent",
+			];
+			commands.push(
+				{
+					id: "native.latestReply.open",
+					title: `Open latest ${providerTitle} reply`,
+					section: "web",
+					iconUrl,
+					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
+					keywords: [...keywords, "jump", "open"],
+					shortcutLabel: "u",
+					run: (context) => {
+						markNativeAgentReplyNotificationRead(actionableLatestNativeReply);
+						context.navigate(nativePath);
+					},
+				},
+				{
+					id: "native.latestReply.markRead",
+					title: `Mark latest ${providerTitle} reply read`,
+					section: "web",
+					iconUrl,
+					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
+					keywords: [...keywords, "read", "dismiss", "clear"],
+					shortcutLabel: "u a",
+					run: () => {
+						markNativeAgentReplyNotificationRead(actionableLatestNativeReply);
+					},
+				},
+			);
 		}
 
 		commands.push(

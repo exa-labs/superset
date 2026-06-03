@@ -89,7 +89,12 @@ import {
 	parseNativeAgentMessageParts,
 	shouldProxyNativeAgentAsset,
 } from "../../utils/native-agent-message-rendering";
-import { compactNativeAgentReplyPreview } from "../../utils/native-agent-notifications";
+import {
+	compactNativeAgentReplyPreview,
+	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	readNativeAgentReadState,
+	writeNativeAgentReadState,
+} from "../../utils/native-agent-notifications";
 import {
 	mergeNativeAgentMessagesWithOptimistic,
 	type NativeAgentOptimisticMessage,
@@ -178,7 +183,6 @@ const CAPY_MANUAL_SYNC_SCAN_PAGE_LIMIT = 25;
 const NATIVE_AGENT_LIST_STALE_MS = 60_000;
 const NATIVE_AGENT_DETAIL_STALE_MS = 30_000;
 const NATIVE_AGENT_CACHE_MS = 2 * 60 * 60 * 1000;
-const READ_STATE_STORAGE_KEY = "dashboard-native-agent-read-state-v1";
 const SPLIT_RATIO_STORAGE_KEY = "dashboard-native-agent-split-ratio-v1";
 const DEFAULT_NATIVE_AGENT_SPLIT_RATIO = 50;
 const MIN_NATIVE_AGENT_SPLIT_RATIO = 30;
@@ -274,14 +278,6 @@ function writeJson(key: string, value: unknown) {
 
 function nativeAgentReadStateKey(provider: NativeAgentProvider, id: string) {
 	return `${provider}:${id}`;
-}
-
-function readNativeAgentReadState(): Record<string, number> {
-	return readJson<Record<string, number>>(READ_STATE_STORAGE_KEY, {});
-}
-
-function writeNativeAgentReadState(readState: Record<string, number>) {
-	writeJson(READ_STATE_STORAGE_KEY, readState);
 }
 
 function clampNativeAgentSplitRatio(value: number): number {
@@ -641,6 +637,23 @@ export function NativeAgentChatView({
 	const overviewSearchRef = useRef<HTMLInputElement | null>(null);
 	const renameInputRef = useRef<HTMLInputElement | null>(null);
 	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const handleReadStateChange = () => {
+			setReadState(readNativeAgentReadState());
+		};
+		window.addEventListener(
+			NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+			handleReadStateChange,
+		);
+		return () => {
+			window.removeEventListener(
+				NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+				handleReadStateChange,
+			);
+		};
+	}, []);
 
 	const credentialStatus =
 		electronTrpc.nativeAgents.credentials.status.useQuery(undefined, {

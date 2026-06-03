@@ -4,7 +4,10 @@ import {
 	NATIVE_AGENT_FOLDERS_STORAGE_KEY,
 	NATIVE_AGENT_RECENT_FOLDER_COLORS_STORAGE_KEY,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
-import { NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import {
+	NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY,
+	NATIVE_AGENT_READ_STATE_STORAGE_KEY,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
 	createDashboardWebTab,
 	createDashboardWebTabFolder,
@@ -557,7 +560,7 @@ describe("web command provider", () => {
 		);
 	});
 
-	it("registers a jump command for the latest native reply notification", () => {
+	it("registers actionable commands for the latest unread native reply notification", () => {
 		withLocalStorage(
 			{
 				[NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY]: JSON.stringify({
@@ -583,8 +586,57 @@ describe("web command provider", () => {
 
 				expect(command?.title).toBe("Open latest Devin reply");
 				expect(command?.shortcutLabel).toBe("u");
+				expect(
+					webProvider
+						.provide(context)
+						.find((candidate) => candidate.id === "native.latestReply.markRead")
+						?.shortcutLabel,
+				).toBe("u a");
 				command?.run?.(context);
 				expect(navigatedTo).toEqual(["/native/devin/session-1"]);
+				expect(localStorage.getItem(NATIVE_AGENT_READ_STATE_STORAGE_KEY)).toBe(
+					JSON.stringify({ "devin:session-1": 1780323000000 }),
+				);
+				expect(
+					webProvider
+						.provide(context)
+						.some((candidate) => candidate.id === "native.latestReply.open"),
+				).toBe(false);
+			},
+		);
+	});
+
+	it("marks the latest native reply read without navigating", () => {
+		withLocalStorage(
+			{
+				[NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY]: JSON.stringify({
+					id: "thread-1",
+					key: "capy:thread-1",
+					latestTime: 1780324000000,
+					preview: "Ready",
+					provider: "capy",
+					title: "Capy task",
+				}),
+			},
+			() => {
+				const navigatedTo: string[] = [];
+				const context = {
+					...commandContext("/native/capy"),
+					navigate: (path: string) => {
+						navigatedTo.push(path);
+					},
+				};
+				const command = webProvider
+					.provide(context)
+					.find((candidate) => candidate.id === "native.latestReply.markRead");
+
+				expect(command?.title).toBe("Mark latest Capy reply read");
+				command?.run?.(context);
+
+				expect(navigatedTo).toEqual([]);
+				expect(localStorage.getItem(NATIVE_AGENT_READ_STATE_STORAGE_KEY)).toBe(
+					JSON.stringify({ "capy:thread-1": 1780324000000 }),
+				);
 			},
 		);
 	});

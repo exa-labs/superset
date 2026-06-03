@@ -96,7 +96,10 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
 import {
 	getUnreadNativeAgentReplyNotifications,
+	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	readNativeAgentReadState,
 	writeLatestNativeAgentReplyNotification,
+	writeNativeAgentReadState,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
 	formatNativeAgentTimestamp,
@@ -162,7 +165,6 @@ const FOLDERS_STORAGE_KEY = NATIVE_AGENT_FOLDERS_STORAGE_KEY;
 const RECENT_FOLDER_COLORS_STORAGE_KEY =
 	NATIVE_AGENT_RECENT_FOLDER_COLORS_STORAGE_KEY;
 const SESSION_FOLDERS_STORAGE_KEY = "dashboard-native-agent-session-folders-v1";
-const READ_STATE_STORAGE_KEY = "dashboard-native-agent-read-state-v1";
 const NOTIFIED_STATE_STORAGE_KEY = "dashboard-native-agent-notified-replies-v1";
 const LAST_FOLDER_STORAGE_KEY = NATIVE_AGENT_LAST_FOLDER_STORAGE_KEY;
 const CAPY_BACKGROUND_SYNC_STORAGE_KEY = "dashboard-native-agent-capy-sync-v1";
@@ -230,14 +232,6 @@ function writeRecentFolderColors(colors: string[]) {
 
 function writeSessionFolders(sessionFolders: Record<string, string | null>) {
 	writeJson(SESSION_FOLDERS_STORAGE_KEY, sessionFolders);
-}
-
-function readReadState(): Record<string, number> {
-	return readJson<Record<string, number>>(READ_STATE_STORAGE_KEY, {});
-}
-
-function writeReadState(readState: Record<string, number>) {
-	writeJson(READ_STATE_STORAGE_KEY, readState);
 }
 
 function readNotifiedState(): Record<string, number> {
@@ -847,7 +841,7 @@ export function DashboardNativeAgentsSection({
 	);
 	const [optimisticMetadata, setOptimisticMetadata] =
 		useState<NativeAgentOptimisticMetadataMap>({});
-	const [readState, setReadState] = useState(() => readReadState());
+	const [readState, setReadState] = useState(() => readNativeAgentReadState());
 	const [notifiedState, setNotifiedState] = useState(() => readNotifiedState());
 	const hasInitializedReplyNotificationsRef = useRef(false);
 	const hasStartedCapyBackgroundSyncRef = useRef(false);
@@ -861,6 +855,23 @@ export function DashboardNativeAgentsSection({
 	const [deleteFolderTarget, setDeleteFolderTarget] =
 		useState<NativeAgentFolder | null>(null);
 	const [folderTitleDraft, setFolderTitleDraft] = useState("");
+
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const handleReadStateChange = () => {
+			setReadState(readNativeAgentReadState());
+		};
+		window.addEventListener(
+			NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+			handleReadStateChange,
+		);
+		return () => {
+			window.removeEventListener(
+				NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+				handleReadStateChange,
+			);
+		};
+	}, []);
 
 	useEffect(() => {
 		setSessionFolders((current) => {
@@ -1262,7 +1273,7 @@ export function DashboardNativeAgentsSection({
 						...current,
 						[nativeAgentSessionFolderKey(item.provider, item.id)]: latestTime,
 					};
-					writeReadState(next);
+					writeNativeAgentReadState(next);
 					return next;
 				});
 			}
@@ -1385,7 +1396,7 @@ export function DashboardNativeAgentsSection({
 			const key = nativeAgentSessionFolderKey(item.provider, item.id);
 			if ((current[key] ?? 0) >= latestTime) return current;
 			const next = { ...current, [key]: latestTime };
-			writeReadState(next);
+			writeNativeAgentReadState(next);
 			return next;
 		});
 	}, [activeRoute.id, activeRoute.provider, itemsByProvider]);

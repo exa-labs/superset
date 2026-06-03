@@ -2,13 +2,43 @@ import { describe, expect, it } from "bun:test";
 import {
 	compactNativeAgentReplyPreview,
 	getUnreadNativeAgentReplyNotifications,
+	isNativeAgentReplyNotificationRead,
+	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY,
+	NATIVE_AGENT_READ_STATE_STORAGE_KEY,
 	nativeAgentNotificationKey,
 	readLatestNativeAgentReplyNotification,
+	readNativeAgentReadState,
 	writeLatestNativeAgentReplyNotification,
+	writeNativeAgentReadState,
 } from "./native-agent-notifications";
 
 describe("native agent reply notifications", () => {
+	function withLocalStorage(
+		values: Record<string, string>,
+		run: () => void,
+	): void {
+		const previous = Object.getOwnPropertyDescriptor(
+			globalThis,
+			"localStorage",
+		);
+		Object.defineProperty(globalThis, "localStorage", {
+			configurable: true,
+			value: {
+				getItem: (key: string) => values[key] ?? null,
+				setItem: (key: string, value: string) => {
+					values[key] = value;
+				},
+			},
+		});
+		try {
+			run();
+		} finally {
+			if (previous) Object.defineProperty(globalThis, "localStorage", previous);
+			else delete (globalThis as { localStorage?: unknown }).localStorage;
+		}
+	}
+
 	it("builds notifications only for unread agent replies", () => {
 		const capyKey = nativeAgentNotificationKey("capy", "thread-1");
 		const notifications = getUnreadNativeAgentReplyNotifications({
@@ -111,21 +141,7 @@ ATTACHMENT:{"url":"https://app.devin.ai/file.png","fileSize":1}
 	});
 
 	it("persists the latest reply notification for keyboard jumps", () => {
-		const values: Record<string, string> = {};
-		const previous = Object.getOwnPropertyDescriptor(
-			globalThis,
-			"localStorage",
-		);
-		Object.defineProperty(globalThis, "localStorage", {
-			configurable: true,
-			value: {
-				getItem: (key: string) => values[key] ?? null,
-				setItem: (key: string, value: string) => {
-					values[key] = value;
-				},
-			},
-		});
-		try {
+		withLocalStorage({}, () => {
 			writeLatestNativeAgentReplyNotification({
 				id: "thread-1",
 				key: "capy:thread-1",
@@ -135,7 +151,9 @@ ATTACHMENT:{"url":"https://app.devin.ai/file.png","fileSize":1}
 				title: "Capy thread",
 			});
 
-			expect(values[NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY]).toBeString();
+			expect(
+				localStorage.getItem(NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY),
+			).toBeString();
 			expect(readLatestNativeAgentReplyNotification()).toEqual({
 				id: "thread-1",
 				key: "capy:thread-1",
@@ -144,9 +162,29 @@ ATTACHMENT:{"url":"https://app.devin.ai/file.png","fileSize":1}
 				provider: "capy",
 				title: "Capy thread",
 			});
-		} finally {
-			if (previous) Object.defineProperty(globalThis, "localStorage", previous);
-			else delete (globalThis as { localStorage?: unknown }).localStorage;
-		}
+		});
+	});
+
+	it("persists and updates native reply read state for keyboard acknowledgement", () => {
+		withLocalStorage({}, () => {
+			const notification = {
+				key: "devin:session-1",
+				latestTime: 1780323000000,
+			};
+
+			expect(isNativeAgentReplyNotificationRead(notification)).toBe(false);
+
+			markNativeAgentReplyNotificationRead(notification);
+
+			expect(readNativeAgentReadState()).toEqual({
+				"devin:session-1": 1780323000000,
+			});
+			expect(isNativeAgentReplyNotificationRead(notification)).toBe(true);
+
+			writeNativeAgentReadState({ "capy:thread-1": 1780322000000 });
+			expect(localStorage.getItem(NATIVE_AGENT_READ_STATE_STORAGE_KEY)).toBe(
+				JSON.stringify({ "capy:thread-1": 1780322000000 }),
+			);
+		});
 	});
 });

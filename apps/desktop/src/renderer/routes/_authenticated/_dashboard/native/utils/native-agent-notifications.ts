@@ -26,12 +26,86 @@ export interface NativeAgentReplyNotification {
 
 export const NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY =
 	"dashboard-native-agent-latest-reply-v1";
+export const NATIVE_AGENT_READ_STATE_STORAGE_KEY =
+	"dashboard-native-agent-read-state-v1";
+export const NATIVE_AGENT_READ_STATE_CHANGE_EVENT =
+	"dashboard-native-agent-read-state-change";
+
+export type NativeAgentReadState = Record<string, number>;
+
+type NativeAgentNotificationStorage = Pick<Storage, "getItem" | "setItem">;
+
+function getLocalStorage(): NativeAgentNotificationStorage | null {
+	if (typeof localStorage === "undefined") return null;
+	return localStorage;
+}
+
+function dispatchNativeAgentReadStateChange(): void {
+	if (typeof window === "undefined") return;
+	window.dispatchEvent(new Event(NATIVE_AGENT_READ_STATE_CHANGE_EVENT));
+}
 
 export function nativeAgentNotificationKey(
 	provider: NativeAgentProvider,
 	id: string,
 ): string {
 	return `${provider}:${id}`;
+}
+
+export function readNativeAgentReadState(
+	storage: NativeAgentNotificationStorage | null = getLocalStorage(),
+): NativeAgentReadState {
+	if (!storage) return {};
+	try {
+		const raw = storage.getItem(NATIVE_AGENT_READ_STATE_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw) as unknown;
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+			return {};
+		}
+		return Object.fromEntries(
+			Object.entries(parsed).filter(
+				(entry): entry is [string, number] =>
+					typeof entry[0] === "string" &&
+					typeof entry[1] === "number" &&
+					Number.isFinite(entry[1]),
+			),
+		);
+	} catch {
+		return {};
+	}
+}
+
+export function writeNativeAgentReadState(
+	readState: NativeAgentReadState,
+	storage: NativeAgentNotificationStorage | null = getLocalStorage(),
+): void {
+	if (!storage) return;
+	try {
+		storage.setItem(
+			NATIVE_AGENT_READ_STATE_STORAGE_KEY,
+			JSON.stringify(readState),
+		);
+		dispatchNativeAgentReadStateChange();
+	} catch {}
+}
+
+export function isNativeAgentReplyNotificationRead(
+	notification: Pick<NativeAgentReplyNotification, "key" | "latestTime">,
+	readState: NativeAgentReadState = readNativeAgentReadState(),
+): boolean {
+	return (readState[notification.key] ?? 0) >= notification.latestTime;
+}
+
+export function markNativeAgentReplyNotificationRead(
+	notification: Pick<NativeAgentReplyNotification, "key" | "latestTime">,
+	storage: NativeAgentNotificationStorage | null = getLocalStorage(),
+): NativeAgentReadState {
+	const current = readNativeAgentReadState(storage);
+	if (isNativeAgentReplyNotificationRead(notification, current)) return current;
+	const next = { ...current, [notification.key]: notification.latestTime };
+	writeNativeAgentReadState(next, storage);
+	return next;
 }
 
 export function compactNativeAgentReplyPreview(
