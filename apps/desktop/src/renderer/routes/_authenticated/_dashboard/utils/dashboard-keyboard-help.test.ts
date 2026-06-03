@@ -275,6 +275,18 @@ describe("dashboard keyboard help", () => {
 		expect(labelsForQuery("option c")).not.toEqual(
 			expect.arrayContaining(["Open Devin session 1", "Create Devin session"]),
 		);
+		expect(labelsForQuery("option k")).toEqual(
+			expect.arrayContaining(["Open control plane"]),
+		);
+		expect(labelsForQuery("alt tab")).toEqual(
+			expect.arrayContaining(["Switch recent view"]),
+		);
+		expect(labelsForQuery("option v")).toEqual(
+			expect.arrayContaining(["Toggle Vim mode"]),
+		);
+		expect(labelsForQuery("option n")).toEqual(
+			expect.arrayContaining(["Open unread native reply"]),
+		);
 		expect(labelsForQuery("does-not-exist")).toEqual([]);
 	});
 });

@@ -1,4 +1,7 @@
-import type { HotkeyId } from "renderer/hotkeys";
+import { formatHotkeyDisplay, type HotkeyId, PLATFORM } from "renderer/hotkeys";
+import { getBinding } from "renderer/hotkeys/hooks/useBinding/useBinding";
+import { getEffectiveLayoutMap } from "renderer/hotkeys/stores/keyboardPreferencesStore";
+import { bindingToDispatchChord } from "renderer/hotkeys/utils/binding";
 
 export const DASHBOARD_KEYBOARD_HELP_OPEN_EVENT =
 	"dashboard-keyboard-help-open";
@@ -28,11 +31,28 @@ const DASHBOARD_KEYBOARD_HELP_KEY_ALIASES: Record<string, string[]> = {
 	"⌘": ["command", "cmd"],
 	"⇧": ["shift"],
 	"⌃": ["control", "ctrl"],
+	"⇥": ["tab"],
+	"↵": ["enter", "return"],
+	"⌫": ["backspace"],
+	"⎋": ["escape", "esc"],
 	"↑": ["up", "arrow up", "arrowup"],
 	"↓": ["down", "arrow down", "arrowdown"],
 	"←": ["left", "arrow left", "arrowleft"],
 	"→": ["right", "arrow right", "arrowright"],
+	Alt: ["option", "opt", "alt"],
+	Cmd: ["command", "cmd", "meta"],
+	Command: ["cmd", "meta"],
+	Ctrl: ["control", "ctrl"],
 	Esc: ["escape"],
+	Shift: ["shift"],
+	Super: ["super", "meta"],
+	Win: ["windows", "win", "meta"],
+	alt: ["option", "opt"],
+	cmd: ["command", "meta"],
+	command: ["cmd", "meta"],
+	ctrl: ["control"],
+	option: ["alt", "opt"],
+	shift: ["shift"],
 };
 
 function keysSearchText(keys: string[]) {
@@ -55,6 +75,18 @@ function keySearchTokens(keys: string[]): Set<string> {
 	return new Set(normalizedSearchWords(keysSearchText(keys)));
 }
 
+function hotkeySearchText(hotkeyId: HotkeyId): string {
+	const binding = getBinding(hotkeyId);
+	const layoutMap = getEffectiveLayoutMap();
+	const chord = bindingToDispatchChord(binding, layoutMap);
+	const display = formatHotkeyDisplay(chord, PLATFORM, layoutMap);
+	const displaySearchText =
+		display.text === "Unassigned"
+			? ""
+			: `${display.text} ${keysSearchText(display.keys)}`;
+	return [hotkeyId, chord, displaySearchText].filter(Boolean).join(" ");
+}
+
 export function normalizeDashboardKeyboardHelpQuery(query: string): string[] {
 	return query.trim().toLowerCase().split(/\s+/).filter(Boolean);
 }
@@ -66,7 +98,9 @@ function dashboardKeyboardHelpEntrySearchParts({
 	entry: DashboardKeyboardHelpEntry;
 	section: DashboardKeyboardHelpSection;
 }) {
-	const keysText = entry.keys ? keysSearchText(entry.keys) : entry.hotkeyId;
+	const keysText = entry.keys
+		? keysSearchText(entry.keys)
+		: hotkeySearchText(entry.hotkeyId);
 	const text = [
 		section.id,
 		section.title,
@@ -80,7 +114,7 @@ function dashboardKeyboardHelpEntrySearchParts({
 	return {
 		keyTokens: entry.keys
 			? keySearchTokens(entry.keys)
-			: new Set(normalizedSearchWords(entry.hotkeyId)),
+			: new Set(normalizedSearchWords(keysText)),
 		text,
 		textTokens: new Set(normalizedSearchWords(text)),
 	};
