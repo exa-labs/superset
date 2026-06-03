@@ -134,6 +134,7 @@ function openNativeOverviewFilter(
 const NATIVE_FILTER_COMMANDS: Array<{
 	filter: NativeOverviewFilter;
 	keywords: string[];
+	shortcutLabel?: string;
 	title: string;
 }> = [
 	{
@@ -149,6 +150,7 @@ const NATIVE_FILTER_COMMANDS: Array<{
 	{
 		filter: "unread",
 		keywords: ["unread", "reply", "notification"],
+		shortcutLabel: "u",
 		title: "Open unread",
 	},
 	{
@@ -429,6 +431,7 @@ export const webProvider: CommandProvider = {
 						"native",
 						noun,
 					],
+					shortcutLabel: filterCommand.shortcutLabel,
 					run: (context) =>
 						openNativeOverviewFilter(context, provider, filterCommand.filter),
 				});
@@ -453,6 +456,7 @@ export const webProvider: CommandProvider = {
 					"jump",
 					"agent",
 				],
+				shortcutLabel: "u",
 				run: (context) =>
 					context.navigate(
 						latestNativeReply.provider === "capy"

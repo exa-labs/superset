@@ -42,6 +42,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Insert reply")).toEqual(
 			expect.objectContaining({ keys: ["i"] }),
 		);
+		expect(entryByLabel.get("Open unread reply")).toEqual(
+			expect.objectContaining({ keys: ["u"] }),
+		);
 		expect(entryByLabel.get("Open browser version")).toEqual(
 			expect.objectContaining({ keys: ["o"] }),
 		);

@@ -190,6 +190,8 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.show")).toBe("p");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
+		expect(shortcutById.get("native.capy.unread")).toBe("u");
+		expect(shortcutById.get("native.devin.unread")).toBe("u");
 		expect(shortcutById.get("native.folder.create")).toBe("n");
 		expect(shortcutById.get("native.folder.rename")).toBe("e");
 		expect(shortcutById.get("native.folder.color")).toBe("c");
@@ -399,6 +401,7 @@ describe("web command provider", () => {
 					.find((candidate) => candidate.id === "native.latestReply.open");
 
 				expect(command?.title).toBe("Open latest Devin reply");
+				expect(command?.shortcutLabel).toBe("u");
 				command?.run?.(context);
 				expect(navigatedTo).toEqual(["/native/devin/session-1"]);
 			},

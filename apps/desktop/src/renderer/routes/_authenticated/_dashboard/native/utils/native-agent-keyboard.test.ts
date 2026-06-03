@@ -8,6 +8,7 @@ import {
 	nativeAgentSelectedSessionVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarVimActionFromKey,
+	nativeAgentUnreadVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
 } from "./native-agent-keyboard";
@@ -118,6 +119,12 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("archive");
 		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("none");
+	});
+
+	it("maps unread vim action keys", () => {
+		expect(nativeAgentUnreadVimActionFromKey("u")).toBe("open-unread");
+		expect(nativeAgentUnreadVimActionFromKey("U")).toBe("none");
+		expect(nativeAgentUnreadVimActionFromKey("j")).toBe("none");
 	});
 
 	it("maps chat vim scroll keys to predictable deltas", () => {

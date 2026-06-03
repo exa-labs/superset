@@ -58,6 +58,7 @@ import {
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
+	nativeAgentUnreadVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
 } from "../../utils/native-agent-keyboard";
@@ -1458,6 +1459,14 @@ export function NativeAgentChatView({
 				return;
 			}
 
+			if (nativeAgentUnreadVimActionFromKey(key) === "open-unread") {
+				const unreadItem = unreadWorkspaceItems[0];
+				if (!unreadItem) return;
+				consumeNativeAgentKeyboardEvent(event);
+				openItem(unreadItem);
+				return;
+			}
+
 			if (selectedItem) {
 				if (
 					(key === "j" || key === "k" || key === "J" || key === "K") &&
@@ -1617,6 +1626,7 @@ export function NativeAgentChatView({
 		openExternal,
 		provider,
 		selectedItem,
+		unreadWorkspaceItems,
 		viewMode,
 		workspaceItems,
 		navigate,

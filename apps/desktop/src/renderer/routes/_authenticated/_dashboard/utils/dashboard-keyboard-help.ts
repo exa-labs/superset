@@ -192,6 +192,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Focus the composer using a Vim-style insert key",
 				},
 				{
+					keys: ["u"],
+					label: "Open unread reply",
+					description: "Jump to the next unread Capy or Devin response",
+				},
+				{
 					keys: ["o"],
 					label: "Open browser version",
 					description: "Open the current agent session in the embedded browser",

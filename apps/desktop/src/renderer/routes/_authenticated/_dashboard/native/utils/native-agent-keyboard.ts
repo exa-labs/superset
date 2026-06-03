@@ -33,6 +33,7 @@ export type NativeAgentFolderVimAction =
 
 export type NativeAgentViewMode = "browser" | "native" | "split";
 export type NativeAgentSidebarJumpAction = "bottom" | "none" | "top";
+export type NativeAgentUnreadVimAction = "none" | "open-unread";
 
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
@@ -92,6 +93,13 @@ export function nativeAgentSidebarJumpFromKey(input: {
 		return { action: "top", handled: true, nextLastGAt: 0 };
 	}
 	return { action: "none", handled: true, nextLastGAt: input.now };
+}
+
+export function nativeAgentUnreadVimActionFromKey(
+	key: string | null,
+): NativeAgentUnreadVimAction {
+	if (key === "u") return "open-unread";
+	return "none";
 }
 
 export function nativeAgentSelectedSessionVimActionFromKey(
