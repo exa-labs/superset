@@ -2007,6 +2007,15 @@ export function DashboardNativeAgentsSection({
 									const folderHasUnread = folderItems.some((item) =>
 										hasUnreadAgentResponse(item, readState),
 									);
+									const cycleFolderColor = () => {
+										const currentIndex = FOLDER_COLORS.indexOf(folder.color);
+										setFolderColor(
+											folder.id,
+											FOLDER_COLORS[
+												(currentIndex + 1) % FOLDER_COLORS.length
+											] ?? FOLDER_COLORS[0],
+										);
+									};
 									return (
 										<div
 											key={folder.id}
@@ -2059,6 +2068,83 @@ export function DashboardNativeAgentsSection({
 													{folderItems.length}
 												</span>
 												<span className="pointer-events-none absolute right-1 flex items-center rounded-md bg-background/90 opacity-0 shadow-sm transition group-hover/folder:pointer-events-auto group-hover/folder:opacity-100 group-focus-within/folder:pointer-events-auto group-focus-within/folder:opacity-100">
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<button
+																type="button"
+																data-dashboard-sidebar-action="menu"
+																aria-keyshortcuts="."
+																aria-label={`Show actions for ${folder.title}`}
+																title="Show folder actions (.)"
+																onClick={(event) => event.stopPropagation()}
+																className="flex size-5 items-center justify-center rounded transition hover:bg-accent"
+															>
+																<LuEllipsis className="size-3 shrink-0" />
+															</button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent
+															side="right"
+															align="start"
+															className="w-56"
+														>
+															<DropdownMenuItem
+																onSelect={() => toggleFolder(folder.id)}
+															>
+																{folder.isCollapsed ? "Expand" : "Collapse"}
+																<DropdownMenuShortcut>
+																	{folder.isCollapsed ? "l" : "h"}
+																</DropdownMenuShortcut>
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																onSelect={() => openFolderEditor(folder)}
+															>
+																Rename
+																<DropdownMenuShortcut>e</DropdownMenuShortcut>
+															</DropdownMenuItem>
+															<DropdownMenuItem onSelect={cycleFolderColor}>
+																Cycle color
+																<DropdownMenuShortcut>c</DropdownMenuShortcut>
+															</DropdownMenuItem>
+															<DropdownMenuSeparator />
+															<DropdownMenuItem
+																onSelect={() =>
+																	setCreateProvider(providerConfig.id)
+																}
+															>
+																Create new{" "}
+																{nativeAgentConversationLabel(
+																	providerConfig.id,
+																)}
+																<DropdownMenuShortcut>n</DropdownMenuShortcut>
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																onSelect={() => createFolder(providerConfig.id)}
+															>
+																Create folder
+															</DropdownMenuItem>
+															<DropdownMenuSeparator />
+															<DropdownMenuItem
+																variant="destructive"
+																onSelect={() => setDeleteFolderTarget(folder)}
+															>
+																Delete folder
+																<DropdownMenuShortcut>d</DropdownMenuShortcut>
+															</DropdownMenuItem>
+														</DropdownMenuContent>
+													</DropdownMenu>
+													<button
+														type="button"
+														data-dashboard-sidebar-action="create"
+														tabIndex={-1}
+														aria-keyshortcuts="n"
+														aria-label={`New ${providerConfig.title} ${nativeAgentConversationLabel(providerConfig.id)}`}
+														title="Create session (n)"
+														onClick={(event) => {
+															event.stopPropagation();
+															setCreateProvider(providerConfig.id);
+														}}
+														className="sr-only"
+													/>
 													<button
 														type="button"
 														data-dashboard-sidebar-action="rename"
@@ -2081,15 +2167,7 @@ export function DashboardNativeAgentsSection({
 														title="Cycle folder color (c)"
 														onClick={(event) => {
 															event.stopPropagation();
-															const currentIndex = FOLDER_COLORS.indexOf(
-																folder.color,
-															);
-															setFolderColor(
-																folder.id,
-																FOLDER_COLORS[
-																	(currentIndex + 1) % FOLDER_COLORS.length
-																] ?? FOLDER_COLORS[0],
-															);
+															cycleFolderColor();
 														}}
 														className="flex size-5 items-center justify-center rounded transition hover:bg-accent"
 													>

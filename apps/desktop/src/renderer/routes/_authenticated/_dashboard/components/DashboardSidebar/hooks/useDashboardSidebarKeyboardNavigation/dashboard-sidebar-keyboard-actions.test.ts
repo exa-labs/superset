@@ -287,7 +287,7 @@ describe("getDashboardSidebarFocusableItems", () => {
 		).toEqual(["session"]);
 	});
 
-	test("skips folder color and delete buttons during roving navigation", () => {
+	test("skips folder action buttons during roving navigation", () => {
 		if (typeof document === "undefined") return;
 
 		const root = document.createElement("div");
@@ -304,12 +304,22 @@ describe("getDashboardSidebarFocusableItems", () => {
 		color.id = "color";
 		makeVisible(color);
 
+		const create = document.createElement("button");
+		create.dataset.dashboardSidebarAction = "create";
+		create.id = "create";
+		makeVisible(create);
+
 		const deleteButton = document.createElement("button");
 		deleteButton.dataset.dashboardSidebarAction = "delete";
 		deleteButton.id = "delete";
 		makeVisible(deleteButton);
 
-		folderScope.append(folder, color, deleteButton);
+		const menu = document.createElement("button");
+		menu.dataset.dashboardSidebarAction = "menu";
+		menu.id = "menu";
+		makeVisible(menu);
+
+		folderScope.append(folder, menu, create, color, deleteButton);
 		root.append(folderScope);
 
 		expect(
@@ -322,9 +332,17 @@ describe("getDashboardSidebarFocusableItems", () => {
 		).toBe(color);
 		expect(
 			folderScope.querySelector(
+				dashboardSidebarKeyboardActionSelector("create"),
+			),
+		).toBe(create);
+		expect(
+			folderScope.querySelector(
 				dashboardSidebarKeyboardActionSelector("delete"),
 			),
 		).toBe(deleteButton);
+		expect(
+			folderScope.querySelector(dashboardSidebarKeyboardActionSelector("menu")),
+		).toBe(menu);
 	});
 });
 
