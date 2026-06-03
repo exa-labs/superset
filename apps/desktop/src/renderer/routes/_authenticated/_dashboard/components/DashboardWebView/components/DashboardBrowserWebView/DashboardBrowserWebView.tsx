@@ -135,6 +135,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		renderHintOverlay();
 		return true;
 	};
+	window.__clankeeOpenDashboardActionHints = openHints;
 	const activateHintTarget = (target) => {
 		closeHints();
 		try {

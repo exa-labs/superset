@@ -4,6 +4,7 @@ export type GlobalKeyboardAction =
 	| "FOCUS_DASHBOARD_SHELL"
 	| "MARK_LATEST_NATIVE_REPLY_READ"
 	| "OPEN_UNREAD_NATIVE_REPLY"
+	| "SHOW_DASHBOARD_ACTION_HINTS"
 	| "SHOW_DASHBOARD_KEYBOARD_HELP"
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
 	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
@@ -88,10 +89,12 @@ export function globalKeyboardActionFromInput(
 	if (!isBareOptionChord(input)) return null;
 
 	const code = input.code.toLowerCase();
+	if (code === "keyf") return "SHOW_DASHBOARD_ACTION_HINTS";
 	if (code === "keyn") return "OPEN_UNREAD_NATIVE_REPLY";
 	if (code === "keyv") return "TOGGLE_VIM_MODE";
 
 	const key = input.key.toLowerCase();
+	if (key === "f") return "SHOW_DASHBOARD_ACTION_HINTS";
 	if (key === "n") return "OPEN_UNREAD_NATIVE_REPLY";
 	if (key === "v") return "TOGGLE_VIM_MODE";
 

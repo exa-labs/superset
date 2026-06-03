@@ -179,6 +179,21 @@ class BrowserManager extends EventEmitter {
 		this.emit("global-keyboard-action", action);
 	}
 
+	private openPageActionHints(wc: Electron.WebContents): void {
+		void wc
+			.executeJavaScript(
+				"Boolean(window.__clankeeOpenDashboardActionHints?.())",
+				true,
+			)
+			.then((opened) => {
+				if (opened === true) return;
+				this.dispatchGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+			})
+			.catch(() => {
+				this.dispatchGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+			});
+	}
+
 	private clearPendingDashboardWebAppShortcut(): void {
 		const pending = this.pendingDashboardWebAppShortcut;
 		if (!pending) return;
@@ -416,6 +431,10 @@ class BrowserManager extends EventEmitter {
 					event.preventDefault();
 				}
 				this.clearPendingDashboardWebAppShortcut();
+				if (globalKeyboardAction === "SHOW_DASHBOARD_ACTION_HINTS") {
+					this.openPageActionHints(wc);
+					return;
+				}
 				this.dispatchGlobalKeyboardAction(globalKeyboardAction);
 				return;
 			}

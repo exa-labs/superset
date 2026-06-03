@@ -153,6 +153,10 @@ describe("HOTKEYS_REGISTRY shape", () => {
 				chord: "alt+slash",
 			},
 		);
+		expect(HOTKEYS_REGISTRY.SHOW_DASHBOARD_ACTION_HINTS.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+f",
+		});
 		expect(HOTKEYS_REGISTRY.OPEN_UNREAD_NATIVE_REPLY.key.mac).toMatchObject({
 			mode: "logical",
 			chord: "alt+n",

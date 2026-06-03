@@ -146,8 +146,8 @@ describe("actions command provider", () => {
 		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardActionHints",
-			)?.shortcutLabel,
-		).toBe("f");
+			)?.hotkeyId,
+		).toBe("SHOW_DASHBOARD_ACTION_HINTS");
 		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardKeyboardGuide",

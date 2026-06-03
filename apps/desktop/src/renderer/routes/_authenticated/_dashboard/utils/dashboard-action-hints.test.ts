@@ -132,9 +132,10 @@ describe("dashboard action hints", () => {
 		};
 		window.addEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
 
-		openDashboardActionHints();
+		const opened = openDashboardActionHints();
 
 		window.removeEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+		expect(opened).toBe(true);
 		expect(openEventCount).toBe(1);
 	});
 });

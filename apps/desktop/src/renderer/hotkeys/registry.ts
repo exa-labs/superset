@@ -874,6 +874,17 @@ export const HOTKEYS_REGISTRY = {
 		description:
 			"Open the dashboard keyboard overlay from browsers and terminals",
 	},
+	SHOW_DASHBOARD_ACTION_HINTS: {
+		key: {
+			mac: L("alt+f"),
+			windows: L("ctrl+alt+f"),
+			linux: L("ctrl+alt+f"),
+		},
+		label: "Show Dashboard Action Hints",
+		category: "Help",
+		description:
+			"Label visible dashboard or embedded-page actions with Vim-style keys",
+	},
 	OPEN_UNREAD_NATIVE_REPLY: {
 		key: {
 			mac: L("alt+n"),

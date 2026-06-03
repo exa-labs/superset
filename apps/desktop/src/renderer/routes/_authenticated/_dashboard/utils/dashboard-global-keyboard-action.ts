@@ -1,3 +1,4 @@
+import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { focusDashboardNavigationShell } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
@@ -7,6 +8,7 @@ export type DashboardGlobalKeyboardAction =
 	| "FOCUS_DASHBOARD_SHELL"
 	| "MARK_LATEST_NATIVE_REPLY_READ"
 	| "OPEN_UNREAD_NATIVE_REPLY"
+	| "SHOW_DASHBOARD_ACTION_HINTS"
 	| "SHOW_DASHBOARD_KEYBOARD_HELP"
 	| "SWITCH_DASHBOARD_VIEW_NEXT"
 	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
@@ -22,6 +24,7 @@ interface DashboardGlobalKeyboardActionHandlers {
 	defer: (callback: () => void) => void;
 	focusNavigationShell: () => boolean;
 	markLatestNativeReplyRead: () => boolean;
+	openActionHints: () => boolean;
 	openKeyboardHelp: () => boolean;
 	openNavigationShell: () => void;
 	openUnreadNativeReply: () => boolean;
@@ -73,6 +76,7 @@ const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	defer,
 	focusNavigationShell: focusDashboardNavigationShell,
 	markLatestNativeReplyRead: dispatchDashboardMarkLatestNativeReplyRead,
+	openActionHints: openDashboardActionHints,
 	openKeyboardHelp: openDashboardKeyboardHelp,
 	openNavigationShell: () => useWorkspaceSidebarStore.getState().setOpen(true),
 	openUnreadNativeReply: dispatchDashboardOpenUnreadNativeReply,
@@ -93,6 +97,10 @@ export function handleDashboardGlobalKeyboardAction(
 
 	if (action === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 		return resolved.openKeyboardHelp();
+	}
+
+	if (action === "SHOW_DASHBOARD_ACTION_HINTS") {
+		return resolved.openActionHints();
 	}
 
 	if (action === "OPEN_UNREAD_NATIVE_REPLY") {

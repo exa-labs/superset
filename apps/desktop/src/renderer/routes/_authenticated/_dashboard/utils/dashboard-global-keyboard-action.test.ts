@@ -8,6 +8,7 @@ function handlers(
 	overrides: {
 		focusNavigationShell?: () => boolean;
 		markLatestNativeReplyRead?: () => boolean;
+		openActionHints?: () => boolean;
 		openKeyboardHelp?: () => boolean;
 		openUnreadNativeReply?: () => boolean;
 		onDefer?: (callback: () => void) => void;
@@ -21,6 +22,7 @@ function handlers(
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
 		markLatestNativeReplyRead:
 			overrides.markLatestNativeReplyRead ?? (() => true),
+		openActionHints: overrides.openActionHints ?? (() => true),
 		openKeyboardHelp: overrides.openKeyboardHelp ?? (() => true),
 		openNavigationShell: overrides.onOpenNavigationShell ?? (() => undefined),
 		openUnreadNativeReply: overrides.openUnreadNativeReply ?? (() => true),
@@ -55,6 +57,23 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 				"SHOW_DASHBOARD_KEYBOARD_HELP",
 				handlers({
 					openKeyboardHelp: () => {
+						opened = true;
+						return true;
+					},
+				}),
+			),
+		).toBe(true);
+		expect(opened).toBe(true);
+	});
+
+	it("opens action hints from the global main-process action", () => {
+		let opened = false;
+
+		expect(
+			handleDashboardGlobalKeyboardAction(
+				"SHOW_DASHBOARD_ACTION_HINTS",
+				handlers({
+					openActionHints: () => {
 						opened = true;
 						return true;
 					},

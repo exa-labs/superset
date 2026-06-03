@@ -7,6 +7,9 @@ describe("dashboard browser webview bridge", () => {
 			"__clankeeSetDashboardVimModeEnabled",
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"__clankeeOpenDashboardActionHints",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"__clankeeDashboardVimModeEnabled",
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

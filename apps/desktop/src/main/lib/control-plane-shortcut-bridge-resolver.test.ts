@@ -68,6 +68,15 @@ describe("control plane shortcut bridge resolver", () => {
 				},
 			},
 			{
+				input: { code: "KeyF", key: "Dead", type: "rawKeyDown" },
+				name: "Option+F opens dashboard action hints from webviews",
+				result: {
+					action: "SHOW_DASHBOARD_ACTION_HINTS",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
 				input: { code: "KeyN", key: "Dead" },
 				name: "Option+N opens the newest unread native reply",
 				result: {
@@ -200,6 +209,14 @@ describe("control plane shortcut bridge resolver", () => {
 				input: { code: "Slash", key: "/", type: "rawKeyDown" },
 				result: {
 					action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+					preventDefault: true,
+					type: "global-keyboard-action",
+				},
+			},
+			{
+				input: { code: "KeyF", key: "Dead", type: "rawKeyDown" },
+				result: {
+					action: "SHOW_DASHBOARD_ACTION_HINTS",
 					preventDefault: true,
 					type: "global-keyboard-action",
 				},

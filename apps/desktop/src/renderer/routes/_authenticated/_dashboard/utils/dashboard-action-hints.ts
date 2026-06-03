@@ -142,7 +142,8 @@ export function activateDashboardActionHintTarget(element: HTMLElement): void {
 	element.click();
 }
 
-export function openDashboardActionHints(): void {
-	if (typeof window === "undefined") return;
+export function openDashboardActionHints(): boolean {
+	if (typeof window === "undefined") return false;
 	window.dispatchEvent(new Event(DASHBOARD_ACTION_HINTS_OPEN_EVENT));
+	return true;
 }

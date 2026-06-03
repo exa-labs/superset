@@ -44,6 +44,35 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("OPEN_UNREAD_NATIVE_REPLY");
 	});
 
+	it("matches Option+F as a global dashboard action hint trigger", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "KeyF",
+				key: "Dead",
+			}),
+		).toBe("SHOW_DASHBOARD_ACTION_HINTS");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "",
+				key: "f",
+				type: "rawKeyDown",
+			}),
+		).toBe("SHOW_DASHBOARD_ACTION_HINTS");
+	});
+
+	it("keeps plain F available for Vim-mode in-page action hints", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				alt: false,
+				code: "KeyF",
+				key: "f",
+			}),
+		).toBeNull();
+	});
+
 	it("matches Option+Shift+N as a global latest native reply acknowledgement", () => {
 		expect(
 			globalKeyboardActionFromInput({
@@ -198,6 +227,11 @@ describe("globalKeyboardActionFromInput", () => {
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction(
 				"MARK_LATEST_NATIVE_REPLY_READ",
+			),
+		).toBe(true);
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction(
+				"SHOW_DASHBOARD_ACTION_HINTS",
 			),
 		).toBe(true);
 		expect(

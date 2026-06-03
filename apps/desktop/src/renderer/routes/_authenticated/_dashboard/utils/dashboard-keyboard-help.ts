@@ -59,9 +59,16 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open this guide from the dashboard shell or embedded browser pages",
 				},
 				{
-					keys: ["f"],
+					hotkeyId: "SHOW_DASHBOARD_ACTION_HINTS",
 					label: "Show action hints",
-					description: "Label visible dashboard buttons and links by key",
+					description:
+						"Label visible dashboard or embedded-page actions by key",
+				},
+				{
+					keys: ["f"],
+					label: "Show action hints in Vim mode",
+					description:
+						"Label visible actions without leaving Vim navigation mode",
 				},
 				{
 					hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",

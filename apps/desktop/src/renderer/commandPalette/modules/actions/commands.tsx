@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
-import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
@@ -212,10 +211,12 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				description: "Label visible dashboard buttons and links with Vim keys",
 				icon: KeyboardIcon,
+				hotkeyId: "SHOW_DASHBOARD_ACTION_HINTS",
 				keywords: ["vim", "hints", "links", "buttons", "keyboard", "f"],
-				shortcutLabel: "f",
 				priority: ACTION_COMMAND_PRIORITY.keyboardHelp,
-				run: () => openDashboardActionHints(),
+				run: () => {
+					handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+				},
 			},
 			{
 				id: "actions.showDashboardKeyboardGuide",
