@@ -1,4 +1,14 @@
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@superset/ui/alert-dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -8,12 +18,13 @@ import {
 } from "@superset/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
-import type { DragEvent } from "react";
+import { type DragEvent, useEffect, useRef, useState } from "react";
 import {
 	LuEllipsis,
 	LuFolder,
 	LuFolderPlus,
 	LuFolderX,
+	LuPencil,
 	LuPlus,
 } from "react-icons/lu";
 import { useHotkeyDisplay } from "renderer/hotkeys";
@@ -46,6 +57,7 @@ interface DashboardWebTabAppGroupProps {
 	onCloseTab: (tabId: string) => void;
 	onPinnedChange: (tabId: string, isPinned: boolean) => void;
 	onMoveTabToFolder: (tabId: string, folderId: string | null) => void;
+	onRenameFolder: (folderId: string, title: string) => void;
 	onDeleteFolder: (folderId: string) => void;
 	onFolderCollapsedChange: (folderId: string, isCollapsed: boolean) => void;
 	onCollapsedChange: (
@@ -68,6 +80,7 @@ export function DashboardWebTabAppGroup({
 	onCloseTab,
 	onPinnedChange,
 	onMoveTabToFolder,
+	onRenameFolder,
 	onDeleteFolder,
 	onFolderCollapsedChange,
 	onCollapsedChange,
@@ -83,6 +96,12 @@ export function DashboardWebTabAppGroup({
 			? `${tabs.length}/${folders.length}`
 			: tabs.length.toString();
 	const primaryUrl = tabs[0]?.url ?? app.url;
+	const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
+	const [folderDraftTitle, setFolderDraftTitle] = useState("");
+	const [deleteFolderTarget, setDeleteFolderTarget] =
+		useState<DashboardWebTabFolder | null>(null);
+	const folderInputRef = useRef<HTMLInputElement | null>(null);
+	const folderRenameCancelledRef = useRef(false);
 	const folderTabs = (folderId: string) =>
 		tabs.filter((tab) => tab.folderId === folderId);
 	const unfolderedTabs = tabs.filter((tab) => !tab.folderId);
@@ -95,6 +114,35 @@ export function DashboardWebTabAppGroup({
 		if (!tabId) return;
 		onMoveTabToFolder(tabId, folderId);
 	};
+	const beginFolderRename = (folder: DashboardWebTabFolder) => {
+		folderRenameCancelledRef.current = false;
+		setEditingFolderId(folder.id);
+		setFolderDraftTitle(folder.title);
+	};
+	const cancelFolderRename = () => {
+		folderRenameCancelledRef.current = true;
+		setEditingFolderId(null);
+		setFolderDraftTitle("");
+	};
+	const commitFolderRename = () => {
+		if (folderRenameCancelledRef.current) {
+			folderRenameCancelledRef.current = false;
+			return;
+		}
+		if (!editingFolderId) return;
+		const nextTitle = folderDraftTitle.trim();
+		if (nextTitle) onRenameFolder(editingFolderId, nextTitle);
+		setEditingFolderId(null);
+		setFolderDraftTitle("");
+	};
+
+	useEffect(() => {
+		if (!editingFolderId) return;
+		const input = folderInputRef.current;
+		if (!input) return;
+		input.focus();
+		input.select();
+	}, [editingFolderId]);
 
 	if (variant === "collapsed") {
 		return (
@@ -266,6 +314,7 @@ export function DashboardWebTabAppGroup({
 				>
 					{folders.map((folder) => {
 						const tabsInFolder = folderTabs(folder.id);
+						const isEditingFolder = editingFolderId === folder.id;
 						return (
 							<li
 								key={folder.id}
@@ -281,17 +330,45 @@ export function DashboardWebTabAppGroup({
 									className="group/folder flex h-7 min-w-0 items-center gap-1 rounded-md border border-transparent px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-border/50 hover:bg-accent/25 hover:text-foreground"
 								>
 									<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
-									<button
-										type="button"
-										data-dashboard-sidebar-roving-item="true"
-										aria-expanded={!folder.isCollapsed}
-										onClick={() =>
-											onFolderCollapsedChange(folder.id, !folder.isCollapsed)
-										}
-										className="min-w-0 flex-1 truncate text-left"
-									>
-										{folder.title}
-									</button>
+									{isEditingFolder ? (
+										<input
+											ref={folderInputRef}
+											value={folderDraftTitle}
+											onChange={(event) =>
+												setFolderDraftTitle(event.target.value)
+											}
+											onBlur={commitFolderRename}
+											onKeyDown={(event) => {
+												if (event.key === "Enter") {
+													event.preventDefault();
+													commitFolderRename();
+													return;
+												}
+												if (event.key === "Escape") {
+													event.preventDefault();
+													cancelFolderRename();
+												}
+											}}
+											className="h-6 min-w-0 flex-1 rounded border border-border bg-background px-1.5 text-left text-xs text-foreground outline-none focus:border-foreground/40"
+											aria-label={`Rename ${folder.title}`}
+										/>
+									) : (
+										<button
+											type="button"
+											data-dashboard-sidebar-roving-item="true"
+											aria-expanded={!folder.isCollapsed}
+											onClick={() =>
+												onFolderCollapsedChange(folder.id, !folder.isCollapsed)
+											}
+											onDoubleClick={(event) => {
+												event.preventDefault();
+												beginFolderRename(folder);
+											}}
+											className="min-w-0 flex-1 truncate text-left"
+										>
+											{folder.title}
+										</button>
+									)}
 									<span className="rounded-sm bg-muted-foreground/10 px-1 font-mono text-[10px]">
 										{tabsInFolder.length === 0 ? "empty" : tabsInFolder.length}
 									</span>
@@ -326,9 +403,15 @@ export function DashboardWebTabAppGroup({
 													{folder.isCollapsed ? "l" : "h"}
 												</DropdownMenuShortcut>
 											</DropdownMenuItem>
+											<DropdownMenuItem
+												onSelect={() => beginFolderRename(folder)}
+											>
+												Rename folder
+												<DropdownMenuShortcut>e</DropdownMenuShortcut>
+											</DropdownMenuItem>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
-												onSelect={() => onDeleteFolder(folder.id)}
+												onSelect={() => setDeleteFolderTarget(folder)}
 											>
 												Delete folder
 												<DropdownMenuShortcut>d</DropdownMenuShortcut>
@@ -337,11 +420,22 @@ export function DashboardWebTabAppGroup({
 									</DropdownMenu>
 									<button
 										type="button"
+										data-dashboard-sidebar-action="rename"
+										aria-keyshortcuts="e"
+										aria-label={`Rename ${folder.title}`}
+										title="Rename folder (e)"
+										onClick={() => beginFolderRename(folder)}
+										className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
+									>
+										<LuPencil className="size-3" />
+									</button>
+									<button
+										type="button"
 										data-dashboard-sidebar-action="delete"
 										aria-keyshortcuts="d"
 										aria-label={`Delete ${folder.title}`}
 										title="Delete folder (d)"
-										onClick={() => onDeleteFolder(folder.id)}
+										onClick={() => setDeleteFolderTarget(folder)}
 										className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
 									>
 										<LuFolderX className="size-3" />
@@ -378,6 +472,36 @@ export function DashboardWebTabAppGroup({
 					))}
 				</ul>
 			)}
+			<AlertDialog
+				open={deleteFolderTarget !== null}
+				onOpenChange={(open) => {
+					if (!open) setDeleteFolderTarget(null);
+				}}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Chrome folder?</AlertDialogTitle>
+						<AlertDialogDescription>
+							{deleteFolderTarget
+								? `Delete "${deleteFolderTarget.title}"? Tabs in this folder will move back to the main Chrome list.`
+								: "Tabs in this folder will move back to the main Chrome list."}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								if (deleteFolderTarget) {
+									onDeleteFolder(deleteFolderTarget.id);
+								}
+								setDeleteFolderTarget(null);
+							}}
+						>
+							Delete folder
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

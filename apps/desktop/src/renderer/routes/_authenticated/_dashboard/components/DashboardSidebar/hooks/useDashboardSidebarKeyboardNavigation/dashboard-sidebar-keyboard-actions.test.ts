@@ -83,6 +83,9 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 		expect(dashboardSidebarKeyboardActionSelector("menu")).toBe(
 			'[data-dashboard-sidebar-action="menu"]',
 		);
+		expect(dashboardSidebarKeyboardActionSelector("rename")).toBe(
+			'[data-dashboard-sidebar-action="rename"]',
+		);
 	});
 });
 

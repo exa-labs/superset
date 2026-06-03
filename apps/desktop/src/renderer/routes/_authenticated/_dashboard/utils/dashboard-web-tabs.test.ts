@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import {
 	createDashboardWebTabFolder,
+	deleteDashboardWebTabFolder,
 	getDashboardWebTab,
 	getDashboardWebTabFolder,
 	getDashboardWebTabFolders,
 	getDashboardWebTabs,
 	moveDashboardWebTabToFolder,
+	renameDashboardWebTabFolder,
 	resetDashboardWebTabsForTests,
 	setDashboardWebTabFolderCollapsed,
 	setDashboardWebTabPinned,
@@ -76,6 +78,50 @@ describe("dashboard web tabs", () => {
 		expect(getDashboardWebTab("chrome-default")).toMatchObject({
 			folderId: folder.id,
 			isPinned: true,
+		});
+
+		unsubscribe();
+	});
+
+	it("renames folders and ignores blank folder names", () => {
+		let notificationCount = 0;
+		const unsubscribe = subscribeDashboardWebTabs(() => {
+			notificationCount += 1;
+		});
+		const folder = createDashboardWebTabFolder("chrome", "Research");
+
+		renameDashboardWebTabFolder(folder.id, " Dashboards ");
+		renameDashboardWebTabFolder(folder.id, "   ");
+
+		expect(notificationCount).toBe(2);
+		expect(getDashboardWebTabFolder(folder.id)?.title).toBe("Dashboards");
+
+		resetDashboardWebTabsForTests();
+		expect(getDashboardWebTabFolder(folder.id)?.title).toBe("Dashboards");
+
+		unsubscribe();
+	});
+
+	it("deletes folders while preserving their tabs", () => {
+		let notificationCount = 0;
+		const unsubscribe = subscribeDashboardWebTabs(() => {
+			notificationCount += 1;
+		});
+		const folder = createDashboardWebTabFolder("chrome", "Research");
+		moveDashboardWebTabToFolder("chrome-default", folder.id);
+
+		deleteDashboardWebTabFolder(folder.id);
+
+		expect(notificationCount).toBe(3);
+		expect(getDashboardWebTabFolder(folder.id)).toBeNull();
+		expect(getDashboardWebTab("chrome-default")).toMatchObject({
+			folderId: null,
+		});
+
+		resetDashboardWebTabsForTests();
+		expect(getDashboardWebTabFolder(folder.id)).toBeNull();
+		expect(getDashboardWebTab("chrome-default")).toMatchObject({
+			folderId: null,
 		});
 
 		unsubscribe();

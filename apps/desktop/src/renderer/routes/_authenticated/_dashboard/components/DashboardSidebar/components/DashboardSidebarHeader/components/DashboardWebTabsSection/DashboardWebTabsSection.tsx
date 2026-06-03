@@ -8,6 +8,7 @@ import {
 	getDashboardWebTabFolders,
 	getDashboardWebTabs,
 	moveDashboardWebTabToFolder,
+	renameDashboardWebTabFolder,
 	setDashboardWebTabFolderCollapsed,
 	setDashboardWebTabPinned,
 	subscribeDashboardWebTabs,
@@ -128,6 +129,7 @@ export function DashboardWebTabsSection({
 					onCloseTab={onCloseTab}
 					onPinnedChange={setDashboardWebTabPinned}
 					onMoveTabToFolder={moveDashboardWebTabToFolder}
+					onRenameFolder={renameDashboardWebTabFolder}
 					onDeleteFolder={deleteDashboardWebTabFolder}
 					onFolderCollapsedChange={setDashboardWebTabFolderCollapsed}
 					onCollapsedChange={setAppCollapsed}
