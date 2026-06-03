@@ -85,14 +85,20 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("advertises the shortcut that works in the current keyboard mode", () => {
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
+				hints: ["Esc", "⌥K", "f", "?"],
 				vimModeEnabled: true,
 			}),
-		).toBe("Browser focus. Press ? for keyboard shortcuts.");
+		).toBe(
+			"Browser focus. Keys: Esc, Option+K, f, ?. Press ? for full keyboard shortcuts.",
+		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
+				hints: ["Esc", "⌥K"],
 				vimModeEnabled: false,
 			}),
-		).toBe("Browser focus. Press Option+/ for keyboard shortcuts.");
+		).toBe(
+			"Browser focus. Keys: Esc, Option+K. Press Option+/ for full keyboard shortcuts.",
+		);
 	});
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {

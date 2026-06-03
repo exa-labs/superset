@@ -1,4 +1,26 @@
-import * as commandShortcutKeycapUtils from "./command-shortcut-keycaps";
+const GLYPH_MODIFIERS = new Set(["⌘", "⌃", "⌥", "⇧"]);
+const KEY_SEARCH_ALIASES: Record<string, string[]> = {
+	"⌘": ["command", "cmd", "meta"],
+	"⌃": ["control", "ctrl"],
+	"⌥": ["option", "opt", "alt"],
+	"⇧": ["shift"],
+	"↑": ["up", "arrowup", "arrow up"],
+	"↓": ["down", "arrowdown", "arrow down"],
+	"←": ["left", "arrowleft", "arrow left"],
+	"→": ["right", "arrowright", "arrow right"],
+	"↵": ["enter", "return"],
+	"⌫": ["backspace"],
+	"⎋": ["escape", "esc"],
+	"⇥": ["tab"],
+	alt: ["option", "opt"],
+	cmd: ["command", "meta"],
+	command: ["cmd", "meta"],
+	control: ["ctrl"],
+	ctrl: ["control"],
+	meta: ["command", "cmd"],
+	option: ["alt", "opt"],
+	opt: ["option", "alt"],
+};
 
 export interface CommandItemShortcutKeycapGroup {
 	id: string;
@@ -13,11 +35,58 @@ interface CommandItemShortcutKeycapGroupsInput {
 }
 
 type OptionalCommandShortcutKeycapUtils = Partial<
-	typeof commandShortcutKeycapUtils
+	typeof commandItemShortcutKeycapUtils
 >;
 
-const defaultShortcutKeycapUtils =
-	commandShortcutKeycapUtils as OptionalCommandShortcutKeycapUtils;
+function splitChordToken(token: string): string[] {
+	if (!token) return [];
+	if (token.includes("/")) return [token];
+	if (token.includes("+")) return token.split("+").filter(Boolean);
+
+	const keys: string[] = [];
+	let remainderStart = 0;
+	for (const char of token) {
+		if (!GLYPH_MODIFIERS.has(char)) break;
+		keys.push(char);
+		remainderStart += char.length;
+	}
+
+	const remainder = token.slice(remainderStart);
+	if (remainder) keys.push(remainder);
+	return keys.length > 0 ? keys : [token];
+}
+
+export function commandItemShortcutKeycapsFromLabel(label: string): string[] {
+	return label.trim().split(/\s+/).flatMap(splitChordToken);
+}
+
+export function commandItemShortcutSearchTextFromKeys({
+	keys,
+	label,
+}: {
+	keys: string[];
+	label: string | null;
+}): string {
+	if (keys.length === 0 && !label) return "";
+
+	const aliases = keys.flatMap((key) => [
+		key,
+		key.toLowerCase(),
+		...(KEY_SEARCH_ALIASES[key] ?? KEY_SEARCH_ALIASES[key.toLowerCase()] ?? []),
+	]);
+	const compactChord = keys.join("");
+	const spacedChord = keys.join(" ");
+
+	return [
+		label,
+		compactChord,
+		spacedChord,
+		...aliases,
+		...aliases.map((alias) => alias.replace(/\s+/g, "")),
+	]
+		.filter((value): value is string => Boolean(value))
+		.join(" ");
+}
 
 function sameCommandItemShortcutKeySequence(
 	left: string[],
@@ -27,11 +96,11 @@ function sameCommandItemShortcutKeySequence(
 	return left.every((key, index) => key === right[index]);
 }
 
-function commandItemShortcutKeycapsFromLabel(
+function commandItemShortcutKeycapsFromLabelWithFallback(
 	label: string,
 	utils: OptionalCommandShortcutKeycapUtils,
 ): string[] {
-	const keycapsFromLabel = utils.commandShortcutKeycapsFromLabel;
+	const keycapsFromLabel = utils.commandItemShortcutKeycapsFromLabel;
 	if (typeof keycapsFromLabel === "function") {
 		return keycapsFromLabel(label);
 	}
@@ -43,11 +112,6 @@ export function commandItemShortcutKeycapGroups(
 	input: CommandItemShortcutKeycapGroupsInput,
 	utils: OptionalCommandShortcutKeycapUtils = defaultShortcutKeycapUtils,
 ): CommandItemShortcutKeycapGroup[] {
-	const keycapGroups = utils.commandShortcutKeycapGroups;
-	if (typeof keycapGroups === "function") {
-		return keycapGroups(input);
-	}
-
 	const groups: CommandItemShortcutKeycapGroup[] = [];
 	const trimmedHotkeyLabel = input.hotkeyLabel?.trim() || null;
 	const trimmedShortcutLabel = input.shortcutLabel?.trim() || null;
@@ -68,7 +132,7 @@ export function commandItemShortcutKeycapGroups(
 		return groups;
 	}
 
-	const shortcutKeys = commandItemShortcutKeycapsFromLabel(
+	const shortcutKeys = commandItemShortcutKeycapsFromLabelWithFallback(
 		trimmedShortcutLabel,
 		utils,
 	);
@@ -96,7 +160,7 @@ export function commandItemShortcutSearchText(
 	},
 	utils: OptionalCommandShortcutKeycapUtils = defaultShortcutKeycapUtils,
 ): string {
-	const searchText = utils.commandShortcutSearchText;
+	const searchText = utils.commandItemShortcutSearchTextFromKeys;
 	if (typeof searchText === "function") {
 		return searchText({ keys, label });
 	}
@@ -106,3 +170,11 @@ export function commandItemShortcutSearchText(
 		.filter((value): value is string => Boolean(value))
 		.join(" ");
 }
+
+const commandItemShortcutKeycapUtils = {
+	commandItemShortcutKeycapsFromLabel,
+	commandItemShortcutSearchTextFromKeys,
+};
+
+const defaultShortcutKeycapUtils =
+	commandItemShortcutKeycapUtils as OptionalCommandShortcutKeycapUtils;

@@ -60,6 +60,13 @@ export function DashboardFocusIndicator() {
 	const visibleHints = dashboardFocusIndicatorVisibleHintLabels(hints, {
 		vimModeEnabled,
 	});
+	const shortcutTitle = dashboardFocusIndicatorShortcutTitle(
+		scope.description,
+		{
+			hints,
+			vimModeEnabled,
+		},
+	);
 
 	return (
 		<div
@@ -69,10 +76,9 @@ export function DashboardFocusIndicator() {
 				"bg-background/88 px-2.5 py-1.5 text-xs shadow-lg backdrop-blur",
 			)}
 			data-dashboard-focus-indicator="true"
-			title={dashboardFocusIndicatorShortcutTitle(scope.description, {
-				vimModeEnabled,
-			})}
+			title={shortcutTitle}
 		>
+			<span className="sr-only">{shortcutTitle}</span>
 			<span className="shrink-0 text-muted-foreground">Focus</span>
 			<span className="h-3 w-px bg-border" />
 			<span className="shrink-0 font-mono font-semibold text-foreground">

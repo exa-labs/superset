@@ -30,7 +30,7 @@ describe("commandItemShortcutKeycapGroups", () => {
 					shortcutLabel: "⌥C n",
 				},
 				{
-					commandShortcutKeycapsFromLabel: (label) =>
+					commandItemShortcutKeycapsFromLabel: (label) =>
 						label
 							.trim()
 							.split(/\s+/)

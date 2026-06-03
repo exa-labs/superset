@@ -1,6 +1,7 @@
 import type { DashboardFocusScopeId } from "./dashboard-focus-scope";
 
 interface DashboardFocusIndicatorHintOptions {
+	hints?: string[];
 	vimModeEnabled?: boolean;
 }
 
@@ -57,10 +58,22 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	].filter((hint): hint is string => hint !== null);
 }
 
+function readableDashboardFocusHint(hint: string): string {
+	if (hint === "⌥K") return "Option+K";
+	if (hint === "⌥/") return "Option+/";
+	if (hint === "↑↓") return "Up/Down";
+	if (hint === "↵") return "Enter";
+	return hint;
+}
+
 export function dashboardFocusIndicatorShortcutTitle(
 	scopeDescription: string,
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string {
 	const shortcut = options.vimModeEnabled === false ? "Option+/" : "?";
-	return `${scopeDescription}. Press ${shortcut} for keyboard shortcuts.`;
+	const hints = options.hints
+		?.map(readableDashboardFocusHint)
+		.filter((hint) => hint.trim().length > 0);
+	const hintsText = hints?.length ? ` Keys: ${hints.join(", ")}.` : "";
+	return `${scopeDescription}.${hintsText} Press ${shortcut} for full keyboard shortcuts.`;
 }
