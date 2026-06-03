@@ -10,6 +10,12 @@ import {
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
+import { markDashboardSidebarKeyboardFocus } from "./dashboard-sidebar-keyboard-focus";
+
+export {
+	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
+	markDashboardSidebarKeyboardFocus,
+} from "./dashboard-sidebar-keyboard-focus";
 
 const INTERACTIVE_SELECTOR = [
 	"button:not([disabled])",
@@ -33,11 +39,6 @@ const SIDEBAR_ROVING_SELECTOR = [
 	PRIMARY_ROVING_SELECTOR,
 	INTERACTIVE_SELECTOR,
 ].join(",");
-const SIDEBAR_KEYBOARD_FOCUS_SELECTOR =
-	'[data-dashboard-sidebar-keyboard-focus="true"]';
-
-export const DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE =
-	"data-dashboard-sidebar-keyboard-focus";
 
 function isHTMLElement(value: Element | null): value is HTMLElement {
 	return value instanceof HTMLElement;
@@ -92,20 +93,6 @@ export function getDashboardSidebarFocusableItems(
 	return collectFocusableItems(root, SIDEBAR_ROVING_SELECTOR).filter(
 		(element) => !isAuxiliarySidebarAction(element),
 	);
-}
-
-export function markDashboardSidebarKeyboardFocus(item: HTMLElement): void {
-	const root =
-		item.closest<HTMLElement>('[data-dashboard-sidebar-root="true"]') ??
-		item.parentElement;
-	for (const element of root?.querySelectorAll<HTMLElement>(
-		SIDEBAR_KEYBOARD_FOCUS_SELECTOR,
-	) ?? []) {
-		if (element !== item) {
-			element.removeAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE);
-		}
-	}
-	item.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
 }
 
 export function focusDashboardSidebarItem(item: HTMLElement): void {

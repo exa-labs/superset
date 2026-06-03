@@ -44,8 +44,10 @@ import { DashboardSidebarProjectSection } from "./components/DashboardSidebarPro
 import { DashboardSidebarSectionRenameProvider } from "./components/DashboardSidebarSectionRenameContext";
 import { V2SetupScriptCard } from "./components/V2SetupScriptCard";
 import { useDashboardSidebarData } from "./hooks/useDashboardSidebarData";
-import { useDashboardSidebarKeyboardNavigation } from "./hooks/useDashboardSidebarKeyboardNavigation";
-import { focusFirstDashboardSidebarItem } from "./hooks/useDashboardSidebarKeyboardNavigation/useDashboardSidebarKeyboardNavigation";
+import {
+	focusFirstDashboardSidebarItem,
+	useDashboardSidebarKeyboardNavigation,
+} from "./hooks/useDashboardSidebarKeyboardNavigation";
 import { useDashboardSidebarShortcuts } from "./hooks/useDashboardSidebarShortcuts";
 import { DashboardSidebarHoverProvider } from "./providers/DashboardSidebarHoverProvider";
 import type { DashboardSidebarProject } from "./types";

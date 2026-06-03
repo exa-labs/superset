@@ -131,7 +131,7 @@ import {
 	getDashboardHashPathname,
 	subscribeDashboardHashPathname,
 } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
-import { markDashboardSidebarKeyboardFocus } from "../../../../hooks/useDashboardSidebarKeyboardNavigation/useDashboardSidebarKeyboardNavigation";
+import { markDashboardSidebarKeyboardFocus } from "../../../../hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-focus";
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {

@@ -234,23 +234,50 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["N"],
-					label: "Create native folder",
-					description: "Create a folder for the focused Capy or Devin provider",
+					label: "Create folder or group",
+					description:
+						"Create a folder/group for the focused provider, Chrome section, or workspace",
 				},
 				{
-					keys: ["P"],
+					keys: ["p"],
 					label: "Pin or unpin selected",
-					description: "Toggle selected Capy or Devin sidebar persistence",
+					description:
+						"Toggle selected Capy, Devin, or Chrome sidebar persistence",
 				},
 				{
-					keys: ["E"],
+					keys: ["e"],
 					label: "Rename selected",
-					description: "Rename the focused native session or folder",
+					description:
+						"Rename the focused workspace, native session, folder, or Chrome tab",
 				},
 				{
-					keys: ["A", "X"],
+					keys: ["m"],
+					label: "Move selected to folder",
+					description:
+						"Move the focused native session, Chrome tab, or workspace into a folder/group",
+				},
+				{
+					keys: ["F"],
+					label: "Remove selected from folder",
+					description:
+						"Move the focused native session, Chrome tab, or workspace out of its folder/group",
+				},
+				{
+					keys: ["a", "x"],
 					label: "Archive selected",
-					description: "Move the focused native session back to overview",
+					description:
+						"Move the focused native session, Chrome tab, or workspace away from the active sidebar",
+				},
+				{
+					keys: ["c"],
+					label: "Color selected folder",
+					description: "Change the focused native or Chrome folder color",
+				},
+				{
+					keys: ["d"],
+					label: "Delete selected folder",
+					description:
+						"Open confirmation for the focused native or Chrome folder",
 				},
 			],
 		},

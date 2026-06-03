@@ -99,14 +99,29 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["n"] }),
 		);
-		expect(entryByLabel.get("Create native folder")).toEqual(
+		expect(entryByLabel.get("Create folder or group")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),
 		);
 		expect(entryByLabel.get("Pin or unpin selected")).toEqual(
-			expect.objectContaining({ keys: ["P"] }),
+			expect.objectContaining({ keys: ["p"] }),
+		);
+		expect(entryByLabel.get("Rename selected")).toEqual(
+			expect.objectContaining({ keys: ["e"] }),
+		);
+		expect(entryByLabel.get("Move selected to folder")).toEqual(
+			expect.objectContaining({ keys: ["m"] }),
+		);
+		expect(entryByLabel.get("Remove selected from folder")).toEqual(
+			expect.objectContaining({ keys: ["F"] }),
 		);
 		expect(entryByLabel.get("Archive selected")).toEqual(
-			expect.objectContaining({ keys: ["A", "X"] }),
+			expect.objectContaining({ keys: ["a", "x"] }),
+		);
+		expect(entryByLabel.get("Color selected folder")).toEqual(
+			expect.objectContaining({ keys: ["c"] }),
+		);
+		expect(entryByLabel.get("Delete selected folder")).toEqual(
+			expect.objectContaining({ keys: ["d"] }),
 		);
 		expect(entryByLabel.get("Reply")).toEqual(
 			expect.objectContaining({ keys: ["r"] }),
