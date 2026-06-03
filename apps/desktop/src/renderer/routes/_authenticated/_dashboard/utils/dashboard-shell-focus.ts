@@ -5,6 +5,17 @@ const ACTIVE_NATIVE_AGENT_ROW_SELECTOR = [
 	'[data-dashboard-sidebar-active="true"] [data-native-agent-session-row-id]:not([disabled])',
 ].join(",");
 
+const PRIMARY_SIDEBAR_SELECTOR = [
+	'[data-dashboard-sidebar-roving-item="true"]',
+	"[data-dashboard-web-page-trigger]",
+	"[data-dashboard-web-app-trigger]",
+	"[data-dashboard-web-tab-row-button]",
+	"[data-dashboard-quick-terminal-trigger]",
+	"[data-dashboard-native-provider-trigger]",
+	"[data-native-agent-folder-row-id]",
+	"[data-native-agent-session-row-id]",
+].join(",");
+
 const FALLBACK_SIDEBAR_SELECTOR = [
 	"button:not([disabled])",
 	"a[href]",
@@ -37,6 +48,32 @@ function firstVisible(elements: Iterable<Element>): HTMLElement | null {
 	return null;
 }
 
+function isAuxiliarySidebarAction(element: HTMLElement): boolean {
+	if (element.matches("[data-dashboard-sidebar-action]")) return true;
+	const scope = element.closest<HTMLElement>(
+		"[data-dashboard-sidebar-action-scope]",
+	);
+	return scope != null && scope !== element;
+}
+
+function firstPrimarySidebarItem(root: HTMLElement): HTMLElement | null {
+	return firstVisible(root.querySelectorAll(PRIMARY_SIDEBAR_SELECTOR));
+}
+
+function firstFallbackSidebarItem(root: HTMLElement): HTMLElement | null {
+	for (const element of root.querySelectorAll(FALLBACK_SIDEBAR_SELECTOR)) {
+		if (
+			!isHTMLElement(element) ||
+			!isVisible(element) ||
+			isAuxiliarySidebarAction(element)
+		) {
+			continue;
+		}
+		return element;
+	}
+	return null;
+}
+
 export function focusDashboardNavigationShell(
 	doc: Document | null = typeof document === "undefined" ? null : document,
 ): boolean {
@@ -49,7 +86,8 @@ export function focusDashboardNavigationShell(
 	const target =
 		firstVisible(root.querySelectorAll(ACTIVE_NATIVE_AGENT_ROW_SELECTOR)) ??
 		firstVisible(root.querySelectorAll(ACTIVE_SIDEBAR_SELECTOR)) ??
-		firstVisible(root.querySelectorAll(FALLBACK_SIDEBAR_SELECTOR));
+		firstPrimarySidebarItem(root) ??
+		firstFallbackSidebarItem(root);
 	if (!target) return false;
 
 	target.focus({ preventScroll: true });

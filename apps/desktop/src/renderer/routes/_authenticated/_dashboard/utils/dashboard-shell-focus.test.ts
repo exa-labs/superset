@@ -10,8 +10,11 @@ class FakeElement {
 		private readonly text: string,
 		private readonly options: {
 			active?: boolean;
+			action?: boolean;
+			actionScope?: boolean;
 			height?: number;
 			nativeSession?: boolean;
+			roving?: boolean;
 			width?: number;
 		} = {},
 	) {}
@@ -23,6 +26,12 @@ class FakeElement {
 		}
 		if (name === "data-native-agent-session-row-id") {
 			return this.options.nativeSession ? "native-session" : null;
+		}
+		if (name === "data-dashboard-sidebar-roving-item") {
+			return this.options.roving ? "true" : null;
+		}
+		if (name === "data-dashboard-sidebar-action") {
+			return this.options.action ? "pin" : null;
 		}
 		return null;
 	}
@@ -38,6 +47,26 @@ class FakeElement {
 		this.focusCount += 1;
 	}
 
+	matches(selector: string) {
+		if (selector.includes("data-dashboard-sidebar-action")) {
+			return this.options.action === true;
+		}
+		if (selector.includes("data-dashboard-sidebar-action-scope")) {
+			return this.options.actionScope === true;
+		}
+		return false;
+	}
+
+	closest(selector: string) {
+		if (
+			selector.includes("data-dashboard-sidebar-action-scope") &&
+			this.options.actionScope
+		) {
+			return this;
+		}
+		return null;
+	}
+
 	scrollIntoView() {
 		this.scrollCount += 1;
 	}
@@ -51,6 +80,12 @@ class FakeSidebarRoot {
 	constructor(private readonly elements: FakeElement[]) {}
 
 	querySelectorAll(selector: string) {
+		if (selector.includes("data-dashboard-sidebar-roving-item")) {
+			return this.elements.filter(
+				(element) =>
+					element.getAttribute("data-dashboard-sidebar-roving-item") === "true",
+			);
+		}
 		if (selector.includes("data-native-agent-session-row-id")) {
 			return this.elements.filter(
 				(element) =>
@@ -120,6 +155,32 @@ describe("focusDashboardNavigationShell", () => {
 		).toBe(true);
 		expect(first.focusCount).toBe(1);
 		expect(hiddenActive.focusCount).toBe(0);
+	});
+
+	it("falls back to primary roving rows before ordinary controls", () => {
+		const footerButton = new FakeElement("footer button");
+		const row = new FakeElement("workspace row", { roving: true });
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([footerButton, row])),
+			),
+		).toBe(true);
+		expect(footerButton.focusCount).toBe(0);
+		expect(row.focusCount).toBe(1);
+	});
+
+	it("does not focus nested row action buttons as fallback targets", () => {
+		const nestedAction = new FakeElement("pin action", { action: true });
+		const row = new FakeElement("workspace row", { actionScope: true });
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([nestedAction, row])),
+			),
+		).toBe(true);
+		expect(nestedAction.focusCount).toBe(0);
+		expect(row.focusCount).toBe(1);
 	});
 
 	it("returns false when the dashboard sidebar or document is missing", () => {

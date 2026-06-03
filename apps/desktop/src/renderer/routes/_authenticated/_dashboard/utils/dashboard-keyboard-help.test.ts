@@ -21,6 +21,9 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CONTROL_PLANE")).toBe(true);
 		expect(hotkeyIds.has("TOGGLE_VIM_MODE")).toBe(true);
 		expect(hotkeyIds.has("SHOW_DASHBOARD_KEYBOARD_HELP")).toBe(true);
+		expect(entryByLabel.get("Return focus to sidebar")).toEqual(
+			expect.objectContaining({ keys: ["Esc"] }),
+		);
 		expect(entryByLabel.get("Show action hints")).toEqual(
 			expect.objectContaining({ keys: ["f"] }),
 		);

@@ -47,6 +47,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Review the dashboard keyboard map from browsers and terminals",
 				},
 				{
+					keys: ["Esc"],
+					label: "Return focus to sidebar",
+					description:
+						"Recover navigation focus from browsers, terminals, native agents, and workspace views",
+				},
+				{
 					keys: ["?"],
 					label: "Show this overlay in Vim mode",
 					description:
