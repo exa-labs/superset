@@ -3,6 +3,17 @@ import { getProviders, subscribeToProviders } from "./registry";
 import { resolveSectionOrder, SECTION_LABELS } from "./sections";
 import type { Command, CommandContext, CommandSection } from "./types";
 
+export function orderCommandsByPriority(commands: Command[]): Command[] {
+	return commands
+		.map((command, index) => ({ command, index }))
+		.sort((left, right) => {
+			const priorityDelta =
+				(right.command.priority ?? 0) - (left.command.priority ?? 0);
+			return priorityDelta || left.index - right.index;
+		})
+		.map(({ command }) => command);
+}
+
 export function useActiveCommands(context: CommandContext): CommandSection[] {
 	const providers = useSyncExternalStore(
 		subscribeToProviders,
@@ -34,7 +45,11 @@ export function useActiveCommands(context: CommandContext): CommandSection[] {
 		for (const id of order) {
 			const list = bySection.get(id);
 			if (!list || list.length === 0) continue;
-			sections.push({ id, label: SECTION_LABELS[id], commands: list });
+			sections.push({
+				id,
+				label: SECTION_LABELS[id],
+				commands: orderCommandsByPriority(list),
+			});
 		}
 		return sections;
 	}, [providers, context]);

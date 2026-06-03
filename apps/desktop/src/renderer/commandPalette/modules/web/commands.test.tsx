@@ -15,6 +15,7 @@ import {
 	resetDashboardWebTabsForTests,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type { CommandContext } from "../../core/types";
+import { orderCommandsByPriority } from "../../core/useActiveCommands";
 import { webProvider } from "./commands";
 
 function commandContext(pathname = "/native/capy"): CommandContext {
@@ -69,6 +70,14 @@ function withLocalStorage(
 			delete (globalThis as { localStorage?: unknown }).localStorage;
 		}
 	}
+}
+
+function activeOrderedCommandIds(context: CommandContext): string[] {
+	return orderCommandsByPriority(
+		webProvider
+			.provide(context)
+			.filter((command) => !command.when || command.when(context)),
+	).map((command) => command.id);
 }
 
 describe("web command provider", () => {
@@ -228,6 +237,72 @@ describe("web command provider", () => {
 			commands.find((command) => command.id === "native.current.hide")
 				?.keywords,
 		).toContain("archive");
+	});
+
+	it("prioritizes current native session actions above generic native commands", () => {
+		withLocalStorage({}, () => {
+			const commandIds = activeOrderedCommandIds(
+				commandContext("/native/devin/session-1"),
+			);
+
+			expect(commandIds.slice(0, 5)).toEqual([
+				"native.current.reply",
+				"native.current.openBrowser",
+				"native.current.openExternal",
+				"native.current.pin",
+				"native.current.unpin",
+			]);
+			expect(commandIds.indexOf("native.current.reply")).toBeLessThan(
+				commandIds.indexOf("native.current.new"),
+			);
+			expect(commandIds.indexOf("native.current.hide")).toBeLessThan(
+				commandIds.indexOf("native.capy.create"),
+			);
+		});
+	});
+
+	it("prioritizes unread native replies above current-session commands", () => {
+		withLocalStorage(
+			{
+				[NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY]: JSON.stringify({
+					id: "session-1",
+					key: "devin:session-1",
+					latestTime: 1780323000000,
+					preview: "Done",
+					provider: "devin",
+					title: "Devin task",
+				}),
+			},
+			() => {
+				const commandIds = activeOrderedCommandIds(
+					commandContext("/native/devin/session-1"),
+				);
+
+				expect(commandIds.slice(0, 2)).toEqual([
+					"native.latestReply.open",
+					"native.latestReply.markRead",
+				]);
+				expect(commandIds.indexOf("native.latestReply.open")).toBeLessThan(
+					commandIds.indexOf("native.current.reply"),
+				);
+			},
+		);
+	});
+
+	it("prioritizes active Chrome tab controls above generic web jumps", () => {
+		const commandIds = activeOrderedCommandIds(
+			commandContext("/web-tabs/chrome-default"),
+		);
+
+		expect(commandIds.slice(0, 4)).toEqual([
+			"web.current.reload",
+			"web.current.newFromCurrent",
+			"web.current.newGoogle",
+			"web.current.newChatGPT",
+		]);
+		expect(commandIds.indexOf("web.current.reload")).toBeLessThan(
+			commandIds.indexOf("web.page.overseer"),
+		);
 	});
 
 	it("registers Chrome creation and tab jump commands", () => {

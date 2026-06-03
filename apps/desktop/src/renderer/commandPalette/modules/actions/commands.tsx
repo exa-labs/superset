@@ -23,6 +23,14 @@ import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-stat
 import type { Command, CommandProvider } from "../../core/types";
 import { ThemeFrame } from "../../ui/ThemeFrame/ThemeFrame";
 
+const ACTION_COMMAND_PRIORITY = {
+	focusRecovery: 180,
+	keyboardHelp: 170,
+	newWorkspace: 160,
+	vimMode: 150,
+	viewSwitching: 140,
+} as const;
+
 function cycleTheme(): void {
 	const current = useThemeStore.getState().activeThemeId;
 	const next =
@@ -65,6 +73,7 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: PlusIcon,
 				hotkeyId: "NEW_WORKSPACE",
+				priority: ACTION_COMMAND_PRIORITY.newWorkspace,
 				keywords: ["local", "session", "workspace", "repo", "project"],
 				run: () => useNewWorkspaceModalStore.getState().openModal(),
 			},
@@ -74,6 +83,7 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: KeyboardIcon,
 				hotkeyId: "TOGGLE_VIM_MODE",
+				priority: ACTION_COMMAND_PRIORITY.vimMode,
 				keywords: ["vim", "keyboard", "j", "k", "navigation", "dashboard"],
 				run: () => {
 					const enabled = toggleDashboardVimMode();
@@ -86,6 +96,7 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: KeyboardIcon,
 				hotkeyId: "SWITCH_DASHBOARD_VIEW_NEXT",
+				priority: ACTION_COMMAND_PRIORITY.viewSwitching,
 				keywords: ["mru", "recent", "switch", "tab", "view", "keyboard"],
 				run: () => {
 					handleDashboardGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_NEXT");
@@ -97,6 +108,7 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: KeyboardIcon,
 				hotkeyId: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+				priority: ACTION_COMMAND_PRIORITY.viewSwitching,
 				keywords: ["mru", "recent", "switch", "tab", "back", "view"],
 				run: () => {
 					handleDashboardGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_PREVIOUS");
@@ -142,6 +154,7 @@ export const actionsProvider: CommandProvider = {
 				icon: PanelLeftIcon,
 				keywords: ["escape", "sidebar", "focus", "navigation", "shell"],
 				shortcutLabel: "Esc",
+				priority: ACTION_COMMAND_PRIORITY.focusRecovery,
 				run: () => {
 					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 				},
@@ -154,6 +167,7 @@ export const actionsProvider: CommandProvider = {
 				icon: KeyboardIcon,
 				keywords: ["vim", "hints", "links", "buttons", "keyboard", "f"],
 				shortcutLabel: "f",
+				priority: ACTION_COMMAND_PRIORITY.keyboardHelp,
 				run: () => openDashboardActionHints(),
 			},
 			{
@@ -164,6 +178,7 @@ export const actionsProvider: CommandProvider = {
 					"Open the dashboard keyboard map from browsers, terminals, and native agents",
 				icon: KeyboardIcon,
 				hotkeyId: "SHOW_DASHBOARD_KEYBOARD_HELP",
+				priority: ACTION_COMMAND_PRIORITY.keyboardHelp,
 				keywords: [
 					"dashboard",
 					"keyboard",

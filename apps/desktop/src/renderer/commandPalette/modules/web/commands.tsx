@@ -51,6 +51,21 @@ type NativeOverviewFilter =
 	| "pinned"
 	| "unread";
 
+const CONTROL_PLANE_PRIORITY = {
+	browserCurrent: 270,
+	nativeCreate: 230,
+	nativeCurrent: 260,
+	nativeCurrentPrimary: 280,
+	nativeCurrentSecondary: 240,
+	nativeFilter: 120,
+	nativeFolder: 180,
+	nativeOpen: 220,
+	pinnedWebPage: 150,
+	quickTerminal: 160,
+	unreadNativeReply: 300,
+	webTab: 90,
+} as const;
+
 function dispatchNativeAgentAction(
 	action:
 		| "equalize-split"
@@ -237,6 +252,7 @@ export const webProvider: CommandProvider = {
 			section: "web",
 			iconUrl: getDashboardWebPageFavicon(page) ?? undefined,
 			hotkeyId: page.hotkeyId as HotkeyId,
+			priority: CONTROL_PLANE_PRIORITY.pinnedWebPage,
 			description: page.url,
 			keywords: [
 				page.shortLabel,
@@ -264,6 +280,10 @@ export const webProvider: CommandProvider = {
 				iconUrl: app.fallbackFaviconUrl,
 				hotkeyId: app.id === "chrome" ? "OPEN_CHROME" : undefined,
 				description: app.url,
+				priority:
+					app.id === "chrome"
+						? CONTROL_PLANE_PRIORITY.nativeOpen
+						: CONTROL_PLANE_PRIORITY.pinnedWebPage,
 				keywords: [app.label, app.id, "google", "new", "browser", "tab", "web"],
 				run: (context) => {
 					const tab = createDashboardWebTab(app.id);
@@ -279,6 +299,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				icon: TerminalIcon,
 				description: `${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
+				priority: CONTROL_PLANE_PRIORITY.quickTerminal,
 				keywords: [
 					terminal.id,
 					terminal.label,
@@ -300,6 +321,7 @@ export const webProvider: CommandProvider = {
 				title: "Reload current Chrome tab",
 				section: "web",
 				description: "Reload the active embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "reload", "refresh", "tab"],
 				shortcutLabel: "r",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -310,6 +332,7 @@ export const webProvider: CommandProvider = {
 				title: "New Chrome tab from current URL",
 				section: "web",
 				description: "Duplicate the active embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "duplicate", "same", "url", "tab"],
 				shortcutLabel: "n",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -321,6 +344,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				iconUrl: "https://www.google.com/favicon.ico",
 				description: "Open Google in a new embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "google", "search", "tab"],
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("new-google-tab"),
@@ -330,6 +354,7 @@ export const webProvider: CommandProvider = {
 				title: "New ChatGPT tab",
 				section: "web",
 				description: "Open ChatGPT in a new embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "chatgpt", "openai", "tab"],
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("new-chatgpt-tab"),
@@ -339,6 +364,7 @@ export const webProvider: CommandProvider = {
 				title: "New Claude tab",
 				section: "web",
 				description: "Open Claude in a new embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "claude", "anthropic", "tab"],
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("new-claude-tab"),
@@ -348,6 +374,7 @@ export const webProvider: CommandProvider = {
 				title: "Toggle Chrome split view",
 				section: "web",
 				description: "Show two embedded Chrome tabs side by side",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "side by side", "tab"],
 				shortcutLabel: "s",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -358,6 +385,7 @@ export const webProvider: CommandProvider = {
 				title: "Swap Chrome split focus",
 				section: "web",
 				description: "Move focus between the two embedded Chrome split panes",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "swap", "focus", "pane"],
 				shortcutLabel: "w",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -368,6 +396,7 @@ export const webProvider: CommandProvider = {
 				title: "Narrow active Chrome pane",
 				section: "web",
 				description: "Give the active embedded Chrome split pane less width",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "narrow", "resize", "pane"],
 				shortcutLabel: "[",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -378,6 +407,7 @@ export const webProvider: CommandProvider = {
 				title: "Widen active Chrome pane",
 				section: "web",
 				description: "Give the active embedded Chrome split pane more width",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "widen", "resize", "pane"],
 				shortcutLabel: "]",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -388,6 +418,7 @@ export const webProvider: CommandProvider = {
 				title: "Equalize Chrome split panes",
 				section: "web",
 				description: "Reset embedded Chrome split panes to equal widths",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "equal", "resize", "pane"],
 				shortcutLabel: "=",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -398,6 +429,7 @@ export const webProvider: CommandProvider = {
 				title: "Close current Chrome tab",
 				section: "web",
 				description: "Close the active embedded Chrome tab",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "close", "remove", "tab"],
 				shortcutLabel: "x",
 				when: (context) => context.route.pathname.startsWith("/web"),
@@ -408,6 +440,7 @@ export const webProvider: CommandProvider = {
 				title: "Pin current Chrome tab",
 				section: "web",
 				description: "Keep the active embedded Chrome tab warm in the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "pin", "retain", "sidebar", "tab"],
 				shortcutLabel: "p",
 				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
@@ -422,6 +455,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Let the active embedded Chrome tab leave retention normally",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "unpin", "retain", "sidebar", "tab"],
 				shortcutLabel: "p",
 				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
@@ -435,6 +469,7 @@ export const webProvider: CommandProvider = {
 				title: "Move current Chrome tab out of folder",
 				section: "web",
 				description: "Return the active embedded Chrome tab to the main list",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "folder", "remove", "out", "tab"],
 				shortcutLabel: "F",
 				when: (context) =>
@@ -460,6 +495,7 @@ export const webProvider: CommandProvider = {
 					title: `Move current Chrome tab to ${folder.title}`,
 					section: "web",
 					description: "Move the active embedded Chrome tab into a folder",
+					priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 					keywords: [
 						"chrome",
 						"browser",
@@ -495,6 +531,7 @@ export const webProvider: CommandProvider = {
 				iconUrl: nativeProviderIconUrl("capy"),
 				hotkeyId: "OPEN_CAPY",
 				description: "Use the Capy API in a native chat interface",
+				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["capy", "capi", "native", "thread", "agent"],
 				run: (context) => context.navigate("/native/capy"),
 			},
@@ -505,6 +542,7 @@ export const webProvider: CommandProvider = {
 				iconUrl: nativeProviderIconUrl("devin"),
 				hotkeyId: "OPEN_DEVIN",
 				description: "Use the Devin API in a native chat interface",
+				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["devin", "native", "session", "agent"],
 				run: (context) => context.navigate("/native/devin"),
 			},
@@ -515,6 +553,7 @@ export const webProvider: CommandProvider = {
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("capy"),
 				description: "Open Capy Native and start a thread",
+				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["capy", "capi", "native", "new", "thread", "agent"],
 				shortcutLabel: "⌥C n",
 				run: (context) => {
@@ -531,6 +570,7 @@ export const webProvider: CommandProvider = {
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("devin"),
 				description: "Open Devin Native and start a session",
+				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["devin", "native", "new", "session", "agent"],
 				shortcutLabel: "⌥D n",
 				run: (context) => {
@@ -547,6 +587,7 @@ export const webProvider: CommandProvider = {
 				iconUrl: nativeProviderIconUrl("capy"),
 				description:
 					"Scan Capy for Lakee-created threads and update the local cache",
+				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: [
 					"capy",
 					"capi",
@@ -585,6 +626,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: nativeProviderIconUrl(provider),
 					description: `Open ${providerTitle} Native filtered to ${filterCommand.filter} ${noun}`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFilter,
 					keywords: [
 						provider,
 						providerTitle,
@@ -627,6 +669,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl,
 					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
+					priority: CONTROL_PLANE_PRIORITY.unreadNativeReply,
 					keywords: [...keywords, "jump", "open"],
 					shortcutLabel: "u",
 					run: (context) => {
@@ -640,6 +683,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl,
 					description: `${actionableLatestNativeReply.title}: ${actionableLatestNativeReply.preview}`,
+					priority: CONTROL_PLANE_PRIORITY.unreadNativeReply,
 					keywords: [...keywords, "read", "dismiss", "clear"],
 					shortcutLabel: "U",
 					run: () => {
@@ -657,6 +701,7 @@ export const webProvider: CommandProvider = {
 				icon: PlusIcon,
 				description:
 					"Create a Capy thread or Devin session for the current native provider",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "new", "create", "native", "agent"],
 				shortcutLabel: "n",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -670,6 +715,7 @@ export const webProvider: CommandProvider = {
 				title: "Refresh current native agent",
 				section: "web",
 				description: "Refresh Capy or Devin data for the current view",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "refresh", "reload", "native"],
 				shortcutLabel: "R",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -684,6 +730,7 @@ export const webProvider: CommandProvider = {
 				title: "Reply to current native session",
 				section: "web",
 				description: "Focus the composer for the current Capy/Devin session",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "reply", "composer", "message", "native"],
 				shortcutLabel: "r",
 				when: (context) =>
@@ -699,6 +746,7 @@ export const webProvider: CommandProvider = {
 				title: "Open current native session in browser",
 				section: "web",
 				description: "Switch the current Capy/Devin session to browser view",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "open", "browser", "native", "session"],
 				shortcutLabel: "o",
 				when: (context) =>
@@ -715,6 +763,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Open the current Capy/Devin session in the system browser",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
 					"capy",
 					"devin",
@@ -738,6 +787,7 @@ export const webProvider: CommandProvider = {
 				title: "Pin current native session",
 				section: "web",
 				description: "Keep the current Capy/Devin conversation in the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "pin", "sidebar", "native"],
 				shortcutLabel: "p",
 				when: (context) =>
@@ -754,6 +804,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Let the current conversation leave the sidebar automatically",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "unpin", "sidebar", "native"],
 				shortcutLabel: "p",
 				when: (context) =>
@@ -769,6 +820,7 @@ export const webProvider: CommandProvider = {
 				title: "Rename current native session",
 				section: "web",
 				description: "Set a local title for the current Capy/Devin session",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "rename", "title", "session", "native"],
 				shortcutLabel: "e",
 				when: (context) =>
@@ -785,6 +837,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Hide the current Capy/Devin conversation from the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
 					"capy",
 					"devin",
@@ -809,6 +862,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Move the current Capy/Devin conversation back to the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "show", "overview", "sidebar"],
 				shortcutLabel: "p",
 				when: (context) =>
@@ -826,6 +880,7 @@ export const webProvider: CommandProvider = {
 				hotkeyId: "TOGGLE_NATIVE_BROWSER_VIEW",
 				description:
 					"Switch the current native session between chat and browser",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "browser", "native", "toggle"],
 				shortcutLabel: "b",
 				when: (context) =>
@@ -842,6 +897,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 				description: "Show the current native chat and browser side by side",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "browser", "native", "split", "side"],
 				shortcutLabel: "s",
 				when: (context) =>
@@ -857,6 +913,7 @@ export const webProvider: CommandProvider = {
 				title: "Narrow native chat pane",
 				section: "web",
 				description: "Give the native chat side less width in split view",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "native", "split", "narrow", "resize"],
 				shortcutLabel: "[",
 				when: (context) =>
@@ -872,6 +929,7 @@ export const webProvider: CommandProvider = {
 				title: "Widen native chat pane",
 				section: "web",
 				description: "Give the native chat side more width in split view",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "widen", "resize"],
 				shortcutLabel: "]",
 				when: (context) =>
@@ -888,6 +946,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Reset native chat and browser split panes to equal widths",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "equal", "resize"],
 				shortcutLabel: "=",
 				when: (context) =>
@@ -903,6 +962,7 @@ export const webProvider: CommandProvider = {
 				title: "Toggle native diagnostics",
 				section: "web",
 				description: "Show native Capy/Devin freshness and inclusion details",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "diagnostics", "debug", "freshness"],
 				when: (context) => context.route.pathname.startsWith("/native/"),
 				run: (context) =>
@@ -916,6 +976,7 @@ export const webProvider: CommandProvider = {
 				title: "Create native folder",
 				section: "web",
 				description: "Create a folder for the current Capy/Devin section",
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 				keywords: ["capy", "devin", "folder", "create", "native"],
 				shortcutLabel: "N",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -930,6 +991,7 @@ export const webProvider: CommandProvider = {
 				title: "Rename native folder",
 				section: "web",
 				description: "Rename the last selected folder for this native provider",
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 				keywords: ["capy", "devin", "folder", "rename", "native"],
 				shortcutLabel: "e",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -944,6 +1006,7 @@ export const webProvider: CommandProvider = {
 				title: "Change native folder color",
 				section: "web",
 				description: "Cycle the last selected native folder color",
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 				keywords: ["capy", "devin", "folder", "color", "native"],
 				shortcutLabel: "c",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -959,6 +1022,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Delete the last selected native folder after confirmation",
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 				keywords: ["capy", "devin", "folder", "delete", "native"],
 				shortcutLabel: "d",
 				when: (context) => context.route.pathname.startsWith("/native/"),
@@ -974,6 +1038,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				description:
 					"Move the current Capy/Devin session to the last selected folder",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "folder", "move", "native"],
 				shortcutLabel: "m",
 				when: (context) =>
@@ -989,6 +1054,7 @@ export const webProvider: CommandProvider = {
 				title: "Move current native session out of folder",
 				section: "web",
 				description: "Return the current Capy/Devin session to the main list",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
 					"capy",
 					"devin",
@@ -1021,6 +1087,7 @@ export const webProvider: CommandProvider = {
 					title: `Move current session to ${folder.title}`,
 					section: "web",
 					description: `${providerTitle} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 					keywords: [
 						provider,
 						providerTitle,
@@ -1039,6 +1106,7 @@ export const webProvider: CommandProvider = {
 					title: `Rename ${folder.title}`,
 					section: "web",
 					description: `${providerTitle} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 					keywords: [
 						provider,
 						providerTitle,
@@ -1056,6 +1124,7 @@ export const webProvider: CommandProvider = {
 					title: `Change ${folder.title} color`,
 					section: "web",
 					description: `${providerTitle} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 					keywords: [
 						provider,
 						providerTitle,
@@ -1073,6 +1142,7 @@ export const webProvider: CommandProvider = {
 					title: `Delete ${folder.title}`,
 					section: "web",
 					description: `${providerTitle} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
 					keywords: [
 						provider,
 						providerTitle,
@@ -1093,6 +1163,7 @@ export const webProvider: CommandProvider = {
 					title: `Set ${folder.title} color to ${color}`,
 					section: "web",
 					description: `${providerTitle} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder - 1,
 					keywords: [
 						provider,
 						providerTitle,
@@ -1132,6 +1203,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: tabIcon,
 					description: tab.url,
+					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: tabKeywords,
 					run: (context) => context.navigate(`/web-tabs/${tab.id}`),
 				},
@@ -1141,6 +1213,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: tabIcon,
 					description: `${app.label} tab`,
+					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: [...tabKeywords, "pin", "unpin", "retain", "sidebar"],
 					shortcutLabel: "p",
 					run: () => setDashboardWebTabPinned(tab.id, !tab.isPinned),
@@ -1151,6 +1224,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: tabIcon,
 					description: `${app.label} tab`,
+					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: [...tabKeywords, "close", "archive", "remove"],
 					shortcutLabel: "x",
 					run: (context) => closeWebTabFromCommand(context, tab.id),
@@ -1164,6 +1238,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: tabIcon,
 					description: `${app.label} tab`,
+					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: [...tabKeywords, "folder", "remove", "out"],
 					shortcutLabel: "F",
 					run: () => moveDashboardWebTabToFolder(tab.id, null),
@@ -1178,6 +1253,7 @@ export const webProvider: CommandProvider = {
 					section: "web",
 					iconUrl: tabIcon,
 					description: `${app.label} folder`,
+					priority: CONTROL_PLANE_PRIORITY.webTab,
 					keywords: [...tabKeywords, folder.title, "folder", "move"],
 					shortcutLabel: "m",
 					run: () => moveDashboardWebTabToFolder(tab.id, folder.id),
