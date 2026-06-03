@@ -24,8 +24,8 @@ import type {
 } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	LuChevronDown,
 	LuColumns2,
-	LuEllipsis,
 	LuExternalLink,
 	LuFileText,
 	LuGitPullRequest,
@@ -385,23 +385,22 @@ function NativeAgentHeaderActionsMenu({
 				<button
 					type="button"
 					aria-label="Show native agent shortcuts and actions"
-					title="Shortcuts and actions"
-					data-dashboard-action-hint-label="."
-					data-dashboard-action-hint-title="Open actions menu"
+					title="Keyboard shortcuts and actions"
+					data-dashboard-action-hint-exclude="true"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
 					<LuKeyRound className="size-3.5" />
-					<span className="hidden lg:inline">Shortcuts</span>
-					<LuEllipsis className="size-3.5 opacity-70" />
+					<span className="hidden xl:inline">Keyboard</span>
+					<LuChevronDown className="size-3.5 opacity-70" />
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-72">
+			<DropdownMenuContent align="end" className="w-80">
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">
-						Shortcuts and actions
+						Keyboard shortcuts
 					</div>
 					<div className="text-[11px] text-muted-foreground">
-						Use the menu or press the matching key while the session is focused.
+						Single-key commands work while this session is focused.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {
@@ -419,9 +418,12 @@ function NativeAgentHeaderActionsMenu({
 								<DropdownMenuItem
 									key={`${shortcut.section}-${shortcut.label}-${shortcut.key}`}
 									onSelect={shortcut.onSelect}
+									className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"
 								>
-									{shortcut.label}
-									<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
+									<span className="truncate">{shortcut.label}</span>
+									<DropdownMenuShortcut className="ml-0">
+										{shortcut.key}
+									</DropdownMenuShortcut>
 								</DropdownMenuItem>
 							))}
 						</div>
@@ -2401,7 +2403,10 @@ export function NativeAgentChatView({
 					</form>
 				</DialogContent>
 			</Dialog>
-			<header className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4">
+			<header
+				className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4"
+				data-dashboard-action-hint-exclude="true"
+			>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
 						<h1 className="truncate text-sm font-semibold">

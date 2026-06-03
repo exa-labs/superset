@@ -205,6 +205,30 @@ describe("dashboard action hints", () => {
 		]);
 	});
 
+	it("skips native session header controls so hints stay focused on content", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		root.setAttribute("data-native-agent-view-root", "");
+		const header = document.createElement("header");
+		header.setAttribute("data-dashboard-action-hint-exclude", "true");
+		const browserButton = document.createElement("button");
+		browserButton.textContent = "Browser";
+		setRect(browserButton, visibleRect());
+		const refreshButton = document.createElement("button");
+		refreshButton.setAttribute("aria-label", "Refresh");
+		setRect(refreshButton, visibleRect({ left: 90 }));
+		header.append(browserButton, refreshButton);
+		const bodyAction = document.createElement("button");
+		bodyAction.textContent = "Open attachment";
+		setRect(bodyAction, visibleRect({ top: 60 }));
+		root.append(header, bodyAction);
+
+		const targets = collectDashboardActionHintTargets(root);
+
+		expect(targets.map((target) => target.element)).toEqual([bodyAction]);
+		expect(targets.map((target) => target.title)).toEqual(["Open attachment"]);
+	});
+
 	it("scopes action hints to the focused sidebar row when available", () => {
 		if (typeof document === "undefined") return;
 		const root = document.createElement("div");
