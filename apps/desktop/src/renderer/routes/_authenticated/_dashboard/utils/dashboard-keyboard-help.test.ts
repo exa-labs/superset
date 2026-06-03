@@ -88,6 +88,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/", "type"] }),
 		);
+		expect(entryByLabel.get("Move in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["j", "k"] }),
+		);
 		expect(entryByLabel.get("Typeahead jump")).toEqual(
 			expect.objectContaining({ keys: ["type"] }),
 		);

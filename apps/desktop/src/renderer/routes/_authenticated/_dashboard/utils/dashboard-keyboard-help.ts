@@ -350,7 +350,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Move through visible sidebar items",
 				},
 				{
-					keys: ["J", "K"],
+					keys: ["j", "k"],
 					label: "Move in Vim mode",
 					description: "Move through visible sidebar items without arrow keys",
 				},

@@ -50,6 +50,7 @@ describe("native agent keyboard helpers", () => {
 	it("maps native sidebar vim row actions", () => {
 		expect(nativeAgentSidebarVimActionFromKey("enter")).toBe("open");
 		expect(nativeAgentSidebarVimActionFromKey(" ")).toBe("open");
+		expect(nativeAgentSidebarVimActionFromKey("i")).toBe("focus-composer");
 		expect(nativeAgentSidebarVimActionFromKey("r")).toBe("focus-composer");
 		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open-browser");
 		expect(nativeAgentSidebarVimActionFromKey("b")).toBe("toggle-browser");
@@ -223,6 +224,9 @@ describe("native agent keyboard helpers", () => {
 			"focus-navigation-shell",
 		);
 		expect(nativeAgentSelectedSessionVimActionFromKey("r")).toBe(
+			"focus-composer",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("i")).toBe(
 			"focus-composer",
 		);
 		expect(nativeAgentSelectedSessionVimActionFromKey("R")).toBe("refresh");

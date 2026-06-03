@@ -1931,11 +1931,6 @@ export function NativeAgentChatView({
 					);
 					return;
 				}
-				if (key === "i") {
-					consumeNativeAgentKeyboardEvent(event);
-					composerRef.current?.focus();
-					return;
-				}
 				const splitPaneAction = nativeAgentSplitPaneActionFromKey(key);
 				if (
 					splitPaneAction !== "none" &&
@@ -2221,15 +2216,15 @@ export function NativeAgentChatView({
 					section: "session",
 				},
 				{
+					key: "i",
+					label: "Insert reply",
+					onSelect: () => composerRef.current?.focus(),
+					section: "session",
+				},
+				{
 					key: "R",
 					label: "Refresh",
 					onSelect: () => void invalidateProvider(),
-					section: "utility",
-				},
-				{
-					key: "i",
-					label: showDiagnostics ? "Hide diagnostics" : "Show diagnostics",
-					onSelect: () => setShowDiagnostics((current) => !current),
 					section: "utility",
 				},
 				{

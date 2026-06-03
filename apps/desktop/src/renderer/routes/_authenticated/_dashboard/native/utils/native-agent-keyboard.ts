@@ -81,7 +81,7 @@ export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
 ): NativeAgentSidebarVimAction {
 	if (key === "enter" || key === " ") return "open";
-	if (key === "r") return "focus-composer";
+	if (key === "i" || key === "r") return "focus-composer";
 	if (key === "o") return "open-browser";
 	if (key === "b") return "toggle-browser";
 	if (key === "p") return "pin";
@@ -189,7 +189,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	key: string | null,
 ): NativeAgentSelectedSessionVimAction {
 	if (key === "escape") return "focus-navigation-shell";
-	if (key === "r") return "focus-composer";
+	if (key === "i" || key === "r") return "focus-composer";
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";
 	if (key === "O") return "open-external";

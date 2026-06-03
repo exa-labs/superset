@@ -1638,6 +1638,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "G" &&
 				vimKey !== "g" &&
 				vimKey !== "h" &&
+				vimKey !== "i" &&
 				vimKey !== "j" &&
 				vimKey !== "k" &&
 				vimKey !== "l" &&
