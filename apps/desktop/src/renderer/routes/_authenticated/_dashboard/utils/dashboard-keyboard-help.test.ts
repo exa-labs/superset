@@ -186,6 +186,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Close Chrome tab")).toEqual(
 			expect.objectContaining({ keys: ["x"] }),
 		);
+		expect(entryByLabel.get("Pin Chrome tab")).toEqual(
+			expect.objectContaining({ keys: ["p"] }),
+		);
 		expect(entryByLabel.get("Previous or next Chrome tab")).toEqual(
 			expect.objectContaining({ keys: ["h", "l"] }),
 		);

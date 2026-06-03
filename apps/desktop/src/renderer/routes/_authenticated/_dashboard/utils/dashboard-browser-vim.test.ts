@@ -15,6 +15,7 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("=")).toBe("equalize-split");
 		expect(dashboardBrowserVimActionFromKey("q")).toBe("close-split");
 		expect(dashboardBrowserVimActionFromKey("x")).toBe("close-tab");
+		expect(dashboardBrowserVimActionFromKey("p")).toBe("toggle-tab-pin");
 		expect(dashboardBrowserVimActionFromKey("h")).toBe("previous-tab");
 		expect(dashboardBrowserVimActionFromKey("l")).toBe("next-tab");
 		expect(dashboardBrowserVimActionFromKey("j")).toBe("none");

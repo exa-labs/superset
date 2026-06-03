@@ -139,6 +139,7 @@ function dispatchBrowserAction(
 		| "new-google-tab"
 		| "reload"
 		| "swap-split"
+		| "toggle-tab-pin"
 		| "toggle-split"
 		| "widen-active-split",
 ) {
@@ -449,35 +450,6 @@ export const webProvider: CommandProvider = {
 				run: () => dispatchBrowserAction("close-current-tab"),
 			},
 			{
-				id: "web.current.pin",
-				title: "Pin current Chrome tab",
-				section: "web",
-				description: "Keep the active embedded Chrome tab warm in the sidebar",
-				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
-				keywords: ["chrome", "browser", "pin", "retain", "sidebar", "tab"],
-				shortcutLabel: "p",
-				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
-				run: (context) => {
-					const tabId = webTabIdFromPathname(context.route.pathname);
-					if (tabId) setDashboardWebTabPinned(tabId, true);
-				},
-			},
-			{
-				id: "web.current.unpin",
-				title: "Unpin current Chrome tab",
-				section: "web",
-				description:
-					"Let the active embedded Chrome tab leave retention normally",
-				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
-				keywords: ["chrome", "browser", "unpin", "retain", "sidebar", "tab"],
-				shortcutLabel: "p",
-				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
-				run: (context) => {
-					const tabId = webTabIdFromPathname(context.route.pathname);
-					if (tabId) setDashboardWebTabPinned(tabId, false);
-				},
-			},
-			{
 				id: "web.current.removeFolder",
 				title: "Move current Chrome tab out of folder",
 				section: "web",
@@ -494,6 +466,38 @@ export const webProvider: CommandProvider = {
 				},
 			},
 		);
+
+		if (currentWebTab) {
+			commands.push({
+				id: currentWebTab.isPinned ? "web.current.unpin" : "web.current.pin",
+				title: currentWebTab.isPinned
+					? "Unpin current Chrome tab"
+					: "Pin current Chrome tab",
+				section: "web",
+				description: currentWebTab.isPinned
+					? "Let the active embedded Chrome tab leave retention normally"
+					: "Keep the active embedded Chrome tab warm in the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: [
+					"chrome",
+					"browser",
+					"pin",
+					"unpin",
+					"retain",
+					"sidebar",
+					"tab",
+				],
+				shortcutLabel: "p",
+				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
+				run: (context) => {
+					const tabId = webTabIdFromPathname(context.route.pathname);
+					if (tabId) {
+						const tab = getDashboardWebTab(tabId);
+						if (tab) setDashboardWebTabPinned(tab.id, !tab.isPinned);
+					}
+				},
+			});
+		}
 
 		if (currentWebTab) {
 			for (const folder of webFolders) {

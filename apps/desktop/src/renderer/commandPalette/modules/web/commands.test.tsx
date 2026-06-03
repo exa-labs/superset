@@ -356,12 +356,29 @@ describe("web command provider", () => {
 					true,
 				);
 				expect(shortcutById.get("web.current.pin")).toBe("p");
-				expect(shortcutById.get("web.current.unpin")).toBe("p");
+				expect(commandIds.has("web.current.unpin")).toBe(false);
 				expect(shortcutById.get(`web.tab.${tab.id}.togglePin`)).toBe("p");
 				expect(shortcutById.get(`web.tab.${tab.id}.close`)).toBe("x");
 				expect(
 					shortcutById.get(`web.tab.${tab.id}.moveToFolder.${folder.id}`),
 				).toBe("m");
+
+				commands
+					.find((command) => command.id === "web.current.pin")
+					?.run?.(commandContext(`/web-tabs/${tab.id}`));
+				expect(getDashboardWebTab(tab.id)?.isPinned).toBe(true);
+
+				const pinnedCommands = webProvider.provide(
+					commandContext(`/web-tabs/${tab.id}`),
+				);
+				expect(
+					pinnedCommands.find((command) => command.id === "web.current.unpin")
+						?.shortcutLabel,
+				).toBe("p");
+				pinnedCommands
+					.find((command) => command.id === "web.current.unpin")
+					?.run?.(commandContext(`/web-tabs/${tab.id}`));
+				expect(getDashboardWebTab(tab.id)?.isPinned).toBe(false);
 
 				commands
 					.find((command) => command.id === `web.tab.${tab.id}.togglePin`)

@@ -39,6 +39,10 @@ import {
 	shouldHandleDashboardVimKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
+	getDashboardWebTab,
+	setDashboardWebTabPinned,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
+import {
 	DashboardBrowserWebView,
 	type DashboardBrowserWebViewState,
 } from "./components/DashboardBrowserWebView";
@@ -70,6 +74,7 @@ type DashboardBrowserCurrentAction =
 	| "new-google-tab"
 	| "reload"
 	| "swap-split"
+	| "toggle-tab-pin"
 	| "toggle-split"
 	| "widen-active-split";
 
@@ -802,6 +807,12 @@ export function DashboardWebView({
 		createBrowserTab({ title, url: currentUrl });
 	}, [createBrowserTab, currentUrl, label, pageTitle]);
 
+	const toggleDashboardWebTabPinned = useCallback(() => {
+		const tab = getDashboardWebTab(id);
+		if (!tab) return;
+		setDashboardWebTabPinned(tab.id, !tab.isPinned);
+	}, [id]);
+
 	useEffect(() => {
 		if (!isActive) return;
 
@@ -843,6 +854,10 @@ export function DashboardWebView({
 				closeBrowserTab(activeBrowserTabIdRef.current);
 				return;
 			}
+			if (action === "toggle-tab-pin") {
+				toggleDashboardWebTabPinned();
+				return;
+			}
 			if (action === "new-current-url-tab") {
 				createTabFromCurrentUrl();
 				return;
@@ -875,6 +890,7 @@ export function DashboardWebView({
 		reload,
 		resizeActiveSplitPane,
 		swapSplitFocus,
+		toggleDashboardWebTabPinned,
 		toggleSplitView,
 	]);
 
@@ -934,6 +950,11 @@ export function DashboardWebView({
 				return;
 			}
 
+			if (action === "toggle-tab-pin") {
+				toggleDashboardWebTabPinned();
+				return;
+			}
+
 			const nextTabId = nextDashboardBrowserTabId(
 				browserTabIds,
 				activeBrowserTabId,
@@ -959,6 +980,7 @@ export function DashboardWebView({
 		reload,
 		resizeActiveSplitPane,
 		swapSplitFocus,
+		toggleDashboardWebTabPinned,
 		toggleSplitView,
 	]);
 

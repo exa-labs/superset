@@ -494,6 +494,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Close the active embedded Chrome tab",
 				},
 				{
+					keys: ["p"],
+					label: "Pin Chrome tab",
+					description:
+						"Pin or unpin the current embedded Chrome view in the sidebar",
+				},
+				{
 					keys: ["h", "l"],
 					label: "Previous or next Chrome tab",
 					description: "Move left or right through embedded Chrome tabs",
