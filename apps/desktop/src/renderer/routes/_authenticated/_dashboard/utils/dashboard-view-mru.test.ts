@@ -5,6 +5,7 @@ import {
 	normalizeDashboardViewMruPath,
 	readDashboardViewMruEntries,
 	recordDashboardViewMruPath,
+	resolveDashboardViewMruPathname,
 } from "./dashboard-view-mru";
 
 function memoryStorage(initial: Record<string, string> = {}) {
@@ -33,6 +34,59 @@ describe("dashboard view MRU", () => {
 			"/v2-workspace/ws-1",
 		);
 		expect(normalizeDashboardViewMruPath("/settings/keyboard")).toBeNull();
+	});
+
+	it("resolves hash-backed dashboard paths for MRU tracking", () => {
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/web-tabs/chrome-default",
+				locationPathname: "/web-tabs",
+			}),
+		).toBe("/web-tabs/chrome-default");
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/native/devin/devin-123",
+				locationPathname: "/native/devin",
+			}),
+		).toBe("/native/devin/devin-123");
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: null,
+				locationPathname: "/web/overseer",
+			}),
+		).toBe("/web/overseer");
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/settings/keyboard",
+				locationPathname: "/web/overseer",
+			}),
+		).toBe("/web/overseer");
+	});
+
+	it("records hash-backed views through the resolved MRU pathname", () => {
+		const storage = memoryStorage();
+
+		recordDashboardViewMruPath(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/web-tabs/chrome-default",
+				locationPathname: "/web-tabs",
+			}),
+			storage,
+			1,
+		);
+		recordDashboardViewMruPath(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/native/capy/thread-1",
+				locationPathname: "/native/capy",
+			}),
+			storage,
+			2,
+		);
+
+		expect(readDashboardViewMruEntries(storage)).toEqual([
+			{ path: "/native/capy/thread-1", viewedAt: 2 },
+			{ path: "/web-tabs/chrome-default", viewedAt: 1 },
+		]);
 	});
 
 	it("records unique views with newest first", () => {

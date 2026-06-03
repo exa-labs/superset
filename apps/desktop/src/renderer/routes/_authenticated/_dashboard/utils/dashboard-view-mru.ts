@@ -45,6 +45,16 @@ export function normalizeDashboardViewMruPath(pathname: string): string | null {
 	return null;
 }
 
+export function resolveDashboardViewMruPathname(input: {
+	hashPathname: string | null;
+	locationPathname: string;
+}): string {
+	const hashMruPath = input.hashPathname
+		? normalizeDashboardViewMruPath(input.hashPathname)
+		: null;
+	return hashMruPath ?? input.locationPathname;
+}
+
 export function readDashboardViewMruEntries(
 	storage: DashboardViewMruStorage | null = getLocalStorage(),
 ): DashboardViewMruEntry[] {

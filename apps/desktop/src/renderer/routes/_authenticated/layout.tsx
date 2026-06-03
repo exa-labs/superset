@@ -33,6 +33,7 @@ import {
 	normalizeDashboardViewMruPath,
 	readDashboardViewMruEntries,
 	recordDashboardViewMruPath,
+	resolveDashboardViewMruPathname,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
 import { DaemonAutoUpdateFailureDialog } from "renderer/routes/_authenticated/components/DaemonAutoUpdateFailureDialog";
 import { DashboardNewWorkspaceModal } from "renderer/routes/_authenticated/components/DashboardNewWorkspaceModal";
@@ -104,6 +105,10 @@ function AuthenticatedLayout() {
 		hashPathname,
 		locationPathname: location.pathname,
 	});
+	const dashboardViewMruPathname = resolveDashboardViewMruPathname({
+		hashPathname,
+		locationPathname: location.pathname,
+	});
 	const { activeWebPageId, activeWebTabId } =
 		resolveDashboardWebRouteActivation({
 			pathname: dashboardWebPathname,
@@ -116,8 +121,8 @@ function AuthenticatedLayout() {
 	useUpdateListener();
 
 	useEffect(() => {
-		recordDashboardViewMruPath(location.pathname);
-	}, [location.pathname]);
+		recordDashboardViewMruPath(dashboardViewMruPathname);
+	}, [dashboardViewMruPathname]);
 
 	const switchDashboardViewMru = useCallback(
 		(direction: DashboardViewMruDirection) => {
@@ -129,7 +134,9 @@ function AuthenticatedLayout() {
 			const entries = shouldContinueSwitch
 				? activeSwitch.entries
 				: readDashboardViewMruEntries();
-			const currentPath = normalizeDashboardViewMruPath(location.pathname);
+			const currentPath = normalizeDashboardViewMruPath(
+				dashboardViewMruPathname,
+			);
 			const target = shouldContinueSwitch
 				? dashboardViewMruTargetPath({
 						currentPathname: entries[activeSwitch.index]?.path ?? "",
@@ -137,7 +144,7 @@ function AuthenticatedLayout() {
 						entries,
 					})
 				: dashboardViewMruTargetPath({
-						currentPathname: currentPath ?? location.pathname,
+						currentPathname: currentPath ?? dashboardViewMruPathname,
 						direction,
 						entries,
 					});
@@ -150,7 +157,7 @@ function AuthenticatedLayout() {
 			};
 			void navigate({ to: target.path });
 		},
-		[location.pathname, navigate],
+		[dashboardViewMruPathname, navigate],
 	);
 
 	useEffect(() => {
