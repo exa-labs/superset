@@ -69,6 +69,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/", "type"] }),
 		);
+		expect(entryByLabel.get("Typeahead jump")).toEqual(
+			expect.objectContaining({ keys: ["type"] }),
+		);
 		expect(entryByLabel.get("Jump to top")).toEqual(
 			expect.objectContaining({ keys: ["g", "g", "Home"] }),
 		);

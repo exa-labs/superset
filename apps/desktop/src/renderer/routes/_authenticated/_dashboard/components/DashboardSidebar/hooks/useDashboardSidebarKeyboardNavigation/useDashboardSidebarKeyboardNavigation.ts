@@ -8,6 +8,7 @@ import {
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
+	dashboardSidebarTypeaheadQueryFromSeed,
 	dashboardSidebarTypeaheadSeedFromKey,
 	dashboardSidebarVimJumpFromKey,
 	isDashboardSidebarSpaceKey,
@@ -80,6 +81,35 @@ function collectFocusableItems(
 	return items;
 }
 
+function normalizeTypeaheadText(value: string): string {
+	return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function typeaheadTextForItem(item: HTMLElement): string {
+	return normalizeTypeaheadText(
+		[
+			item.getAttribute("data-dashboard-sidebar-typeahead-label"),
+			item.getAttribute("aria-label"),
+			item.getAttribute("title"),
+			item.textContent,
+		]
+			.filter((value): value is string => value != null && value.trim() !== "")
+			.join(" "),
+	);
+}
+
+function itemMatchesTypeahead(item: HTMLElement, query: string): boolean {
+	const normalizedQuery = normalizeTypeaheadText(query);
+	if (!normalizedQuery) return false;
+	const itemText = typeaheadTextForItem(item);
+	if (!itemText) return false;
+	return (
+		itemText.startsWith(normalizedQuery) ||
+		itemText.includes(` ${normalizedQuery}`) ||
+		itemText.includes(normalizedQuery)
+	);
+}
+
 function isAuxiliarySidebarAction(element: HTMLElement): boolean {
 	if (element.matches(PRIMARY_ROVING_SELECTOR)) return false;
 	if (element.matches("[data-dashboard-sidebar-action]")) return true;
@@ -95,6 +125,29 @@ export function getDashboardSidebarFocusableItems(
 	return collectFocusableItems(root, SIDEBAR_ROVING_SELECTOR).filter(
 		(element) => !isAuxiliarySidebarAction(element),
 	);
+}
+
+export function findDashboardSidebarTypeaheadMatch(input: {
+	activeIndex: number;
+	items: HTMLElement[];
+	query: string;
+}): HTMLElement | null {
+	if (input.items.length === 0) return null;
+	if (
+		input.query.length > 1 &&
+		input.activeIndex >= 0 &&
+		itemMatchesTypeahead(input.items[input.activeIndex], input.query)
+	) {
+		return input.items[input.activeIndex];
+	}
+
+	const startIndex = input.activeIndex >= 0 ? input.activeIndex + 1 : 0;
+	for (let offset = 0; offset < input.items.length; offset++) {
+		const index = (startIndex + offset) % input.items.length;
+		const item = input.items[index];
+		if (itemMatchesTypeahead(item, input.query)) return item;
+	}
+	return null;
 }
 
 export function focusDashboardSidebarItem(item: HTMLElement): void {
@@ -183,6 +236,7 @@ export function useDashboardSidebarKeyboardNavigation(
 ): void {
 	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 	const lastGRef = useRef(0);
+	const typeaheadRef = useRef({ lastAt: 0, query: "" });
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -247,19 +301,6 @@ export function useDashboardSidebarKeyboardNavigation(
 			}
 			if (!vimModeEnabled && !focusInsideSidebar) return;
 
-			if (typeaheadSeed) {
-				event.preventDefault();
-				options.onTypeaheadSearch?.(typeaheadSeed);
-				window.setTimeout(() => {
-					options.searchInputRef?.current?.focus();
-					options.searchInputRef?.current?.setSelectionRange(
-						typeaheadSeed.length,
-						typeaheadSeed.length,
-					);
-				}, 0);
-				return;
-			}
-
 			const items = getDashboardSidebarFocusableItems(root);
 			if (items.length === 0) return;
 
@@ -267,6 +308,37 @@ export function useDashboardSidebarKeyboardNavigation(
 				? items.indexOf(activeElement as HTMLElement)
 				: -1;
 			const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0;
+
+			if (typeaheadSeed) {
+				event.preventDefault();
+				const now = Date.now();
+				const query = dashboardSidebarTypeaheadQueryFromSeed({
+					currentQuery: typeaheadRef.current.query,
+					lastAt: typeaheadRef.current.lastAt,
+					now,
+					seed: typeaheadSeed,
+				});
+				typeaheadRef.current = { lastAt: now, query };
+				const match = findDashboardSidebarTypeaheadMatch({
+					activeIndex,
+					items,
+					query,
+				});
+				if (match) {
+					focusDashboardSidebarItem(match);
+					return;
+				}
+
+				options.onTypeaheadSearch?.(query);
+				window.setTimeout(() => {
+					options.searchInputRef?.current?.focus();
+					options.searchInputRef?.current?.setSelectionRange(
+						query.length,
+						query.length,
+					);
+				}, 0);
+				return;
+			}
 
 			const focusByDelta = (delta: number) => {
 				const nextIndex =

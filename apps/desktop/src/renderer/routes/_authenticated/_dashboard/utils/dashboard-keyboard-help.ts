@@ -325,7 +325,13 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					keys: ["/", "type"],
 					label: "Search sidebar",
 					description:
-						"Filter long workspace, Capy, and Devin lists; typing starts search outside Vim mode",
+						"Filter long workspace, Capy, and Devin lists from sidebar focus or Vim mode",
+				},
+				{
+					keys: ["type"],
+					label: "Typeahead jump",
+					description:
+						"Type while the sidebar is focused to jump through matching visible rows",
 				},
 				{
 					keys: ["g", "g", "Home"],

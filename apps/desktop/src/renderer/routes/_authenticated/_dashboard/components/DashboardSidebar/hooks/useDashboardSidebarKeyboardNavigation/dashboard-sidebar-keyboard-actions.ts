@@ -16,6 +16,19 @@ export type DashboardSidebarKeyboardAction =
 export type DashboardSidebarActivationAction = "activate" | "none";
 export type DashboardSidebarVimJumpAction = "first" | "last" | "none";
 
+export function dashboardSidebarTypeaheadQueryFromSeed(input: {
+	currentQuery: string;
+	lastAt: number;
+	now: number;
+	seed: string;
+	thresholdMs?: number;
+}): string {
+	const thresholdMs = input.thresholdMs ?? 750;
+	return input.now - input.lastAt < thresholdMs
+		? `${input.currentQuery}${input.seed}`
+		: input.seed;
+}
+
 export function isDashboardSidebarSpaceKey(key: string): boolean {
 	return key === " " || key === "Spacebar" || key === "Space";
 }

@@ -6,6 +6,7 @@ import {
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
+	dashboardSidebarTypeaheadQueryFromSeed,
 	dashboardSidebarTypeaheadSeedFromKey,
 	dashboardSidebarVimJumpFromKey,
 	isDashboardSidebarSpaceKey,
@@ -16,6 +17,7 @@ import {
 	findDashboardSidebarActionButton,
 	findDashboardSidebarActivationTarget,
 	findDashboardSidebarExpansionTarget,
+	findDashboardSidebarTypeaheadMatch,
 	focusDashboardSidebarItem,
 	focusFirstDashboardSidebarItem,
 	getDashboardSidebarFocusableItems,
@@ -282,6 +284,30 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 });
 
+describe("dashboardSidebarTypeaheadQueryFromSeed", () => {
+	test("builds a short buffered query while typing quickly", () => {
+		expect(
+			dashboardSidebarTypeaheadQueryFromSeed({
+				currentQuery: "de",
+				lastAt: 1000,
+				now: 1200,
+				seed: "v",
+			}),
+		).toBe("dev");
+	});
+
+	test("starts a fresh query after the typeahead window expires", () => {
+		expect(
+			dashboardSidebarTypeaheadQueryFromSeed({
+				currentQuery: "de",
+				lastAt: 1000,
+				now: 1900,
+				seed: "c",
+			}),
+		).toBe("c");
+	});
+});
+
 describe("getDashboardSidebarFocusableItems", () => {
 	test("includes primary rows and ordinary controls while skipping nested hover actions", () => {
 		if (typeof document === "undefined") return;
@@ -439,6 +465,85 @@ describe("getDashboardSidebarFocusableItems", () => {
 		expect(
 			folderScope.querySelector(dashboardSidebarKeyboardActionSelector("menu")),
 		).toBe(menu);
+	});
+});
+
+describe("findDashboardSidebarTypeaheadMatch", () => {
+	test("finds matching sidebar rows by visible text, label, or title", () => {
+		if (typeof document === "undefined") return;
+
+		const chrome = document.createElement("button");
+		chrome.textContent = "Chrome";
+		makeVisible(chrome);
+		const capy = document.createElement("button");
+		capy.setAttribute("aria-label", "Capy active sessions");
+		makeVisible(capy);
+		const devin = document.createElement("button");
+		devin.title = "Devin Sessions";
+		makeVisible(devin);
+
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: -1,
+				items: [chrome, capy, devin],
+				query: "dev",
+			}),
+		).toBe(devin);
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: -1,
+				items: [chrome, capy, devin],
+				query: "active",
+			}),
+		).toBe(capy);
+	});
+
+	test("wraps from the focused row when cycling a single-character query", () => {
+		if (typeof document === "undefined") return;
+
+		const first = document.createElement("button");
+		first.textContent = "Capy";
+		makeVisible(first);
+		const second = document.createElement("button");
+		second.textContent = "Canonical";
+		makeVisible(second);
+		const third = document.createElement("button");
+		third.textContent = "Devin";
+		makeVisible(third);
+
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: 0,
+				items: [first, second, third],
+				query: "c",
+			}),
+		).toBe(second);
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: 1,
+				items: [first, second, third],
+				query: "c",
+			}),
+		).toBe(first);
+	});
+
+	test("keeps the focused row when it still matches a multi-character query", () => {
+		if (typeof document === "undefined") return;
+
+		const capy = document.createElement("button");
+		capy.textContent = "Capy";
+		makeVisible(capy);
+		const devin = document.createElement("button");
+		devin.textContent = "Devin";
+		makeVisible(devin);
+
+		expect(
+			findDashboardSidebarTypeaheadMatch({
+				activeIndex: 1,
+				items: [capy, devin],
+				query: "de",
+			}),
+		).toBe(devin);
 	});
 });
 
