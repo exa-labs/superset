@@ -706,19 +706,10 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 			title: "Root Terminals",
 			entries: [
 				{
-					keys: ["⌥", "K"],
-					label: "Open stag kr9",
-					description: "Run kr9 in a root terminal from the control plane",
-				},
-				{
-					keys: ["⌥", "K"],
-					label: "Open prod kr9",
-					description: "Run kr9 in a root terminal from the control plane",
-				},
-				{
-					keys: ["⌥", "K"],
-					label: "Open heph kr9",
-					description: "Run kr9 in a root terminal from the control plane",
+					keys: ["⌥K", "type kr9"],
+					label: "Open root kr9 terminal",
+					description:
+						"Open the Option+K control plane, type kr9, stag, prod, or heph, then choose a root terminal",
 				},
 			],
 		},

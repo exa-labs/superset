@@ -215,14 +215,8 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Previous or next Chrome tab")).toEqual(
 			expect.objectContaining({ keys: ["h", "l"] }),
 		);
-		expect(entryByLabel.get("Open stag kr9")).toEqual(
-			expect.objectContaining({ keys: ["⌥", "K"] }),
-		);
-		expect(entryByLabel.get("Open prod kr9")).toEqual(
-			expect.objectContaining({ keys: ["⌥", "K"] }),
-		);
-		expect(entryByLabel.get("Open heph kr9")).toEqual(
-			expect.objectContaining({ keys: ["⌥", "K"] }),
+		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
 	});
 
@@ -277,6 +271,18 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(labelsForQuery("option k")).toEqual(
 			expect.arrayContaining(["Open control plane"]),
+		);
+		expect(labelsForQuery("kr9")).toEqual(
+			expect.arrayContaining(["Open root kr9 terminal"]),
+		);
+		expect(labelsForQuery("heph")).toEqual(
+			expect.arrayContaining(["Open root kr9 terminal"]),
+		);
+		expect(labelsForQuery("stag")).toEqual(
+			expect.arrayContaining(["Open root kr9 terminal"]),
+		);
+		expect(labelsForQuery("prod")).toEqual(
+			expect.arrayContaining(["Open root kr9 terminal"]),
 		);
 		expect(labelsForQuery("alt tab")).toEqual(
 			expect.arrayContaining(["Switch recent view"]),

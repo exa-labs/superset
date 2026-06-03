@@ -16,6 +16,11 @@ export function DashboardQuickTerminalsGrid({
 	variant,
 	onOpenTerminal,
 }: DashboardQuickTerminalsGridProps) {
+	const terminalTitle = (
+		terminal: (typeof DASHBOARD_QUICK_TERMINALS)[number],
+	) =>
+		`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Keyboard: Option+K, search kr9.`;
+
 	if (variant === "collapsed") {
 		return (
 			<div className="grid grid-cols-1 gap-1">
@@ -28,7 +33,7 @@ export function DashboardQuickTerminalsGrid({
 								data-dashboard-sidebar-typeahead-label={`${terminal.label} root terminal ${dashboardQuickTerminalCommand(terminal.id)}`}
 								data-testid={`dashboard-quick-terminal-${terminal.id}`}
 								data-dashboard-quick-terminal-trigger={terminal.id}
-								title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}
+								title={terminalTitle(terminal)}
 								onClick={() => onOpenTerminal(terminal.id)}
 								className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 							>
@@ -37,7 +42,8 @@ export function DashboardQuickTerminalsGrid({
 						</TooltipTrigger>
 						<TooltipContent side="right">
 							{terminal.label} root terminal -{" "}
-							{dashboardQuickTerminalCommand(terminal.id)} via Option+K
+							{dashboardQuickTerminalCommand(terminal.id)}. Keyboard: Option+K,
+							search kr9
 						</TooltipContent>
 					</Tooltip>
 				))}
@@ -56,7 +62,7 @@ export function DashboardQuickTerminalsGrid({
 							data-dashboard-sidebar-typeahead-label={`${terminal.label} root terminal ${dashboardQuickTerminalCommand(terminal.id)}`}
 							data-testid={`dashboard-quick-terminal-${terminal.id}`}
 							data-dashboard-quick-terminal-trigger={terminal.id}
-							title={`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. Also available from Option+K.`}
+							title={terminalTitle(terminal)}
 							onClick={() => onOpenTerminal(terminal.id)}
 							className={cn(
 								"flex h-7 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent px-1.5 text-xs font-medium transition-colors",
@@ -68,8 +74,8 @@ export function DashboardQuickTerminalsGrid({
 						</button>
 					</TooltipTrigger>
 					<TooltipContent side="right">
-						{dashboardQuickTerminalCommand(terminal.id)} in repo root via
-						Option+K
+						{dashboardQuickTerminalCommand(terminal.id)} in repo root. Keyboard:
+						Option+K, search kr9
 					</TooltipContent>
 				</Tooltip>
 			))}
