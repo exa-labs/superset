@@ -24,6 +24,7 @@ export type NativeAgentSidebarVimAction =
 	| "pin"
 	| "rename"
 	| "remove-from-folder"
+	| "show-action-hints"
 	| "toggle-browser";
 
 export type NativeAgentFolderVimAction =
@@ -72,7 +73,8 @@ export type NativeAgentSelectedSessionVimAction =
 	| "pin"
 	| "refresh"
 	| "rename"
-	| "remove-from-folder";
+	| "remove-from-folder"
+	| "show-action-hints";
 
 export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
@@ -84,6 +86,7 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
+	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	return "none";
@@ -192,6 +195,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
+	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";
 	return "none";

@@ -1645,6 +1645,10 @@ export function NativeAgentChatView({
 						void invalidateProvider();
 						return;
 					}
+					if (selectedSessionAction === "show-action-hints") {
+						handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+						return;
+					}
 					if (selectedSessionAction === "open-browser") {
 						if (selectedItem.url) handleSelectViewMode("browser");
 						return;

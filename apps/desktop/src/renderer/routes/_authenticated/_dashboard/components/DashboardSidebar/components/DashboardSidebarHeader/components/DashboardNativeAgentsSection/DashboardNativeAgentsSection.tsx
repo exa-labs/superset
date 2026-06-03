@@ -122,6 +122,7 @@ import {
 import {
 	DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT,
 	DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT,
+	handleDashboardGlobalKeyboardAction,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import {
 	dashboardVimKey,
@@ -1742,6 +1743,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "d" &&
 				vimKey !== "e" &&
 				vimKey !== "enter" &&
+				vimKey !== "f" &&
 				vimKey !== "m" &&
 				vimKey !== "n" &&
 				vimKey !== "N" &&
@@ -1916,6 +1918,10 @@ export function DashboardNativeAgentsSection({
 				if (rowFolder) return;
 				if (sidebarAction === "open") {
 					row.click();
+					return;
+				}
+				if (sidebarAction === "show-action-hints") {
+					handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
 					return;
 				}
 				if (!rowItem) return;

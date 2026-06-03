@@ -56,7 +56,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSidebarVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
-		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("none");
+		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("show-action-hints");
 		expect(nativeAgentSidebarVimActionFromKey("m")).toBe("move-to-folder");
 		expect(nativeAgentSidebarVimActionFromKey("F")).toBe("remove-from-folder");
 		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("archive");
@@ -236,7 +236,9 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("m")).toBe(
 			"move-to-folder",
 		);
-		expect(nativeAgentSelectedSessionVimActionFromKey("f")).toBe("none");
+		expect(nativeAgentSelectedSessionVimActionFromKey("f")).toBe(
+			"show-action-hints",
+		);
 		expect(nativeAgentSelectedSessionVimActionFromKey("F")).toBe(
 			"remove-from-folder",
 		);

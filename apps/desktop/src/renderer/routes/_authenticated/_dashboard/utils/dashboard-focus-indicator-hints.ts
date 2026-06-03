@@ -23,6 +23,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 		"⌥Tab",
 		"n/N",
 		"u/U",
+		"f",
 		"r",
 		"o/O/b",
 		"s/[/]/=",

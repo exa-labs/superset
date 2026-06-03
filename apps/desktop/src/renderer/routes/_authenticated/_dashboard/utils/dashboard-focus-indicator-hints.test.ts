@@ -42,6 +42,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥Tab",
 			"n/N",
 			"u/U",
+			"f",
 			"r",
 			"o/O/b",
 			"s/[/]/=",
