@@ -1,10 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import {
+	DASHBOARD_WEB_SHORTCUTS,
 	dashboardWebCreateShortcutFromInput,
 	dashboardWebDigitIndexFromInput,
 	dashboardWebIndexedShortcut,
 	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
+	isDashboardWebShortcut,
 } from "./dashboard-web-shortcut";
 
 function input(
@@ -121,5 +123,22 @@ describe("dashboardWebShortcutFromInput", () => {
 				input({ alt: false, code: "Digit7" }),
 			),
 		).toBe(6);
+	});
+
+	it("validates every embedded-browser Vim shortcut emitted by the bridge", () => {
+		expect(DASHBOARD_WEB_SHORTCUTS).toEqual(
+			expect.arrayContaining([
+				"BROWSER_GO_BACK",
+				"BROWSER_GO_FORWARD",
+				"BROWSER_PREVIOUS_TAB",
+				"BROWSER_NEXT_TAB",
+				"BROWSER_CLOSE_TAB",
+				"BROWSER_TOGGLE_PIN",
+			]),
+		);
+		expect(isDashboardWebShortcut("BROWSER_GO_BACK")).toBe(true);
+		expect(isDashboardWebShortcut("BROWSER_GO_FORWARD")).toBe(true);
+		expect(isDashboardWebShortcut("NOT_A_SHORTCUT")).toBe(false);
+		expect(isDashboardWebShortcut(null)).toBe(false);
 	});
 });

@@ -1,4 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
+import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
 import { useCallback, useEffect, useRef } from "react";
 import { useFrameStackStore } from "renderer/commandPalette/core/frames";
 import { useHotkey } from "renderer/hotkeys";
@@ -23,58 +24,6 @@ import {
 	getDashboardWebTabs,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
-
-type DashboardWebShortcut =
-	| "OPEN_CONTROL_PLANE"
-	| "OPEN_WEB_PAGE_1"
-	| "OPEN_WEB_PAGE_2"
-	| "OPEN_WEB_PAGE_3"
-	| "OPEN_WEB_PAGE_4"
-	| "OPEN_WEB_PAGE_5"
-	| "OPEN_WEB_PAGE_6"
-	| "OPEN_CAPY"
-	| "OPEN_DEVIN"
-	| "CREATE_CAPY"
-	| "CREATE_DEVIN"
-	| "OPEN_CHROME"
-	| "OPEN_WORKSPACES"
-	| "TOGGLE_DASHBOARD_SIDEBAR"
-	| "TOGGLE_NATIVE_BROWSER_VIEW"
-	| "TOGGLE_NATIVE_SPLIT_VIEW"
-	| "FOCUS_DASHBOARD_SHELL"
-	| "OPEN_CAPY_1"
-	| "OPEN_CAPY_2"
-	| "OPEN_CAPY_3"
-	| "OPEN_CAPY_4"
-	| "OPEN_CAPY_5"
-	| "OPEN_CAPY_6"
-	| "OPEN_CAPY_7"
-	| "OPEN_CAPY_8"
-	| "OPEN_CAPY_9"
-	| "OPEN_DEVIN_1"
-	| "OPEN_DEVIN_2"
-	| "OPEN_DEVIN_3"
-	| "OPEN_DEVIN_4"
-	| "OPEN_DEVIN_5"
-	| "OPEN_DEVIN_6"
-	| "OPEN_DEVIN_7"
-	| "OPEN_DEVIN_8"
-	| "OPEN_DEVIN_9"
-	| "SHOW_DASHBOARD_KEYBOARD_HELP"
-	| "BROWSER_NEW_TAB"
-	| "BROWSER_RELOAD"
-	| "BROWSER_TOGGLE_SPLIT"
-	| "BROWSER_CLOSE_SPLIT"
-	| "BROWSER_SWAP_SPLIT"
-	| "BROWSER_NARROW_SPLIT"
-	| "BROWSER_WIDEN_SPLIT"
-	| "BROWSER_EQUALIZE_SPLIT"
-	| "BROWSER_GO_BACK"
-	| "BROWSER_GO_FORWARD"
-	| "BROWSER_CLOSE_TAB"
-	| "BROWSER_TOGGLE_PIN"
-	| "BROWSER_PREVIOUS_TAB"
-	| "BROWSER_NEXT_TAB";
 
 type DashboardBrowserCurrentAction =
 	| "close-current-tab"
