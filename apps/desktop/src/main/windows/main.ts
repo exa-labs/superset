@@ -23,6 +23,7 @@ import { appState } from "../lib/app-state";
 import { browserManager } from "../lib/browser/browser-manager";
 import { installControlPlaneShortcutBridge } from "../lib/control-plane-shortcut-bridge";
 import { createApplicationMenu } from "../lib/menu";
+import { menuEmitter } from "../lib/menu-events";
 import { playNotificationSound } from "../lib/notification-sound";
 import { NotificationManager } from "../lib/notifications/notification-manager";
 import {
@@ -43,6 +44,15 @@ import { getWorkspaceRuntimeRegistry } from "../lib/workspace-runtime";
 
 // Singleton IPC handler to prevent duplicate handlers on window reopen (macOS)
 let ipcHandler: ReturnType<typeof createIPCHandler> | null = null;
+let controlPlaneMenuBridgeInstalled = false;
+
+function installControlPlaneMenuBridge(): void {
+	if (controlPlaneMenuBridgeInstalled) return;
+	controlPlaneMenuBridgeInstalled = true;
+	menuEmitter.on("open-control-plane", () => {
+		browserManager.openControlPlane();
+	});
+}
 
 function getWorkspaceNameFromDb(workspaceId: string | undefined): string {
 	if (!workspaceId) return "Workspace";
@@ -133,6 +143,7 @@ export async function MainWindow() {
 	});
 
 	createApplicationMenu();
+	installControlPlaneMenuBridge();
 	installControlPlaneShortcutBridge(
 		() => {
 			browserManager.openControlPlane();

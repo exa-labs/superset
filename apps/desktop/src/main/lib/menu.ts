@@ -8,6 +8,7 @@ import {
 	simulateError,
 	simulateUpdateReady,
 } from "./auto-updater";
+import { openControlPlaneAccelerator } from "./control-plane-shortcut";
 import { menuEmitter } from "./menu-events";
 
 export function createApplicationMenu() {
@@ -15,6 +16,7 @@ export function createApplicationMenu() {
 	const closeAccelerator = "CmdOrCtrl+Shift+Q";
 	const showHotkeysAccelerator = "CmdOrCtrl+/";
 	const openSettingsAccelerator = "CmdOrCtrl+,";
+	const controlPlaneAccelerator = openControlPlaneAccelerator();
 
 	const template: Electron.MenuItemConstructorOptions[] = [
 		{
@@ -110,6 +112,13 @@ export function createApplicationMenu() {
 					},
 				},
 				{ type: "separator" },
+				{
+					label: "Open Control Plane",
+					accelerator: controlPlaneAccelerator,
+					click: () => {
+						menuEmitter.emit("open-control-plane");
+					},
+				},
 				{
 					label: "Keyboard Shortcuts",
 					accelerator: showHotkeysAccelerator,

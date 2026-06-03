@@ -12,12 +12,24 @@ type ControlPlaneShortcutInput = Pick<
 	| "type"
 >;
 
+export function openControlPlaneAccelerator(
+	platform: NodeJS.Platform = process.platform,
+): string {
+	return platform === "darwin" ? "Alt+K" : "Ctrl+Alt+K";
+}
+
+function isShortcutKeyDownType(type: string): boolean {
+	return type === "keyDown" || type === "rawKeyDown" || type === "char";
+}
+
 export function isOpenControlPlaneShortcutInput(
 	input: ControlPlaneShortcutInput,
+	platform: NodeJS.Platform = process.platform,
 ): boolean {
-	if (input.type !== "keyDown" && input.type !== "rawKeyDown") return false;
+	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
-	if (!input.alt || input.control || input.meta || input.shift) return false;
+	if (!input.alt || input.meta || input.shift) return false;
+	if (platform === "darwin" ? input.control : !input.control) return false;
 
 	const code = input.code.toLowerCase();
 	if (code === "keyk") return true;
