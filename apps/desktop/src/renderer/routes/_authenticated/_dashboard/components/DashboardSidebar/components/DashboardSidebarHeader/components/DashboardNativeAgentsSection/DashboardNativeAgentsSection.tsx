@@ -412,6 +412,39 @@ function NativeCreateDialog({
 	);
 }
 
+const SESSION_ROW_KEY_HINTS = [
+	{ key: "r", title: "Reply" },
+	{ key: "o", title: "Browser" },
+	{ key: "b", title: "Toggle native/browser" },
+	{ key: "m", title: "Move to folder" },
+	{ key: "p", title: "Pin" },
+	{ key: "x", title: "Hide" },
+];
+
+function SessionRowKeyHints({ visible }: { visible: boolean }) {
+	return (
+		<div
+			aria-hidden="true"
+			className={cn(
+				"pointer-events-none absolute right-1 bottom-1 flex max-w-[8.5rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
+				visible
+					? "opacity-100"
+					: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+			)}
+		>
+			{SESSION_ROW_KEY_HINTS.map((hint) => (
+				<span
+					key={hint.key}
+					title={hint.title}
+					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
+				>
+					{hint.key}
+				</span>
+			))}
+		</div>
+	);
+}
+
 function SessionRow({
 	activeId,
 	item,
@@ -570,6 +603,7 @@ function SessionRow({
 					<LuArchive className="size-3" />
 				</button>
 			</div>
+			<SessionRowKeyHints visible={isActive || hasFreshAgentResponse} />
 			<button
 				type="button"
 				data-dashboard-sidebar-action="create"
