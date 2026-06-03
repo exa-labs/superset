@@ -21,6 +21,13 @@ export function getCommandPaletteFooterHints({
 		hints.push({ keys: ["Backspace"], label: "Back" });
 	}
 
+	if (depth === 0) {
+		hints.push(
+			{ keys: ["⌥", "Tab"], label: "Recent" },
+			{ keys: ["?"], label: "Shortcuts" },
+		);
+	}
+
 	hints.push({ keys: ["Esc"], label: "Close" });
 	return hints;
 }

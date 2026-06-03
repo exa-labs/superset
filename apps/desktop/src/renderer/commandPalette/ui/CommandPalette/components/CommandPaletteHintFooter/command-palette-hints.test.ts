@@ -7,6 +7,8 @@ describe("getCommandPaletteFooterHints", () => {
 			{ keys: ["type"], label: "Search" },
 			{ keys: ["↑", "↓"], label: "Move" },
 			{ keys: ["Enter"], label: "Run" },
+			{ keys: ["⌥", "Tab"], label: "Recent" },
+			{ keys: ["?"], label: "Shortcuts" },
 			{ keys: ["Esc"], label: "Close" },
 		]);
 	});
@@ -30,5 +32,20 @@ describe("getCommandPaletteFooterHints", () => {
 			{ keys: ["Enter"], label: "Run" },
 			{ keys: ["Esc"], label: "Close" },
 		]);
+	});
+
+	it("keeps root dashboard hints scoped to the root control plane", () => {
+		expect(getCommandPaletteFooterHints({ depth: 1, query: "" })).not.toEqual(
+			expect.arrayContaining([
+				{ keys: ["⌥", "Tab"], label: "Recent" },
+				{ keys: ["?"], label: "Shortcuts" },
+			]),
+		);
+		expect(getCommandPaletteFooterHints({ depth: 0, query: "devin" })).toEqual(
+			expect.arrayContaining([
+				{ keys: ["⌥", "Tab"], label: "Recent" },
+				{ keys: ["?"], label: "Shortcuts" },
+			]),
+		);
 	});
 });
