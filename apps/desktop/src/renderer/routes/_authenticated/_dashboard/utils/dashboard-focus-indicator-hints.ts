@@ -14,7 +14,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 		"s/q",
 		"p/x",
 	],
-	"command-palette": ["type", "Enter", "Esc"],
+	"command-palette": ["type", "↑↓", "Enter", "Backspace", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["?", "Esc"],
 	"native-agent": ["Esc", "n/N", "u/U", "r", "o/O/b", "m/e", "p/x", "?"],

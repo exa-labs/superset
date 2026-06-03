@@ -59,6 +59,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open this guide from the dashboard shell or embedded browser pages",
 				},
 				{
+					keys: ["Backspace"],
+					label: "Back inside control plane",
+					description:
+						"Return from a nested command-palette frame when the search box is empty",
+				},
+				{
 					hotkeyId: "SHOW_DASHBOARD_ACTION_HINTS",
 					label: "Show action hints",
 					description:

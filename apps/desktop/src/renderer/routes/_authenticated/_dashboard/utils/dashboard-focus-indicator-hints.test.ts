@@ -47,7 +47,9 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces command palette typing and dismissal hints", () => {
 		expect(dashboardFocusIndicatorHints("command-palette")).toEqual([
 			"type",
+			"↑↓",
 			"Enter",
+			"Backspace",
 			"Esc",
 		]);
 	});

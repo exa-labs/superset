@@ -20,6 +20,7 @@ import { useFrameStackStore } from "../../core/frames";
 import type { Command as CommandType } from "../../core/types";
 import { CommandListView } from "../CommandListView/CommandListView";
 import { SubPaletteView } from "../SubPaletteView/SubPaletteView";
+import { CommandPaletteHintFooter } from "./components/CommandPaletteHintFooter";
 
 const QueryContext = createContext<string>("");
 export function useCommandPaletteQuery(): string {
@@ -132,6 +133,7 @@ export function CommandPalette() {
 							<CommandListView onSelect={handleSelect} />
 						)}
 					</QueryContext.Provider>
+					<CommandPaletteHintFooter depth={depth} query={query} />
 				</Command>
 			</DialogContent>
 		</Dialog>
