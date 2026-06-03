@@ -126,9 +126,21 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Use the visible sidebar number after the Capy chord",
 				},
 				{
+					keys: ["⌥", "C", "n"],
+					label: "Create Capy thread",
+					description:
+						"Create a new Capy thread after the Capy chord, even from browsers",
+				},
+				{
 					keys: ["⌥", "D", "1"],
 					label: "Open Devin session 1",
 					description: "Use the visible sidebar number after the Devin chord",
+				},
+				{
+					keys: ["⌥", "D", "n"],
+					label: "Create Devin session",
+					description:
+						"Create a new Devin session after the Devin chord, even from browsers",
 				},
 			],
 		},

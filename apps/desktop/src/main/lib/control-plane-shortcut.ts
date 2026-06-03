@@ -33,6 +33,7 @@ export function isOpenControlPlaneShortcutInput(
 
 	const code = input.code.toLowerCase();
 	if (code === "keyk") return true;
+	if (code && code !== "unidentified") return false;
 
 	// Some synthetic callers only fill `key`; real macOS Option+K can report a
 	// dead-key glyph here, so `code` remains the primary matcher.

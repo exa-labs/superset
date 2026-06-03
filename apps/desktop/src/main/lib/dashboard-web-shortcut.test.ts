@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
+	dashboardWebCreateShortcutFromInput,
 	dashboardWebDigitIndexFromInput,
 	dashboardWebIndexedShortcut,
+	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
 } from "./dashboard-web-shortcut";
 
@@ -90,8 +92,34 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(dashboardWebIndexedShortcut("OPEN_CAPY", 9)).toBe(null);
 	});
 
+	it("maps C/D prefix n to native create shortcuts", () => {
+		expect(
+			dashboardWebCreateShortcutFromInput(
+				"OPEN_CAPY",
+				input({ alt: false, code: "KeyN", key: "n" }),
+			),
+		).toBe("CREATE_CAPY");
+		expect(
+			dashboardWebCreateShortcutFromInput(
+				"OPEN_DEVIN",
+				input({ code: "KeyN", key: "Dead" }),
+			),
+		).toBe("CREATE_DEVIN");
+		expect(
+			dashboardWebCreateShortcutFromInput(
+				"OPEN_CHROME",
+				input({ alt: false, code: "KeyN", key: "n" }),
+			),
+		).toBe(null);
+	});
+
 	it("exposes Option+digit indices beyond fixed top-page shortcuts for C/D chains", () => {
 		expect(dashboardWebDigitIndexFromInput(input({ code: "Digit7" }))).toBe(6);
 		expect(dashboardWebShortcutFromInput(input({ code: "Digit7" }))).toBe(null);
+		expect(
+			dashboardWebPendingDigitIndexFromInput(
+				input({ alt: false, code: "Digit7" }),
+			),
+		).toBe(6);
 	});
 });

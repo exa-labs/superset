@@ -29,6 +29,8 @@ type DashboardWebShortcut =
 	| "OPEN_WEB_PAGE_6"
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
+	| "CREATE_CAPY"
+	| "CREATE_DEVIN"
 	| "OPEN_CHROME"
 	| "OPEN_WORKSPACES"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
@@ -149,6 +151,23 @@ export function useDashboardWebShortcuts() {
 		[navigate],
 	);
 
+	const createNativeProviderSession = useCallback(
+		(provider: NativeAgentProvider) => {
+			clearPendingNativeProvider();
+			openNativeProvider(provider);
+			const dispatchCreate = () => {
+				window.dispatchEvent(
+					new CustomEvent("dashboard-native-agent-create", {
+						detail: { provider },
+					}),
+				);
+			};
+			window.setTimeout(dispatchCreate, 0);
+			window.setTimeout(dispatchCreate, 150);
+		},
+		[clearPendingNativeProvider, openNativeProvider],
+	);
+
 	const openChrome = useCallback(() => {
 		const tab =
 			getDashboardWebTabs().find((candidate) => candidate.appId === "chrome") ??
@@ -229,6 +248,14 @@ export function useDashboardWebShortcuts() {
 				openNativeProviderWithPrefix("devin");
 				return;
 			}
+			if (shortcut === "CREATE_CAPY") {
+				createNativeProviderSession("capy");
+				return;
+			}
+			if (shortcut === "CREATE_DEVIN") {
+				createNativeProviderSession("devin");
+				return;
+			}
 			if (shortcut === "OPEN_CHROME") {
 				clearPendingNativeProvider();
 				openChrome();
@@ -275,6 +302,7 @@ export function useDashboardWebShortcuts() {
 		},
 		[
 			clearPendingNativeProvider,
+			createNativeProviderSession,
 			openIndexedTarget,
 			openChrome,
 			openNativeProviderAtIndex,
@@ -354,6 +382,14 @@ export function useDashboardWebShortcuts() {
 			if (event.isComposing || event.keyCode === 229) return;
 			if (isModifierOnlyEvent(event)) return;
 
+			if (event.code === "KeyN" || event.key.toLowerCase() === "n") {
+				event.preventDefault();
+				event.stopPropagation();
+				event.stopImmediatePropagation();
+				createNativeProviderSession(pending.provider);
+				return;
+			}
+
 			const index = digitIndexFromEvent(event);
 			clearPendingNativeProvider();
 			if (index === null) return;
@@ -372,6 +408,7 @@ export function useDashboardWebShortcuts() {
 		};
 	}, [
 		clearPendingNativeProvider,
+		createNativeProviderSession,
 		openChrome,
 		openNativeProvider,
 		openNativeProviderAtIndex,

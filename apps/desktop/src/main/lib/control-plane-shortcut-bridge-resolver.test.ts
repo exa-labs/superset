@@ -48,7 +48,9 @@ describe("control plane shortcut bridge resolver", () => {
 			shortcut: "OPEN_CAPY",
 			type: "dashboard-web-shortcut",
 		});
-		expect(resolver.resolve(input({ code: "Digit2", key: "2" }))).toEqual({
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit2", key: "2" })),
+		).toEqual({
 			preventDefault: true,
 			shortcut: "OPEN_CAPY_2",
 			type: "dashboard-web-shortcut",
@@ -62,6 +64,30 @@ describe("control plane shortcut bridge resolver", () => {
 		expect(resolver.resolve(input({ code: "Digit9", key: "9" }))).toEqual({
 			preventDefault: true,
 			shortcut: "OPEN_DEVIN_9",
+			type: "dashboard-web-shortcut",
+		});
+	});
+
+	it("keeps C/D create chains for dashboard web shortcuts", () => {
+		const { resolver } = createResolverHarness();
+
+		expect(resolver.resolve(input({ code: "KeyC", key: "c" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(
+			resolver.resolve(input({ alt: false, code: "KeyN", key: "n" })),
+		).toEqual({
+			preventDefault: true,
+			shortcut: "CREATE_CAPY",
+			type: "dashboard-web-shortcut",
+		});
+
+		expect(resolver.resolve(input({ code: "KeyD", key: "d" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(resolver.resolve(input({ code: "KeyN", key: "Dead" }))).toEqual({
+			preventDefault: true,
+			shortcut: "CREATE_DEVIN",
 			type: "dashboard-web-shortcut",
 		});
 	});

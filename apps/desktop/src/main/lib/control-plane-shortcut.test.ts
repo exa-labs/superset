@@ -79,6 +79,19 @@ describe("isOpenControlPlaneShortcutInput", () => {
 		).toBe(true);
 	});
 
+	it("does not treat non-K dead-key Option chords as Option+K", () => {
+		expect(
+			isOpenControlPlaneShortcutInput(
+				{
+					...baseInput,
+					code: "KeyN",
+					key: "Dead",
+				},
+				"darwin",
+			),
+		).toBe(false);
+	});
+
 	it("matches Ctrl+Alt+K on Windows and Linux", () => {
 		expect(
 			isOpenControlPlaneShortcutInput(

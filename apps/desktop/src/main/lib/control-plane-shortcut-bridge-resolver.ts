@@ -2,8 +2,9 @@ import type { Input } from "electron";
 import { isOpenControlPlaneShortcutInput } from "main/lib/control-plane-shortcut";
 import {
 	type DashboardWebShortcut,
-	dashboardWebDigitIndexFromInput,
+	dashboardWebCreateShortcutFromInput,
 	dashboardWebIndexedShortcut,
+	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
 } from "main/lib/dashboard-web-shortcut";
 import {
@@ -101,7 +102,16 @@ export function createControlPlaneShortcutBridgeInputResolver(
 	): DashboardWebShortcut | null => {
 		const pending = pendingDashboardWebAppShortcut;
 		if (pending) {
-			const digitIndex = dashboardWebDigitIndexFromInput(input);
+			const createShortcut = dashboardWebCreateShortcutFromInput(
+				pending.shortcut,
+				input,
+			);
+			if (createShortcut) {
+				clearPending();
+				return createShortcut;
+			}
+
+			const digitIndex = dashboardWebPendingDigitIndexFromInput(input);
 			if (digitIndex !== null) {
 				clearPending();
 				return dashboardWebIndexedShortcut(pending.shortcut, digitIndex);

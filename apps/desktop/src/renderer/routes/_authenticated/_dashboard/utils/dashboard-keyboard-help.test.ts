@@ -45,6 +45,12 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open Chrome in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "g"] }),
 		);
+		expect(entryByLabel.get("Create Capy thread")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "C", "n"] }),
+		);
+		expect(entryByLabel.get("Create Devin session")).toEqual(
+			expect.objectContaining({ keys: ["⌥", "D", "n"] }),
+		);
 		expect(entryByLabel.get("Show selected item actions")).toEqual(
 			expect.objectContaining({ keys: ["."] }),
 		);

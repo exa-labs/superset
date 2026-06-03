@@ -9,6 +9,8 @@ export type DashboardWebShortcut =
 	| "OPEN_WEB_PAGE_6"
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
+	| "CREATE_CAPY"
+	| "CREATE_DEVIN"
 	| "OPEN_CHROME"
 	| "OPEN_WORKSPACES"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
@@ -86,12 +88,25 @@ function isShortcutKeyDownType(type: string): boolean {
 	return type === "keyDown" || type === "rawKeyDown" || type === "char";
 }
 
+function isPendingShortcutInput(input: DashboardWebShortcutInput): boolean {
+	if (!isShortcutKeyDownType(input.type)) return false;
+	if (input.isAutoRepeat) return false;
+	return !input.control && !input.meta && !input.shift;
+}
+
 export function dashboardWebDigitIndexFromInput(
 	input: DashboardWebShortcutInput,
 ): number | null {
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
 	if (!input.alt || input.control || input.meta || input.shift) return null;
+	return digitIndexFromCode(input.code);
+}
+
+export function dashboardWebPendingDigitIndexFromInput(
+	input: DashboardWebShortcutInput,
+): number | null {
+	if (!isPendingShortcutInput(input)) return null;
 	return digitIndexFromCode(input.code);
 }
 
@@ -102,6 +117,19 @@ export function dashboardWebIndexedShortcut(
 	if (!Number.isInteger(index) || index < 0 || index > 8) return null;
 	if (appShortcut === "OPEN_CAPY") return CAPY_INDEX_SHORTCUTS[index] ?? null;
 	if (appShortcut === "OPEN_DEVIN") return DEVIN_INDEX_SHORTCUTS[index] ?? null;
+	return null;
+}
+
+export function dashboardWebCreateShortcutFromInput(
+	appShortcut: DashboardWebShortcut,
+	input: DashboardWebShortcutInput,
+): DashboardWebShortcut | null {
+	if (!isPendingShortcutInput(input)) return null;
+	const code = input.code.toLowerCase();
+	const key = input.key.toLowerCase();
+	if (code !== "keyn" && key !== "n") return null;
+	if (appShortcut === "OPEN_CAPY") return "CREATE_CAPY";
+	if (appShortcut === "OPEN_DEVIN") return "CREATE_DEVIN";
 	return null;
 }
 

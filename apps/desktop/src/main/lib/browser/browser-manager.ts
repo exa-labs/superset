@@ -4,8 +4,9 @@ import { isOpenControlPlaneShortcutInput } from "main/lib/control-plane-shortcut
 import { isControlPlaneShortcutEventHandled } from "main/lib/control-plane-shortcut-event";
 import {
 	type DashboardWebShortcut,
-	dashboardWebDigitIndexFromInput,
+	dashboardWebCreateShortcutFromInput,
 	dashboardWebIndexedShortcut,
+	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
 } from "main/lib/dashboard-web-shortcut";
 import {
@@ -34,6 +35,8 @@ const DASHBOARD_WEB_SHORTCUTS = new Set<DashboardWebShortcut>([
 	"OPEN_WEB_PAGE_6",
 	"OPEN_CAPY",
 	"OPEN_DEVIN",
+	"CREATE_CAPY",
+	"CREATE_DEVIN",
 	"OPEN_CHROME",
 	"OPEN_WORKSPACES",
 	"TOGGLE_NATIVE_BROWSER_VIEW",
@@ -200,7 +203,16 @@ class BrowserManager extends EventEmitter {
 	): DashboardWebShortcut | null {
 		const pending = this.pendingDashboardWebAppShortcut;
 		if (pending) {
-			const digitIndex = dashboardWebDigitIndexFromInput(input);
+			const createShortcut = dashboardWebCreateShortcutFromInput(
+				pending.shortcut,
+				input,
+			);
+			if (createShortcut) {
+				this.clearPendingDashboardWebAppShortcut();
+				return createShortcut;
+			}
+
+			const digitIndex = dashboardWebPendingDigitIndexFromInput(input);
 			if (digitIndex !== null) {
 				this.clearPendingDashboardWebAppShortcut();
 				return dashboardWebIndexedShortcut(pending.shortcut, digitIndex);
