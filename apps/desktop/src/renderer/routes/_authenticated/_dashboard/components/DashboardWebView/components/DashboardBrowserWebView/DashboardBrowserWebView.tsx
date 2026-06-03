@@ -172,6 +172,32 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
 		return null;
 	};
+	const browserVimShortcutFromEvent = (event) => {
+		if (
+			window.__clankeeDashboardVimModeEnabled !== true ||
+			event.repeat ||
+			event.altKey ||
+			event.ctrlKey ||
+			event.metaKey ||
+			isEditableTarget(event.target)
+		) {
+			return null;
+		}
+		const key = String(event.key || "");
+		if (key === "n") return "BROWSER_NEW_TAB";
+		if (key === "r") return "BROWSER_RELOAD";
+		if (key === "s") return "BROWSER_TOGGLE_SPLIT";
+		if (key === "q") return "BROWSER_CLOSE_SPLIT";
+		if (key === "w") return "BROWSER_SWAP_SPLIT";
+		if (key === "[") return "BROWSER_NARROW_SPLIT";
+		if (key === "]") return "BROWSER_WIDEN_SPLIT";
+		if (key === "=") return "BROWSER_EQUALIZE_SPLIT";
+		if (key === "x") return "BROWSER_CLOSE_TAB";
+		if (key === "p") return "BROWSER_TOGGLE_PIN";
+		if (key === "h") return "BROWSER_PREVIOUS_TAB";
+		if (key === "l") return "BROWSER_NEXT_TAB";
+		return null;
+	};
 	window.addEventListener(
 		"keydown",
 		(event) => {
@@ -232,6 +258,13 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 					event.preventDefault();
 					event.stopPropagation();
 				}
+				return;
+			}
+			const browserVimShortcut = browserVimShortcutFromEvent(event);
+			if (browserVimShortcut) {
+				event.preventDefault();
+				event.stopPropagation();
+				invokeShortcut(browserVimShortcut);
 				return;
 			}
 			const shortcut = shortcutFromEvent(event);

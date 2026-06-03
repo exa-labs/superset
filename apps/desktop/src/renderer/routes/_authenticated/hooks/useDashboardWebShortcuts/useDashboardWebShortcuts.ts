@@ -53,7 +53,33 @@ type DashboardWebShortcut =
 	| "OPEN_DEVIN_7"
 	| "OPEN_DEVIN_8"
 	| "OPEN_DEVIN_9"
-	| "SHOW_DASHBOARD_KEYBOARD_HELP";
+	| "SHOW_DASHBOARD_KEYBOARD_HELP"
+	| "BROWSER_NEW_TAB"
+	| "BROWSER_RELOAD"
+	| "BROWSER_TOGGLE_SPLIT"
+	| "BROWSER_CLOSE_SPLIT"
+	| "BROWSER_SWAP_SPLIT"
+	| "BROWSER_NARROW_SPLIT"
+	| "BROWSER_WIDEN_SPLIT"
+	| "BROWSER_EQUALIZE_SPLIT"
+	| "BROWSER_CLOSE_TAB"
+	| "BROWSER_TOGGLE_PIN"
+	| "BROWSER_PREVIOUS_TAB"
+	| "BROWSER_NEXT_TAB";
+
+type DashboardBrowserCurrentAction =
+	| "close-current-tab"
+	| "close-split"
+	| "equalize-split"
+	| "narrow-active-split"
+	| "new-current-url-tab"
+	| "next-tab"
+	| "previous-tab"
+	| "reload"
+	| "swap-split"
+	| "toggle-tab-pin"
+	| "toggle-split"
+	| "widen-active-split";
 
 const WEB_PAGE_SHORTCUTS: DashboardWebShortcut[] = [
 	"OPEN_WEB_PAGE_1",
@@ -85,6 +111,22 @@ const DEVIN_INDEX_SHORTCUTS: DashboardWebShortcut[] = [
 	"OPEN_DEVIN_8",
 	"OPEN_DEVIN_9",
 ];
+const BROWSER_SHORTCUT_ACTIONS: Partial<
+	Record<DashboardWebShortcut, DashboardBrowserCurrentAction>
+> = {
+	BROWSER_NEW_TAB: "new-current-url-tab",
+	BROWSER_RELOAD: "reload",
+	BROWSER_TOGGLE_SPLIT: "toggle-split",
+	BROWSER_CLOSE_SPLIT: "close-split",
+	BROWSER_SWAP_SPLIT: "swap-split",
+	BROWSER_NARROW_SPLIT: "narrow-active-split",
+	BROWSER_WIDEN_SPLIT: "widen-active-split",
+	BROWSER_EQUALIZE_SPLIT: "equalize-split",
+	BROWSER_CLOSE_TAB: "close-current-tab",
+	BROWSER_TOGGLE_PIN: "toggle-tab-pin",
+	BROWSER_PREVIOUS_TAB: "previous-tab",
+	BROWSER_NEXT_TAB: "next-tab",
+};
 
 const WEB_TAB_PREFIX_TIMEOUT_MS = 1_500;
 const VIM_PREFIX_TIMEOUT_MS = 900;
@@ -97,6 +139,14 @@ function digitIndexFromEvent(event: KeyboardEvent): number | null {
 
 function isModifierOnlyEvent(event: KeyboardEvent): boolean {
 	return ["Alt", "Control", "Meta", "Shift"].includes(event.key);
+}
+
+function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
+	window.dispatchEvent(
+		new CustomEvent("dashboard-browser-current-action", {
+			detail: { action },
+		}),
+	);
 }
 
 export function useDashboardWebShortcuts() {
@@ -236,6 +286,12 @@ export function useDashboardWebShortcuts() {
 
 	const runShortcut = useCallback(
 		(shortcut: DashboardWebShortcut) => {
+			const browserAction = BROWSER_SHORTCUT_ACTIONS[shortcut];
+			if (browserAction) {
+				dispatchBrowserCurrentAction(browserAction);
+				return;
+			}
+
 			if (shortcut === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 				openDashboardKeyboardHelp();
 				return;

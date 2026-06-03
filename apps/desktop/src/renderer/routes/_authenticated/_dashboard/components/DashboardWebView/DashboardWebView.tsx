@@ -72,6 +72,8 @@ type DashboardBrowserCurrentAction =
 	| "new-claude-tab"
 	| "new-current-url-tab"
 	| "new-google-tab"
+	| "next-tab"
+	| "previous-tab"
 	| "reload"
 	| "swap-split"
 	| "toggle-tab-pin"
@@ -858,6 +860,17 @@ export function DashboardWebView({
 				toggleDashboardWebTabPinned();
 				return;
 			}
+			if (action === "previous-tab" || action === "next-tab") {
+				const nextTabId = nextDashboardBrowserTabId(
+					browserTabIds,
+					activeBrowserTabIdRef.current,
+					action === "next-tab" ? 1 : -1,
+				);
+				if (nextTabId && nextTabId !== activeBrowserTabIdRef.current) {
+					activateBrowserTab(nextTabId);
+				}
+				return;
+			}
 			if (action === "new-current-url-tab") {
 				createTabFromCurrentUrl();
 				return;
@@ -886,6 +899,8 @@ export function DashboardWebView({
 		createBrowserTab,
 		createTabFromCurrentUrl,
 		equalizeSplitPanes,
+		activateBrowserTab,
+		browserTabIds,
 		isActive,
 		reload,
 		resizeActiveSplitPane,
