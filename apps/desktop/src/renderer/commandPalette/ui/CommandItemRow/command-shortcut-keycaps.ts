@@ -40,8 +40,63 @@ function splitChordToken(token: string): string[] {
 	return keys.length > 0 ? keys : [token];
 }
 
+export interface CommandShortcutKeycapGroup {
+	id: string;
+	label: string;
+	keys: string[];
+}
+
 export function commandShortcutKeycapsFromLabel(label: string): string[] {
 	return label.trim().split(/\s+/).flatMap(splitChordToken);
+}
+
+function sameKeySequence(left: string[], right: string[]): boolean {
+	if (left.length !== right.length) return false;
+	return left.every((key, index) => key === right[index]);
+}
+
+export function commandShortcutKeycapGroups({
+	hotkeyKeys,
+	hotkeyLabel,
+	shortcutLabel,
+}: {
+	hotkeyKeys: string[];
+	hotkeyLabel: string | null;
+	shortcutLabel?: string | null;
+}): CommandShortcutKeycapGroup[] {
+	const groups: CommandShortcutKeycapGroup[] = [];
+	const trimmedHotkeyLabel = hotkeyLabel?.trim() || null;
+	const trimmedShortcutLabel = shortcutLabel?.trim() || null;
+
+	if (
+		trimmedHotkeyLabel &&
+		trimmedHotkeyLabel !== "Unassigned" &&
+		hotkeyKeys.length > 0
+	) {
+		groups.push({
+			id: "hotkey",
+			keys: hotkeyKeys,
+			label: trimmedHotkeyLabel,
+		});
+	}
+
+	if (!trimmedShortcutLabel || trimmedShortcutLabel === "Unassigned") {
+		return groups;
+	}
+
+	const shortcutKeys = commandShortcutKeycapsFromLabel(trimmedShortcutLabel);
+	if (shortcutKeys.length === 0) return groups;
+	const duplicateHotkey =
+		trimmedShortcutLabel === trimmedHotkeyLabel ||
+		sameKeySequence(shortcutKeys, hotkeyKeys);
+	if (duplicateHotkey) return groups;
+
+	groups.push({
+		id: "local",
+		keys: shortcutKeys,
+		label: trimmedShortcutLabel,
+	});
+	return groups;
 }
 
 export function commandShortcutSearchText({

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
+	commandShortcutKeycapGroups,
 	commandShortcutKeycapsFromLabel,
 	commandShortcutSearchText,
 } from "./command-shortcut-keycaps";
@@ -31,6 +32,41 @@ describe("commandShortcutKeycapsFromLabel", () => {
 	});
 });
 
+describe("commandShortcutKeycapGroups", () => {
+	it("keeps global hotkeys and local Vim keys visible together", () => {
+		expect(
+			commandShortcutKeycapGroups({
+				hotkeyKeys: ["⌥", "B"],
+				hotkeyLabel: "⌥B",
+				shortcutLabel: "b",
+			}),
+		).toEqual([
+			{ id: "hotkey", keys: ["⌥", "B"], label: "⌥B" },
+			{ id: "local", keys: ["b"], label: "b" },
+		]);
+	});
+
+	it("deduplicates identical explicit and registered shortcuts", () => {
+		expect(
+			commandShortcutKeycapGroups({
+				hotkeyKeys: ["⌥", "K"],
+				hotkeyLabel: "⌥K",
+				shortcutLabel: "⌥K",
+			}),
+		).toEqual([{ id: "hotkey", keys: ["⌥", "K"], label: "⌥K" }]);
+	});
+
+	it("supports local-only command shortcuts", () => {
+		expect(
+			commandShortcutKeycapGroups({
+				hotkeyKeys: [],
+				hotkeyLabel: null,
+				shortcutLabel: "a/x",
+			}),
+		).toEqual([{ id: "local", keys: ["a/x"], label: "a/x" }]);
+	});
+});
+
 describe("commandShortcutSearchText", () => {
 	it("adds word aliases for compact macOS shortcut labels", () => {
 		const keys = commandShortcutKeycapsFromLabel("⌥C n");
@@ -58,6 +94,23 @@ describe("commandShortcutSearchText", () => {
 		expect(searchText).toContain("control");
 		expect(searchText).toContain("alt");
 		expect(searchText).toContain("K");
+	});
+
+	it("indexes combined global and local command shortcuts", () => {
+		const groups = commandShortcutKeycapGroups({
+			hotkeyKeys: ["⌥", "B"],
+			hotkeyLabel: "⌥B",
+			shortcutLabel: "b",
+		});
+		const searchText = commandShortcutSearchText({
+			keys: groups.flatMap((group) => group.keys),
+			label: groups.map((group) => group.label).join(" / "),
+		});
+
+		expect(searchText).toContain("⌥B / b");
+		expect(searchText).toContain("option");
+		expect(searchText).toContain("alt");
+		expect(searchText).toContain("b");
 	});
 
 	it("returns an empty search suffix when no shortcut exists", () => {

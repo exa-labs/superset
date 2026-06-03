@@ -1,9 +1,10 @@
 import { CommandItem, CommandShortcut } from "@superset/ui/command";
 import { Kbd, KbdGroup } from "@superset/ui/kbd";
+import { Fragment } from "react";
 import { useHotkeyDisplay } from "renderer/hotkeys/hooks/useHotkeyDisplay";
 import type { Command } from "../../core/types";
 import {
-	commandShortcutKeycapsFromLabel,
+	commandShortcutKeycapGroups,
 	commandShortcutSearchText,
 } from "./command-shortcut-keycaps";
 
@@ -15,26 +16,25 @@ interface CommandItemRowProps {
 export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 	const display = useHotkeyDisplay(command.hotkeyId ?? "");
 	const Icon = command.icon;
-	const shortcutKeys = command.shortcutLabel
-		? commandShortcutKeycapsFromLabel(command.shortcutLabel)
-		: Boolean(command.hotkeyId) && display.text !== "Unassigned"
+	const hotkeyKeys =
+		Boolean(command.hotkeyId) && display.text !== "Unassigned"
 			? display.keys
 			: [];
+	const shortcutGroups = commandShortcutKeycapGroups({
+		hotkeyKeys,
+		hotkeyLabel: hotkeyKeys.length > 0 ? display.text : null,
+		shortcutLabel: command.shortcutLabel,
+	});
+	const shortcutKeys = shortcutGroups.flatMap((group) => group.keys);
 	const shortcutText =
-		command.shortcutLabel ?? (shortcutKeys.length > 0 ? display.text : null);
+		shortcutGroups.length > 0
+			? shortcutGroups.map((group) => group.label).join(" / ")
+			: null;
 	const shortcutSearchText = commandShortcutSearchText({
 		keys: shortcutKeys,
 		label: shortcutText,
 	});
-	const shortcutOccurrences = new Map<string, number>();
-	const shortcutKeycaps = shortcutKeys.map((key) => {
-		const occurrence = shortcutOccurrences.get(key) ?? 0;
-		shortcutOccurrences.set(key, occurrence + 1);
-		return {
-			id: `${key}-${occurrence}`,
-			label: key,
-		};
-	});
+
 	return (
 		<CommandItem
 			data-command-palette-command-id={command.id}
@@ -58,16 +58,25 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 					</span>
 				) : null}
 			</span>
-			{shortcutText && shortcutKeys.length > 0 ? (
+			{shortcutText && shortcutGroups.length > 0 ? (
 				<CommandShortcut aria-label={shortcutText} className="tracking-normal">
-					<KbdGroup className="justify-end">
-						{shortcutKeycaps.map((keycap) => (
-							<Kbd
-								key={keycap.id}
-								className="h-5 min-w-5 bg-background/75 px-1 text-[10px]"
-							>
-								{keycap.label}
-							</Kbd>
+					<KbdGroup className="justify-end gap-1">
+						{shortcutGroups.map((group, groupIndex) => (
+							<Fragment key={group.id}>
+								{groupIndex > 0 && (
+									<span className="px-0.5 text-muted-foreground/60 text-[10px]">
+										/
+									</span>
+								)}
+								{group.keys.map((key, keyIndex) => (
+									<Kbd
+										key={`${group.id}-${key}-${keyIndex}`}
+										className="h-5 min-w-5 bg-background/75 px-1 text-[10px]"
+									>
+										{key}
+									</Kbd>
+								))}
+							</Fragment>
 						))}
 					</KbdGroup>
 				</CommandShortcut>
