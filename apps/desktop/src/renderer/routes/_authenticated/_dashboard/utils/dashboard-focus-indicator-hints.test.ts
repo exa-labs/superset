@@ -6,6 +6,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"Esc",
 			"↑↓/jk",
+			"Home/End",
 			"/",
 			"Enter",
 			"Space",

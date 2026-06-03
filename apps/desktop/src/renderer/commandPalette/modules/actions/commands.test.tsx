@@ -94,6 +94,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
 		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
+		expect(commandIds.has("actions.showDashboardKeyboardGuide")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
 	});
 
@@ -136,6 +137,11 @@ describe("actions command provider", () => {
 				(command) => command.id === "actions.showDashboardActionHints",
 			)?.shortcutLabel,
 		).toBe("f");
+		expect(
+			commands.find(
+				(command) => command.id === "actions.showDashboardKeyboardGuide",
+			)?.hotkeyId,
+		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
 	});
 
 	it("routes MRU command-palette actions through the dashboard switch event", () => {
@@ -200,6 +206,25 @@ describe("actions command provider", () => {
 
 		command?.run?.(commandContext("/native/devin"));
 		window.removeEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+
+		expect(openEventCount).toBe(1);
+	});
+
+	it("opens the dashboard keyboard guide from the command palette", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener("dashboard-keyboard-help-open", listener);
+		const command = actionsProvider
+			.provide(commandContext("/native/devin"))
+			.find(
+				(candidate) => candidate.id === "actions.showDashboardKeyboardGuide",
+			);
+
+		command?.run?.(commandContext("/native/devin"));
+		window.removeEventListener("dashboard-keyboard-help-open", listener);
 
 		expect(openEventCount).toBe(1);
 	});

@@ -52,6 +52,12 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/", "type"] }),
 		);
+		expect(entryByLabel.get("Jump to top")).toEqual(
+			expect.objectContaining({ keys: ["g", "g", "Home"] }),
+		);
+		expect(entryByLabel.get("Jump to bottom")).toEqual(
+			expect.objectContaining({ keys: ["G", "End"] }),
+		);
 		expect(labels.has("Split native/browser")).toBe(true);
 		expect(hotkeyIds.has("SPLIT_RIGHT")).toBe(true);
 		expect(hotkeyIds.has("SPLIT_DOWN")).toBe(true);

@@ -6,6 +6,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
@@ -189,6 +190,10 @@ export function useDashboardSidebarKeyboardNavigation(
 					? dashboardSidebarRovingNavigationDeltaFromKey(event.key)
 					: 0;
 			const rovingNavigation = rovingNavigationDelta !== 0;
+			const rovingBoundary =
+				focusInsideSidebar || vimModeEnabled
+					? dashboardSidebarRovingNavigationBoundaryFromKey(event.key)
+					: null;
 			const activationAction = dashboardSidebarActivationActionFromKey(
 				event.key,
 			);
@@ -210,6 +215,8 @@ export function useDashboardSidebarKeyboardNavigation(
 					"k",
 					"h",
 					"l",
+					"Home",
+					"End",
 					"g",
 					"G",
 					"/",
@@ -221,6 +228,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (
 				!rovingNavigation &&
+				!rovingBoundary &&
 				!vimNavigation &&
 				!activationKey &&
 				!sidebarActionKey &&
@@ -260,6 +268,14 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (rovingNavigationDelta !== 0) {
 				event.preventDefault();
 				focusByDelta(rovingNavigationDelta);
+				return;
+			}
+
+			if (rovingBoundary) {
+				event.preventDefault();
+				focusItem(
+					rovingBoundary === "first" ? items[0] : items[items.length - 1],
+				);
 				return;
 			}
 

@@ -55,6 +55,14 @@ export function dashboardSidebarRovingNavigationDeltaFromKey(
 	return 0;
 }
 
+export function dashboardSidebarRovingNavigationBoundaryFromKey(
+	key: string,
+): "first" | "last" | null {
+	if (key === "Home") return "first";
+	if (key === "End") return "last";
+	return null;
+}
+
 export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	altKey: boolean;
 	ctrlKey: boolean;

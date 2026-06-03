@@ -156,6 +156,26 @@ export const actionsProvider: CommandProvider = {
 				shortcutLabel: "f",
 				run: () => openDashboardActionHints(),
 			},
+			{
+				id: "actions.showDashboardKeyboardGuide",
+				title: "Show dashboard keyboard guide",
+				section: "actions",
+				description:
+					"Open the dashboard keyboard map from browsers, terminals, and native agents",
+				icon: KeyboardIcon,
+				hotkeyId: "SHOW_DASHBOARD_KEYBOARD_HELP",
+				keywords: [
+					"dashboard",
+					"keyboard",
+					"help",
+					"vim",
+					"shortcuts",
+					"guide",
+				],
+				run: () => {
+					openDashboardKeyboardHelp();
+				},
+			},
 		];
 
 		if (context.workspace) {

@@ -4,6 +4,7 @@ import {
 	dashboardSidebarActivationActionFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
+	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
@@ -93,6 +94,18 @@ describe("dashboardSidebarRovingNavigationDeltaFromKey", () => {
 		expect(dashboardSidebarRovingNavigationDeltaFromKey("k")).toBe(-1);
 		expect(dashboardSidebarRovingNavigationDeltaFromKey("J")).toBe(0);
 		expect(dashboardSidebarRovingNavigationDeltaFromKey("x")).toBe(0);
+	});
+});
+
+describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
+	test("maps Home and End to sidebar roving boundaries", () => {
+		expect(dashboardSidebarRovingNavigationBoundaryFromKey("Home")).toBe(
+			"first",
+		);
+		expect(dashboardSidebarRovingNavigationBoundaryFromKey("End")).toBe("last");
+		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
+			null,
+		);
 	});
 });
 

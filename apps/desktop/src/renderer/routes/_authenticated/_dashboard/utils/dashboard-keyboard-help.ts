@@ -169,14 +169,15 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Filter long workspace, Capy, and Devin lists; typing starts search outside Vim mode",
 				},
 				{
-					keys: ["G", "G"],
+					keys: ["g", "g", "Home"],
 					label: "Jump to top",
-					description: "Press g twice quickly in Vim mode",
+					description:
+						"Press g twice in Vim mode, or use Home from sidebar focus",
 				},
 				{
-					keys: ["G"],
+					keys: ["G", "End"],
 					label: "Jump to bottom",
-					description: "Use Shift+G in Vim mode",
+					description: "Use Shift+G in Vim mode, or End from sidebar focus",
 				},
 				{
 					keys: ["H", "L"],
