@@ -1,9 +1,6 @@
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { focusDashboardNavigationShell } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
-import {
-	isDashboardVimModeEnabled,
-	toggleDashboardVimMode,
-} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 
 export type DashboardGlobalKeyboardAction =
@@ -16,7 +13,6 @@ export type DashboardGlobalKeyboardAction =
 interface DashboardGlobalKeyboardActionHandlers {
 	defer: (callback: () => void) => void;
 	focusNavigationShell: () => boolean;
-	isVimModeEnabled: () => boolean;
 	openKeyboardHelp: () => boolean;
 	openNavigationShell: () => void;
 	toggleVimMode: () => boolean;
@@ -33,7 +29,6 @@ function defer(callback: () => void): void {
 const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	defer,
 	focusNavigationShell: focusDashboardNavigationShell,
-	isVimModeEnabled: isDashboardVimModeEnabled,
 	openKeyboardHelp: openDashboardKeyboardHelp,
 	openNavigationShell: () => useWorkspaceSidebarStore.getState().setOpen(true),
 	toggleVimMode: toggleDashboardVimMode,
@@ -55,7 +50,6 @@ export function handleDashboardGlobalKeyboardAction(
 	}
 
 	if (action !== "FOCUS_DASHBOARD_SHELL") return false;
-	if (!resolved.isVimModeEnabled()) return false;
 	if (resolved.focusNavigationShell()) return true;
 
 	resolved.openNavigationShell();

@@ -7,7 +7,6 @@ import {
 function handlers(
 	overrides: {
 		focusNavigationShell?: () => boolean;
-		isVimModeEnabled?: () => boolean;
 		openKeyboardHelp?: () => boolean;
 		onDefer?: (callback: () => void) => void;
 		onOpenNavigationShell?: () => void;
@@ -17,7 +16,6 @@ function handlers(
 	return {
 		defer: overrides.onDefer ?? ((callback: () => void) => callback()),
 		focusNavigationShell: overrides.focusNavigationShell ?? (() => true),
-		isVimModeEnabled: overrides.isVimModeEnabled ?? (() => true),
 		openKeyboardHelp: overrides.openKeyboardHelp ?? (() => true),
 		openNavigationShell: overrides.onOpenNavigationShell ?? (() => undefined),
 		toggleVimMode: overrides.onToggleVimMode ?? (() => true),
@@ -59,7 +57,7 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 		expect(opened).toBe(true);
 	});
 
-	it("focuses the navigation shell on Escape only when Vim mode is enabled", () => {
+	it("focuses the navigation shell on Escape even when Vim mode is disabled", () => {
 		let focusCount = 0;
 
 		expect(
@@ -70,21 +68,6 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 						focusCount += 1;
 						return true;
 					},
-					isVimModeEnabled: () => false,
-				}),
-			),
-		).toBe(false);
-		expect(focusCount).toBe(0);
-
-		expect(
-			handleDashboardGlobalKeyboardAction(
-				"FOCUS_DASHBOARD_SHELL",
-				handlers({
-					focusNavigationShell: () => {
-						focusCount += 1;
-						return true;
-					},
-					isVimModeEnabled: () => true,
 				}),
 			),
 		).toBe(true);
