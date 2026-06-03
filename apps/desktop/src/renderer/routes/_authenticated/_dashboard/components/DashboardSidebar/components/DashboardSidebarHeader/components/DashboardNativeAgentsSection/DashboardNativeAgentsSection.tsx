@@ -435,6 +435,14 @@ const SESSION_ROW_KEY_HINTS = [
 	{ key: "x", title: "Hide" },
 ];
 
+const FOLDER_ROW_KEY_HINTS = [
+	{ key: ".", title: "Actions" },
+	{ key: "n", title: "Create session" },
+	{ key: "e", title: "Rename" },
+	{ key: "c", title: "Cycle color" },
+	{ key: "d", title: "Delete" },
+];
+
 function SessionRowKeyHints({ visible }: { visible: boolean }) {
 	return (
 		<div
@@ -447,6 +455,30 @@ function SessionRowKeyHints({ visible }: { visible: boolean }) {
 			)}
 		>
 			{SESSION_ROW_KEY_HINTS.map((hint) => (
+				<span
+					key={hint.key}
+					title={hint.title}
+					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
+				>
+					{hint.key}
+				</span>
+			))}
+		</div>
+	);
+}
+
+function FolderRowKeyHints({ visible }: { visible: boolean }) {
+	return (
+		<div
+			aria-hidden="true"
+			className={cn(
+				"pointer-events-none absolute top-full right-1 z-10 mt-0.5 flex max-w-[8rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/95 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
+				visible
+					? "opacity-100"
+					: "opacity-0 group-hover/folder:opacity-100 group-focus-within/folder:opacity-100",
+			)}
+		>
+			{FOLDER_ROW_KEY_HINTS.map((hint) => (
 				<span
 					key={hint.key}
 					title={hint.title}
@@ -2189,6 +2221,7 @@ export function DashboardNativeAgentsSection({
 														<LuFolderX className="size-3 shrink-0" />
 													</button>
 												</span>
+												<FolderRowKeyHints visible={folderHasUnread} />
 											</fieldset>
 											{!folder.isCollapsed && folderItems.length > 0 && (
 												<ul
