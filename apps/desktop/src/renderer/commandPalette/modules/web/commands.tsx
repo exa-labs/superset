@@ -412,6 +412,7 @@ export const webProvider: CommandProvider = {
 				iconUrl: nativeProviderIconUrl("capy"),
 				description: "Open Capy Native and start a thread",
 				keywords: ["capy", "capi", "native", "new", "thread", "agent"],
+				shortcutLabel: "⌥C n",
 				run: (context) => {
 					context.navigate("/native/capy");
 					window.setTimeout(() => {
@@ -427,6 +428,7 @@ export const webProvider: CommandProvider = {
 				iconUrl: nativeProviderIconUrl("devin"),
 				description: "Open Devin Native and start a session",
 				keywords: ["devin", "native", "new", "session", "agent"],
+				shortcutLabel: "⌥D n",
 				run: (context) => {
 					context.navigate("/native/devin");
 					window.setTimeout(() => {
@@ -630,12 +632,20 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.hide",
-				title: "Move current native session to overview",
+				title: "Archive current native session",
 				section: "web",
 				description:
 					"Hide the current Capy/Devin conversation from the sidebar",
-				keywords: ["capy", "devin", "hide", "overview", "sidebar"],
-				shortcutLabel: "x",
+				keywords: [
+					"capy",
+					"devin",
+					"archive",
+					"hide",
+					"move",
+					"overview",
+					"sidebar",
+				],
+				shortcutLabel: "a/x",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>

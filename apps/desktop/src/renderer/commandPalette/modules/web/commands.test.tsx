@@ -153,6 +153,16 @@ describe("web command provider", () => {
 		expect(commandIds.has("native.folder.removeCurrent")).toBe(true);
 	});
 
+	it("shows shortcut paths for primary native create actions", () => {
+		const commands = webProvider.provide(commandContext("/native/capy"));
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+
+		expect(shortcutById.get("native.capy.create")).toBe("⌥C n");
+		expect(shortcutById.get("native.devin.create")).toBe("⌥D n");
+	});
+
 	it("exposes native browser/split keybindings in the control plane", () => {
 		const commands = webProvider.provide(
 			commandContext("/native/devin/session-1"),
@@ -189,7 +199,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.pin")).toBe("p");
 		expect(shortcutById.get("native.current.unpin")).toBe("p");
 		expect(shortcutById.get("native.current.rename")).toBe("e");
-		expect(shortcutById.get("native.current.hide")).toBe("x");
+		expect(shortcutById.get("native.current.hide")).toBe("a/x");
 		expect(shortcutById.get("native.current.show")).toBe("p");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
@@ -204,6 +214,10 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.folder.delete")).toBe("d");
 		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
 		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
+		expect(
+			commands.find((command) => command.id === "native.current.hide")
+				?.keywords,
+		).toContain("archive");
 	});
 
 	it("registers Chrome creation and tab jump commands", () => {
