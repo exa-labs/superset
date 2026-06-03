@@ -155,6 +155,33 @@ export function dashboardViewMruTargetPath(input: {
 	return { index: targetIndex, path: target.path };
 }
 
+export function dashboardViewMruSwitchTarget(input: {
+	activeIndex?: number | null;
+	currentPathname: string;
+	direction: DashboardViewMruDirection;
+	entries: DashboardViewMruEntry[];
+}): { index: number; path: string } | null {
+	if (input.entries.length < 2) return null;
+
+	if (
+		input.activeIndex != null &&
+		input.activeIndex >= 0 &&
+		input.activeIndex < input.entries.length
+	) {
+		const delta = input.direction === "next" ? 1 : -1;
+		const targetIndex =
+			(input.activeIndex + delta + input.entries.length) % input.entries.length;
+		const target = input.entries[targetIndex];
+		return target ? { index: targetIndex, path: target.path } : null;
+	}
+
+	return dashboardViewMruTargetPath({
+		currentPathname: input.currentPathname,
+		direction: input.direction,
+		entries: input.entries,
+	});
+}
+
 function titleCase(value: string): string {
 	const decoded = decodeURIComponent(value);
 	return decoded

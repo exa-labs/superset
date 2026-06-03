@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	DASHBOARD_VIEW_MRU_STORAGE_KEY,
 	dashboardViewMruEntryLabel,
+	dashboardViewMruSwitchTarget,
 	dashboardViewMruTargetPath,
 	dashboardViewMruVisibleEntries,
 	normalizeDashboardViewMruPath,
@@ -154,6 +155,41 @@ describe("dashboard view MRU", () => {
 				entries,
 			}),
 		).toEqual({ index: 0, path: "/web/overseer" });
+	});
+
+	it("cycles MRU switch targets from the active overlay index", () => {
+		const entries = [
+			{ path: "/web/overseer", viewedAt: 3 },
+			{ path: "/native/devin/session-1", viewedAt: 2 },
+			{ path: "/native/capy/thread-1", viewedAt: 1 },
+		];
+
+		const firstTarget = dashboardViewMruSwitchTarget({
+			activeIndex: null,
+			currentPathname: "/web/overseer",
+			direction: "next",
+			entries,
+		});
+		expect(firstTarget).toEqual({
+			index: 1,
+			path: "/native/devin/session-1",
+		});
+		expect(
+			dashboardViewMruSwitchTarget({
+				activeIndex: firstTarget?.index,
+				currentPathname: firstTarget?.path ?? "/native/devin/session-1",
+				direction: "next",
+				entries,
+			}),
+		).toEqual({ index: 2, path: "/native/capy/thread-1" });
+		expect(
+			dashboardViewMruSwitchTarget({
+				activeIndex: 0,
+				currentPathname: "/web/overseer",
+				direction: "previous",
+				entries,
+			}),
+		).toEqual({ index: 2, path: "/native/capy/thread-1" });
 	});
 
 	it("labels MRU entries for the switcher overlay", () => {

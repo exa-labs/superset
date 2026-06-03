@@ -7,7 +7,7 @@ import {
 	useNavigate,
 	useRouterState,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIsV2CloudEnabled } from "renderer/hooks/useIsV2CloudEnabled";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
@@ -15,6 +15,7 @@ import { TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT } from "renderer/lib/terminal/term
 import { DashboardActionHintsOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardActionHintsOverlay";
 import { DashboardFocusIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardFocusIndicator";
 import { DashboardKeyboardShortcutsDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardKeyboardShortcutsDialog";
+import { DashboardMruSwitcherOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardMruSwitcherOverlay";
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
 import { DashboardVimModeIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardVimModeIndicator";
@@ -23,6 +24,16 @@ import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	shouldOpenDashboardKeyboardHelpFromQuestionKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import {
+	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
+	type DashboardViewMruDirection,
+	type DashboardViewMruEntry,
+	dashboardViewMruSwitchTarget,
+	readDashboardViewMruEntries,
+	recordDashboardViewMruPath,
+	resolveDashboardViewMruPathname,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
+import { dashboardViewMruRegistryLabelResolver } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru-labels";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useDevSeedV2Sidebar } from "renderer/routes/_authenticated/hooks/useDevSeedV2Sidebar";
 import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
@@ -36,6 +47,10 @@ import {
 	MAX_WORKSPACE_SIDEBAR_WIDTH,
 	useWorkspaceSidebarStore,
 } from "renderer/stores/workspace-sidebar-state";
+import {
+	getDashboardHashPathname,
+	subscribeDashboardHashPathname,
+} from "../lib/dashboardHashPathname";
 import { AddRepositoryModals } from "./components/AddRepositoryModals";
 import { CrossVersionMismatchState } from "./components/CrossVersionMismatchState";
 import { TopBar } from "./components/TopBar";
@@ -58,6 +73,18 @@ type DeleteTarget =
 			open: boolean;
 	  };
 
+interface DashboardMruSwitcherState {
+	activeIndex: number;
+	direction: DashboardViewMruDirection;
+	entries: DashboardViewMruEntry[];
+}
+
+interface ActiveDashboardMruSwitch {
+	activeIndex: number;
+	entries: DashboardViewMruEntry[];
+	timeoutId: number | null;
+}
+
 function DashboardLayout() {
 	const navigate = useNavigate();
 	const openNewWorkspaceModal = useOpenNewWorkspaceModal();
@@ -65,6 +92,10 @@ function DashboardLayout() {
 	const collections = useCollections();
 	const { removeWorkspaceFromSidebar } = useDashboardSidebarState();
 	const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
+	const [mruSwitcherState, setMruSwitcherState] =
+		useState<DashboardMruSwitcherState | null>(null);
+	const latestMruPathRef = useRef<string | null>(null);
+	const activeMruSwitchRef = useRef<ActiveDashboardMruSwitch | null>(null);
 	useDevSeedV2Sidebar();
 	// Get current workspace from route to pre-select project in new workspace modal
 	const matchRoute = useMatchRoute();
@@ -92,6 +123,82 @@ function DashboardLayout() {
 	const versionMismatch =
 		(isV2CloudEnabled && onV1WorkspaceRoute) ||
 		(!isV2CloudEnabled && onV2WorkspaceRoute);
+
+	useEffect(() => {
+		const recordCurrentMruPath = () => {
+			const mruPath = resolveDashboardViewMruPathname({
+				hashPathname: getDashboardHashPathname(),
+				locationPathname: currentPathname,
+			});
+			latestMruPathRef.current = mruPath;
+			if (!activeMruSwitchRef.current) {
+				recordDashboardViewMruPath(mruPath);
+			}
+		};
+
+		recordCurrentMruPath();
+		return subscribeDashboardHashPathname(recordCurrentMruPath);
+	}, [currentPathname]);
+
+	useEffect(() => {
+		return () => {
+			const activeSwitch = activeMruSwitchRef.current;
+			if (activeSwitch?.timeoutId != null) {
+				window.clearTimeout(activeSwitch.timeoutId);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		const finishMruSwitch = () => {
+			const latestMruPath = latestMruPathRef.current;
+			activeMruSwitchRef.current = null;
+			setMruSwitcherState(null);
+			if (latestMruPath) {
+				recordDashboardViewMruPath(latestMruPath);
+			}
+		};
+
+		const handleMruSwitch = (event: Event) => {
+			const detail = (event as CustomEvent<{ direction?: unknown }>).detail;
+			const direction = detail?.direction === "previous" ? "previous" : "next";
+			const activeSwitch = activeMruSwitchRef.current;
+			const entries = activeSwitch?.entries ?? readDashboardViewMruEntries();
+			const target = dashboardViewMruSwitchTarget({
+				activeIndex: activeSwitch?.activeIndex ?? null,
+				currentPathname: latestMruPathRef.current ?? currentPathname,
+				direction,
+				entries,
+			});
+			if (!target) return;
+
+			event.preventDefault();
+			if (activeSwitch?.timeoutId != null) {
+				window.clearTimeout(activeSwitch.timeoutId);
+			}
+
+			const timeoutId = window.setTimeout(
+				finishMruSwitch,
+				DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
+			);
+			activeMruSwitchRef.current = {
+				activeIndex: target.index,
+				entries,
+				timeoutId,
+			};
+			setMruSwitcherState({
+				activeIndex: target.index,
+				direction,
+				entries,
+			});
+			void navigate({ to: target.path });
+		};
+
+		window.addEventListener("dashboard-view-mru-switch", handleMruSwitch);
+		return () => {
+			window.removeEventListener("dashboard-view-mru-switch", handleMruSwitch);
+		};
+	}, [currentPathname, navigate]);
 
 	const { data: currentWorkspace } = electronTrpc.workspaces.get.useQuery(
 		{ id: currentWorkspaceId ?? "" },
@@ -271,6 +378,14 @@ function DashboardLayout() {
 				open={keyboardHelpOpen}
 				onOpenChange={setKeyboardHelpOpen}
 			/>
+			{mruSwitcherState && (
+				<DashboardMruSwitcherOverlay
+					activeIndex={mruSwitcherState.activeIndex}
+					direction={mruSwitcherState.direction}
+					entries={mruSwitcherState.entries}
+					labelResolver={dashboardViewMruRegistryLabelResolver}
+				/>
+			)}
 			<DashboardFocusIndicator />
 			<DashboardVimModeIndicator />
 			<DashboardActionHintsOverlay />
