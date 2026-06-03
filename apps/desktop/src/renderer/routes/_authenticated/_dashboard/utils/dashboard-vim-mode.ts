@@ -39,6 +39,11 @@ const EDITABLE_SELECTOR = [
 	"webview",
 ].join(",");
 
+const LOCAL_VIM_SEQUENCE_SCOPE_SELECTOR = [
+	'[data-dashboard-sidebar-root="true"]',
+	"[data-native-agent-view-root]",
+].join(",");
+
 const dashboardVimModeStorage = createJSONStorage<{
 	enabled: boolean;
 }>(() => {
@@ -119,6 +124,21 @@ export function shouldHandleDashboardVimKey(
 	if (isComposing) return false;
 	if (event.altKey || event.ctrlKey || event.metaKey) return false;
 	return !isDashboardVimEditableTarget(event.target);
+}
+
+export function isDashboardLocalVimSequenceScopeActive(
+	target: EventTarget | null,
+): boolean {
+	if (typeof HTMLElement === "undefined") return false;
+	const targetElement = target instanceof HTMLElement ? target : null;
+	const activeElement =
+		typeof document === "undefined" ? null : document.activeElement;
+
+	return [targetElement, activeElement].some(
+		(element) =>
+			element instanceof HTMLElement &&
+			element.closest(LOCAL_VIM_SEQUENCE_SCOPE_SELECTOR) != null,
+	);
 }
 
 export function dashboardVimKey(event: KeyboardEvent): string {

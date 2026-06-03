@@ -79,9 +79,6 @@ import {
 import {
 	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
-	nativeAgentSidebarCurrentIndex,
-	nativeAgentSidebarJumpFromKey,
-	nativeAgentSidebarNavigationDeltaFromKey,
 	nativeAgentSidebarVimActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
@@ -133,7 +130,6 @@ import {
 	getDashboardHashPathname,
 	subscribeDashboardHashPathname,
 } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
-import { markDashboardSidebarKeyboardFocus } from "../../../../hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-focus";
 import { DashboardWebPageIcon } from "../DashboardWebPagesGrid/components/DashboardWebPageIcon";
 
 interface DashboardNativeAgentsSectionProps {
@@ -791,7 +787,6 @@ export function DashboardNativeAgentsSection({
 	const [notifiedState, setNotifiedState] = useState(() => readNotifiedState());
 	const hasInitializedReplyNotificationsRef = useRef(false);
 	const hasStartedCapyBackgroundSyncRef = useRef(false);
-	const lastNativeSidebarGRef = useRef(0);
 	const [lastFolderIds, setLastFolderIds] = useState(() => readLastFolderIds());
 	const [createProvider, setCreateProvider] =
 		useState<NativeAgentProvider | null>(null);
@@ -1702,45 +1697,12 @@ export function DashboardNativeAgentsSection({
 			);
 			if (rows.length === 0) return;
 
-			const focusNativeRow = (row: HTMLButtonElement) => {
-				markDashboardSidebarKeyboardFocus(row);
-				row.focus({ preventScroll: true });
-				row.scrollIntoView({ block: "nearest" });
-			};
-
-			const jumpAction = nativeAgentSidebarJumpFromKey({
-				key: vimKey,
-				lastGAt: lastNativeSidebarGRef.current,
-				now: Date.now(),
-			});
-			if (jumpAction.handled) {
-				event.preventDefault();
-				event.stopPropagation();
-				lastNativeSidebarGRef.current = jumpAction.nextLastGAt;
-				if (jumpAction.action === "top") {
-					const firstRow = rows[0];
-					if (firstRow) focusNativeRow(firstRow);
-					return;
-				}
-				if (jumpAction.action === "bottom") {
-					const lastRow = rows.at(-1);
-					if (lastRow) focusNativeRow(lastRow);
-					return;
-				}
-				return;
-			}
-
-			const activeIndex = rows.findIndex(
-				(row) => row.dataset.nativeAgentSessionRowId === activeRoute.id,
-			);
 			const focusedIndex =
 				document.activeElement instanceof HTMLButtonElement
 					? rows.indexOf(document.activeElement)
 					: -1;
-			const currentIndex = nativeAgentSidebarCurrentIndex({
-				activeIndex,
-				focusedIndex,
-			});
+			if (focusedIndex < 0) return;
+			const currentIndex = focusedIndex;
 			const currentRow = rows[currentIndex];
 			const rowProvider =
 				currentRow?.dataset.nativeAgentSessionRowProvider === "capy" ||
@@ -1895,21 +1857,6 @@ export function DashboardNativeAgentsSection({
 				);
 				return;
 			}
-			const navigationDelta = nativeAgentSidebarNavigationDeltaFromKey({
-				eventKey: event.key,
-				vimKey,
-			});
-			if (navigationDelta === 0) return;
-			const nextIndex =
-				navigationDelta > 0
-					? Math.min(rows.length - 1, currentIndex + 1)
-					: Math.max(0, currentIndex - 1);
-			const row = rows[nextIndex];
-			if (!row || nextIndex === currentIndex) return;
-
-			event.preventDefault();
-			event.stopPropagation();
-			focusNativeRow(row);
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });

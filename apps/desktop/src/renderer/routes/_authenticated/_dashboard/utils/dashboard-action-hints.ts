@@ -18,8 +18,10 @@ const DASHBOARD_ACTION_HINT_EXCLUDED_ANCESTOR_SELECTOR = [
 	".sr-only",
 ].join(",");
 
-const DASHBOARD_ACTION_HINT_SCOPED_ROOT_SELECTOR =
-	"[data-dashboard-sidebar-action-scope]";
+const DASHBOARD_ACTION_HINT_SCOPED_ROOT_SELECTOR = [
+	"[data-dashboard-sidebar-action-scope]",
+	"[data-native-agent-view-root]",
+].join(",");
 const DASHBOARD_ACTION_HINT_KEYBOARD_FOCUS_SELECTOR =
 	'[data-dashboard-sidebar-keyboard-focus="true"]';
 const DASHBOARD_ACTION_HINT_ACTIVE_SIDEBAR_SELECTOR =
@@ -129,6 +131,7 @@ export function dashboardActionHintRootForElement(
 
 function targetTitle(element: HTMLElement): string {
 	return (
+		element.getAttribute("data-dashboard-action-hint-title")?.trim() ||
 		element.getAttribute("aria-label")?.trim() ||
 		element.getAttribute("title")?.trim() ||
 		element.textContent?.trim().replace(/\s+/g, " ") ||
@@ -219,6 +222,17 @@ export function dashboardActionHintDisplayTitle(
 function semanticActionHintLabel(
 	element: HTMLElement,
 ): { displayLabel: string; label: string } | null {
+	const explicitLabel = element
+		.getAttribute("data-dashboard-action-hint-label")
+		?.trim();
+	if (explicitLabel) {
+		const explicitDisplayLabel =
+			element
+				.getAttribute("data-dashboard-action-hint-display-label")
+				?.trim() || explicitLabel;
+		return { displayLabel: explicitDisplayLabel, label: explicitLabel };
+	}
+
 	const sidebarAction = element.getAttribute("data-dashboard-sidebar-action");
 	if (sidebarAction && sidebarAction in SIDEBAR_ACTION_HINT_LABELS) {
 		return SIDEBAR_ACTION_HINT_LABELS[sidebarAction];

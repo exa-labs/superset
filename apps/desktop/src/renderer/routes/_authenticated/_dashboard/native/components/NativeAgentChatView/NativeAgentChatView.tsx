@@ -281,21 +281,29 @@ function NativeAgentHeaderViewSwitcher({
 	viewMode: NativeViewMode;
 }) {
 	const options: Array<{
+		actionHintLabel: string;
+		actionHintTitle: string;
 		key: NativeViewMode;
 		label: string;
 		shortcut: string;
 	}> = [
 		{
+			actionHintLabel: "n",
+			actionHintTitle: "Show native chat",
 			key: "native",
 			label: "Native",
-			shortcut: "b",
+			shortcut: "",
 		},
 		{
+			actionHintLabel: "b",
+			actionHintTitle: "Show browser view",
 			key: "browser",
 			label: "Browser",
 			shortcut: shortcutSequence(nativeBrowserShortcut, "b"),
 		},
 		{
+			actionHintLabel: "s",
+			actionHintTitle: "Show split view",
 			key: "split",
 			label: "Split",
 			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
@@ -314,6 +322,8 @@ function NativeAgentHeaderViewSwitcher({
 						aria-pressed={selected}
 						onClick={() => onSelectViewMode(option.key)}
 						title={`${option.label} view${shortcutSuffix}`}
+						data-dashboard-action-hint-label={option.actionHintLabel}
+						data-dashboard-action-hint-title={option.actionHintTitle}
 						className={cn(
 							"flex h-7 items-center gap-1.5 rounded px-2 text-xs font-medium transition-colors",
 							selected
@@ -369,6 +379,8 @@ function NativeAgentHeaderActionsMenu({
 					type="button"
 					aria-label="Show native agent actions"
 					title="Actions and shortcuts"
+					data-dashboard-action-hint-label="."
+					data-dashboard-action-hint-title="Open actions menu"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
 					<LuEllipsis className="size-4" />
@@ -2414,6 +2426,8 @@ export function NativeAgentChatView({
 					onClick={() => void invalidateProvider()}
 					disabled={!isConfigured}
 					title="Refresh"
+					data-dashboard-action-hint-label="R"
+					data-dashboard-action-hint-title="Refresh session data"
 					className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label="Refresh native agent data"
 				>
@@ -2430,6 +2444,8 @@ export function NativeAgentChatView({
 							)}
 							aria-label="Toggle native diagnostics"
 							title="Diagnostics"
+							data-dashboard-action-hint-label="i"
+							data-dashboard-action-hint-title="Show diagnostics"
 						>
 							<LuInfo className="size-4" />
 						</button>

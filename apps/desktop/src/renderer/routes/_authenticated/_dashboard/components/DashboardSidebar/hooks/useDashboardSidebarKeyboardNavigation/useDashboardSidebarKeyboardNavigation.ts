@@ -9,6 +9,7 @@ import {
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
+	dashboardSidebarVimJumpFromKey,
 	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import { markDashboardSidebarKeyboardFocus } from "./dashboard-sidebar-keyboard-focus";
@@ -357,21 +358,22 @@ export function useDashboardSidebarKeyboardNavigation(
 				return;
 			}
 
-			if (event.key === "G") {
+			const vimJump = dashboardSidebarVimJumpFromKey({
+				key: event.key,
+				lastGAt: lastGRef.current,
+				now: Date.now(),
+			});
+			if (vimJump.handled) {
 				event.preventDefault();
-				focusDashboardSidebarItem(items[items.length - 1]);
-				return;
-			}
-
-			if (event.key === "g") {
-				event.preventDefault();
-				const now = Date.now();
-				if (now - lastGRef.current < 450) {
+				lastGRef.current = vimJump.nextLastGAt;
+				if (vimJump.action === "first") {
 					focusDashboardSidebarItem(items[0]);
-					lastGRef.current = 0;
 					return;
 				}
-				lastGRef.current = now;
+				if (vimJump.action === "last") {
+					focusDashboardSidebarItem(items[items.length - 1]);
+					return;
+				}
 				return;
 			}
 

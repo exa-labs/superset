@@ -38,13 +38,17 @@ function sidebarPanelPosition(scope: HTMLElement): {
 		typeof window === "undefined" ? rect.right + 228 : window.innerWidth;
 	const viewportHeight =
 		typeof window === "undefined" ? rect.top + 180 : window.innerHeight;
-	const width = 212;
+	const width = 260;
+	const isNativeScope = scope.matches("[data-native-agent-view-root]");
+	const preferredLeft = isNativeScope
+		? rect.right - width - 12
+		: rect.right + 8;
 	const left = Math.min(
-		Math.max(8, rect.right + 8),
+		Math.max(8, preferredLeft),
 		Math.max(8, viewportWidth - width - 8),
 	);
 	const top = Math.min(
-		Math.max(8, rect.top),
+		Math.max(8, rect.top + (isNativeScope ? 12 : 0)),
 		Math.max(8, viewportHeight - 180),
 	);
 	return {
@@ -157,6 +161,7 @@ export function DashboardActionHintsOverlay() {
 
 	if (sidebarScope) {
 		const position = sidebarPanelPosition(sidebarScope);
+		const isNativeScope = sidebarScope.matches("[data-native-agent-view-root]");
 
 		return (
 			<div
@@ -165,13 +170,28 @@ export function DashboardActionHintsOverlay() {
 			>
 				<div
 					data-dashboard-sidebar-action-hints-panel="true"
-					className="absolute w-[212px] overflow-hidden rounded-md border border-border/85 bg-background/95 p-1.5 text-[11px] shadow-2xl backdrop-blur"
+					className="absolute w-[260px] overflow-hidden rounded-md border border-border/85 bg-background/95 p-2 text-[11px] shadow-2xl backdrop-blur"
 					style={{
 						left: position.left,
 						maxHeight: position.maxHeight,
 						top: position.top,
 					}}
 				>
+					<div className="mb-1.5 flex items-center justify-between gap-2 px-1">
+						<div className="min-w-0">
+							<div className="text-[11px] font-semibold text-foreground">
+								{isNativeScope ? "Session actions" : "Row actions"}
+							</div>
+							<div className="truncate text-[10px] text-muted-foreground">
+								Type a key to run an action. Esc closes.
+							</div>
+						</div>
+						{activeHints.prefix && (
+							<kbd className="shrink-0 rounded border border-border/80 bg-muted px-1.5 py-1 font-mono text-[10px] font-semibold leading-none text-foreground">
+								{activeHints.prefix}
+							</kbd>
+						)}
+					</div>
 					<div className="grid max-h-full gap-1 overflow-y-auto">
 						{activeHints.targets.map((target) => (
 							<div

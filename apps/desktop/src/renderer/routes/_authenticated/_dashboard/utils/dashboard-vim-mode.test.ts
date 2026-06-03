@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	dashboardVimGlobalActionFromKey,
 	dashboardVimNavigationActionFromSequence,
+	isDashboardLocalVimSequenceScopeActive,
 	nextDashboardVimSequence,
 	setDashboardVimModeEnabled,
 	setDashboardVimPendingPrefix,
@@ -108,6 +109,40 @@ describe("dashboard vim mode", () => {
 			pendingPrefix: null,
 			sequence: null,
 		});
+	});
+
+	it("lets local Vim scopes own g-prefixed navigation", () => {
+		if (typeof document === "undefined") return;
+
+		const sidebar = document.createElement("div");
+		sidebar.setAttribute("data-dashboard-sidebar-root", "true");
+		const sidebarRow = document.createElement("button");
+		sidebar.append(sidebarRow);
+		document.body.append(sidebar);
+
+		const nativeView = document.createElement("div");
+		nativeView.setAttribute("data-native-agent-view-root", "");
+		const nativeButton = document.createElement("button");
+		nativeView.append(nativeButton);
+		document.body.append(nativeView);
+
+		const ordinaryButton = document.createElement("button");
+		document.body.append(ordinaryButton);
+
+		try {
+			expect(isDashboardLocalVimSequenceScopeActive(sidebarRow)).toBe(true);
+			expect(isDashboardLocalVimSequenceScopeActive(nativeButton)).toBe(true);
+			expect(isDashboardLocalVimSequenceScopeActive(ordinaryButton)).toBe(
+				false,
+			);
+
+			sidebarRow.focus();
+			expect(isDashboardLocalVimSequenceScopeActive(null)).toBe(true);
+		} finally {
+			sidebar.remove();
+			nativeView.remove();
+			ordinaryButton.remove();
+		}
 	});
 
 	it("maps global vim actions", () => {

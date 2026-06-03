@@ -11,6 +11,7 @@ import {
 	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
 	dashboardVimNavigationActionFromSequence,
+	isDashboardLocalVimSequenceScopeActive,
 	nextDashboardVimSequence,
 	setDashboardVimPendingPrefix,
 	shouldHandleDashboardVimKey,
@@ -429,6 +430,11 @@ export function useDashboardWebShortcuts() {
 					event.stopPropagation();
 					event.stopImmediatePropagation();
 					useWorkspaceSidebarStore.getState().toggleOpen();
+					return;
+				}
+
+				if (isDashboardLocalVimSequenceScopeActive(event.target)) {
+					updatePendingVimPrefix(null);
 					return;
 				}
 

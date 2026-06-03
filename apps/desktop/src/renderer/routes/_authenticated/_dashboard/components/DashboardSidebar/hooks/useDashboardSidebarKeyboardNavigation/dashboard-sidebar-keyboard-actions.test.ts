@@ -7,6 +7,7 @@ import {
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadSeedFromKey,
+	dashboardSidebarVimJumpFromKey,
 	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import {
@@ -122,6 +123,66 @@ describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
 		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
 			null,
 		);
+	});
+});
+
+describe("dashboardSidebarVimJumpFromKey", () => {
+	test("maps G and double-g to bottom and top sidebar jumps", () => {
+		expect(
+			dashboardSidebarVimJumpFromKey({
+				key: "G",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "last",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			dashboardSidebarVimJumpFromKey({
+				key: "g",
+				lastGAt: 0,
+				now: 1000,
+			}),
+		).toEqual({
+			action: "none",
+			handled: true,
+			nextLastGAt: 1000,
+		});
+		expect(
+			dashboardSidebarVimJumpFromKey({
+				key: "g",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "first",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			dashboardSidebarVimJumpFromKey({
+				key: "g",
+				lastGAt: 1000,
+				now: 1600,
+			}),
+		).toEqual({
+			action: "none",
+			handled: true,
+			nextLastGAt: 1600,
+		});
+		expect(
+			dashboardSidebarVimJumpFromKey({
+				key: "j",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "none",
+			handled: false,
+			nextLastGAt: 1000,
+		});
 	});
 });
 

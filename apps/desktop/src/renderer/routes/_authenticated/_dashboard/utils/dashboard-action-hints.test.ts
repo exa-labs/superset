@@ -183,6 +183,28 @@ describe("dashboard action hints", () => {
 		]);
 	});
 
+	it("uses explicit action hint labels and titles for custom controls", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const browserButton = document.createElement("button");
+		browserButton.setAttribute("data-dashboard-action-hint-label", "b");
+		browserButton.setAttribute(
+			"data-dashboard-action-hint-title",
+			"Show browser view",
+		);
+		browserButton.textContent = "Browser";
+		setRect(browserButton, visibleRect());
+		root.append(browserButton);
+
+		const targets = collectDashboardActionHintTargets(root);
+
+		expect(targets.map((target) => target.label)).toEqual(["b"]);
+		expect(targets.map((target) => target.displayLabel)).toEqual(["b"]);
+		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
+			"Show browser view",
+		]);
+	});
+
 	it("scopes action hints to the focused sidebar row when available", () => {
 		if (typeof document === "undefined") return;
 		const root = document.createElement("div");
@@ -212,6 +234,21 @@ describe("dashboard action hints", () => {
 		root.append(focusedRow, otherButton);
 
 		expect(dashboardActionHintRootForElement(null, root)).toBe(focusedRow);
+	});
+
+	it("scopes action hints to the active native agent view", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const nativeView = document.createElement("div");
+		nativeView.setAttribute("data-native-agent-view-root", "");
+		const browserButton = document.createElement("button");
+		browserButton.textContent = "Browser";
+		nativeView.append(browserButton);
+		root.append(nativeView);
+
+		expect(dashboardActionHintRootForElement(browserButton, root)).toBe(
+			nativeView,
+		);
 	});
 
 	it("recognizes sidebar scoped action hint panels", () => {

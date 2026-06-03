@@ -14,6 +14,7 @@ export type DashboardSidebarKeyboardAction =
 	| "reply"
 	| "toggle-browser";
 export type DashboardSidebarActivationAction = "activate" | "none";
+export type DashboardSidebarVimJumpAction = "first" | "last" | "none";
 
 export function isDashboardSidebarSpaceKey(key: string): boolean {
 	return key === " " || key === "Spacebar" || key === "Space";
@@ -65,6 +66,36 @@ export function dashboardSidebarRovingNavigationBoundaryFromKey(
 	if (key === "Home") return "first";
 	if (key === "End") return "last";
 	return null;
+}
+
+export function dashboardSidebarVimJumpFromKey(input: {
+	key: string;
+	lastGAt: number;
+	now: number;
+	thresholdMs?: number;
+}): {
+	action: DashboardSidebarVimJumpAction;
+	handled: boolean;
+	nextLastGAt: number;
+} {
+	if (input.key === "G") {
+		return { action: "last", handled: true, nextLastGAt: 0 };
+	}
+
+	if (input.key !== "g") {
+		return {
+			action: "none",
+			handled: false,
+			nextLastGAt: input.lastGAt,
+		};
+	}
+
+	const thresholdMs = input.thresholdMs ?? 450;
+	if (input.now - input.lastGAt < thresholdMs) {
+		return { action: "first", handled: true, nextLastGAt: 0 };
+	}
+
+	return { action: "none", handled: true, nextLastGAt: input.now };
 }
 
 export function dashboardSidebarTypeaheadSeedFromKey(input: {
