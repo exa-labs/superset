@@ -1,7 +1,21 @@
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@superset/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import type { DragEvent } from "react";
-import { LuFolder, LuFolderPlus, LuFolderX, LuPlus } from "react-icons/lu";
+import {
+	LuEllipsis,
+	LuFolder,
+	LuFolderPlus,
+	LuFolderX,
+	LuPlus,
+} from "react-icons/lu";
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import { DashboardWebPageIcon } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarHeader/components/DashboardWebPagesGrid/components/DashboardWebPageIcon";
 import {
@@ -166,6 +180,42 @@ export function DashboardWebTabAppGroup({
 							: `Hide ${app.label} sidebar sessions`}
 					</TooltipContent>
 				</Tooltip>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="menu"
+							aria-keyshortcuts="."
+							aria-label={`Show ${app.label} actions`}
+							title="Show actions (.)"
+							className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+						>
+							<LuEllipsis className="size-3.5" />
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent side="right" align="start" className="w-56">
+						<DropdownMenuItem onSelect={() => onOpenApp(app.id)}>
+							Open {app.label}
+							<DropdownMenuShortcut>Enter</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => onCreateTab(app.id)}>
+							New tab
+							<DropdownMenuShortcut>n</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => onCreateFolder(app.id)}>
+							New folder
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem
+							onSelect={() => onCollapsedChange(app.id, !isCollapsed)}
+						>
+							{isCollapsed ? "Show" : "Hide"} sidebar sessions
+							<DropdownMenuShortcut>
+								{isCollapsed ? "l" : "h"}
+							</DropdownMenuShortcut>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
 				<Tooltip delayDuration={300}>
 					<TooltipTrigger asChild>
 						<button
@@ -212,7 +262,10 @@ export function DashboardWebTabAppGroup({
 									moveDraggedTabToFolder(event, folder.id);
 								}}
 							>
-								<div className="group/folder flex h-7 min-w-0 items-center gap-2 rounded-md border border-transparent px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-border/50 hover:bg-accent/25 hover:text-foreground">
+								<div
+									data-dashboard-sidebar-action-scope
+									className="group/folder flex h-7 min-w-0 items-center gap-1 rounded-md border border-transparent px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-border/50 hover:bg-accent/25 hover:text-foreground"
+								>
 									<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
 									<button
 										type="button"
@@ -228,6 +281,46 @@ export function DashboardWebTabAppGroup({
 									<span className="rounded-sm bg-muted-foreground/10 px-1 font-mono text-[10px]">
 										{tabsInFolder.length === 0 ? "empty" : tabsInFolder.length}
 									</span>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<button
+												type="button"
+												data-dashboard-sidebar-action="menu"
+												aria-keyshortcuts="."
+												aria-label={`Show actions for ${folder.title}`}
+												title="Show folder actions (.)"
+												className="flex size-5 shrink-0 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
+											>
+												<LuEllipsis className="size-3" />
+											</button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent
+											side="right"
+											align="start"
+											className="w-52"
+										>
+											<DropdownMenuItem
+												onSelect={() =>
+													onFolderCollapsedChange(
+														folder.id,
+														!folder.isCollapsed,
+													)
+												}
+											>
+												{folder.isCollapsed ? "Expand" : "Collapse"}
+												<DropdownMenuShortcut>
+													{folder.isCollapsed ? "l" : "h"}
+												</DropdownMenuShortcut>
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem
+												onSelect={() => onDeleteFolder(folder.id)}
+											>
+												Delete folder
+												<DropdownMenuShortcut>d</DropdownMenuShortcut>
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
 									<button
 										type="button"
 										data-dashboard-sidebar-action="delete"

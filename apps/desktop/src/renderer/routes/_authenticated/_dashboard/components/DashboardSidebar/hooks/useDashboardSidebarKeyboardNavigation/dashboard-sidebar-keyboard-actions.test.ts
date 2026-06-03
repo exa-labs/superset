@@ -369,6 +369,64 @@ describe("findDashboardSidebarActionButton", () => {
 		expect(findDashboardSidebarActionButton(session, "rename")).toBe(rename);
 	});
 
+	test("resolves Chrome tab row action buttons from the focused tab row", () => {
+		if (typeof document === "undefined") return;
+
+		const rowScope = document.createElement("div");
+		rowScope.dataset.dashboardSidebarActionScope = "";
+
+		const tab = document.createElement("button");
+		tab.dataset.dashboardWebTabRowButton = "chrome-1";
+		makeVisible(tab);
+
+		const menu = document.createElement("button");
+		menu.dataset.dashboardSidebarAction = "menu";
+		makeVisible(menu);
+
+		const pin = document.createElement("button");
+		pin.dataset.dashboardSidebarAction = "pin";
+		makeVisible(pin);
+
+		const rename = document.createElement("button");
+		rename.dataset.dashboardSidebarAction = "rename";
+		makeVisible(rename);
+
+		const archive = document.createElement("button");
+		archive.dataset.dashboardSidebarAction = "archive";
+		makeVisible(archive);
+
+		rowScope.append(tab, menu, pin, rename, archive);
+
+		expect(findDashboardSidebarActionButton(tab, "menu")).toBe(menu);
+		expect(findDashboardSidebarActionButton(tab, "pin")).toBe(pin);
+		expect(findDashboardSidebarActionButton(tab, "rename")).toBe(rename);
+		expect(findDashboardSidebarActionButton(tab, "archive")).toBe(archive);
+	});
+
+	test("resolves Chrome app group menu and create actions from the focused app row", () => {
+		if (typeof document === "undefined") return;
+
+		const groupScope = document.createElement("div");
+		groupScope.dataset.dashboardSidebarActionScope = "";
+
+		const chrome = document.createElement("button");
+		chrome.dataset.dashboardWebAppTrigger = "chrome";
+		makeVisible(chrome);
+
+		const menu = document.createElement("button");
+		menu.dataset.dashboardSidebarAction = "menu";
+		makeVisible(menu);
+
+		const create = document.createElement("button");
+		create.dataset.dashboardSidebarAction = "create";
+		makeVisible(create);
+
+		groupScope.append(chrome, menu, create);
+
+		expect(findDashboardSidebarActionButton(chrome, "menu")).toBe(menu);
+		expect(findDashboardSidebarActionButton(chrome, "create")).toBe(create);
+	});
+
 	test("resolves folder action buttons from the focused folder row", () => {
 		if (typeof document === "undefined") return;
 

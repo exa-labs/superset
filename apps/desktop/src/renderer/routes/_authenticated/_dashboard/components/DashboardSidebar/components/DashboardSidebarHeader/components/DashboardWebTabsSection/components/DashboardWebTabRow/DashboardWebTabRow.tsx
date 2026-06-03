@@ -1,6 +1,14 @@
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@superset/ui/dropdown-menu";
 import { cn } from "@superset/ui/utils";
 import { useEffect, useRef, useState } from "react";
-import { LuPencil, LuPin, LuX } from "react-icons/lu";
+import { LuEllipsis, LuPencil, LuPin, LuX } from "react-icons/lu";
 import { DashboardWebPageIcon } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarHeader/components/DashboardWebPagesGrid/components/DashboardWebPageIcon";
 import {
 	cancelDashboardWebUrlWarmup,
@@ -21,6 +29,37 @@ interface DashboardWebTabRowProps {
 	onPinnedChange: (tabId: string, isPinned: boolean) => void;
 }
 
+const WEB_TAB_ROW_KEY_HINTS = [
+	{ key: ".", title: "Actions" },
+	{ key: "p", title: "Pin" },
+	{ key: "e", title: "Rename" },
+	{ key: "x", title: "Close" },
+];
+
+function WebTabRowKeyHints({ visible }: { visible: boolean }) {
+	return (
+		<div
+			aria-hidden="true"
+			className={cn(
+				"pointer-events-none absolute top-1 right-[4.5rem] flex max-w-[5rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
+				visible
+					? "opacity-100"
+					: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+			)}
+		>
+			{WEB_TAB_ROW_KEY_HINTS.map((hint) => (
+				<span
+					key={hint.key}
+					title={hint.title}
+					className="flex h-4 min-w-4 items-center justify-center rounded border border-border/70 bg-muted/45 px-1 font-mono text-[9px] leading-none text-muted-foreground"
+				>
+					{hint.key}
+				</span>
+			))}
+		</div>
+	);
+}
+
 export function DashboardWebTabRow({
 	tab,
 	isActive,
@@ -31,6 +70,7 @@ export function DashboardWebTabRow({
 }: DashboardWebTabRowProps) {
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const [isEditing, setIsEditing] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 	const [draftTitle, setDraftTitle] = useState(tab.title);
 	const secondaryTitle =
 		tab.browserTitle && tab.browserTitle !== tab.title
@@ -56,6 +96,8 @@ export function DashboardWebTabRow({
 		setDraftTitle(tab.title);
 		setIsEditing(false);
 	};
+	const togglePinned = () => onPinnedChange(tab.id, !tab.isPinned);
+	const closeTab = () => onClose(tab.id);
 
 	if (isEditing) {
 		return (
@@ -82,7 +124,7 @@ export function DashboardWebTabRow({
 				event.dataTransfer.effectAllowed = "move";
 			}}
 			className={cn(
-				"group flex min-h-7 items-center gap-1 rounded-md pr-1 transition-colors",
+				"group relative flex min-h-8 items-center gap-1 rounded-md pr-1 transition-colors",
 				isActive
 					? "bg-accent/70 text-foreground"
 					: "text-muted-foreground hover:bg-accent/35 hover:text-foreground",
@@ -98,7 +140,7 @@ export function DashboardWebTabRow({
 				onClick={() => onOpen(tab.id)}
 				onDoubleClick={() => setIsEditing(true)}
 				title={secondaryTitle ?? tab.title}
-				className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-xs"
+				className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 pr-16 text-xs"
 			>
 				<DashboardWebPageIcon
 					src={getDashboardWebTabFavicon(tab)}
@@ -119,50 +161,93 @@ export function DashboardWebTabRow({
 					</span>
 				)}
 			</button>
-			<button
-				type="button"
-				data-dashboard-sidebar-action="pin"
-				aria-label={
-					tab.isPinned
-						? `Unpin ${tab.title} from browser retention`
-						: `Pin ${tab.title} for browser retention`
-				}
-				title={tab.isPinned ? "Unpin" : "Pin"}
-				onClick={(event) => {
-					event.stopPropagation();
-					onPinnedChange(tab.id, !tab.isPinned);
-				}}
+			<div
 				className={cn(
-					"flex h-5 shrink-0 items-center gap-1 rounded px-1.5 text-[10px] font-medium leading-none transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100",
-					tab.isPinned
-						? "border border-border/70 bg-background/70 text-foreground opacity-100"
-						: "text-muted-foreground/70 opacity-0",
+					"absolute right-1 top-1 flex w-16 shrink-0 items-center justify-end gap-0.5 rounded-md bg-background/90 p-0.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-within:opacity-100",
+					(tab.isPinned || menuOpen) && "opacity-100",
 				)}
 			>
-				<LuPin className={cn("size-3", tab.isPinned && "fill-current")} />
-				{tab.isPinned && <span>Unpin</span>}
-			</button>
-			<button
-				type="button"
-				data-dashboard-sidebar-action="rename"
-				aria-label={`Rename ${tab.title}`}
-				onClick={() => setIsEditing(true)}
-				className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-0 transition hover:bg-accent group-hover:opacity-100 group-focus-within:opacity-100"
-			>
-				<LuPencil className="size-3" />
-			</button>
-			<button
-				type="button"
-				data-dashboard-sidebar-action="archive"
-				aria-label={`Close ${tab.title}`}
-				onClick={(event) => {
-					event.stopPropagation();
-					onClose(tab.id);
-				}}
-				className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-0 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
-			>
-				<LuX className="size-3" />
-			</button>
+				<DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+					<DropdownMenuTrigger asChild>
+						<button
+							type="button"
+							data-dashboard-sidebar-action="menu"
+							aria-keyshortcuts="."
+							aria-label={`Show actions for ${tab.title}`}
+							title="Show actions (.)"
+							className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 transition hover:bg-accent hover:text-foreground"
+						>
+							<LuEllipsis className="size-3" />
+						</button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent side="right" align="start" className="w-52">
+						<DropdownMenuItem onSelect={() => onOpen(tab.id)}>
+							Open
+							<DropdownMenuShortcut>Enter</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={() => setIsEditing(true)}>
+							Rename
+							<DropdownMenuShortcut>e</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuItem onSelect={togglePinned}>
+							{tab.isPinned ? "Unpin" : "Pin"}
+							<DropdownMenuShortcut>p</DropdownMenuShortcut>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onSelect={closeTab}>
+							Close tab
+							<DropdownMenuShortcut>x</DropdownMenuShortcut>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+				<button
+					type="button"
+					data-dashboard-sidebar-action="pin"
+					aria-keyshortcuts="p"
+					aria-label={
+						tab.isPinned
+							? `Unpin ${tab.title} from browser retention`
+							: `Pin ${tab.title} for browser retention`
+					}
+					title={tab.isPinned ? "Unpin (p)" : "Pin (p)"}
+					onClick={(event) => {
+						event.stopPropagation();
+						togglePinned();
+					}}
+					className={cn(
+						"flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 transition hover:bg-accent hover:text-foreground",
+						tab.isPinned && "text-foreground",
+					)}
+				>
+					<LuPin className={cn("size-3", tab.isPinned && "fill-current")} />
+				</button>
+				<button
+					type="button"
+					data-dashboard-sidebar-action="rename"
+					aria-keyshortcuts="e"
+					aria-label={`Rename ${tab.title}`}
+					title="Rename (e)"
+					onClick={() => setIsEditing(true)}
+					className="sr-only"
+				>
+					<LuPencil className="size-3" />
+				</button>
+				<button
+					type="button"
+					data-dashboard-sidebar-action="archive"
+					aria-keyshortcuts="a x"
+					aria-label={`Close ${tab.title}`}
+					title="Close (x)"
+					onClick={(event) => {
+						event.stopPropagation();
+						closeTab();
+					}}
+					className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 transition hover:bg-accent hover:text-foreground"
+				>
+					<LuX className="size-3" />
+				</button>
+			</div>
+			<WebTabRowKeyHints visible={menuOpen} />
 		</li>
 	);
 }
