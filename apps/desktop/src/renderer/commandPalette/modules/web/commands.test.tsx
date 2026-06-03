@@ -701,6 +701,8 @@ describe("web command provider", () => {
 			"native.current.closeSplit",
 			"native.current.widenSplit",
 			"native.current.equalizeSplit",
+			"native.folder.moveCurrent",
+			"native.folder.removeCurrent",
 		]) {
 			const command = commands.find((candidate) => candidate.id === id);
 			expect(command?.when?.(sessionContext)).toBe(true);
@@ -714,6 +716,34 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.reply")).toBe("r/i");
 		expect(shortcutById.get("native.current.openBrowser")).toBe("o");
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
+		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
+		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
+		expect(
+			commands.find((command) => command.id === "native.current.reply")?.title,
+		).toBe("Reply to current Devin session");
+		expect(
+			commands.find((command) => command.id === "native.current.pin")?.title,
+		).toBe("Pin current Devin session");
+		expect(
+			commands.find((command) => command.id === "native.folder.moveCurrent")
+				?.title,
+		).toBe("Move current Devin session to remembered folder");
+		expect(
+			commands.find((command) => command.id === "native.current.reply")
+				?.iconUrl,
+		).toBe("https://app.devin.ai/favicon.ico");
+
+		const capyCommands = webProvider.provide(
+			commandContext("/native/capy/thread-1"),
+		);
+		expect(
+			capyCommands.find((command) => command.id === "native.current.reply")
+				?.title,
+		).toBe("Reply to current Capy thread");
+		expect(
+			capyCommands.find((command) => command.id === "native.current.reply")
+				?.iconUrl,
+		).toBe("https://capy.ai/_marketing/favicon/favicon-96x96.png");
 	});
 
 	it("dispatches provider-scoped native control-plane events", () => {
@@ -747,6 +777,12 @@ describe("web command provider", () => {
 				?.run?.(context);
 			commands
 				.find((command) => command.id === "native.current.closeSplit")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.folder.moveCurrent")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.folder.removeCurrent")
 				?.run?.(context);
 
 			expect(events).toContainEqual({
@@ -784,6 +820,24 @@ describe("web command provider", () => {
 			expect(events).toContainEqual({
 				detail: { action: "close-split", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: {
+					action: "move-active",
+					color: undefined,
+					folderId: undefined,
+					provider: "devin",
+				},
+				type: "dashboard-native-agent-folder-action",
+			});
+			expect(events).toContainEqual({
+				detail: {
+					action: "remove-active",
+					color: undefined,
+					folderId: undefined,
+					provider: "devin",
+				},
+				type: "dashboard-native-agent-folder-action",
 			});
 		});
 	});

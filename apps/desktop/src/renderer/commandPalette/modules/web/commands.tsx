@@ -253,6 +253,21 @@ function nativeConversationNoun(
 	return filter === "unread" ? "replies" : "sessions";
 }
 
+function nativeCurrentConversationNoun(
+	provider: NativeAgentProvider | null,
+): string {
+	if (provider === "capy") return "thread";
+	return "session";
+}
+
+function nativeCurrentConversationLabel(
+	provider: NativeAgentProvider | null,
+): string {
+	const noun = nativeCurrentConversationNoun(provider);
+	if (!provider) return `native ${noun}`;
+	return `${nativeProviderTitle(provider)} ${noun}`;
+}
+
 function nativeFolderCommandColors(): string[] {
 	return [
 		...new Set([
@@ -592,6 +607,12 @@ export const webProvider: CommandProvider = {
 		const currentNativeProvider = nativeProviderFromPathname(
 			context.route.pathname,
 		);
+		const currentNativeIconUrl = currentNativeProvider
+			? nativeProviderIconUrl(currentNativeProvider)
+			: undefined;
+		const currentNativeLabel = nativeCurrentConversationLabel(
+			currentNativeProvider,
+		);
 		const nativeFolders = readNativeAgentFoldersFromLocalStorage();
 		const latestNativeReply = readLatestNativeAgentReplyNotification();
 		const actionableLatestNativeReply =
@@ -773,9 +794,10 @@ export const webProvider: CommandProvider = {
 		commands.push(
 			{
 				id: "native.current.new",
-				title: "Create new current native session",
+				title: `Create new ${currentNativeLabel}`,
 				section: "web",
 				icon: PlusIcon,
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Create a Capy thread or Devin session for the current native provider",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
@@ -789,8 +811,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.refresh",
-				title: "Refresh current native agent",
+				title: `Refresh current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Refresh Capy or Devin data for the current view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "refresh", "reload", "native"],
@@ -804,8 +827,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.reply",
-				title: "Reply to current native session",
+				title: `Reply to current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Focus the composer for the current Capy/Devin session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
@@ -828,8 +852,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.openBrowser",
-				title: "Open current native session in browser",
+				title: `Open current ${currentNativeLabel} in browser`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Switch the current Capy/Devin session to browser view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "open", "browser", "native", "session"],
@@ -844,8 +869,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.openExternal",
-				title: "Open current native session externally",
+				title: `Open current ${currentNativeLabel} externally`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Open the current Capy/Devin session in the system browser",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -869,8 +895,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.pin",
-				title: "Pin current native session",
+				title: `Pin current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Keep the current Capy/Devin conversation in the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "pin", "sidebar", "native"],
@@ -885,8 +912,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.unpin",
-				title: "Unpin current native session",
+				title: `Unpin current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Let the current conversation leave the sidebar automatically",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -902,8 +930,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.rename",
-				title: "Rename current native session",
+				title: `Rename current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Set a local title for the current Capy/Devin session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "rename", "title", "session", "native"],
@@ -918,8 +947,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.hide",
-				title: "Archive current native session",
+				title: `Archive current ${currentNativeLabel}`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Hide the current Capy/Devin conversation from the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -943,8 +973,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.show",
-				title: "Show current native session in sidebar",
+				title: `Show current ${currentNativeLabel} in sidebar`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Move the current Capy/Devin conversation back to the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -960,8 +991,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.toggleBrowser",
-				title: "Toggle native/browser view",
+				title: `Toggle current ${currentNativeLabel} native/browser view`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				hotkeyId: "TOGGLE_NATIVE_BROWSER_VIEW",
 				description:
 					"Switch the current native session between chat and browser",
@@ -978,8 +1010,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.toggleSplit",
-				title: "Toggle native split view",
+				title: `Toggle current ${currentNativeLabel} split view`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 				description: "Show the current native chat and browser side by side",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -995,8 +1028,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.narrowSplit",
-				title: "Narrow native chat pane",
+				title: `Narrow current ${currentNativeLabel} chat pane`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Give the native chat side less width in split view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "native", "split", "narrow", "resize"],
@@ -1011,8 +1045,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.swapSplit",
-				title: "Swap native split panes",
+				title: `Swap current ${currentNativeLabel} split panes`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Move the native chat pane to the opposite side",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "swap", "side"],
@@ -1027,8 +1062,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.closeSplit",
-				title: "Close native split view",
+				title: `Close current ${currentNativeLabel} split view`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Return the current native session to chat-only view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "close", "browser"],
@@ -1043,8 +1079,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.widenSplit",
-				title: "Widen native chat pane",
+				title: `Widen current ${currentNativeLabel} chat pane`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Give the native chat side more width in split view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "widen", "resize"],
@@ -1059,8 +1096,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.current.equalizeSplit",
-				title: "Equalize native split panes",
+				title: `Equalize current ${currentNativeLabel} split panes`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Reset native chat and browser split panes to equal widths",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
@@ -1078,6 +1116,7 @@ export const webProvider: CommandProvider = {
 				id: "native.current.toggleDiagnostics",
 				title: "Toggle native diagnostics",
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Show native Capy/Devin freshness and inclusion details",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "diagnostics", "debug", "freshness"],
@@ -1151,8 +1190,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.folder.moveCurrent",
-				title: "Move current native session to remembered folder",
+				title: `Move current ${currentNativeLabel} to remembered folder`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description:
 					"Move the current Capy/Devin session to the last selected folder",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
@@ -1168,8 +1208,9 @@ export const webProvider: CommandProvider = {
 			},
 			{
 				id: "native.folder.removeCurrent",
-				title: "Move current native session out of folder",
+				title: `Move current ${currentNativeLabel} out of folder`,
 				section: "web",
+				iconUrl: currentNativeIconUrl,
 				description: "Return the current Capy/Devin session to the main list",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
