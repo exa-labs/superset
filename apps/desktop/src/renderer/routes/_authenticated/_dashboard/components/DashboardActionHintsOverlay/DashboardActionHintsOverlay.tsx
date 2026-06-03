@@ -6,7 +6,9 @@ import {
 	type DashboardActionHintTarget,
 	dashboardActionHintKeyFromInput,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
+	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
 	shouldHandleDashboardVimKey,
 	useDashboardVimModeStore,
@@ -75,7 +77,15 @@ export function DashboardActionHintsOverlay() {
 			}
 
 			if (!vimModeEnabled || !shouldHandleDashboardVimKey(event)) return;
-			if (dashboardVimKey(event) !== "f") return;
+			const action = dashboardVimGlobalActionFromKey(dashboardVimKey(event));
+
+			if (action === "show-keyboard-help") {
+				consume(event);
+				openDashboardKeyboardHelp();
+				return;
+			}
+
+			if (action !== "show-action-hints") return;
 
 			consume(event);
 			openActionHints();
