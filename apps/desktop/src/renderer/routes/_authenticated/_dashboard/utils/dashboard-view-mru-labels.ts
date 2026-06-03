@@ -141,6 +141,13 @@ export function resolveDashboardViewMruRegistryLabel(
 		};
 	}
 
+	if (first === "v2-workspaces") {
+		return {
+			subtitle: "Dashboard",
+			title: "Workspaces",
+		};
+	}
+
 	if (first === "root-terminal" && second) {
 		const title = context.getQuickTerminalTitle?.(second);
 		if (!title) return null;

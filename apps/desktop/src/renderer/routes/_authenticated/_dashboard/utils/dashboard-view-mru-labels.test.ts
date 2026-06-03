@@ -67,6 +67,13 @@ describe("dashboard view MRU registry labels", () => {
 		});
 	});
 
+	it("labels the workspace overview route", () => {
+		expect(resolveDashboardViewMruRegistryLabel("/v2-workspaces")).toEqual({
+			subtitle: "Dashboard",
+			title: "Workspaces",
+		});
+	});
+
 	it("labels quick root terminals by target", () => {
 		expect(resolveDashboardViewMruRegistryLabel("/root-terminal/heph")).toEqual(
 			{

@@ -32,6 +32,9 @@ describe("dashboard view MRU", () => {
 		expect(normalizeDashboardViewMruPath("/native/capy/thread-1")).toBe(
 			"/native/capy/thread-1",
 		);
+		expect(normalizeDashboardViewMruPath("/v2-workspaces")).toBe(
+			"/v2-workspaces",
+		);
 		expect(normalizeDashboardViewMruPath("/v2-workspace/ws-1/")).toBe(
 			"/v2-workspace/ws-1",
 		);
@@ -97,9 +100,11 @@ describe("dashboard view MRU", () => {
 		recordDashboardViewMruPath("/web/overseer", storage, 1);
 		recordDashboardViewMruPath("/native/devin/session-1", storage, 2);
 		recordDashboardViewMruPath("/web/overseer", storage, 3);
-		recordDashboardViewMruPath("/settings/account", storage, 4);
+		recordDashboardViewMruPath("/v2-workspaces", storage, 4);
+		recordDashboardViewMruPath("/settings/account", storage, 5);
 
 		expect(readDashboardViewMruEntries(storage)).toEqual([
+			{ path: "/v2-workspaces", viewedAt: 4 },
 			{ path: "/web/overseer", viewedAt: 3 },
 			{ path: "/native/devin/session-1", viewedAt: 2 },
 		]);
@@ -167,6 +172,10 @@ describe("dashboard view MRU", () => {
 		expect(dashboardViewMruEntryLabel("/native/devin")).toEqual({
 			subtitle: "Devin inbox",
 			title: "Devin",
+		});
+		expect(dashboardViewMruEntryLabel("/v2-workspaces")).toEqual({
+			subtitle: "Dashboard",
+			title: "Workspaces",
 		});
 		expect(dashboardViewMruEntryLabel("/root-terminal/stag")).toEqual({
 			subtitle: "stag",

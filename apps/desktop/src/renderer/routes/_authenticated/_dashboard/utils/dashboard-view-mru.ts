@@ -46,6 +46,7 @@ function stripUrlNoise(pathname: string): string {
 export function normalizeDashboardViewMruPath(pathname: string): string | null {
 	const path = stripUrlNoise(pathname);
 	if (path === "/workspace" || path.startsWith("/workspace/")) return path;
+	if (path === "/v2-workspaces") return path;
 	if (path === "/v2-workspace" || path.startsWith("/v2-workspace/")) {
 		return path;
 	}
@@ -192,6 +193,12 @@ export function dashboardViewMruEntryLabel(
 		return {
 			subtitle: id ?? `${provider} inbox`,
 			title: id ? `${provider} session` : provider,
+		};
+	}
+	if (first === "v2-workspaces") {
+		return {
+			subtitle: "Dashboard",
+			title: "Workspaces",
 		};
 	}
 	if (first === "workspace" || first === "v2-workspace") {
