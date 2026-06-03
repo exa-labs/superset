@@ -32,7 +32,10 @@ function DashboardRootTerminalPage() {
 	const title = target ? dashboardQuickTerminalTitle(target) : "Terminal";
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col bg-background">
+		<div
+			className="flex min-h-0 flex-1 flex-col bg-background"
+			data-terminal-root="true"
+		>
 			<div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
 				<Button
 					type="button"
@@ -52,6 +55,16 @@ function DashboardRootTerminalPage() {
 							? `${dashboardQuickTerminalCommand(target)} in repo root`
 							: "Unknown quick terminal"}
 					</div>
+				</div>
+				<div className="ml-auto hidden items-center gap-1.5 text-[10px] text-muted-foreground lg:flex">
+					<span className="rounded border border-border/70 bg-background/70 px-1.5 py-0.5 font-mono">
+						Esc
+					</span>
+					<span>sidebar</span>
+					<span className="rounded border border-border/70 bg-background/70 px-1.5 py-0.5 font-mono">
+						⌥K
+					</span>
+					<span>commands</span>
 				</div>
 			</div>
 			{target ? (
@@ -144,7 +157,11 @@ function DashboardRootTerminal({
 	}, [target, terminalId]);
 
 	return (
-		<div className="min-h-0 flex-1 overflow-hidden p-2">
+		<div
+			className="min-h-0 flex-1 overflow-hidden p-2"
+			data-terminal-root="true"
+			title="Root terminal. Press Esc to focus the sidebar. Press Option+K for commands."
+		>
 			<div
 				ref={containerRef}
 				className="h-full w-full overflow-hidden rounded-md bg-black"
