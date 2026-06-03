@@ -183,6 +183,16 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Toggle side-by-side chat and browser for a session",
 				},
 				{
+					keys: ["[", "]"],
+					label: "Resize native split",
+					description: "Narrow or widen the native chat side of split view",
+				},
+				{
+					keys: ["="],
+					label: "Equalize native split",
+					description: "Reset native chat and browser panes to equal widths",
+				},
+				{
 					keys: ["r"],
 					label: "Reply",
 					description: "Focus the active native-agent reply box",

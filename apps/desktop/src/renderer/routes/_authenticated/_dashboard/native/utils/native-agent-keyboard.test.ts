@@ -8,6 +8,7 @@ import {
 	nativeAgentSelectedSessionVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarVimActionFromKey,
+	nativeAgentSplitPaneActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
@@ -178,6 +179,14 @@ describe("native agent keyboard helpers", () => {
 				key: "x",
 			}),
 		).toBeNull();
+	});
+
+	it("maps native split pane resize keys", () => {
+		expect(nativeAgentSplitPaneActionFromKey("[")).toBe("narrow-native");
+		expect(nativeAgentSplitPaneActionFromKey("]")).toBe("widen-native");
+		expect(nativeAgentSplitPaneActionFromKey("=")).toBe("equalize");
+		expect(nativeAgentSplitPaneActionFromKey("s")).toBe("none");
+		expect(nativeAgentSplitPaneActionFromKey(null)).toBe("none");
 	});
 
 	it("maps plain arrow navigation while guarding editable and sidebar targets", () => {

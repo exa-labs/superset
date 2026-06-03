@@ -10,6 +10,7 @@ import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
 import type {
 	ComponentProps,
+	CSSProperties,
 	KeyboardEvent as ReactKeyboardEvent,
 	ReactNode,
 } from "react";
@@ -58,6 +59,7 @@ import {
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
 	nativeAgentSelectedSessionVimActionFromKey,
+	nativeAgentSplitPaneActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
@@ -145,7 +147,9 @@ type NativeItem = {
 type NativeViewMode = "browser" | "native" | "split";
 
 type NativeAgentCurrentAction =
+	| "equalize-split"
 	| "hide"
+	| "narrow-native-split"
 	| "new"
 	| "pin"
 	| "refresh"
@@ -155,7 +159,8 @@ type NativeAgentCurrentAction =
 	| "toggle-browser"
 	| "toggle-diagnostics"
 	| "toggle-split"
-	| "unpin";
+	| "unpin"
+	| "widen-native-split";
 
 type NativeBrowserTarget = {
 	id: string;
@@ -172,6 +177,11 @@ const NATIVE_AGENT_LIST_STALE_MS = 60_000;
 const NATIVE_AGENT_DETAIL_STALE_MS = 30_000;
 const NATIVE_AGENT_CACHE_MS = 2 * 60 * 60 * 1000;
 const READ_STATE_STORAGE_KEY = "dashboard-native-agent-read-state-v1";
+const SPLIT_RATIO_STORAGE_KEY = "dashboard-native-agent-split-ratio-v1";
+const DEFAULT_NATIVE_AGENT_SPLIT_RATIO = 50;
+const MIN_NATIVE_AGENT_SPLIT_RATIO = 30;
+const MAX_NATIVE_AGENT_SPLIT_RATIO = 70;
+const NATIVE_AGENT_SPLIT_RATIO_STEP = 5;
 
 const markdownComponents = {
 	code: ({
@@ -270,6 +280,43 @@ function readNativeAgentReadState(): Record<string, number> {
 
 function writeNativeAgentReadState(readState: Record<string, number>) {
 	writeJson(READ_STATE_STORAGE_KEY, readState);
+}
+
+function clampNativeAgentSplitRatio(value: number): number {
+	if (!Number.isFinite(value)) return DEFAULT_NATIVE_AGENT_SPLIT_RATIO;
+	return Math.min(
+		MAX_NATIVE_AGENT_SPLIT_RATIO,
+		Math.max(MIN_NATIVE_AGENT_SPLIT_RATIO, value),
+	);
+}
+
+function readNativeAgentSplitRatios(): Record<string, number> {
+	const stored = readJson<Record<string, number>>(SPLIT_RATIO_STORAGE_KEY, {});
+	return Object.fromEntries(
+		Object.entries(stored).map(([key, value]) => [
+			key,
+			clampNativeAgentSplitRatio(value),
+		]),
+	);
+}
+
+function writeNativeAgentSplitRatios(ratios: Record<string, number>) {
+	writeJson(SPLIT_RATIO_STORAGE_KEY, ratios);
+}
+
+function nativeAgentSplitPaneStyle({
+	placement,
+	ratio,
+	viewMode,
+}: {
+	placement: "browser" | "native";
+	ratio: number;
+	viewMode: NativeViewMode;
+}): CSSProperties | undefined {
+	if (viewMode !== "split") return undefined;
+	return placement === "native"
+		? { right: `${100 - ratio}%` }
+		: { left: `${ratio}%` };
 }
 
 function latestAgentMessageTime(item: NativeItem): number | null {
@@ -552,6 +599,9 @@ export function NativeAgentChatView({
 	const [renameDialogOpen, setRenameDialogOpen] = useState(false);
 	const [renameDraft, setRenameDraft] = useState("");
 	const [readState, setReadState] = useState(() => readNativeAgentReadState());
+	const [splitRatios, setSplitRatios] = useState(() =>
+		readNativeAgentSplitRatios(),
+	);
 	const [showDiagnostics, setShowDiagnostics] = useState(false);
 	const isVimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 	const nativeBrowserShortcut = useHotkeyDisplay(
@@ -565,6 +615,18 @@ export function NativeAgentChatView({
 	}>(() => ({ key: selectedViewKey, mode: "native" }));
 	const viewMode =
 		viewState.key === selectedViewKey ? viewState.mode : "native";
+	const nativeSplitRatio =
+		splitRatios[selectedViewKey] ?? DEFAULT_NATIVE_AGENT_SPLIT_RATIO;
+	const nativePaneStyle = nativeAgentSplitPaneStyle({
+		placement: "native",
+		ratio: nativeSplitRatio,
+		viewMode,
+	});
+	const browserPaneStyle = nativeAgentSplitPaneStyle({
+		placement: "browser",
+		ratio: nativeSplitRatio,
+		viewMode,
+	});
 	const [openedBrowserTargets, setOpenedBrowserTargets] = useState<
 		NativeBrowserTarget[]
 	>([]);
@@ -1363,6 +1425,32 @@ export function NativeAgentChatView({
 		[nativeBrowserKey, provider, selectedItem, selectedViewKey],
 	);
 
+	const resizeNativeSplitPane = useCallback(
+		(delta: number) => {
+			if (viewMode !== "split" || !selectedItem?.url) return;
+			setSplitRatios((current) => ({
+				...current,
+				[selectedViewKey]: clampNativeAgentSplitRatio(
+					(current[selectedViewKey] ?? DEFAULT_NATIVE_AGENT_SPLIT_RATIO) +
+						delta,
+				),
+			}));
+		},
+		[selectedItem?.url, selectedViewKey, viewMode],
+	);
+
+	const equalizeNativeSplitPanes = useCallback(() => {
+		if (viewMode !== "split" || !selectedItem?.url) return;
+		setSplitRatios((current) => ({
+			...current,
+			[selectedViewKey]: DEFAULT_NATIVE_AGENT_SPLIT_RATIO,
+		}));
+	}, [selectedItem?.url, selectedViewKey, viewMode]);
+
+	useEffect(() => {
+		writeNativeAgentSplitRatios(splitRatios);
+	}, [splitRatios]);
+
 	useEffect(() => {
 		const openItem = (item: NativeItem) => {
 			if (provider === "capy") {
@@ -1533,6 +1621,24 @@ export function NativeAgentChatView({
 					composerRef.current?.focus();
 					return;
 				}
+				const splitPaneAction = nativeAgentSplitPaneActionFromKey(key);
+				if (
+					splitPaneAction !== "none" &&
+					viewMode === "split" &&
+					selectedItem.url
+				) {
+					consumeNativeAgentKeyboardEvent(event);
+					if (splitPaneAction === "narrow-native") {
+						resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
+						return;
+					}
+					if (splitPaneAction === "widen-native") {
+						resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP);
+						return;
+					}
+					equalizeNativeSplitPanes();
+					return;
+				}
 				const nextViewMode = nextNativeAgentKeyboardViewMode({
 					currentMode: viewMode,
 					hasBrowserUrl: Boolean(selectedItem.url),
@@ -1621,10 +1727,12 @@ export function NativeAgentChatView({
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 		};
 	}, [
+		equalizeNativeSplitPanes,
 		handleSelectViewMode,
 		invalidateProvider,
 		openExternal,
 		provider,
+		resizeNativeSplitPane,
 		selectedItem,
 		unreadWorkspaceItems,
 		viewMode,
@@ -1693,6 +1801,18 @@ export function NativeAgentChatView({
 				handleSelectViewMode(viewMode === "split" ? "native" : "split");
 				return;
 			}
+			if (detail?.action === "narrow-native-split" && selectedItem.url) {
+				resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
+				return;
+			}
+			if (detail?.action === "widen-native-split" && selectedItem.url) {
+				resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP);
+				return;
+			}
+			if (detail?.action === "equalize-split" && selectedItem.url) {
+				equalizeNativeSplitPanes();
+				return;
+			}
 		};
 
 		window.addEventListener(
@@ -1707,8 +1827,10 @@ export function NativeAgentChatView({
 		};
 	}, [
 		handleSelectViewMode,
+		equalizeNativeSplitPanes,
 		invalidateProvider,
 		provider,
+		resizeNativeSplitPane,
 		selectedItem,
 		syncCapyThreads,
 		viewMode,
@@ -1871,6 +1993,15 @@ export function NativeAgentChatView({
 							<ShortcutHint title="Toggle split view">
 								{nativeSplitShortcut}
 							</ShortcutHint>
+						)}
+						{selectedItem.url && viewMode === "split" && (
+							<>
+								<ShortcutHint title="Narrow native chat pane">[</ShortcutHint>
+								<ShortcutHint title="Widen native chat pane">]</ShortcutHint>
+								<ShortcutHint title="Equalize native split panes">
+									=
+								</ShortcutHint>
+							</>
 						)}
 						{selectedItem.url && (
 							<ShortcutHint title="Open browser version">o</ShortcutHint>
@@ -2234,9 +2365,10 @@ export function NativeAgentChatView({
 			) : selectedItem ? (
 				<div className="relative min-h-0 flex-1">
 					<div
+						style={nativePaneStyle}
 						className={cn(
 							"absolute inset-0 flex min-h-0 flex-col",
-							viewMode === "split" && "right-[50%] border-r border-border",
+							viewMode === "split" && "border-r border-border",
 							viewMode === "native" || viewMode === "split"
 								? "pointer-events-auto opacity-100"
 								: "pointer-events-none opacity-0",
@@ -2320,9 +2452,9 @@ export function NativeAgentChatView({
 						return (
 							<div
 								key={target.key}
+								style={browserPaneStyle}
 								className={cn(
 									"absolute inset-0 flex min-h-0",
-									viewMode === "split" && "left-[50%]",
 									isTargetActive
 										? "pointer-events-auto opacity-100"
 										: "pointer-events-none opacity-0",

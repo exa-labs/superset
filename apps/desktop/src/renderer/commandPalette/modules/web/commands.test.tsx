@@ -141,6 +141,9 @@ describe("web command provider", () => {
 		expect(commandIds.has("native.current.show")).toBe(true);
 		expect(commandIds.has("native.current.toggleBrowser")).toBe(true);
 		expect(commandIds.has("native.current.toggleSplit")).toBe(true);
+		expect(commandIds.has("native.current.narrowSplit")).toBe(true);
+		expect(commandIds.has("native.current.widenSplit")).toBe(true);
+		expect(commandIds.has("native.current.equalizeSplit")).toBe(true);
 		expect(commandIds.has("native.current.toggleDiagnostics")).toBe(true);
 		expect(commandIds.has("native.folder.create")).toBe(true);
 		expect(commandIds.has("native.folder.rename")).toBe(true);
@@ -190,6 +193,9 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.show")).toBe("p");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
+		expect(shortcutById.get("native.current.narrowSplit")).toBe("[");
+		expect(shortcutById.get("native.current.widenSplit")).toBe("]");
+		expect(shortcutById.get("native.current.equalizeSplit")).toBe("=");
 		expect(shortcutById.get("native.capy.unread")).toBe("u");
 		expect(shortcutById.get("native.devin.unread")).toBe("u");
 		expect(shortcutById.get("native.folder.create")).toBe("n");
@@ -284,6 +290,9 @@ describe("web command provider", () => {
 			"native.current.show",
 			"native.current.toggleBrowser",
 			"native.current.toggleSplit",
+			"native.current.narrowSplit",
+			"native.current.widenSplit",
+			"native.current.equalizeSplit",
 		]) {
 			const command = commands.find((candidate) => candidate.id === id);
 			expect(command?.when?.(sessionContext)).toBe(true);
@@ -306,6 +315,9 @@ describe("web command provider", () => {
 			commands
 				.find((command) => command.id === "native.current.rename")
 				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.current.narrowSplit")
+				?.run?.(context);
 
 			expect(events).toContainEqual({
 				detail: { provider: "devin" },
@@ -317,6 +329,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "rename", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "narrow-native-split", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 		});

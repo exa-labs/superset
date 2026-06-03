@@ -44,7 +44,9 @@ type NativeOverviewFilter =
 
 function dispatchNativeAgentAction(
 	action:
+		| "equalize-split"
 		| "hide"
+		| "narrow-native-split"
 		| "new"
 		| "pin"
 		| "refresh"
@@ -54,7 +56,8 @@ function dispatchNativeAgentAction(
 		| "toggle-browser"
 		| "toggle-diagnostics"
 		| "toggle-split"
-		| "unpin",
+		| "unpin"
+		| "widen-native-split",
 	provider?: NativeAgentProvider | null,
 ) {
 	window.dispatchEvent(
@@ -652,6 +655,52 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"toggle-split",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.narrowSplit",
+				title: "Narrow native chat pane",
+				section: "web",
+				description: "Give the native chat side less width in split view",
+				keywords: ["capy", "devin", "native", "split", "narrow", "resize"],
+				shortcutLabel: "[",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"narrow-native-split",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.widenSplit",
+				title: "Widen native chat pane",
+				section: "web",
+				description: "Give the native chat side more width in split view",
+				keywords: ["capy", "devin", "native", "split", "widen", "resize"],
+				shortcutLabel: "]",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"widen-native-split",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.equalizeSplit",
+				title: "Equalize native split panes",
+				section: "web",
+				description:
+					"Reset native chat and browser split panes to equal widths",
+				keywords: ["capy", "devin", "native", "split", "equal", "resize"],
+				shortcutLabel: "=",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"equalize-split",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

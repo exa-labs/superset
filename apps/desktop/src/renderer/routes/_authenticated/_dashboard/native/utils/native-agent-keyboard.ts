@@ -34,6 +34,11 @@ export type NativeAgentFolderVimAction =
 export type NativeAgentViewMode = "browser" | "native" | "split";
 export type NativeAgentSidebarJumpAction = "bottom" | "none" | "top";
 export type NativeAgentUnreadVimAction = "none" | "open-unread";
+export type NativeAgentSplitPaneAction =
+	| "equalize"
+	| "narrow-native"
+	| "none"
+	| "widen-native";
 
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
@@ -128,6 +133,15 @@ export function nextNativeAgentKeyboardViewMode(input: {
 		return input.currentMode === "split" ? "native" : "split";
 	}
 	return null;
+}
+
+export function nativeAgentSplitPaneActionFromKey(
+	key: string | null,
+): NativeAgentSplitPaneAction {
+	if (key === "[") return "narrow-native";
+	if (key === "]") return "widen-native";
+	if (key === "=") return "equalize";
+	return "none";
 }
 
 export function nativeAgentPlainNavigationKey(

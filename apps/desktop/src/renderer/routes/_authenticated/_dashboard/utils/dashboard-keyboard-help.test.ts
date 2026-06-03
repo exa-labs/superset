@@ -61,6 +61,12 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Split in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["s"] }),
 		);
+		expect(entryByLabel.get("Resize native split")).toEqual(
+			expect.objectContaining({ keys: ["[", "]"] }),
+		);
+		expect(entryByLabel.get("Equalize native split")).toEqual(
+			expect.objectContaining({ keys: ["="] }),
+		);
 		expect(entryByLabel.get("Remove from folder")).toEqual(
 			expect.objectContaining({ keys: ["F"] }),
 		);
