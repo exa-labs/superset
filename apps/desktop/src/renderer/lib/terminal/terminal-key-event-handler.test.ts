@@ -6,9 +6,10 @@ const testGlobal = globalThis as typeof globalThis & {
 		onMessage: (callback: (message: unknown) => void) => void;
 		sendMessage: (message: unknown) => void;
 	};
+	window?: Window & typeof globalThis;
 };
 
-const previousElectronTRPC = testGlobal.electronTRPC;
+const previousWindow = testGlobal.window;
 
 testGlobal.electronTRPC = {
 	onMessage: () => {},
@@ -16,15 +17,18 @@ testGlobal.electronTRPC = {
 };
 
 afterAll(() => {
-	if (previousElectronTRPC === undefined) {
-		delete testGlobal.electronTRPC;
+	if (previousWindow === undefined) {
+		Reflect.deleteProperty(testGlobal, "window");
 		return;
 	}
-	testGlobal.electronTRPC = previousElectronTRPC;
+	testGlobal.window = previousWindow;
 });
 
 const { createTerminalKeyEventHandler } = await import(
 	"./terminal-key-event-handler"
+);
+const { TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT } = await import(
+	"./terminal-dashboard-events"
 );
 
 function keyboardEvent(overrides: Partial<KeyboardEvent> = {}): KeyboardEvent {
@@ -94,10 +98,68 @@ describe("createTerminalKeyEventHandler", () => {
 		for (const event of [
 			keyboardEvent({ altKey: true, code: "KeyK", key: "k" }),
 			keyboardEvent({ altKey: true, code: "KeyV", key: "v" }),
+			keyboardEvent({ altKey: true, code: "KeyF", key: "f" }),
+			keyboardEvent({ altKey: true, code: "Slash", key: "/" }),
+			keyboardEvent({ altKey: true, code: "Tab", key: "Tab" }),
+			keyboardEvent({
+				altKey: true,
+				code: "Tab",
+				key: "Tab",
+				shiftKey: true,
+			}),
+			keyboardEvent({ altKey: true, code: "KeyC", key: "c" }),
+			keyboardEvent({ altKey: true, code: "KeyD", key: "d" }),
+			keyboardEvent({ altKey: true, code: "KeyG", key: "g" }),
+			keyboardEvent({ altKey: true, code: "KeyW", key: "w" }),
+			keyboardEvent({ altKey: true, code: "Digit1", key: "1" }),
 		]) {
 			expect(handler(event)).toBe(false);
 			expect(event.preventDefault).not.toHaveBeenCalled();
 		}
+		expect(xterm.input).not.toHaveBeenCalled();
+	});
+
+	it("turns bare Escape into a dashboard shell-focus request", () => {
+		const xterm = terminal();
+		const event = keyboardEvent({ code: "Escape", key: "Escape" });
+		const handler = createTerminalKeyEventHandler(xterm, {
+			platform: "MacIntel",
+		});
+		let focusRequestCount = 0;
+		const listener = () => {
+			focusRequestCount += 1;
+		};
+		if (testGlobal.window === undefined) {
+			testGlobal.window = new EventTarget() as Window & typeof globalThis;
+		}
+		window.addEventListener(TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT, listener);
+
+		try {
+			expect(handler(event)).toBe(false);
+		} finally {
+			window.removeEventListener(
+				TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
+				listener,
+			);
+		}
+
+		expect(event.preventDefault).toHaveBeenCalled();
+		expect(focusRequestCount).toBe(1);
+		expect(xterm.input).not.toHaveBeenCalled();
+	});
+
+	it("keeps modified Escape available to terminal applications", () => {
+		const xterm = terminal();
+		const event = keyboardEvent({
+			altKey: true,
+			code: "Escape",
+			key: "Escape",
+		});
+		const handler = createTerminalKeyEventHandler(xterm, {
+			platform: "MacIntel",
+		});
+
+		expect(handler(event)).toBe(true);
 		expect(xterm.input).not.toHaveBeenCalled();
 	});
 

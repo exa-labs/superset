@@ -5,6 +5,7 @@ import {
 	shouldSelectAllShortcut,
 } from "./clipboard-shortcuts";
 import { translateLineEditChord } from "./line-edit-translations";
+import { dispatchTerminalFocusDashboardShellEvent } from "./terminal-dashboard-events";
 
 export interface TerminalKeyEventHandlerOptions {
 	platform?: string;
@@ -24,6 +25,16 @@ function resolvePlatform(options: TerminalKeyEventHandlerOptions): string {
 	// this only kicks in for Node-style callers (incl. tests).
 	if (lower === "darwin") return "mac";
 	return lower;
+}
+
+function isDashboardShellEscape(event: KeyboardEvent): boolean {
+	if (event.type !== "keydown") return false;
+	if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+		return false;
+	}
+	const code = event.code.toLowerCase();
+	const key = event.key.toLowerCase();
+	return code === "escape" || key === "escape";
 }
 
 // xterm's _keyDown calls stopPropagation after processing, so any chord we
@@ -46,6 +57,11 @@ export function createTerminalKeyEventHandler(
 
 	return (event: KeyboardEvent): boolean => {
 		if (resolveHotkeyFromEvent(event) !== null) return false;
+		if (isDashboardShellEscape(event)) {
+			event.preventDefault();
+			dispatchTerminalFocusDashboardShellEvent();
+			return false;
+		}
 
 		const translation = translateLineEditChord(event, { isMac, isWindows });
 		if (translation !== null) {

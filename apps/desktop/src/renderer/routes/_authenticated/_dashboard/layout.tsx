@@ -11,12 +11,14 @@ import { useEffect, useState } from "react";
 import { useIsV2CloudEnabled } from "renderer/hooks/useIsV2CloudEnabled";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT } from "renderer/lib/terminal/terminal-dashboard-events";
 import { DashboardActionHintsOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardActionHintsOverlay";
 import { DashboardFocusIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardFocusIndicator";
 import { DashboardKeyboardShortcutsDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardKeyboardShortcutsDialog";
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
 import { DashboardVimModeIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardVimModeIndicator";
+import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { DASHBOARD_KEYBOARD_HELP_OPEN_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useDevSeedV2Sidebar } from "renderer/routes/_authenticated/hooks/useDevSeedV2Sidebar";
@@ -137,16 +139,29 @@ function DashboardLayout() {
 			event.preventDefault();
 			setKeyboardHelpOpen(true);
 		};
+		const handleTerminalFocusDashboardShell = (event: Event) => {
+			event.preventDefault();
+			handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+		};
 
 		window.addEventListener(
 			DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 			handleOpenKeyboardHelp,
 		);
-		return () =>
+		window.addEventListener(
+			TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
+			handleTerminalFocusDashboardShell,
+		);
+		return () => {
 			window.removeEventListener(
 				DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 				handleOpenKeyboardHelp,
 			);
+			window.removeEventListener(
+				TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
+				handleTerminalFocusDashboardShell,
+			);
+		};
 	}, []);
 
 	useHotkey(
