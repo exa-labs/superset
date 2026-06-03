@@ -1,0 +1,19 @@
+import { describe, expect, it } from "bun:test";
+import { DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT } from "./DashboardBrowserWebView";
+
+describe("dashboard browser webview bridge", () => {
+	it("includes in-page vim action hints behind a renderer-controlled flag", () => {
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"__clankeeSetDashboardVimModeEnabled",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"__clankeeDashboardVimModeEnabled",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"data-clankee-page-action-hints-overlay",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'String(event.key || "").toLowerCase() === "f"',
+		);
+	});
+});

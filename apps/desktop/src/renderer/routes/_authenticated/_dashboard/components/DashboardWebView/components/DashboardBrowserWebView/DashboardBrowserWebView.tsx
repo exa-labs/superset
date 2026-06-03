@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { recordDashboardBrowserPaneEvent } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-diagnostics";
+import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 import {
 	type DashboardBrowserWebViewPlacement,
@@ -10,13 +11,144 @@ import {
 } from "./dashboard-browser-webview-interaction";
 
 const FAVICON_CAPTURE_SIZE = 64;
-const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
+export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 (() => {
 	if (window.__clankeeDashboardWebShortcutBridgeInstalled) return;
 	window.__clankeeDashboardWebShortcutBridgeInstalled = true;
 	const prefix = "__CLANKEE_DASHBOARD_WEB_SHORTCUT__:";
+	const hintKeys = "asdfghjklqwertyuiopzxcvbnm".split("");
+	let activeHints = null;
+	let activeHintPrefix = "";
 	const invokeShortcut = (shortcut) => {
 		console.info(prefix + shortcut);
+	};
+	const hintLabelForIndex = (index) => {
+		if (!Number.isInteger(index) || index < 0) return "";
+		if (index < hintKeys.length) return hintKeys[index] || "";
+		const normalized = index - hintKeys.length;
+		const first = Math.floor(normalized / hintKeys.length);
+		const second = normalized % hintKeys.length;
+		return hintKeys[first] && hintKeys[second]
+			? hintKeys[first] + hintKeys[second]
+			: "";
+	};
+	const isEditableTarget = (target) => {
+		if (!(target instanceof Element)) return false;
+		const element = target instanceof HTMLElement ? target : target.parentElement;
+		if (!element) return false;
+		if (element.isContentEditable) return true;
+		return Boolean(
+			element.closest(
+				"input, textarea, select, [contenteditable='true'], [contenteditable=''], [role='textbox']",
+			),
+		);
+	};
+	const isVisibleTarget = (element) => {
+		if (!(element instanceof HTMLElement)) return false;
+		if (element.getAttribute("aria-disabled") === "true") return false;
+		if ("disabled" in element && element.disabled === true) return false;
+		const rect = element.getBoundingClientRect();
+		if (rect.width <= 0 || rect.height <= 0) return false;
+		return (
+			rect.bottom >= 0 &&
+			rect.right >= 0 &&
+			rect.top <= window.innerHeight &&
+			rect.left <= window.innerWidth
+		);
+	};
+	const targetTitle = (element) =>
+		element.getAttribute("aria-label") ||
+		element.getAttribute("title") ||
+		(element.textContent || "").trim().replace(/\\s+/g, " ") ||
+		"Action";
+	const collectHintTargets = () => {
+		const selector = [
+			"a[href]",
+			"button:not([disabled])",
+			"input[type='button']:not([disabled])",
+			"input[type='submit']:not([disabled])",
+			"input[type='reset']:not([disabled])",
+			"[role='button']:not([aria-disabled='true'])",
+			"[role='link']:not([aria-disabled='true'])",
+			"summary",
+		].join(",");
+		const seen = new Set();
+		const targets = [];
+		for (const element of document.querySelectorAll(selector)) {
+			if (!(element instanceof HTMLElement) || seen.has(element)) continue;
+			if (!isVisibleTarget(element)) continue;
+			seen.add(element);
+			const label = hintLabelForIndex(targets.length);
+			if (!label) break;
+			const rect = element.getBoundingClientRect();
+			targets.push({ element, label, rect, title: targetTitle(element) });
+		}
+		return targets;
+	};
+	const removeHintOverlay = () => {
+		document
+			.querySelectorAll("[data-clankee-page-action-hints-overlay]")
+			.forEach((element) => element.remove());
+	};
+	const renderHintOverlay = () => {
+		removeHintOverlay();
+		if (!activeHints) return;
+		const overlay = document.createElement("div");
+		overlay.setAttribute("data-clankee-page-action-hints-overlay", "true");
+		overlay.style.cssText =
+			"position:fixed;inset:0;z-index:2147483647;pointer-events:none;";
+		for (const target of activeHints) {
+			const badge = document.createElement("div");
+			badge.textContent = target.label;
+			badge.title = target.title;
+			badge.style.cssText = [
+				"position:absolute",
+				"min-width:16px",
+				"height:16px",
+				"padding:2px 5px",
+				"border-radius:4px",
+				"border:1px solid rgba(255,255,255,0.9)",
+				"background:#facc15",
+				"color:#111827",
+				"font:700 11px/12px ui-monospace,SFMono-Regular,Menlo,monospace",
+				"box-shadow:0 4px 16px rgba(0,0,0,0.35)",
+				"opacity:" + (target.label.startsWith(activeHintPrefix) ? "1" : "0.3"),
+				"left:" + Math.max(4, Math.round(target.rect.left)) + "px",
+				"top:" + Math.max(4, Math.round(target.rect.top)) + "px",
+			].join(";");
+			overlay.appendChild(badge);
+		}
+		document.documentElement.appendChild(overlay);
+	};
+	const closeHints = () => {
+		activeHints = null;
+		activeHintPrefix = "";
+		removeHintOverlay();
+	};
+	const openHints = () => {
+		activeHints = collectHintTargets();
+		activeHintPrefix = "";
+		if (activeHints.length === 0) {
+			activeHints = null;
+			return false;
+		}
+		renderHintOverlay();
+		return true;
+	};
+	const activateHintTarget = (target) => {
+		closeHints();
+		try {
+			target.element.focus({ preventScroll: true });
+		} catch {
+			try {
+				target.element.focus();
+			} catch {}
+		}
+		target.element.click();
+	};
+	window.__clankeeSetDashboardVimModeEnabled = (enabled) => {
+		window.__clankeeDashboardVimModeEnabled = enabled === true;
+		if (!window.__clankeeDashboardVimModeEnabled) closeHints();
 	};
 	const digitShortcuts = [
 		"OPEN_WEB_PAGE_1",
@@ -41,6 +173,51 @@ const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 	window.addEventListener(
 		"keydown",
 		(event) => {
+			if (activeHints) {
+				if (event.altKey || event.ctrlKey || event.metaKey) return;
+				const key =
+					event.key === "Escape"
+						? "escape"
+						: event.key.length === 1
+							? event.key.toLowerCase()
+							: null;
+				if (!key) return;
+				event.preventDefault();
+				event.stopPropagation();
+				if (key === "escape") {
+					closeHints();
+					return;
+				}
+				const nextPrefix = activeHintPrefix + key;
+				const exact = activeHints.find((target) => target.label === nextPrefix);
+				if (exact) {
+					activateHintTarget(exact);
+					return;
+				}
+				if (activeHints.some((target) => target.label.startsWith(nextPrefix))) {
+					activeHintPrefix = nextPrefix;
+					renderHintOverlay();
+					return;
+				}
+				closeHints();
+				return;
+			}
+			if (
+				window.__clankeeDashboardVimModeEnabled === true &&
+				!event.repeat &&
+				!event.altKey &&
+				!event.ctrlKey &&
+				!event.metaKey &&
+				!event.shiftKey &&
+				String(event.key || "").toLowerCase() === "f" &&
+				!isEditableTarget(event.target)
+			) {
+				if (openHints()) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+				return;
+			}
 			const shortcut = shortcutFromEvent(event);
 			if (!shortcut) return;
 			event.preventDefault();
@@ -49,6 +226,8 @@ const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		},
 		true,
 	);
+	window.addEventListener("scroll", closeHints, true);
+	window.addEventListener("resize", closeHints, true);
 })();
 `;
 
@@ -211,6 +390,9 @@ export function DashboardBrowserWebView({
 	onReadyChange,
 	onWebviewChange,
 }: DashboardBrowserWebViewProps) {
+	const dashboardVimModeEnabled = useDashboardVimModeStore(
+		(state) => state.enabled,
+	);
 	const webviewRef = useRef<Electron.WebviewTag | null>(null);
 	const srcRef = useRef(src);
 	const isReadyRef = useRef(false);
@@ -288,6 +470,18 @@ export function DashboardBrowserWebView({
 		});
 		registerBrowserRef.current({ paneId, webContentsId });
 	}, [cacheKey, paneId, tabId]);
+
+	const syncDashboardVimMode = useCallback(() => {
+		const webview = webviewRef.current;
+		if (!webview || !isReadyRef.current) return;
+		void webview
+			.executeJavaScript(
+				`window.__clankeeSetDashboardVimModeEnabled?.(${JSON.stringify(
+					dashboardVimModeEnabled,
+				)});`,
+			)
+			.catch(() => undefined);
+	}, [dashboardVimModeEnabled]);
 
 	const focusActiveWebview = useCallback(() => {
 		const webview = webviewRef.current;
@@ -464,6 +658,7 @@ export function DashboardBrowserWebView({
 			registerWebview();
 			void webview
 				.executeJavaScript(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT)
+				.then(syncDashboardVimMode)
 				.catch(() => undefined);
 			recordDashboardBrowserPaneEvent({
 				paneId,
@@ -584,7 +779,18 @@ export function DashboardBrowserWebView({
 				handleFaviconUpdated as EventListener,
 			);
 		};
-	}, [cacheKey, focusActiveWebview, paneId, registerWebview, tabId]);
+	}, [
+		cacheKey,
+		focusActiveWebview,
+		paneId,
+		registerWebview,
+		syncDashboardVimMode,
+		tabId,
+	]);
+
+	useEffect(() => {
+		syncDashboardVimMode();
+	}, [syncDashboardVimMode]);
 
 	return (
 		<div
