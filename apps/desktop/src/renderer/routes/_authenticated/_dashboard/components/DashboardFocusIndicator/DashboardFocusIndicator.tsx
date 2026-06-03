@@ -1,22 +1,11 @@
 import { Kbd, KbdGroup } from "@superset/ui/kbd";
 import { cn } from "@superset/ui/utils";
 import { useEffect, useState } from "react";
+import { dashboardFocusIndicatorHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-indicator-hints";
 import {
 	type DashboardFocusScope,
-	type DashboardFocusScopeId,
 	dashboardFocusScopeForDocument,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
-
-const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Option", "K"],
-	browser: ["Option", "K"],
-	"command-palette": ["Enter", "Esc"],
-	editor: ["Esc", "Option", "K"],
-	"keyboard-help": ["?", "Esc"],
-	"native-agent": ["r", "o", "b"],
-	sidebar: ["↑↓", "Enter"],
-	terminal: ["Option", "K"],
-};
 
 function currentDashboardFocusScope(): DashboardFocusScope {
 	if (typeof document === "undefined") {
@@ -62,7 +51,7 @@ export function DashboardFocusIndicator() {
 		};
 	}, []);
 
-	const hints = HINTS_BY_SCOPE[scope.id];
+	const hints = dashboardFocusIndicatorHints(scope.id);
 
 	return (
 		<div
