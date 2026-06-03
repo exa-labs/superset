@@ -85,6 +85,8 @@ describe("actions command provider", () => {
 
 		expect(commandIds.has("actions.newWorkspace")).toBe(true);
 		expect(commandIds.has("actions.toggleDashboardVimMode")).toBe(true);
+		expect(commandIds.has("actions.switchDashboardViewNext")).toBe(true);
+		expect(commandIds.has("actions.switchDashboardViewPrevious")).toBe(true);
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
@@ -98,6 +100,16 @@ describe("actions command provider", () => {
 				(command) => command.id === "actions.toggleDashboardVimMode",
 			)?.hotkeyId,
 		).toBe("TOGGLE_VIM_MODE");
+		expect(
+			commands.find(
+				(command) => command.id === "actions.switchDashboardViewNext",
+			)?.hotkeyId,
+		).toBe("SWITCH_DASHBOARD_VIEW_NEXT");
+		expect(
+			commands.find(
+				(command) => command.id === "actions.switchDashboardViewPrevious",
+			)?.hotkeyId,
+		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
 		expect(
 			commands.find((command) => command.id === "actions.newWorkspace")
 				?.hotkeyId,

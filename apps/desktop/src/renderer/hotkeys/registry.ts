@@ -74,6 +74,26 @@ export const HOTKEYS_REGISTRY = {
 		category: "Navigation",
 		description: "Search and open files in the current workspace",
 	},
+	SWITCH_DASHBOARD_VIEW_NEXT: {
+		key: {
+			mac: "alt+tab",
+			windows: "ctrl+alt+tab",
+			linux: "ctrl+alt+tab",
+		},
+		label: "Switch MRU View",
+		category: "Navigation",
+		description: "Switch to the next recently used dashboard view",
+	},
+	SWITCH_DASHBOARD_VIEW_PREVIOUS: {
+		key: {
+			mac: "alt+shift+tab",
+			windows: "ctrl+alt+shift+tab",
+			linux: "ctrl+alt+shift+tab",
+		},
+		label: "Switch MRU View Back",
+		category: "Navigation",
+		description: "Switch backward through recently used dashboard views",
+	},
 
 	// Web pages
 	OPEN_WEB_PAGE_1: {

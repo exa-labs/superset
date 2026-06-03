@@ -23,6 +23,24 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("TOGGLE_VIM_MODE");
 	});
 
+	it("matches Option+Tab MRU switching in both directions", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Tab",
+				key: "Tab",
+			}),
+		).toBe("SWITCH_DASHBOARD_VIEW_NEXT");
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Tab",
+				key: "Tab",
+				shift: true,
+			}),
+		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
+	});
+
 	it("matches raw key down and char events emitted by focused webviews", () => {
 		expect(
 			globalKeyboardActionFromInput({
@@ -47,6 +65,14 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBeNull();
 		expect(
 			globalKeyboardActionFromInput({ ...baseInput, meta: true }),
+		).toBeNull();
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				code: "Tab",
+				key: "Tab",
+				isAutoRepeat: true,
+			}),
 		).toBeNull();
 	});
 });

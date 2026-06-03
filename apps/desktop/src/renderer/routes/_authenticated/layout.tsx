@@ -9,7 +9,7 @@ import {
 	useMatchRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { DndProvider } from "react-dnd";
 import { HiOutlineWifi } from "react-icons/hi2";
 import { CommandPaletteHost } from "renderer/commandPalette";
@@ -25,6 +25,15 @@ import { electronTrpc } from "renderer/lib/electron-trpc";
 import { showWorkspaceAutoNameWarningToast } from "renderer/lib/workspaces/showWorkspaceAutoNameWarningToast";
 import { InitGitDialog } from "renderer/react-query/projects/InitGitDialog";
 import { DashboardWebViewDeck } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebViewDeck";
+import {
+	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
+	type DashboardViewMruDirection,
+	type DashboardViewMruEntry,
+	dashboardViewMruTargetPath,
+	normalizeDashboardViewMruPath,
+	readDashboardViewMruEntries,
+	recordDashboardViewMruPath,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
 import { DaemonAutoUpdateFailureDialog } from "renderer/routes/_authenticated/components/DaemonAutoUpdateFailureDialog";
 import { DashboardNewWorkspaceModal } from "renderer/routes/_authenticated/components/DashboardNewWorkspaceModal";
 import { V1ImportModal } from "renderer/routes/_authenticated/components/V1ImportModal";
@@ -73,6 +82,11 @@ function AuthenticatedLayout() {
 	const setOriginRoute = useSettingsStore((s) => s.setOriginRoute);
 	const utils = electronTrpc.useUtils();
 	const shownWorkspaceInitWarningsRef = useRef(new Set<string>());
+	const dashboardViewMruSwitchRef = useRef<{
+		entries: DashboardViewMruEntry[];
+		index: number;
+		updatedAt: number;
+	} | null>(null);
 	const isV2CloudEnabled = useIsV2CloudEnabled();
 	const hashPathname = useSyncExternalStore(
 		subscribeDashboardHashPathname,
@@ -100,6 +114,69 @@ function AuthenticatedLayout() {
 	useAgentHookListener();
 	useDashboardWebShortcuts();
 	useUpdateListener();
+
+	useEffect(() => {
+		recordDashboardViewMruPath(location.pathname);
+	}, [location.pathname]);
+
+	const switchDashboardViewMru = useCallback(
+		(direction: DashboardViewMruDirection) => {
+			const now = Date.now();
+			const activeSwitch = dashboardViewMruSwitchRef.current;
+			const shouldContinueSwitch =
+				activeSwitch &&
+				now - activeSwitch.updatedAt <= DASHBOARD_VIEW_MRU_SWITCH_TTL_MS;
+			const entries = shouldContinueSwitch
+				? activeSwitch.entries
+				: readDashboardViewMruEntries();
+			const currentPath = normalizeDashboardViewMruPath(location.pathname);
+			const target = shouldContinueSwitch
+				? dashboardViewMruTargetPath({
+						currentPathname: entries[activeSwitch.index]?.path ?? "",
+						direction,
+						entries,
+					})
+				: dashboardViewMruTargetPath({
+						currentPathname: currentPath ?? location.pathname,
+						direction,
+						entries,
+					});
+
+			if (!target) return;
+			dashboardViewMruSwitchRef.current = {
+				entries,
+				index: target.index,
+				updatedAt: now,
+			};
+			void navigate({ to: target.path });
+		},
+		[location.pathname, navigate],
+	);
+
+	useEffect(() => {
+		const handleSwitch = (event: Event) => {
+			const detail = (event as CustomEvent<{ direction?: unknown }>).detail;
+			if (detail?.direction !== "next" && detail?.direction !== "previous") {
+				return;
+			}
+			switchDashboardViewMru(detail.direction);
+		};
+
+		window.addEventListener("dashboard-view-mru-switch", handleSwitch);
+		return () =>
+			window.removeEventListener("dashboard-view-mru-switch", handleSwitch);
+	}, [switchDashboardViewMru]);
+
+	electronTrpc.browser.onGlobalKeyboardAction.useSubscription(undefined, {
+		onData: ({ action }) => {
+			if (action === "SWITCH_DASHBOARD_VIEW_NEXT") {
+				switchDashboardViewMru("next");
+			}
+			if (action === "SWITCH_DASHBOARD_VIEW_PREVIOUS") {
+				switchDashboardViewMru("previous");
+			}
+		},
+	});
 
 	// Update workspace-run pane state on terminal exit
 	electronTrpc.notifications.subscribe.useSubscription(undefined, {

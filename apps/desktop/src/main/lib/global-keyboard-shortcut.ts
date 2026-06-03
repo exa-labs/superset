@@ -1,6 +1,9 @@
 import type { Input } from "electron";
 
-export type GlobalKeyboardAction = "TOGGLE_VIM_MODE";
+export type GlobalKeyboardAction =
+	| "SWITCH_DASHBOARD_VIEW_NEXT"
+	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
+	| "TOGGLE_VIM_MODE";
 
 type GlobalKeyboardShortcutInput = Pick<
 	Input,
@@ -24,9 +27,25 @@ function isBareOptionChord(input: GlobalKeyboardShortcutInput): boolean {
 	return input.alt && !input.control && !input.meta && !input.shift;
 }
 
+function isOptionTabChord(input: GlobalKeyboardShortcutInput): boolean {
+	if (!isShortcutKeyDownType(input.type)) return false;
+	if (input.isAutoRepeat) return false;
+	return input.alt && !input.control && !input.meta;
+}
+
 export function globalKeyboardActionFromInput(
 	input: GlobalKeyboardShortcutInput,
 ): GlobalKeyboardAction | null {
+	if (isOptionTabChord(input)) {
+		const code = input.code.toLowerCase();
+		const key = input.key.toLowerCase();
+		if (code === "tab" || key === "tab") {
+			return input.shift
+				? "SWITCH_DASHBOARD_VIEW_PREVIOUS"
+				: "SWITCH_DASHBOARD_VIEW_NEXT";
+		}
+	}
+
 	if (!isBareOptionChord(input)) return null;
 
 	const code = input.code.toLowerCase();

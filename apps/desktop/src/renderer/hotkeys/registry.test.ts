@@ -115,6 +115,13 @@ describe("HOTKEYS_REGISTRY shape", () => {
 		});
 	});
 
+	it("registers MRU view switching on layout-stable Tab chords", () => {
+		expect(HOTKEYS_REGISTRY.SWITCH_DASHBOARD_VIEW_NEXT.key.mac).toBe("alt+tab");
+		expect(HOTKEYS_REGISTRY.SWITCH_DASHBOARD_VIEW_PREVIOUS.key.mac).toBe(
+			"alt+shift+tab",
+		);
+	});
+
 	it("registers native session view toggles as discoverable Option shortcuts", () => {
 		expect(HOTKEYS_REGISTRY.TOGGLE_NATIVE_BROWSER_VIEW.key.mac).toMatchObject({
 			mode: "logical",

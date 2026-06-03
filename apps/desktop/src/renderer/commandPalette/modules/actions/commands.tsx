@@ -31,6 +31,14 @@ function cycleTheme(): void {
 	useThemeStore.getState().setTheme(next);
 }
 
+function dispatchDashboardViewMruSwitch(direction: "next" | "previous"): void {
+	window.dispatchEvent(
+		new CustomEvent("dashboard-view-mru-switch", {
+			detail: { direction },
+		}),
+	);
+}
+
 async function toggleNotificationSoundsMuted(
 	currentlyMuted: boolean,
 ): Promise<void> {
@@ -66,6 +74,24 @@ export const actionsProvider: CommandProvider = {
 					const enabled = toggleDashboardVimMode();
 					toast.success(enabled ? "Vim mode enabled" : "Vim mode disabled");
 				},
+			},
+			{
+				id: "actions.switchDashboardViewNext",
+				title: "Switch MRU view",
+				section: "actions",
+				icon: KeyboardIcon,
+				hotkeyId: "SWITCH_DASHBOARD_VIEW_NEXT",
+				keywords: ["mru", "recent", "switch", "tab", "view", "keyboard"],
+				run: () => dispatchDashboardViewMruSwitch("next"),
+			},
+			{
+				id: "actions.switchDashboardViewPrevious",
+				title: "Switch MRU view back",
+				section: "actions",
+				icon: KeyboardIcon,
+				hotkeyId: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+				keywords: ["mru", "recent", "switch", "tab", "back", "view"],
+				run: () => dispatchDashboardViewMruSwitch("previous"),
 			},
 			{
 				id: "actions.openSettings",
