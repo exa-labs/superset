@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
 	DASHBOARD_VIEW_MRU_STORAGE_KEY,
+	dashboardViewMruEntryLabel,
 	dashboardViewMruTargetPath,
+	dashboardViewMruVisibleEntries,
 	normalizeDashboardViewMruPath,
 	readDashboardViewMruEntries,
 	recordDashboardViewMruPath,
@@ -147,5 +149,57 @@ describe("dashboard view MRU", () => {
 				entries,
 			}),
 		).toEqual({ index: 0, path: "/web/overseer" });
+	});
+
+	it("labels MRU entries for the switcher overlay", () => {
+		expect(dashboardViewMruEntryLabel("/web/inference")).toEqual({
+			subtitle: "Pinned web",
+			title: "Inference",
+		});
+		expect(dashboardViewMruEntryLabel("/web-tabs/chrome-default")).toEqual({
+			subtitle: "chrome-default",
+			title: "Chrome",
+		});
+		expect(dashboardViewMruEntryLabel("/native/capy/thread-1")).toEqual({
+			subtitle: "thread-1",
+			title: "Capy session",
+		});
+		expect(dashboardViewMruEntryLabel("/native/devin")).toEqual({
+			subtitle: "Devin inbox",
+			title: "Devin",
+		});
+		expect(dashboardViewMruEntryLabel("/root-terminal/stag")).toEqual({
+			subtitle: "stag",
+			title: "Root terminal",
+		});
+	});
+
+	it("keeps the active MRU target visible in a centered switcher window", () => {
+		const entries = Array.from({ length: 10 }, (_, index) => ({
+			path: `/web/page-${index}`,
+			viewedAt: index,
+		}));
+
+		expect(
+			dashboardViewMruVisibleEntries({
+				activeIndex: 5,
+				entries,
+				maxEntries: 5,
+			}).map((entry) => entry.index),
+		).toEqual([3, 4, 5, 6, 7]);
+		expect(
+			dashboardViewMruVisibleEntries({
+				activeIndex: 0,
+				entries,
+				maxEntries: 5,
+			}).map((entry) => entry.index),
+		).toEqual([0, 1, 2, 3, 4]);
+		expect(
+			dashboardViewMruVisibleEntries({
+				activeIndex: 9,
+				entries,
+				maxEntries: 5,
+			}).map((entry) => entry.index),
+		).toEqual([5, 6, 7, 8, 9]);
 	});
 });

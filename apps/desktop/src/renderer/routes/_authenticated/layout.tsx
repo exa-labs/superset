@@ -9,7 +9,13 @@ import {
 	useMatchRoute,
 	useNavigate,
 } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import {
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+	useSyncExternalStore,
+} from "react";
 import { DndProvider } from "react-dnd";
 import { HiOutlineWifi } from "react-icons/hi2";
 import { CommandPaletteHost } from "renderer/commandPalette";
@@ -24,6 +30,7 @@ import { dragDropManager } from "renderer/lib/dnd";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { showWorkspaceAutoNameWarningToast } from "renderer/lib/workspaces/showWorkspaceAutoNameWarningToast";
 import { InitGitDialog } from "renderer/react-query/projects/InitGitDialog";
+import { DashboardMruSwitcherOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardMruSwitcherOverlay";
 import { DashboardWebViewDeck } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebViewDeck";
 import {
 	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
@@ -68,6 +75,12 @@ export const Route = createFileRoute("/_authenticated")({
 	component: AuthenticatedLayout,
 });
 
+type DashboardViewMruOverlayState = {
+	activeIndex: number;
+	direction: DashboardViewMruDirection;
+	entries: DashboardViewMruEntry[];
+};
+
 function AuthenticatedLayout() {
 	const {
 		data: session,
@@ -88,6 +101,11 @@ function AuthenticatedLayout() {
 		index: number;
 		updatedAt: number;
 	} | null>(null);
+	const dashboardViewMruOverlayTimerRef = useRef<ReturnType<
+		typeof setTimeout
+	> | null>(null);
+	const [dashboardViewMruOverlay, setDashboardViewMruOverlay] =
+		useState<DashboardViewMruOverlayState | null>(null);
 	const isV2CloudEnabled = useIsV2CloudEnabled();
 	const hashPathname = useSyncExternalStore(
 		subscribeDashboardHashPathname,
@@ -124,6 +142,28 @@ function AuthenticatedLayout() {
 		recordDashboardViewMruPath(dashboardViewMruPathname);
 	}, [dashboardViewMruPathname]);
 
+	const showDashboardViewMruOverlay = useCallback(
+		(overlay: DashboardViewMruOverlayState) => {
+			setDashboardViewMruOverlay(overlay);
+			if (dashboardViewMruOverlayTimerRef.current) {
+				clearTimeout(dashboardViewMruOverlayTimerRef.current);
+			}
+			dashboardViewMruOverlayTimerRef.current = setTimeout(() => {
+				setDashboardViewMruOverlay(null);
+				dashboardViewMruOverlayTimerRef.current = null;
+			}, DASHBOARD_VIEW_MRU_SWITCH_TTL_MS);
+		},
+		[],
+	);
+
+	useEffect(() => {
+		return () => {
+			if (dashboardViewMruOverlayTimerRef.current) {
+				clearTimeout(dashboardViewMruOverlayTimerRef.current);
+			}
+		};
+	}, []);
+
 	const switchDashboardViewMru = useCallback(
 		(direction: DashboardViewMruDirection) => {
 			const now = Date.now();
@@ -155,9 +195,14 @@ function AuthenticatedLayout() {
 				index: target.index,
 				updatedAt: now,
 			};
+			showDashboardViewMruOverlay({
+				activeIndex: target.index,
+				direction,
+				entries,
+			});
 			void navigate({ to: target.path });
 		},
-		[dashboardViewMruPathname, navigate],
+		[dashboardViewMruPathname, navigate, showDashboardViewMruOverlay],
 	);
 
 	useEffect(() => {
@@ -337,6 +382,13 @@ function AuthenticatedLayout() {
 							<DaemonAutoUpdateFailureDialog />
 							<CommandPaletteHost />
 							<Outlet />
+							{dashboardViewMruOverlay && (
+								<DashboardMruSwitcherOverlay
+									activeIndex={dashboardViewMruOverlay.activeIndex}
+									direction={dashboardViewMruOverlay.direction}
+									entries={dashboardViewMruOverlay.entries}
+								/>
+							)}
 							<DashboardWebViewDeck
 								activePageId={activeWebPageId}
 								activeTabId={activeWebTabId}

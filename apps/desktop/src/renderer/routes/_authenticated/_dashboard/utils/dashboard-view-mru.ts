@@ -5,11 +5,18 @@ export interface DashboardViewMruEntry {
 	viewedAt: number;
 }
 
+export interface DashboardViewMruDisplayEntry extends DashboardViewMruEntry {
+	index: number;
+	subtitle: string;
+	title: string;
+}
+
 type DashboardViewMruStorage = Pick<Storage, "getItem" | "setItem">;
 
 export const DASHBOARD_VIEW_MRU_STORAGE_KEY = "dashboard-view-mru-v1";
 export const DASHBOARD_VIEW_MRU_MAX_ENTRIES = 40;
 export const DASHBOARD_VIEW_MRU_SWITCH_TTL_MS = 1500;
+export const DASHBOARD_VIEW_MRU_OVERLAY_MAX_ENTRIES = 7;
 
 function getLocalStorage(): DashboardViewMruStorage | null {
 	if (typeof localStorage === "undefined") return null;
@@ -136,4 +143,100 @@ export function dashboardViewMruTargetPath(input: {
 	const target = input.entries[targetIndex];
 	if (!target || target.path === currentPath) return null;
 	return { index: targetIndex, path: target.path };
+}
+
+function titleCase(value: string): string {
+	const decoded = decodeURIComponent(value);
+	return decoded
+		.replace(/[-_]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim()
+		.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function segmentAt(path: string, index: number): string | null {
+	return path.split("/").filter(Boolean)[index] ?? null;
+}
+
+export function dashboardViewMruEntryLabel(path: string): {
+	subtitle: string;
+	title: string;
+} {
+	const normalized = normalizeDashboardViewMruPath(path) ?? path;
+	const first = segmentAt(normalized, 0);
+	const second = segmentAt(normalized, 1);
+
+	if (first === "web") {
+		return {
+			subtitle: "Pinned web",
+			title: second ? titleCase(second) : "Pinned web",
+		};
+	}
+	if (first === "web-tabs") {
+		return {
+			subtitle: second ?? "Chrome tabs",
+			title: "Chrome",
+		};
+	}
+	if (first === "native") {
+		const provider = second === "devin" ? "Devin" : "Capy";
+		const id = segmentAt(normalized, 2);
+		return {
+			subtitle: id ?? `${provider} inbox`,
+			title: id ? `${provider} session` : provider,
+		};
+	}
+	if (first === "workspace" || first === "v2-workspace") {
+		return {
+			subtitle: second ?? "Local workspace",
+			title: "Workspace",
+		};
+	}
+	if (first === "root-terminal") {
+		return {
+			subtitle: second ?? "Root terminal",
+			title: "Root terminal",
+		};
+	}
+	if (first === "tasks") return { subtitle: "Dashboard", title: "Tasks & PRs" };
+	if (first === "automations") {
+		return { subtitle: "Dashboard", title: "Automations" };
+	}
+	return { subtitle: normalized, title: titleCase(first ?? "Dashboard") };
+}
+
+export function dashboardViewMruVisibleEntries(input: {
+	activeIndex: number;
+	entries: DashboardViewMruEntry[];
+	maxEntries?: number;
+}): DashboardViewMruDisplayEntry[] {
+	const maxEntries = Math.max(
+		1,
+		input.maxEntries ?? DASHBOARD_VIEW_MRU_OVERLAY_MAX_ENTRIES,
+	);
+	if (input.entries.length <= maxEntries) {
+		return input.entries.map((entry, index) => ({
+			...entry,
+			index,
+			...dashboardViewMruEntryLabel(entry.path),
+		}));
+	}
+
+	const activeIndex = Math.max(
+		0,
+		Math.min(input.entries.length - 1, input.activeIndex),
+	);
+	const halfWindow = Math.floor(maxEntries / 2);
+	const start = Math.max(
+		0,
+		Math.min(input.entries.length - maxEntries, activeIndex - halfWindow),
+	);
+	return input.entries.slice(start, start + maxEntries).map((entry, offset) => {
+		const index = start + offset;
+		return {
+			...entry,
+			index,
+			...dashboardViewMruEntryLabel(entry.path),
+		};
+	});
 }
