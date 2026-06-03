@@ -33,7 +33,7 @@ const WEB_TAB_ROW_KEY_HINTS = [
 	{ key: ".", title: "Actions" },
 	{ key: "p", title: "Pin" },
 	{ key: "e", title: "Rename" },
-	{ key: "x", title: "Close" },
+	{ key: "a/x", title: "Close" },
 ];
 
 function WebTabRowKeyHints({ visible }: { visible: boolean }) {
@@ -196,7 +196,7 @@ export function DashboardWebTabRow({
 						<DropdownMenuSeparator />
 						<DropdownMenuItem onSelect={closeTab}>
 							Close tab
-							<DropdownMenuShortcut>x</DropdownMenuShortcut>
+							<DropdownMenuShortcut>a/x</DropdownMenuShortcut>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -237,7 +237,7 @@ export function DashboardWebTabRow({
 					data-dashboard-sidebar-action="archive"
 					aria-keyshortcuts="a x"
 					aria-label={`Close ${tab.title}`}
-					title="Close (x)"
+					title="Close (a or x)"
 					onClick={(event) => {
 						event.stopPropagation();
 						closeTab();

@@ -516,10 +516,17 @@ describe("findDashboardSidebarActionButton", () => {
 		create.dataset.dashboardSidebarAction = "create";
 		makeVisible(create);
 
-		groupScope.append(chrome, menu, create);
+		const createFolder = document.createElement("button");
+		createFolder.dataset.dashboardSidebarAction = "create-folder";
+		makeVisible(createFolder);
+
+		groupScope.append(chrome, menu, create, createFolder);
 
 		expect(findDashboardSidebarActionButton(chrome, "menu")).toBe(menu);
 		expect(findDashboardSidebarActionButton(chrome, "create")).toBe(create);
+		expect(findDashboardSidebarActionButton(chrome, "create-folder")).toBe(
+			createFolder,
+		);
 	});
 
 	test("resolves native provider folder creation from the focused provider row", () => {

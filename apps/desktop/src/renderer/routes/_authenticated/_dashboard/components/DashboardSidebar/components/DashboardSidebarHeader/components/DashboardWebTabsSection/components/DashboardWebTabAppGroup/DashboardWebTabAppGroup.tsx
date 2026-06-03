@@ -204,6 +204,7 @@ export function DashboardWebTabAppGroup({
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => onCreateFolder(app.id)}>
 							New folder
+							<DropdownMenuShortcut>N</DropdownMenuShortcut>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
@@ -222,26 +223,31 @@ export function DashboardWebTabAppGroup({
 							type="button"
 							aria-label={`New ${app.label} tab`}
 							data-dashboard-sidebar-action="create"
+							aria-keyshortcuts="n"
+							title={`New ${app.label} tab (n)`}
 							onClick={() => onCreateTab(app.id)}
 							className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 						>
 							<LuPlus className="size-3.5" />
 						</button>
 					</TooltipTrigger>
-					<TooltipContent side="right">New {app.label} tab</TooltipContent>
+					<TooltipContent side="right">New {app.label} tab (n)</TooltipContent>
 				</Tooltip>
 				<Tooltip delayDuration={300}>
 					<TooltipTrigger asChild>
 						<button
 							type="button"
 							aria-label={`New ${app.label} folder`}
+							data-dashboard-sidebar-action="create-folder"
+							aria-keyshortcuts="N"
+							title={`New ${app.label} folder (N)`}
 							onClick={() => onCreateFolder(app.id)}
 							className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 						>
 							<LuFolderPlus className="size-3.5" />
 						</button>
 					</TooltipTrigger>
-					<TooltipContent side="right">New folder</TooltipContent>
+					<TooltipContent side="right">New folder (N)</TooltipContent>
 				</Tooltip>
 			</div>
 			{!isCollapsed && (
