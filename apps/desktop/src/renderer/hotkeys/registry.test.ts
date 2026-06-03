@@ -124,5 +124,9 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+s",
 		});
+		expect(HOTKEYS_REGISTRY.TOGGLE_VIM_MODE.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+v",
+		});
 	});
 });

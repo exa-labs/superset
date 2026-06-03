@@ -2,6 +2,7 @@ import { observable } from "@trpc/server/observable";
 import { session } from "electron";
 import { browserManager } from "main/lib/browser/browser-manager";
 import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
+import type { GlobalKeyboardAction } from "main/lib/global-keyboard-shortcut";
 import { DESKTOP_BROWSER_PARTITION } from "shared/constants";
 import { z } from "zod";
 import { publicProcedure, router } from "../..";
@@ -179,6 +180,18 @@ export const createBrowserRouter = () => {
 				browserManager.on("dashboard-web-shortcut", handler);
 				return () => {
 					browserManager.off("dashboard-web-shortcut", handler);
+				};
+			});
+		}),
+
+		onGlobalKeyboardAction: publicProcedure.subscription(() => {
+			return observable<{ action: GlobalKeyboardAction }>((emit) => {
+				const handler = (action: GlobalKeyboardAction) => {
+					emit.next({ action });
+				};
+				browserManager.on("global-keyboard-action", handler);
+				return () => {
+					browserManager.off("global-keyboard-action", handler);
 				};
 			});
 		}),

@@ -15,6 +15,7 @@ export function nativeAgentSearchEscapeResult(
 }
 
 export type NativeAgentSidebarVimAction =
+	| "archive"
 	| "move-to-folder"
 	| "none"
 	| "open"
@@ -28,8 +29,9 @@ export function nativeAgentSidebarVimActionFromKey(
 ): NativeAgentSidebarVimAction {
 	if (key === "enter" || key === "o") return "open";
 	if (key === "p") return "pin";
-	if (key === "f") return "move-to-folder";
+	if (key === "f" || key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
+	if (key === "a" || key === "x") return "archive";
 	return "none";
 }
 

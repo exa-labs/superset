@@ -7,6 +7,10 @@ import {
 	dashboardWebIndexedShortcut,
 	dashboardWebShortcutFromInput,
 } from "main/lib/dashboard-web-shortcut";
+import {
+	type GlobalKeyboardAction,
+	globalKeyboardActionFromInput,
+} from "main/lib/global-keyboard-shortcut";
 import { safeOpenExternal } from "main/lib/safe-url";
 
 interface ConsoleEntry {
@@ -162,6 +166,10 @@ class BrowserManager extends EventEmitter {
 
 	openDashboardWebShortcut(shortcut: DashboardWebShortcut): void {
 		this.emit("dashboard-web-shortcut", shortcut);
+	}
+
+	dispatchGlobalKeyboardAction(action: GlobalKeyboardAction): void {
+		this.emit("global-keyboard-action", action);
 	}
 
 	private clearPendingDashboardWebAppShortcut(): void {
@@ -369,6 +377,13 @@ class BrowserManager extends EventEmitter {
 			if (isOpenControlPlaneShortcutInput(input)) {
 				event.preventDefault();
 				this.openControlPlane();
+				return;
+			}
+
+			const globalKeyboardAction = globalKeyboardActionFromInput(input);
+			if (globalKeyboardAction) {
+				event.preventDefault();
+				this.dispatchGlobalKeyboardAction(globalKeyboardAction);
 				return;
 			}
 

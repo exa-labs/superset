@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { CommandContextProvider } from "./core/ContextProvider";
 import { useFrameStackStore } from "./core/frames";
 import { registerAllModules } from "./modules";
@@ -18,6 +19,7 @@ export function CommandPaletteHost({ children }: { children?: ReactNode }) {
 	return (
 		<CommandContextProvider>
 			<CommandPaletteTrigger />
+			<GlobalKeyboardActionTrigger />
 			<CommandPalette />
 			<DeleteWorkspaceMount />
 			<RemoveFromSidebarMount />
@@ -33,6 +35,17 @@ function CommandPaletteTrigger() {
 	useHotkey("OPEN_CONTROL_PLANE", () => setOpen(true));
 	electronTrpc.browser.onOpenControlPlane.useSubscription(undefined, {
 		onData: () => setOpen(true),
+	});
+	return null;
+}
+
+function GlobalKeyboardActionTrigger() {
+	electronTrpc.browser.onGlobalKeyboardAction.useSubscription(undefined, {
+		onData: ({ action }) => {
+			if (action === "TOGGLE_VIM_MODE") {
+				toggleDashboardVimMode();
+			}
+		},
 	});
 	return null;
 }

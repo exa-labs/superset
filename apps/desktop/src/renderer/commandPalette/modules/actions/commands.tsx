@@ -60,6 +60,7 @@ export const actionsProvider: CommandProvider = {
 				title: "Toggle Vim mode",
 				section: "actions",
 				icon: KeyboardIcon,
+				hotkeyId: "TOGGLE_VIM_MODE",
 				keywords: ["vim", "keyboard", "j", "k", "navigation", "dashboard"],
 				run: () => {
 					const enabled = toggleDashboardVimMode();

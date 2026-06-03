@@ -22,6 +22,16 @@ function commandContext(pathname = "/native/capy"): CommandContext {
 	};
 }
 
+function commandContextWithNavigate(
+	pathname: string,
+	navigate: (path: string) => void,
+): CommandContext {
+	return {
+		...commandContext(pathname),
+		navigate,
+	};
+}
+
 function withLocalStorage(
 	values: Record<string, string>,
 	run: () => void,
@@ -176,6 +186,25 @@ describe("web command provider", () => {
 				.provide(commandContext("/web-tabs/chrome-default"))
 				.find((command) => command.id === "web.chrome.new")?.hotkeyId,
 		).toBe("OPEN_CHROME");
+	});
+
+	it("registers root kr9 terminal commands", () => {
+		const navigations: string[] = [];
+		const context = commandContextWithNavigate("/native/capy", (path) => {
+			navigations.push(path);
+		});
+		const commands = webProvider.provide(context);
+		const commandIds = new Set(commands.map((command) => command.id));
+
+		expect(commandIds.has("terminal.root.stag")).toBe(true);
+		expect(commandIds.has("terminal.root.prod")).toBe(true);
+		expect(commandIds.has("terminal.root.heph")).toBe(true);
+
+		commands
+			.find((command) => command.id === "terminal.root.heph")
+			?.run?.(context);
+
+		expect(navigations).toEqual(["/root-terminal/heph"]);
 	});
 
 	it("registers current Chrome tab control commands only on web routes", () => {

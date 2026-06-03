@@ -140,6 +140,9 @@ export async function MainWindow() {
 		(shortcut) => {
 			browserManager.openDashboardWebShortcut(shortcut);
 		},
+		(action) => {
+			browserManager.dispatchGlobalKeyboardAction(action);
+		},
 	);
 
 	currentWindow = window;

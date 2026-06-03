@@ -833,6 +833,16 @@ export const HOTKEYS_REGISTRY = {
 		category: "Help",
 		description: "Open the dashboard control plane",
 	},
+	TOGGLE_VIM_MODE: {
+		key: {
+			mac: L("alt+v"),
+			windows: L("ctrl+alt+v"),
+			linux: L("ctrl+alt+v"),
+		},
+		label: "Toggle Vim Mode",
+		category: "Help",
+		description: "Toggle keyboard-native sidebar navigation",
+	},
 } as const satisfies Record<string, HotkeyRegistryDefinition>;
 
 export type HotkeyId = keyof typeof HOTKEYS_REGISTRY;

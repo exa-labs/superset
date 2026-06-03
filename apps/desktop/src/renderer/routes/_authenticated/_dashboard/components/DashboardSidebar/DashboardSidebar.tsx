@@ -22,11 +22,15 @@ import { Switch } from "@superset/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
 import { useMatchRoute, useNavigate } from "@tanstack/react-router";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import { V2AvailableBanner } from "renderer/components/V2AvailableBanner";
 import { useHotkeyDisplay } from "renderer/hotkeys";
+import {
+	toggleDashboardVimMode,
+	useDashboardVimModeStore,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useLocalHostService } from "renderer/routes/_authenticated/providers/LocalHostServiceProvider";
 import { DashboardSidebarHeader } from "./components/DashboardSidebarHeader";
@@ -37,6 +41,7 @@ import { DashboardSidebarProjectSection } from "./components/DashboardSidebarPro
 import { DashboardSidebarSectionRenameProvider } from "./components/DashboardSidebarSectionRenameContext";
 import { V2SetupScriptCard } from "./components/V2SetupScriptCard";
 import { useDashboardSidebarData } from "./hooks/useDashboardSidebarData";
+import { useDashboardSidebarKeyboardNavigation } from "./hooks/useDashboardSidebarKeyboardNavigation";
 import { useDashboardSidebarShortcuts } from "./hooks/useDashboardSidebarShortcuts";
 import { DashboardSidebarHoverProvider } from "./providers/DashboardSidebarHoverProvider";
 import type { DashboardSidebarProject } from "./types";
@@ -123,11 +128,15 @@ export function DashboardSidebar({
 	const navigate = useNavigate();
 	const matchRoute = useMatchRoute();
 	const settingsHotkey = useHotkeyDisplay("OPEN_SETTINGS").text;
+	const vimModeHotkey = useHotkeyDisplay("TOGGLE_VIM_MODE").text;
+	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
 	const isSettingsOpen = !!matchRoute({ to: "/settings", fuzzy: true });
 	const { activeHostUrl } = useLocalHostService();
 	const v2RouteMatch = matchRoute({ to: "/v2-workspace/$workspaceId" });
 	const activeV2WorkspaceId = v2RouteMatch ? v2RouteMatch.workspaceId : null;
 	const [showExtraNav, setShowExtraNav] = useState(readExtraNavVisible);
+	const sidebarRootRef = useRef<HTMLDivElement | null>(null);
+	useDashboardSidebarKeyboardNavigation(sidebarRootRef);
 
 	const sensors = useSensors(
 		useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -145,6 +154,9 @@ export function DashboardSidebar({
 	const handleExtraNavChange = useCallback((isVisible: boolean) => {
 		setShowExtraNav(isVisible);
 		writeExtraNavVisible(isVisible);
+	}, []);
+	const handleToggleVimMode = useCallback(() => {
+		toggleDashboardVimMode();
 	}, []);
 
 	// Local project order — syncs from groups, updated on drag end
@@ -204,7 +216,15 @@ export function DashboardSidebar({
 		<DashboardSidebarSectionRenameProvider>
 			<DashboardSidebarHoverProvider>
 				<DashboardSidebarHoverCardOverlay>
-					<div className="flex h-full min-h-0 flex-col border-r border-border bg-muted/45 dark:bg-muted/35">
+					<div
+						ref={sidebarRootRef}
+						data-dashboard-sidebar-root="true"
+						className={cn(
+							"flex h-full min-h-0 flex-col border-r border-border bg-muted/45 dark:bg-muted/35",
+							"[&_button:focus-visible]:outline-none [&_button:focus-visible]:ring-2 [&_button:focus-visible]:ring-primary/70 [&_button:focus-visible]:ring-offset-1 [&_button:focus-visible]:ring-offset-background",
+							"[&_[role=button]:focus-visible]:outline-none [&_[role=button]:focus-visible]:ring-2 [&_[role=button]:focus-visible]:ring-primary/70 [&_[role=button]:focus-visible]:ring-offset-1 [&_[role=button]:focus-visible]:ring-offset-background",
+						)}
+					>
 						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
 							<DashboardSidebarHeader
 								isCollapsed={isCollapsed}
@@ -294,6 +314,27 @@ export function DashboardSidebar({
 										<TooltipTrigger asChild>
 											<button
 												type="button"
+												aria-label="Toggle Vim mode"
+												onClick={handleToggleVimMode}
+												className={cn(
+													"flex size-8 items-center justify-center rounded-md font-mono text-[11px] transition-colors",
+													vimModeEnabled
+														? "bg-primary/15 text-primary"
+														: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+												)}
+											>
+												V
+											</button>
+										</TooltipTrigger>
+										<TooltipContent side="right">
+											Vim mode {vimModeEnabled ? "on" : "off"}
+										</TooltipContent>
+									</Tooltip>
+
+									<Tooltip delayDuration={300}>
+										<TooltipTrigger asChild>
+											<button
+												type="button"
 												aria-label="Settings"
 												onClick={() => navigate({ to: "/settings/account" })}
 												className={cn(
@@ -311,6 +352,24 @@ export function DashboardSidebar({
 								</>
 							) : (
 								<>
+									<button
+										type="button"
+										onClick={handleToggleVimMode}
+										className={cn(
+											"group flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors",
+											vimModeEnabled
+												? "bg-primary/10 text-primary hover:bg-primary/15"
+												: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+										)}
+										aria-pressed={vimModeEnabled}
+										aria-label="Toggle Vim mode"
+									>
+										<span className="font-mono">Vim</span>
+										<span className="rounded border border-border/80 px-1 font-mono text-[10px] text-muted-foreground">
+											{vimModeHotkey}
+										</span>
+									</button>
+
 									<div className="flex h-8 items-center gap-2 rounded-md px-2 text-xs font-medium text-muted-foreground">
 										<span className="min-w-0 flex-1 truncate">Extra</span>
 										<Switch

@@ -43,7 +43,10 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
 		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("move-to-folder");
+		expect(nativeAgentSidebarVimActionFromKey("m")).toBe("move-to-folder");
 		expect(nativeAgentSidebarVimActionFromKey("F")).toBe("remove-from-folder");
+		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("archive");
+		expect(nativeAgentSidebarVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSidebarVimActionFromKey("j")).toBe("none");
 	});
 

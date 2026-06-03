@@ -6,6 +6,10 @@ import {
 	dashboardWebIndexedShortcut,
 	dashboardWebShortcutFromInput,
 } from "main/lib/dashboard-web-shortcut";
+import {
+	type GlobalKeyboardAction,
+	globalKeyboardActionFromInput,
+} from "main/lib/global-keyboard-shortcut";
 
 const attachedWebContentsIds = new Set<number>();
 let installed = false;
@@ -58,6 +62,7 @@ function resolveDashboardWebShortcut(
 export function installControlPlaneShortcutBridge(
 	onOpenControlPlane: () => void,
 	onDashboardWebShortcut?: (shortcut: DashboardWebShortcut) => void,
+	onGlobalKeyboardAction?: (action: GlobalKeyboardAction) => void,
 ): void {
 	if (installed) return;
 	installed = true;
@@ -73,6 +78,13 @@ export function installControlPlaneShortcutBridge(
 			if (isOpenControlPlaneShortcutInput(input)) {
 				event.preventDefault();
 				onOpenControlPlane();
+				return;
+			}
+
+			const globalKeyboardAction = globalKeyboardActionFromInput(input);
+			if (globalKeyboardAction) {
+				event.preventDefault();
+				onGlobalKeyboardAction?.(globalKeyboardAction);
 				return;
 			}
 

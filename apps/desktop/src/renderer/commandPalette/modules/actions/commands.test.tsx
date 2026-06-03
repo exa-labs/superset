@@ -94,6 +94,11 @@ describe("actions command provider", () => {
 		const commands = actionsProvider.provide(commandContext());
 
 		expect(
+			commands.find(
+				(command) => command.id === "actions.toggleDashboardVimMode",
+			)?.hotkeyId,
+		).toBe("TOGGLE_VIM_MODE");
+		expect(
 			commands.find((command) => command.id === "actions.newWorkspace")
 				?.hotkeyId,
 		).toBe("NEW_WORKSPACE");

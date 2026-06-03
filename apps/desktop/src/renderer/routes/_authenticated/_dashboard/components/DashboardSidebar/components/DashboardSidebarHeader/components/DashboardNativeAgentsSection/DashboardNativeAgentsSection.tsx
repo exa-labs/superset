@@ -1333,9 +1333,14 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "j" &&
 				vimKey !== "k" &&
 				vimKey !== "l" &&
+				vimKey !== "a" &&
+				vimKey !== "e" &&
 				vimKey !== "enter" &&
+				vimKey !== "m" &&
+				vimKey !== "n" &&
 				vimKey !== "o" &&
 				vimKey !== "p" &&
+				vimKey !== "x" &&
 				vimKey !== "f" &&
 				vimKey !== "F"
 			) {
@@ -1385,12 +1390,25 @@ export function DashboardNativeAgentsSection({
 						(item) => item.id === currentRow.dataset.nativeAgentSessionRowId,
 					)
 				: null;
+			if (vimKey === "n") {
+				event.preventDefault();
+				event.stopPropagation();
+				setCreateProvider(rowProvider);
+				return;
+			}
 			if (rowFolder && (vimKey === "h" || vimKey === "l")) {
 				event.preventDefault();
 				event.stopPropagation();
 				rememberFolder(rowFolder);
 				setFolderCollapsed(rowFolder.id, vimKey === "h");
 				currentRow?.focus();
+				return;
+			}
+			if (rowFolder && vimKey === "e") {
+				event.preventDefault();
+				event.stopPropagation();
+				rememberFolder(rowFolder);
+				openFolderEditor(rowFolder);
 				return;
 			}
 			const sidebarAction = nativeAgentSidebarVimActionFromKey(vimKey);
@@ -1411,6 +1429,10 @@ export function DashboardNativeAgentsSection({
 				if (!rowItem) return;
 				if (sidebarAction === "pin") {
 					void handlePin(rowItem, rowItem.sidebarPinned !== true);
+					return;
+				}
+				if (sidebarAction === "archive") {
+					void handleSidebarVisible(rowItem, false);
 					return;
 				}
 				if (sidebarAction === "remove-from-folder") {
@@ -1449,8 +1471,10 @@ export function DashboardNativeAgentsSection({
 		activeRoute.provider,
 		folders,
 		handlePin,
+		handleSidebarVisible,
 		itemsByProvider,
 		moveToFolder,
+		openFolderEditor,
 		rememberFolder,
 		setFolderCollapsed,
 		toggleFolder,

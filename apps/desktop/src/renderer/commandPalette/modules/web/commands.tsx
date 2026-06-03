@@ -7,6 +7,10 @@ import {
 	readNativeAgentRecentFolderColorsFromLocalStorage,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
 import { readLatestNativeAgentReplyNotification } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import {
+	DASHBOARD_QUICK_TERMINALS,
+	dashboardQuickTerminalCommand,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
 import { getDashboardWebPageFavicon } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-page-favicons";
 import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages";
 import {
@@ -225,6 +229,25 @@ export const webProvider: CommandProvider = {
 					const tab = createDashboardWebTab(app.id);
 					context.navigate(`/web-tabs/${tab.id}`);
 				},
+			});
+		}
+
+		for (const terminal of DASHBOARD_QUICK_TERMINALS) {
+			commands.push({
+				id: `terminal.root.${terminal.id}`,
+				title: `Open ${terminal.label} root terminal`,
+				section: "web",
+				description: `${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
+				keywords: [
+					terminal.id,
+					terminal.label,
+					"kr9",
+					"terminal",
+					"shell",
+					"repo",
+					"root",
+				],
+				run: (context) => context.navigate(`/root-terminal/${terminal.id}`),
 			});
 		}
 
