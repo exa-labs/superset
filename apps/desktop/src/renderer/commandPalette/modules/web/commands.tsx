@@ -299,10 +299,10 @@ export const webProvider: CommandProvider = {
 		for (const terminal of DASHBOARD_QUICK_TERMINALS) {
 			commands.push({
 				id: `terminal.root.${terminal.id}`,
-				title: `Open ${terminal.label} root terminal`,
+				title: `Open ${terminal.label} kr9`,
 				section: "web",
 				icon: TerminalIcon,
-				description: `${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
+				description: `Run ${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
 				priority: CONTROL_PLANE_PRIORITY.quickTerminal,
 				keywords: [
 					terminal.id,
@@ -314,7 +314,6 @@ export const webProvider: CommandProvider = {
 					"repo",
 					"root",
 				],
-				shortcutLabel: "⌥K",
 				run: (context) => context.navigate(`/root-terminal/${terminal.id}`),
 			});
 		}
