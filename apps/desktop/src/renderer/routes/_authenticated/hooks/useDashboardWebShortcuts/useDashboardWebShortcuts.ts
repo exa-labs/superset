@@ -29,6 +29,7 @@ type DashboardWebShortcut =
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
 	| "OPEN_CHROME"
+	| "OPEN_WORKSPACES"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
 	| "TOGGLE_NATIVE_SPLIT_VIEW"
 	| "OPEN_CAPY_1"
@@ -232,6 +233,11 @@ export function useDashboardWebShortcuts() {
 				openChrome();
 				return;
 			}
+			if (shortcut === "OPEN_WORKSPACES") {
+				clearPendingNativeProvider();
+				openWorkspaces();
+				return;
+			}
 			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-current-action", {
@@ -272,6 +278,7 @@ export function useDashboardWebShortcuts() {
 			openChrome,
 			openNativeProviderAtIndex,
 			openNativeProviderWithPrefix,
+			openWorkspaces,
 		],
 	);
 
@@ -284,6 +291,7 @@ export function useDashboardWebShortcuts() {
 	useHotkey("OPEN_CAPY", () => runShortcut("OPEN_CAPY"));
 	useHotkey("OPEN_DEVIN", () => runShortcut("OPEN_DEVIN"));
 	useHotkey("OPEN_CHROME", () => runShortcut("OPEN_CHROME"));
+	useHotkey("OPEN_WORKSPACES", () => runShortcut("OPEN_WORKSPACES"));
 
 	electronTrpc.browser.onDashboardWebShortcut.useSubscription(undefined, {
 		onData: ({ shortcut }) => runShortcut(shortcut),

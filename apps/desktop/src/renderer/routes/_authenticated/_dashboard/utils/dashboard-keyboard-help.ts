@@ -79,6 +79,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Jump to the embedded Chrome tab set",
 				},
 				{
+					hotkeyId: "OPEN_WORKSPACES",
+					label: "Open workspaces",
+					description: "Jump to the workspace overview",
+				},
+				{
 					hotkeyId: "OPEN_CAPY",
 					label: "Open Capy",
 					description: "Jump to Capy; chain a number for visible threads",

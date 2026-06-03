@@ -28,11 +28,20 @@ export const navigationProvider: CommandProvider = {
 			},
 			{
 				id: "nav.workspaces",
-				title: "Workspaces",
+				title: "Switch workspace",
 				section: "navigation",
 				icon: LuLayers,
 				keywords: ["workspace", "project", "repo", "repository", "switch"],
 				renderFrame: () => <WorkspaceListFrame />,
+			},
+			{
+				id: "nav.workspaceOverview",
+				title: "Open workspace overview",
+				section: "navigation",
+				icon: LuLayers,
+				hotkeyId: "OPEN_WORKSPACES",
+				keywords: ["workspace", "project", "repo", "repository", "overview"],
+				run: (ctx) => ctx.navigate("/v2-workspaces"),
 			},
 			{
 				id: "nav.docs",

@@ -186,6 +186,16 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Open the embedded Chrome tab set",
 	},
+	OPEN_WORKSPACES: {
+		key: {
+			mac: L("alt+w"),
+			windows: L("ctrl+alt+w"),
+			linux: L("ctrl+alt+w"),
+		},
+		label: "Open Workspaces",
+		category: "Web Pages",
+		description: "Open the workspace overview",
+	},
 	TOGGLE_NATIVE_BROWSER_VIEW: {
 		key: {
 			mac: L("alt+b"),

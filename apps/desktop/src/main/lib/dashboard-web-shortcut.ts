@@ -10,6 +10,7 @@ export type DashboardWebShortcut =
 	| "OPEN_CAPY"
 	| "OPEN_DEVIN"
 	| "OPEN_CHROME"
+	| "OPEN_WORKSPACES"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
 	| "TOGGLE_NATIVE_SPLIT_VIEW"
 	| "OPEN_CAPY_1"
@@ -120,6 +121,7 @@ export function dashboardWebShortcutFromInput(
 	if (code === "keyc") return "OPEN_CAPY";
 	if (code === "keyd") return "OPEN_DEVIN";
 	if (code === "keyg") return "OPEN_CHROME";
+	if (code === "keyw") return "OPEN_WORKSPACES";
 	if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
 	if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
 
@@ -127,6 +129,7 @@ export function dashboardWebShortcutFromInput(
 	if (key === "c") return "OPEN_CAPY";
 	if (key === "d") return "OPEN_DEVIN";
 	if (key === "g") return "OPEN_CHROME";
+	if (key === "w") return "OPEN_WORKSPACES";
 	if (key === "b") return "TOGGLE_NATIVE_BROWSER_VIEW";
 	if (key === "s") return "TOGGLE_NATIVE_SPLIT_VIEW";
 

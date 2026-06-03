@@ -42,6 +42,9 @@ describe("dashboardWebShortcutFromInput", () => {
 			dashboardWebShortcutFromInput(input({ code: "KeyG", key: "Dead" })),
 		).toBe("OPEN_CHROME");
 		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyW", key: "Dead" })),
+		).toBe("OPEN_WORKSPACES");
+		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyB", key: "Dead" })),
 		).toBe("TOGGLE_NATIVE_BROWSER_VIEW");
 		expect(

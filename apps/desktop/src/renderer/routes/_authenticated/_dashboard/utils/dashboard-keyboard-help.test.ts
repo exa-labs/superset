@@ -29,6 +29,7 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CAPY")).toBe(true);
 		expect(hotkeyIds.has("OPEN_DEVIN")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
+		expect(hotkeyIds.has("OPEN_WORKSPACES")).toBe(true);
 		expect(entryByLabel.get("Open workspaces in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "w"] }),
 		);
