@@ -142,6 +142,7 @@ type NativeAgentFolderCommandAction =
 type NativeAgentSidebarSessionAction =
 	| "focus-composer"
 	| "open-browser"
+	| "rename"
 	| "toggle-browser";
 
 const CAPY_MONOREPO_PROJECT_ID = "a275b1f7-318b-49ed-b2c8-5bb31ca7cd97";
@@ -416,7 +417,9 @@ const SESSION_ROW_KEY_HINTS = [
 	{ key: "r", title: "Reply" },
 	{ key: "o", title: "Browser" },
 	{ key: "b", title: "Toggle native/browser" },
+	{ key: "e", title: "Rename" },
 	{ key: "m", title: "Move to folder" },
+	{ key: "F", title: "Remove from folder" },
 	{ key: "p", title: "Pin" },
 	{ key: "x", title: "Hide" },
 ];
@@ -426,7 +429,7 @@ function SessionRowKeyHints({ visible }: { visible: boolean }) {
 		<div
 			aria-hidden="true"
 			className={cn(
-				"pointer-events-none absolute right-1 bottom-1 flex max-w-[8.5rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
+				"pointer-events-none absolute right-1 bottom-1 flex max-w-[12rem] items-center gap-0.5 overflow-hidden rounded-md border border-border/70 bg-background/90 px-1 py-0.5 shadow-sm backdrop-blur-sm transition-opacity",
 				visible
 					? "opacity-100"
 					: "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
@@ -519,7 +522,7 @@ function SessionRow({
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
-				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, r reply, o browser, b toggle browser, p pin, x hide, m move`}
+				title={`${item.title}\n${item.id}${item.status ? `\n${item.status}` : ""}\n${item.subtitle}\nshown: ${inclusionReasons.join(", ")}\nkeys: Enter open, r reply, o browser, b toggle browser, e rename, m move, F remove folder, p pin, x hide`}
 				className="flex min-w-0 flex-1 flex-col overflow-hidden py-1.5 pl-2 pr-12 text-left"
 			>
 				<span className="flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden">
@@ -570,10 +573,16 @@ function SessionRow({
 						<button
 							type="button"
 							data-dashboard-sidebar-action="pin"
+							aria-keyshortcuts="p"
 							aria-label={
 								item.sidebarPinned
 									? `Unpin ${item.title} from native sidebar`
 									: `Pin ${item.title} to native sidebar`
+							}
+							title={
+								item.sidebarPinned
+									? "Unpin from sidebar (p)"
+									: "Pin to sidebar (p)"
 							}
 							onClick={() => onPin(item, item.sidebarPinned !== true)}
 							className={cn(
@@ -595,9 +604,10 @@ function SessionRow({
 				<button
 					type="button"
 					data-dashboard-sidebar-action="archive"
+					aria-keyshortcuts="a x"
 					aria-label={`Move ${item.title} to overview`}
 					onClick={() => onSidebarVisible(item, false)}
-					title="Move to overview"
+					title="Move to overview (a or x)"
 					className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-60 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
 				>
 					<LuArchive className="size-3" />
@@ -608,7 +618,9 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="create"
 				tabIndex={-1}
+				aria-keyshortcuts="n"
 				aria-label={`Create ${nativeAgentProviderConfig(item.provider).title} session`}
+				title="Create session (n)"
 				onClick={(event) => {
 					event.stopPropagation();
 					onCreate(item.provider);
@@ -619,15 +631,29 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="reply"
 				tabIndex={-1}
+				aria-keyshortcuts="r"
 				aria-label={`Reply to ${item.title}`}
+				title="Reply (r)"
 				onClick={() => onSessionAction(item, "focus-composer")}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="rename"
+				tabIndex={-1}
+				aria-keyshortcuts="e"
+				aria-label={`Rename ${item.title}`}
+				title="Rename session (e)"
+				onClick={() => onSessionAction(item, "rename")}
 				className="sr-only"
 			/>
 			<button
 				type="button"
 				data-dashboard-sidebar-action="open-browser"
 				tabIndex={-1}
+				aria-keyshortcuts="o"
 				aria-label={`Open ${item.title} in browser mode`}
+				title="Open browser version (o)"
 				onClick={() => onSessionAction(item, "open-browser")}
 				className="sr-only"
 			/>
@@ -635,7 +661,9 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="toggle-browser"
 				tabIndex={-1}
+				aria-keyshortcuts="b"
 				aria-label={`Toggle ${item.title} native and browser mode`}
+				title="Toggle native/browser (b)"
 				onClick={() => onSessionAction(item, "toggle-browser")}
 				className="sr-only"
 			/>
@@ -643,7 +671,9 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="move"
 				tabIndex={-1}
+				aria-keyshortcuts="m"
 				aria-label={`Move ${item.title} to last native folder`}
+				title="Move to last folder (m)"
 				onClick={() => {
 					window.dispatchEvent(
 						new CustomEvent("dashboard-native-agent-folder-action", {
@@ -661,7 +691,9 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="remove-from-folder"
 				tabIndex={-1}
+				aria-keyshortcuts="F"
 				aria-label={`Move ${item.title} out of folder`}
+				title="Remove from folder (F)"
 				onClick={() => onMoveToFolder(item, null)}
 				className="sr-only"
 			/>
@@ -1651,6 +1683,10 @@ export function DashboardNativeAgentsSection({
 				}
 				if (sidebarAction === "toggle-browser") {
 					handleSessionAction(rowItem, "toggle-browser");
+					return;
+				}
+				if (sidebarAction === "rename") {
+					handleSessionAction(rowItem, "rename");
 					return;
 				}
 				if (sidebarAction === "pin") {

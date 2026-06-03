@@ -313,6 +313,28 @@ describe("getDashboardSidebarFocusableItems", () => {
 });
 
 describe("findDashboardSidebarActionButton", () => {
+	test("resolves hidden native session action buttons from the focused session row", () => {
+		if (typeof document === "undefined") return;
+
+		const rowScope = document.createElement("div");
+		rowScope.dataset.dashboardSidebarActionScope = "";
+
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		makeVisible(session);
+
+		const reply = document.createElement("button");
+		reply.dataset.dashboardSidebarAction = "reply";
+
+		const rename = document.createElement("button");
+		rename.dataset.dashboardSidebarAction = "rename";
+
+		rowScope.append(session, reply, rename);
+
+		expect(findDashboardSidebarActionButton(session, "reply")).toBe(reply);
+		expect(findDashboardSidebarActionButton(session, "rename")).toBe(rename);
+	});
+
 	test("resolves folder action buttons from the focused folder row", () => {
 		if (typeof document === "undefined") return;
 

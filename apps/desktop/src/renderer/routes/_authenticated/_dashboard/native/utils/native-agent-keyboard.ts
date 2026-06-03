@@ -22,6 +22,7 @@ export type NativeAgentSidebarVimAction =
 	| "open"
 	| "open-browser"
 	| "pin"
+	| "rename"
 	| "remove-from-folder"
 	| "toggle-browser";
 
@@ -61,6 +62,7 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "o") return "open-browser";
 	if (key === "b") return "toggle-browser";
 	if (key === "p") return "pin";
+	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";

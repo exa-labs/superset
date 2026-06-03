@@ -49,6 +49,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("o")).toBe("open-browser");
 		expect(nativeAgentSidebarVimActionFromKey("b")).toBe("toggle-browser");
 		expect(nativeAgentSidebarVimActionFromKey("p")).toBe("pin");
+		expect(nativeAgentSidebarVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentSidebarVimActionFromKey("H")).toBe("none");
 		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("none");
 		expect(nativeAgentSidebarVimActionFromKey("m")).toBe("move-to-folder");
