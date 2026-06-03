@@ -270,6 +270,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Toggle side-by-side embedded Chrome tabs",
 				},
 				{
+					keys: ["w"],
+					label: "Swap Chrome split focus",
+					description: "Move focus between embedded Chrome split panes",
+				},
+				{
 					keys: ["x"],
 					label: "Close Chrome tab",
 					description: "Close the active embedded Chrome tab",

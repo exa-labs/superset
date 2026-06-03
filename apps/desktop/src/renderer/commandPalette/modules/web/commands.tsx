@@ -104,6 +104,7 @@ function dispatchBrowserAction(
 		| "new-current-url-tab"
 		| "new-google-tab"
 		| "reload"
+		| "swap-split"
 		| "toggle-split",
 ) {
 	window.dispatchEvent(
@@ -312,6 +313,16 @@ export const webProvider: CommandProvider = {
 				shortcutLabel: "s",
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("toggle-split"),
+			},
+			{
+				id: "web.current.swapSplit",
+				title: "Swap Chrome split focus",
+				section: "web",
+				description: "Move focus between the two embedded Chrome split panes",
+				keywords: ["chrome", "browser", "split", "swap", "focus", "pane"],
+				shortcutLabel: "w",
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("swap-split"),
 			},
 			{
 				id: "web.current.close",

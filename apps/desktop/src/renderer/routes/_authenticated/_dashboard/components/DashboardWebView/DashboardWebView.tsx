@@ -61,6 +61,7 @@ type DashboardBrowserCurrentAction =
 	| "new-current-url-tab"
 	| "new-google-tab"
 	| "reload"
+	| "swap-split"
 	| "toggle-split";
 
 interface DashboardBrowserTab extends DashboardBrowserWebViewState {
@@ -675,6 +676,12 @@ export function DashboardWebView({
 		});
 	}, [browserTabs, createBrowserTab, currentUrl, label, pageTitle]);
 
+	const swapSplitFocus = useCallback(() => {
+		const splitTabId = splitBrowserTabIdRef.current;
+		if (!splitTabId || splitTabId === activeBrowserTabIdRef.current) return;
+		activateBrowserTab(splitTabId);
+	}, [activateBrowserTab]);
+
 	const getActiveWebview = useCallback(
 		() => webviewsRef.current.get(activeBrowserTabIdRef.current) ?? null,
 		[],
@@ -756,6 +763,10 @@ export function DashboardWebView({
 				toggleSplitView();
 				return;
 			}
+			if (action === "swap-split") {
+				swapSplitFocus();
+				return;
+			}
 			if (action === "close-current-tab") {
 				closeBrowserTab(activeBrowserTabIdRef.current);
 				return;
@@ -789,6 +800,7 @@ export function DashboardWebView({
 		createTabFromCurrentUrl,
 		isActive,
 		reload,
+		swapSplitFocus,
 		toggleSplitView,
 	]);
 
@@ -815,6 +827,11 @@ export function DashboardWebView({
 
 			if (action === "toggle-split") {
 				toggleSplitView();
+				return;
+			}
+
+			if (action === "swap-split") {
+				swapSplitFocus();
 				return;
 			}
 
@@ -845,6 +862,7 @@ export function DashboardWebView({
 		createTabFromCurrentUrl,
 		isActive,
 		reload,
+		swapSplitFocus,
 		toggleSplitView,
 	]);
 
