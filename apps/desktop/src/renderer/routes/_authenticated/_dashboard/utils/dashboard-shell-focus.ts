@@ -1,5 +1,9 @@
 const ACTIVE_SIDEBAR_SELECTOR =
 	'[data-dashboard-sidebar-active="true"]:not([disabled])';
+const SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE =
+	"data-dashboard-sidebar-keyboard-focus";
+const SIDEBAR_KEYBOARD_FOCUS_SELECTOR =
+	'[data-dashboard-sidebar-keyboard-focus="true"]';
 const ACTIVE_NATIVE_AGENT_ROW_SELECTOR = [
 	'[data-dashboard-sidebar-active="true"][data-native-agent-session-row-id]:not([disabled])',
 	'[data-dashboard-sidebar-active="true"] [data-native-agent-session-row-id]:not([disabled])',
@@ -74,6 +78,19 @@ function firstFallbackSidebarItem(root: HTMLElement): HTMLElement | null {
 	return null;
 }
 
+function markSidebarKeyboardFocus(
+	root: HTMLElement,
+	target: HTMLElement,
+): void {
+	for (const element of root.querySelectorAll<HTMLElement>(
+		SIDEBAR_KEYBOARD_FOCUS_SELECTOR,
+	)) {
+		if (element !== target)
+			element.removeAttribute(SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE);
+	}
+	target.setAttribute(SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+}
+
 export function focusDashboardNavigationShell(
 	doc: Document | null = typeof document === "undefined" ? null : document,
 ): boolean {
@@ -90,6 +107,7 @@ export function focusDashboardNavigationShell(
 		firstFallbackSidebarItem(root);
 	if (!target) return false;
 
+	markSidebarKeyboardFocus(root, target);
 	target.focus({ preventScroll: true });
 	target.scrollIntoView({ block: "nearest" });
 	return true;

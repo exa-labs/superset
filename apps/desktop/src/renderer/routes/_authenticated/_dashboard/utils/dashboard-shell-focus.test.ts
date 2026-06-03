@@ -5,6 +5,7 @@ class FakeElement {
 	tabIndex = 0;
 	focusCount = 0;
 	scrollCount = 0;
+	private readonly attributes = new Map<string, string>();
 
 	constructor(
 		private readonly text: string,
@@ -20,6 +21,7 @@ class FakeElement {
 	) {}
 
 	getAttribute(name: string) {
+		if (this.attributes.has(name)) return this.attributes.get(name) ?? null;
 		if (name === "aria-hidden") return null;
 		if (name === "data-dashboard-sidebar-active") {
 			return this.options.active ? "true" : null;
@@ -34,6 +36,14 @@ class FakeElement {
 			return this.options.action ? "pin" : null;
 		}
 		return null;
+	}
+
+	setAttribute(name: string, value: string) {
+		this.attributes.set(name, value);
+	}
+
+	removeAttribute(name: string) {
+		this.attributes.delete(name);
 	}
 
 	getBoundingClientRect() {
@@ -80,6 +90,13 @@ class FakeSidebarRoot {
 	constructor(private readonly elements: FakeElement[]) {}
 
 	querySelectorAll(selector: string) {
+		if (selector.includes("data-dashboard-sidebar-keyboard-focus")) {
+			return this.elements.filter(
+				(element) =>
+					element.getAttribute("data-dashboard-sidebar-keyboard-focus") ===
+					"true",
+			);
+		}
 		if (selector.includes("data-dashboard-sidebar-roving-item")) {
 			return this.elements.filter(
 				(element) =>
@@ -122,6 +139,27 @@ describe("focusDashboardNavigationShell", () => {
 		expect(first.focusCount).toBe(0);
 		expect(active.focusCount).toBe(1);
 		expect(active.scrollCount).toBe(1);
+		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
+			"true",
+		);
+	});
+
+	it("moves the keyboard focus marker when returning to the shell", () => {
+		const stale = new FakeElement("stale");
+		const active = new FakeElement("active", { active: true });
+		stale.setAttribute("data-dashboard-sidebar-keyboard-focus", "true");
+
+		expect(
+			focusDashboardNavigationShell(
+				fakeDocument(new FakeSidebarRoot([stale, active])),
+			),
+		).toBe(true);
+		expect(
+			stale.getAttribute("data-dashboard-sidebar-keyboard-focus"),
+		).toBeNull();
+		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
+			"true",
+		);
 	});
 
 	it("prefers an active native session row over an active provider header", () => {
