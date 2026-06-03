@@ -70,6 +70,7 @@ import {
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentSidebarJumpFromKey,
 	nativeAgentSidebarVimActionFromKey,
+	nativeAgentUnreadVimActionFromKey,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
 import {
 	applyNativeAgentOptimisticPinned,
@@ -1388,6 +1389,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "n" &&
 				vimKey !== "o" &&
 				vimKey !== "p" &&
+				vimKey !== "u" &&
 				vimKey !== "x" &&
 				vimKey !== "f" &&
 				vimKey !== "F"
@@ -1469,6 +1471,16 @@ export function DashboardNativeAgentsSection({
 				event.preventDefault();
 				event.stopPropagation();
 				setCreateProvider(rowProvider);
+				return;
+			}
+			if (nativeAgentUnreadVimActionFromKey(vimKey) === "open-unread") {
+				const unreadItem = itemsByProvider[rowProvider].find((item) =>
+					hasUnreadAgentResponse(item, readState),
+				);
+				if (!unreadItem) return;
+				event.preventDefault();
+				event.stopPropagation();
+				navigateToNativeSession(unreadItem);
 				return;
 			}
 			const folderAction = rowFolder
@@ -1563,7 +1575,9 @@ export function DashboardNativeAgentsSection({
 		handleSidebarVisible,
 		itemsByProvider,
 		moveToFolder,
+		navigateToNativeSession,
 		openFolderEditor,
+		readState,
 		rememberFolder,
 		setFolderCollapsed,
 		toggleFolder,
