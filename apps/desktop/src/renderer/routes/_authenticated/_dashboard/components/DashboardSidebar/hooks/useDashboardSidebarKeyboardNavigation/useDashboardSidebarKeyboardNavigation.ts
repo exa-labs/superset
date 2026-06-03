@@ -7,6 +7,7 @@ import {
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarLocalKeyAllowsModifiers,
+	dashboardSidebarNextRovingIndex,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -346,7 +347,6 @@ export function useDashboardSidebarKeyboardNavigation(
 				items,
 				root,
 			});
-			const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0;
 
 			if (typeaheadSeed) {
 				event.preventDefault();
@@ -380,8 +380,12 @@ export function useDashboardSidebarKeyboardNavigation(
 			}
 
 			const focusByDelta = (delta: number) => {
-				const nextIndex =
-					(safeActiveIndex + delta + items.length) % items.length;
+				const nextIndex = dashboardSidebarNextRovingIndex({
+					activeIndex,
+					delta: delta > 0 ? 1 : -1,
+					itemCount: items.length,
+				});
+				if (nextIndex < 0) return;
 				focusDashboardSidebarItem(items[nextIndex]);
 			};
 

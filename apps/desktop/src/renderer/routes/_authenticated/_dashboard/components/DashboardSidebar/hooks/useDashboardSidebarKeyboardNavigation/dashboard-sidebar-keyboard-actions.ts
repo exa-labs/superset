@@ -89,6 +89,18 @@ export function dashboardSidebarRovingNavigationBoundaryFromKey(
 	return null;
 }
 
+export function dashboardSidebarNextRovingIndex(input: {
+	activeIndex: number;
+	delta: -1 | 1;
+	itemCount: number;
+}): number {
+	if (input.itemCount <= 0) return -1;
+	if (input.activeIndex < 0) {
+		return input.delta > 0 ? 0 : input.itemCount - 1;
+	}
+	return (input.activeIndex + input.delta + input.itemCount) % input.itemCount;
+}
+
 export function dashboardSidebarVimJumpFromKey(input: {
 	key: string;
 	lastGAt: number;

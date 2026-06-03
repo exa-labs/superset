@@ -5,6 +5,7 @@ import {
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarLocalKeyAllowsModifiers,
+	dashboardSidebarNextRovingIndex,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -153,6 +154,55 @@ describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
 		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
 			null,
 		);
+	});
+});
+
+describe("dashboardSidebarNextRovingIndex", () => {
+	test("starts forward navigation on the first row when no row is focused", () => {
+		expect(
+			dashboardSidebarNextRovingIndex({
+				activeIndex: -1,
+				delta: 1,
+				itemCount: 4,
+			}),
+		).toBe(0);
+	});
+
+	test("starts backward navigation on the last row when no row is focused", () => {
+		expect(
+			dashboardSidebarNextRovingIndex({
+				activeIndex: -1,
+				delta: -1,
+				itemCount: 4,
+			}),
+		).toBe(3);
+	});
+
+	test("wraps from focused rows", () => {
+		expect(
+			dashboardSidebarNextRovingIndex({
+				activeIndex: 3,
+				delta: 1,
+				itemCount: 4,
+			}),
+		).toBe(0);
+		expect(
+			dashboardSidebarNextRovingIndex({
+				activeIndex: 0,
+				delta: -1,
+				itemCount: 4,
+			}),
+		).toBe(3);
+	});
+
+	test("returns -1 when there are no rows", () => {
+		expect(
+			dashboardSidebarNextRovingIndex({
+				activeIndex: -1,
+				delta: 1,
+				itemCount: 0,
+			}),
+		).toBe(-1);
 	});
 });
 
