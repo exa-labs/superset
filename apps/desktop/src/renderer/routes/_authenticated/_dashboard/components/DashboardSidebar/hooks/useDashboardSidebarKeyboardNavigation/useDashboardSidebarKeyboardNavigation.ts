@@ -124,6 +124,16 @@ export function findDashboardSidebarExpansionTarget(
 	return scopedToggle;
 }
 
+export function findDashboardSidebarActivationTarget(
+	activeItem: HTMLElement,
+	key: string,
+): HTMLElement {
+	if (key === " ") {
+		return findDashboardSidebarExpansionTarget(activeItem) ?? activeItem;
+	}
+	return activeItem;
+}
+
 export function dashboardSidebarExpansionValue(
 	element: HTMLElement,
 ): string | null {
@@ -245,7 +255,11 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (activationKey) {
 				event.preventDefault();
 				if (activeIndex >= 0) {
-					(activeElement as HTMLElement).click();
+					const activationTarget = findDashboardSidebarActivationTarget(
+						activeElement as HTMLElement,
+						event.key,
+					);
+					activationTarget.click();
 					return;
 				}
 				focusItem(items[0]);
@@ -328,7 +342,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (event.key === "Enter" || event.key === " ") {
 				event.preventDefault();
-				activeItem.click();
+				findDashboardSidebarActivationTarget(activeItem, event.key).click();
 				return;
 			}
 

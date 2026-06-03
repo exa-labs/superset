@@ -10,6 +10,7 @@ import {
 import {
 	dashboardSidebarExpansionValue,
 	findDashboardSidebarActionButton,
+	findDashboardSidebarActivationTarget,
 	findDashboardSidebarExpansionTarget,
 	getDashboardSidebarFocusableItems,
 	shouldToggleDashboardSidebarExpansion,
@@ -482,6 +483,47 @@ describe("findDashboardSidebarActionButton", () => {
 		expect(findDashboardSidebarActionButton(secondFolder, "delete")).toBe(
 			secondDelete,
 		);
+	});
+});
+
+describe("findDashboardSidebarActivationTarget", () => {
+	test("keeps Enter on the focused row", () => {
+		if (typeof document === "undefined") return;
+
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const row = document.createElement("button");
+		makeVisible(row);
+		const countToggle = document.createElement("button");
+		countToggle.setAttribute("aria-expanded", "false");
+		makeVisible(countToggle);
+		scope.append(row, countToggle);
+
+		expect(findDashboardSidebarActivationTarget(row, "Enter")).toBe(row);
+	});
+
+	test("uses Space to toggle a row-scoped expansion control", () => {
+		if (typeof document === "undefined") return;
+
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const row = document.createElement("button");
+		makeVisible(row);
+		const countToggle = document.createElement("button");
+		countToggle.setAttribute("aria-expanded", "false");
+		makeVisible(countToggle);
+		scope.append(row, countToggle);
+
+		expect(findDashboardSidebarActivationTarget(row, " ")).toBe(countToggle);
+	});
+
+	test("falls back to the focused row for Space when no expansion target exists", () => {
+		if (typeof document === "undefined") return;
+
+		const row = document.createElement("button");
+		makeVisible(row);
+
+		expect(findDashboardSidebarActivationTarget(row, " ")).toBe(row);
 	});
 });
 
