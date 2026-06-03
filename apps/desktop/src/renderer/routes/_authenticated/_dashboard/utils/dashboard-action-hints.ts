@@ -13,6 +13,8 @@ const DASHBOARD_ACTION_HINT_EXCLUDED_ANCESTOR_SELECTOR = [
 	"[data-dashboard-action-hints-overlay]",
 	"[data-dashboard-action-hint-exclude='true']",
 	"[data-dashboard-keyboard-help]",
+	"[data-native-agent-header='true']",
+	"[data-native-agent-header-menu='true']",
 	"[data-command-palette-input]",
 	"[aria-hidden='true']",
 	".sr-only",

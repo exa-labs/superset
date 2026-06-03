@@ -283,36 +283,32 @@ function NativeAgentHeaderViewSwitcher({
 	viewMode: NativeViewMode;
 }) {
 	const options: Array<{
-		actionHintLabel: string;
-		actionHintTitle: string;
 		icon: ReactNode;
 		key: NativeViewMode;
 		label: string;
 		shortcut: string;
+		title: string;
 	}> = [
 		{
-			actionHintLabel: "n",
-			actionHintTitle: "Show chat",
 			icon: <LuMessageSquare className="size-3.5 shrink-0" />,
 			key: "native",
-			label: "Chat",
+			label: "Native",
 			shortcut: "",
+			title: "Native chat",
 		},
 		{
-			actionHintLabel: "b",
-			actionHintTitle: "Show browser view",
 			icon: <LuGlobe className="size-3.5 shrink-0" />,
 			key: "browser",
 			label: "Browser",
 			shortcut: shortcutSequence(nativeBrowserShortcut, "b"),
+			title: "Browser view",
 		},
 		{
-			actionHintLabel: "s",
-			actionHintTitle: "Show split view",
 			icon: <LuColumns2 className="size-3.5 shrink-0" />,
 			key: "split",
 			label: "Split",
 			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
+			title: "Split native chat and browser",
 		},
 	];
 
@@ -330,18 +326,16 @@ function NativeAgentHeaderViewSwitcher({
 						type="button"
 						aria-pressed={selected}
 						onClick={() => onSelectViewMode(option.key)}
-						title={`${option.label} view${shortcutSuffix}`}
-						data-dashboard-action-hint-label={option.actionHintLabel}
-						data-dashboard-action-hint-title={option.actionHintTitle}
+						title={`${option.title}${shortcutSuffix}`}
 						className={cn(
-							"flex h-7 items-center gap-1.5 rounded px-2 text-xs font-medium transition-colors",
+							"flex h-7 min-w-7 items-center justify-center gap-1.5 rounded px-1.5 text-xs font-medium transition-colors xl:px-2",
 							selected
 								? "bg-background text-foreground shadow-sm"
 								: "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
 						)}
 					>
-						<span className="hidden sm:block">{option.icon}</span>
-						<span>{option.label}</span>
+						{option.icon}
+						<span className="hidden 2xl:inline">{option.label}</span>
 					</button>
 				);
 			})}
@@ -394,13 +388,18 @@ function NativeAgentHeaderActionsMenu({
 					<LuChevronDown className="size-3.5 opacity-70" />
 				</button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end" className="w-80">
+			<DropdownMenuContent
+				align="end"
+				className="w-80"
+				data-native-agent-header-menu="true"
+			>
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">
-						Keyboard shortcuts
+						Session controls
 					</div>
 					<div className="text-[11px] text-muted-foreground">
-						Single-key commands work while this session is focused.
+						Keyboard shortcuts live here; the header only keeps primary controls
+						visible.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {
@@ -2406,6 +2405,7 @@ export function NativeAgentChatView({
 			<header
 				className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-4"
 				data-dashboard-action-hint-exclude="true"
+				data-native-agent-header="true"
 			>
 				<div className="min-w-0 flex-1">
 					<div className="flex items-center gap-2">
@@ -2447,8 +2447,6 @@ export function NativeAgentChatView({
 					onClick={() => void invalidateProvider()}
 					disabled={!isConfigured}
 					title="Refresh"
-					data-dashboard-action-hint-label="R"
-					data-dashboard-action-hint-title="Refresh session data"
 					data-dashboard-action-hint-exclude="true"
 					className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
 					aria-label="Refresh native agent data"
@@ -2466,8 +2464,6 @@ export function NativeAgentChatView({
 							)}
 							aria-label="Toggle native diagnostics"
 							title="Diagnostics"
-							data-dashboard-action-hint-label="i"
-							data-dashboard-action-hint-title="Show diagnostics"
 							data-dashboard-action-hint-exclude="true"
 						>
 							<LuInfo className="size-4" />

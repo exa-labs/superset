@@ -210,18 +210,31 @@ describe("dashboard action hints", () => {
 		const root = document.createElement("div");
 		root.setAttribute("data-native-agent-view-root", "");
 		const header = document.createElement("header");
-		header.setAttribute("data-dashboard-action-hint-exclude", "true");
+		header.setAttribute("data-native-agent-header", "true");
 		const browserButton = document.createElement("button");
+		browserButton.setAttribute("data-dashboard-action-hint-label", "b");
+		browserButton.setAttribute(
+			"data-dashboard-action-hint-title",
+			"Show browser view",
+		);
 		browserButton.textContent = "Browser";
 		setRect(browserButton, visibleRect());
 		const refreshButton = document.createElement("button");
+		refreshButton.setAttribute("data-dashboard-action-hint-label", "R");
 		refreshButton.setAttribute("aria-label", "Refresh");
 		setRect(refreshButton, visibleRect({ left: 90 }));
+		const portaledHeaderMenu = document.createElement("div");
+		portaledHeaderMenu.setAttribute("data-native-agent-header-menu", "true");
+		const moveMenuItem = document.createElement("button");
+		moveMenuItem.setAttribute("data-dashboard-action-hint-label", "m");
+		moveMenuItem.textContent = "Move to folder";
+		setRect(moveMenuItem, visibleRect({ left: 180 }));
+		portaledHeaderMenu.append(moveMenuItem);
 		header.append(browserButton, refreshButton);
 		const bodyAction = document.createElement("button");
 		bodyAction.textContent = "Open attachment";
 		setRect(bodyAction, visibleRect({ top: 60 }));
-		root.append(header, bodyAction);
+		root.append(header, bodyAction, portaledHeaderMenu);
 
 		const targets = collectDashboardActionHintTargets(root);
 
