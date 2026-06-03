@@ -373,7 +373,7 @@ function NativeAgentHeaderActionsMenu({
 				<button
 					type="button"
 					aria-label="Show native agent shortcuts and actions"
-					title="Session actions and shortcuts"
+					title="Session actions and shortcuts. Esc returns focus to the sidebar; Option+K opens the control plane."
 					data-dashboard-action-hint-exclude="true"
 					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
 				>
@@ -390,6 +390,10 @@ function NativeAgentHeaderActionsMenu({
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">
 						Session controls
+					</div>
+					<div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+						Use plain keys while focused in native chat. Esc returns to the
+						sidebar; Option+K opens the control plane.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {

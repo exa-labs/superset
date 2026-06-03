@@ -106,9 +106,11 @@ function DashboardBrowserKeyboardMenu({
 					variant="ghost"
 					size="icon-xs"
 					aria-label="Show browser keyboard shortcuts"
-					title="Browser keyboard shortcuts"
+					title="Browser keyboard shortcuts. Esc returns focus to the sidebar; Option+K opens the control plane."
+					className="w-auto gap-1.5 px-1.5"
 				>
 					<LuKeyRound className="size-3.5" />
+					<span className="hidden text-[11px] xl:inline">Keys</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
@@ -119,6 +121,10 @@ function DashboardBrowserKeyboardMenu({
 				<div className="px-2 py-1.5">
 					<div className="text-xs font-medium text-foreground">
 						Browser controls
+					</div>
+					<div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+						Plain keys control embedded Chrome. Esc returns to the sidebar;
+						Option+K opens the control plane.
 					</div>
 				</div>
 				{sectionOrder.map((section) => {
