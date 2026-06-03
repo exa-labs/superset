@@ -222,6 +222,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
+		expect(shortcutById.get("native.current.closeSplit")).toBe("q");
 		expect(shortcutById.get("native.current.narrowSplit")).toBe("[");
 		expect(shortcutById.get("native.current.widenSplit")).toBe("]");
 		expect(shortcutById.get("native.current.equalizeSplit")).toBe("=");
@@ -507,6 +508,7 @@ describe("web command provider", () => {
 			"native.current.toggleBrowser",
 			"native.current.toggleSplit",
 			"native.current.narrowSplit",
+			"native.current.closeSplit",
 			"native.current.widenSplit",
 			"native.current.equalizeSplit",
 		]) {
@@ -550,6 +552,9 @@ describe("web command provider", () => {
 			commands
 				.find((command) => command.id === "native.current.narrowSplit")
 				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.current.closeSplit")
+				?.run?.(context);
 
 			expect(events).toContainEqual({
 				detail: { provider: "devin" },
@@ -577,6 +582,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "narrow-native-split", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "close-split", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 		});

@@ -48,6 +48,7 @@ export type NativeAgentUnreadVimAction =
 	| "none"
 	| "open-unread";
 export type NativeAgentSplitPaneAction =
+	| "close"
 	| "equalize"
 	| "narrow-native"
 	| "none"
@@ -206,6 +207,7 @@ export function nextNativeAgentKeyboardViewMode(input: {
 export function nativeAgentSplitPaneActionFromKey(
 	key: string | null,
 ): NativeAgentSplitPaneAction {
+	if (key === "q") return "close";
 	if (key === "[") return "narrow-native";
 	if (key === "]") return "widen-native";
 	if (key === "=") return "equalize";

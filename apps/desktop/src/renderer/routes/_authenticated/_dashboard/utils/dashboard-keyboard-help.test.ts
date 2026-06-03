@@ -144,6 +144,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Equalize native split")).toEqual(
 			expect.objectContaining({ keys: ["="] }),
 		);
+		expect(entryByLabel.get("Close native split")).toEqual(
+			expect.objectContaining({ keys: ["q"] }),
+		);
 		expect(entryByLabel.get("Remove from folder")).toEqual(
 			expect.objectContaining({ keys: ["F"] }),
 		);

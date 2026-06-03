@@ -68,6 +68,7 @@ const CONTROL_PLANE_PRIORITY = {
 
 function dispatchNativeAgentAction(
 	action:
+		| "close-split"
 		| "equalize-split"
 		| "focus-composer"
 		| "hide"
@@ -921,6 +922,22 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"narrow-native-split",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.closeSplit",
+				title: "Close native split view",
+				section: "web",
+				description: "Return the current native session to chat-only view",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
+				keywords: ["capy", "devin", "native", "split", "close", "browser"],
+				shortcutLabel: "q",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"close-split",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

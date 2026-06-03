@@ -279,6 +279,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Reset native chat and browser panes to equal widths",
 				},
 				{
+					keys: ["q"],
+					label: "Close native split",
+					description: "Return a split native session to chat-only view",
+				},
+				{
 					keys: ["r"],
 					label: "Reply",
 					description: "Focus the active native-agent reply box",

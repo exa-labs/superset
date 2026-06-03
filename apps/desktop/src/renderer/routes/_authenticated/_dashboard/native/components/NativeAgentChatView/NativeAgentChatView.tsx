@@ -158,6 +158,7 @@ type NativeItem = {
 type NativeViewMode = "browser" | "native" | "split";
 
 type NativeAgentCurrentAction =
+	| "close-split"
 	| "equalize-split"
 	| "focus-composer"
 	| "hide"
@@ -1693,6 +1694,10 @@ export function NativeAgentChatView({
 					selectedItem.url
 				) {
 					consumeNativeAgentKeyboardEvent(event);
+					if (splitPaneAction === "close") {
+						handleSelectViewMode("native");
+						return;
+					}
 					if (splitPaneAction === "narrow-native") {
 						resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
 						return;
@@ -1876,6 +1881,10 @@ export function NativeAgentChatView({
 			}
 			if (detail?.action === "toggle-split" && selectedItem.url) {
 				handleSelectViewMode(viewMode === "split" ? "native" : "split");
+				return;
+			}
+			if (detail?.action === "close-split" && selectedItem.url) {
+				if (viewMode === "split") handleSelectViewMode("native");
 				return;
 			}
 			if (detail?.action === "narrow-native-split" && selectedItem.url) {
