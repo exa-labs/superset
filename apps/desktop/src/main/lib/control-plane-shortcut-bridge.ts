@@ -9,6 +9,7 @@ import {
 import {
 	type GlobalKeyboardAction,
 	globalKeyboardActionFromInput,
+	shouldPreventDefaultForGlobalKeyboardAction,
 } from "main/lib/global-keyboard-shortcut";
 
 const attachedWebContentsIds = new Set<number>();
@@ -83,7 +84,9 @@ export function installControlPlaneShortcutBridge(
 
 			const globalKeyboardAction = globalKeyboardActionFromInput(input);
 			if (globalKeyboardAction) {
-				event.preventDefault();
+				if (shouldPreventDefaultForGlobalKeyboardAction(globalKeyboardAction)) {
+					event.preventDefault();
+				}
 				onGlobalKeyboardAction?.(globalKeyboardAction);
 				return;
 			}

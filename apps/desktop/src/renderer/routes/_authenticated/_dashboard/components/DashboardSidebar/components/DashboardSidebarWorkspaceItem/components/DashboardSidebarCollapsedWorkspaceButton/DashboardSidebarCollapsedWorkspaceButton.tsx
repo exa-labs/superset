@@ -41,6 +41,7 @@ export const DashboardSidebarCollapsedWorkspaceButton = forwardRef<
 			<button
 				type="button"
 				ref={ref}
+				data-dashboard-sidebar-active={isActive ? "true" : undefined}
 				className={cn(
 					"relative flex items-center justify-center size-8 rounded-md",
 					"transition-colors cursor-pointer",

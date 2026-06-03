@@ -111,6 +111,7 @@ export const DashboardSidebarExpandedWorkspaceRow = forwardRef<
 		return (
 			// biome-ignore lint/a11y/noStaticElementInteractions: Mirrors the legacy sidebar row UI, which includes nested action buttons.
 			<div
+				data-dashboard-sidebar-active={isActive ? "true" : undefined}
 				data-dashboard-sidebar-action-scope
 				role={onClick ? "button" : undefined}
 				tabIndex={onClick ? 0 : undefined}

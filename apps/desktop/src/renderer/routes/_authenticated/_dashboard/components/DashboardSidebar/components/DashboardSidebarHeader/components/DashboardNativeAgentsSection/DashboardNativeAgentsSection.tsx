@@ -454,6 +454,7 @@ function SessionRow({
 		>
 			<button
 				type="button"
+				data-dashboard-sidebar-active={isActive ? "true" : undefined}
 				data-native-agent-session-row-id={item.id}
 				data-native-agent-session-row-provider={item.provider}
 				onClick={() => onOpen(item)}
@@ -1569,6 +1570,7 @@ export function DashboardNativeAgentsSection({
 						>
 							<button
 								type="button"
+								data-dashboard-sidebar-active={isActive ? "true" : undefined}
 								data-dashboard-native-provider-trigger={providerConfig.id}
 								onClick={() => openProvider(providerConfig.id)}
 								className={cn(

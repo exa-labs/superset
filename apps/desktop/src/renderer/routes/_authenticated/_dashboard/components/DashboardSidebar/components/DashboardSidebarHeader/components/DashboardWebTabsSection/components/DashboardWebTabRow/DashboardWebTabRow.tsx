@@ -89,6 +89,7 @@ export function DashboardWebTabRow({
 		>
 			<button
 				type="button"
+				data-dashboard-sidebar-active={isActive ? "true" : undefined}
 				data-dashboard-web-tab-row-button={tab.id}
 				onFocus={() => warmDashboardWebUrl(tab.url)}
 				onMouseEnter={() => warmDashboardWebUrl(tab.url)}

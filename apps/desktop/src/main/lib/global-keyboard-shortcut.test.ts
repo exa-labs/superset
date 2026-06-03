@@ -1,5 +1,8 @@
 import { describe, expect, it } from "bun:test";
-import { globalKeyboardActionFromInput } from "./global-keyboard-shortcut";
+import {
+	globalKeyboardActionFromInput,
+	shouldPreventDefaultForGlobalKeyboardAction,
+} from "./global-keyboard-shortcut";
 
 const baseInput = {
 	alt: true,
@@ -56,6 +59,20 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("TOGGLE_VIM_MODE");
 	});
 
+	it("emits a non-preventing dashboard shell focus action for bare Escape", () => {
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				alt: false,
+				code: "Escape",
+				key: "Escape",
+			}),
+		).toBe("FOCUS_DASHBOARD_SHELL");
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+		).toBe(false);
+	});
+
 	it("ignores repeats and non-option chords", () => {
 		expect(
 			globalKeyboardActionFromInput({ ...baseInput, isAutoRepeat: true }),
@@ -74,5 +91,23 @@ describe("globalKeyboardActionFromInput", () => {
 				isAutoRepeat: true,
 			}),
 		).toBeNull();
+		expect(
+			globalKeyboardActionFromInput({
+				...baseInput,
+				alt: false,
+				code: "Escape",
+				key: "Escape",
+				shift: true,
+			}),
+		).toBeNull();
+	});
+
+	it("prevents defaults for switching and Vim toggle actions", () => {
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_NEXT"),
+		).toBe(true);
+		expect(shouldPreventDefaultForGlobalKeyboardAction("TOGGLE_VIM_MODE")).toBe(
+			true,
+		);
 	});
 });

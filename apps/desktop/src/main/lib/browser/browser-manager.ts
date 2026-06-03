@@ -10,6 +10,7 @@ import {
 import {
 	type GlobalKeyboardAction,
 	globalKeyboardActionFromInput,
+	shouldPreventDefaultForGlobalKeyboardAction,
 } from "main/lib/global-keyboard-shortcut";
 import { safeOpenExternal } from "main/lib/safe-url";
 
@@ -382,7 +383,9 @@ class BrowserManager extends EventEmitter {
 
 			const globalKeyboardAction = globalKeyboardActionFromInput(input);
 			if (globalKeyboardAction) {
-				event.preventDefault();
+				if (shouldPreventDefaultForGlobalKeyboardAction(globalKeyboardAction)) {
+					event.preventDefault();
+				}
 				this.dispatchGlobalKeyboardAction(globalKeyboardAction);
 				return;
 			}
