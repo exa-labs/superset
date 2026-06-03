@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
 	activateDashboardActionHintTarget,
 	collectDashboardActionHintTargets,
+	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	type DashboardActionHintTarget,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import {
@@ -36,6 +37,15 @@ export function DashboardActionHintsOverlay() {
 	}, [activeHints]);
 
 	useEffect(() => {
+		const openActionHints = () => {
+			const root = document.querySelector<HTMLElement>(
+				"[data-dashboard-action-hints-root]",
+			);
+			const targets = collectDashboardActionHintTargets(root ?? document.body);
+			if (targets.length === 0) return;
+			setActiveHints({ prefix: "", targets });
+		};
+
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const currentHints = activeHintsRef.current;
 
@@ -70,18 +80,18 @@ export function DashboardActionHintsOverlay() {
 			if (!vimModeEnabled || !shouldHandleDashboardVimKey(event)) return;
 			if (dashboardVimKey(event) !== "f") return;
 
-			const root = document.querySelector<HTMLElement>(
-				"[data-dashboard-action-hints-root]",
-			);
-			const targets = collectDashboardActionHintTargets(root ?? document.body);
-			if (targets.length === 0) return;
 			consume(event);
-			setActiveHints({ prefix: "", targets });
+			openActionHints();
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
+		window.addEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, openActionHints);
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
+			window.removeEventListener(
+				DASHBOARD_ACTION_HINTS_OPEN_EVENT,
+				openActionHints,
+			);
 		};
 	}, [vimModeEnabled]);
 

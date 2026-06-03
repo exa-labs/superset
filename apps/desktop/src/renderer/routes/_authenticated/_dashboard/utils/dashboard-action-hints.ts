@@ -1,4 +1,5 @@
 const DASHBOARD_ACTION_HINT_KEYS = "asdfghjklqwertyuiopzxcvbnm".split("");
+export const DASHBOARD_ACTION_HINTS_OPEN_EVENT = "dashboard-action-hints-open";
 
 const DASHBOARD_ACTION_HINT_TARGET_SELECTOR = [
 	"button:not([disabled])",
@@ -119,4 +120,9 @@ export function activateDashboardActionHintTarget(element: HTMLElement): void {
 		element.focus();
 	}
 	element.click();
+}
+
+export function openDashboardActionHints(): void {
+	if (typeof window === "undefined") return;
+	window.dispatchEvent(new Event(DASHBOARD_ACTION_HINTS_OPEN_EVENT));
 }

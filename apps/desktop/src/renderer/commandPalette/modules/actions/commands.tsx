@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
+import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
@@ -148,6 +149,16 @@ export const actionsProvider: CommandProvider = {
 				run: () => {
 					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 				},
+			},
+			{
+				id: "actions.showDashboardActionHints",
+				title: "Show action hints",
+				section: "actions",
+				description: "Label visible dashboard buttons and links with Vim keys",
+				icon: KeyboardIcon,
+				keywords: ["vim", "hints", "links", "buttons", "keyboard", "f"],
+				shortcutLabel: "f",
+				run: () => openDashboardActionHints(),
 			},
 		];
 

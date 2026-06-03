@@ -55,6 +55,9 @@ mock.module("../../ui/ThemeFrame/ThemeFrame", () => ({
 const { isDashboardVimModeEnabled, setDashboardVimModeEnabled } = await import(
 	"renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode"
 );
+const { DASHBOARD_ACTION_HINTS_OPEN_EVENT } = await import(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints"
+);
 const { actionsProvider } = await import("./commands");
 
 function commandContext(pathname = "/native/capy"): CommandContext {
@@ -90,6 +93,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
+		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
 	});
 
@@ -127,6 +131,11 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.focusNavigationShell")
 				?.shortcutLabel,
 		).toBe("Esc");
+		expect(
+			commands.find(
+				(command) => command.id === "actions.showDashboardActionHints",
+			)?.shortcutLabel,
+		).toBe("f");
 	});
 
 	it("runs the dashboard Vim toggle command", () => {
@@ -139,6 +148,23 @@ describe("actions command provider", () => {
 
 		expect(isDashboardVimModeEnabled()).toBe(true);
 		setDashboardVimModeEnabled(false);
+	});
+
+	it("opens dashboard action hints from the command palette", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+		const command = actionsProvider
+			.provide(commandContext("/native/devin"))
+			.find((candidate) => candidate.id === "actions.showDashboardActionHints");
+
+		command?.run?.(commandContext("/native/devin"));
+		window.removeEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+
+		expect(openEventCount).toBe(1);
 	});
 
 	it("opens the dashboard keyboard overlay from dashboard routes", () => {

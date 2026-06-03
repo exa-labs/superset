@@ -2,7 +2,9 @@ import { describe, expect, it } from "bun:test";
 import {
 	activateDashboardActionHintTarget,
 	collectDashboardActionHintTargets,
+	DASHBOARD_ACTION_HINTS_OPEN_EVENT,
 	dashboardActionHintLabelForIndex,
+	openDashboardActionHints,
 } from "./dashboard-action-hints";
 
 function visibleRect({
@@ -91,5 +93,19 @@ describe("dashboard action hints", () => {
 		expect(document.activeElement).toBe(button);
 		expect(clicked).toBe(true);
 		button.remove();
+	});
+
+	it("dispatches an open event for the dashboard hint overlay", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+
+		openDashboardActionHints();
+
+		window.removeEventListener(DASHBOARD_ACTION_HINTS_OPEN_EVENT, listener);
+		expect(openEventCount).toBe(1);
 	});
 });
