@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
-import { useFrameStackStore } from "renderer/commandPalette/core/frames";
+import { type RefObject, useEffect, useRef } from "react";
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 
 const INTERACTIVE_SELECTOR = [
@@ -47,10 +46,13 @@ function focusItem(item: HTMLElement): void {
 
 export function useDashboardSidebarKeyboardNavigation(
 	rootRef: React.RefObject<HTMLElement | null>,
+	options: {
+		onClearSearch?: () => void;
+		searchInputRef?: RefObject<HTMLInputElement | null>;
+	} = {},
 ): void {
 	const navigate = useNavigate();
 	const vimModeEnabled = useDashboardVimModeStore((state) => state.enabled);
-	const setCommandPaletteOpen = useFrameStackStore((s) => s.setOpen);
 	const lastGRef = useRef(0);
 
 	useEffect(() => {
@@ -113,13 +115,15 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (event.key === "Escape") {
 				event.preventDefault();
+				options.onClearSearch?.();
 				focusItem(items[Math.max(0, activeIndex)]);
 				return;
 			}
 
 			if (event.key === "/") {
 				event.preventDefault();
-				setCommandPaletteOpen(true);
+				options.searchInputRef?.current?.focus();
+				options.searchInputRef?.current?.select();
 				return;
 			}
 
@@ -176,5 +180,11 @@ export function useDashboardSidebarKeyboardNavigation(
 
 		document.addEventListener("keydown", onKeyDown, true);
 		return () => document.removeEventListener("keydown", onKeyDown, true);
-	}, [navigate, rootRef, setCommandPaletteOpen, vimModeEnabled]);
+	}, [
+		navigate,
+		options.onClearSearch,
+		options.searchInputRef,
+		rootRef,
+		vimModeEnabled,
+	]);
 }

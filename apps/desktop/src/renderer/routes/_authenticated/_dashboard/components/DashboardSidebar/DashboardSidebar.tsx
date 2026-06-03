@@ -18,6 +18,7 @@ import {
 	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Input } from "@superset/ui/input";
 import { Switch } from "@superset/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@superset/ui/tooltip";
 import { cn } from "@superset/ui/utils";
@@ -25,6 +26,7 @@ import { useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
+import { LuSearch, LuX } from "react-icons/lu";
 import { V2AvailableBanner } from "renderer/components/V2AvailableBanner";
 import { useHotkeyDisplay } from "renderer/hotkeys";
 import {
@@ -45,6 +47,7 @@ import { useDashboardSidebarKeyboardNavigation } from "./hooks/useDashboardSideb
 import { useDashboardSidebarShortcuts } from "./hooks/useDashboardSidebarShortcuts";
 import { DashboardSidebarHoverProvider } from "./providers/DashboardSidebarHoverProvider";
 import type { DashboardSidebarProject } from "./types";
+import { filterDashboardSidebarProjects } from "./utils/filterDashboardSidebarProjects";
 
 interface DashboardSidebarProps {
 	isCollapsed?: boolean;
@@ -135,8 +138,14 @@ export function DashboardSidebar({
 	const v2RouteMatch = matchRoute({ to: "/v2-workspace/$workspaceId" });
 	const activeV2WorkspaceId = v2RouteMatch ? v2RouteMatch.workspaceId : null;
 	const [showExtraNav, setShowExtraNav] = useState(readExtraNavVisible);
+	const [sidebarSearchQuery, setSidebarSearchQuery] = useState("");
 	const sidebarRootRef = useRef<HTMLDivElement | null>(null);
-	useDashboardSidebarKeyboardNavigation(sidebarRootRef);
+	const sidebarSearchInputRef = useRef<HTMLInputElement | null>(null);
+	const clearSidebarSearch = useCallback(() => setSidebarSearchQuery(""), []);
+	useDashboardSidebarKeyboardNavigation(sidebarRootRef, {
+		onClearSearch: clearSidebarSearch,
+		searchInputRef: sidebarSearchInputRef,
+	});
 
 	const sensors = useSensors(
 		useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -173,6 +182,18 @@ export function DashboardSidebar({
 			.map((id) => byId.get(id))
 			.filter((g): g is DashboardSidebarProject => g != null);
 	}, [groups, projectOrder]);
+	const filteredGroups = useMemo(
+		() => filterDashboardSidebarProjects(orderedGroups, sidebarSearchQuery),
+		[orderedGroups, sidebarSearchQuery],
+	);
+	const isSidebarSearchActive = sidebarSearchQuery.trim().length > 0;
+	const visibleProjectOrder = useMemo(
+		() =>
+			isSidebarSearchActive
+				? filteredGroups.map((project) => project.id)
+				: projectOrder,
+		[filteredGroups, isSidebarSearchActive, projectOrder],
+	);
 
 	const workspaceShortcutLabels = useDashboardSidebarShortcuts(orderedGroups);
 
@@ -230,6 +251,52 @@ export function DashboardSidebar({
 								isCollapsed={isCollapsed}
 								showExtraNav={showExtraNav}
 							/>
+							{!isCollapsed && (
+								<div className="px-2 pb-2">
+									<div
+										className={cn(
+											"group flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-background/45 px-2 text-muted-foreground transition-colors",
+											"focus-within:border-primary/45 focus-within:bg-background/80 focus-within:text-foreground",
+										)}
+									>
+										<LuSearch className="size-3.5 shrink-0" />
+										<Input
+											ref={sidebarSearchInputRef}
+											data-dashboard-sidebar-search-input="true"
+											value={sidebarSearchQuery}
+											onChange={(event) =>
+												setSidebarSearchQuery(event.target.value)
+											}
+											onKeyDown={(event) => {
+												if (event.key !== "Escape") return;
+												if (sidebarSearchQuery.length > 0) {
+													event.preventDefault();
+													setSidebarSearchQuery("");
+													return;
+												}
+												event.currentTarget.blur();
+											}}
+											placeholder="Search sidebar"
+											variant="ghost"
+											className="h-7 flex-1 px-0 py-0 text-xs placeholder:text-muted-foreground/65 focus-visible:ring-0"
+										/>
+										{sidebarSearchQuery.length > 0 ? (
+											<button
+												type="button"
+												aria-label="Clear sidebar search"
+												onClick={clearSidebarSearch}
+												className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+											>
+												<LuX className="size-3.5" />
+											</button>
+										) : (
+											<span className="shrink-0 rounded border border-border/70 px-1 font-mono text-[10px] leading-4 text-muted-foreground/60">
+												/
+											</span>
+										)}
+									</div>
+								</div>
+							)}
 
 							<DndContext
 								sensors={sensors}
@@ -245,10 +312,10 @@ export function DashboardSidebar({
 								onDragCancel={() => setActiveProject(null)}
 							>
 								<SortableContext
-									items={projectOrder}
+									items={visibleProjectOrder}
 									strategy={verticalListSortingStrategy}
 								>
-									{orderedGroups.map((project) => (
+									{filteredGroups.map((project) => (
 										<SortableProjectWrapper
 											key={project.id}
 											project={project}
@@ -260,6 +327,11 @@ export function DashboardSidebar({
 										/>
 									))}
 								</SortableContext>
+								{isSidebarSearchActive && filteredGroups.length === 0 && (
+									<div className="px-3 py-8 text-center text-xs text-muted-foreground">
+										No sidebar matches
+									</div>
+								)}
 
 								{createPortal(
 									<DragOverlay dropAnimation={null}>
