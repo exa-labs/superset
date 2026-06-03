@@ -6,6 +6,22 @@ import {
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarTypeaheadSeedFromKey,
 } from "./dashboard-sidebar-keyboard-actions";
+import { getDashboardSidebarFocusableItems } from "./useDashboardSidebarKeyboardNavigation";
+
+function makeVisible(element: HTMLElement): void {
+	element.getBoundingClientRect = () =>
+		({
+			bottom: 24,
+			height: 24,
+			left: 0,
+			right: 120,
+			top: 0,
+			width: 120,
+			x: 0,
+			y: 0,
+			toJSON: () => ({}),
+		}) as DOMRect;
+}
 
 describe("dashboardSidebarKeyboardActionFromKey", () => {
 	const cases: Array<[string, DashboardSidebarKeyboardAction]> = [
@@ -145,5 +161,82 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 				vimModeEnabled: false,
 			}),
 		).toBeNull();
+	});
+});
+
+describe("getDashboardSidebarFocusableItems", () => {
+	test("prefers primary sidebar rows over nested hover actions", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const project = document.createElement("div");
+		project.dataset.dashboardSidebarRovingItem = "true";
+		project.dataset.dashboardSidebarActionScope = "";
+		project.tabIndex = 0;
+		project.id = "project";
+		makeVisible(project);
+
+		const projectCreate = document.createElement("button");
+		projectCreate.dataset.dashboardSidebarAction = "create";
+		projectCreate.id = "project-create";
+		makeVisible(projectCreate);
+		project.append(projectCreate);
+
+		const webApp = document.createElement("button");
+		webApp.dataset.dashboardWebAppTrigger = "chrome";
+		webApp.id = "chrome";
+		makeVisible(webApp);
+
+		const webAppCreate = document.createElement("button");
+		webAppCreate.dataset.dashboardSidebarAction = "create";
+		webAppCreate.id = "chrome-create";
+		makeVisible(webAppCreate);
+
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		session.id = "session";
+		makeVisible(session);
+
+		const pin = document.createElement("button");
+		pin.dataset.dashboardSidebarAction = "pin";
+		pin.id = "pin";
+		makeVisible(pin);
+
+		const settings = document.createElement("button");
+		settings.id = "settings";
+		makeVisible(settings);
+
+		root.append(project, webApp, webAppCreate, session, pin, settings);
+
+		expect(
+			getDashboardSidebarFocusableItems(root).map((element) => element.id),
+		).toEqual(["project", "chrome", "session"]);
+	});
+
+	test("falls back to normal controls while excluding scoped action buttons", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const row = document.createElement("div");
+		row.dataset.dashboardSidebarActionScope = "";
+		row.tabIndex = 0;
+		row.id = "row";
+		makeVisible(row);
+
+		const action = document.createElement("button");
+		action.dataset.dashboardSidebarAction = "archive";
+		action.id = "archive";
+		makeVisible(action);
+		row.append(action);
+
+		const footer = document.createElement("button");
+		footer.id = "footer";
+		makeVisible(footer);
+
+		root.append(row, footer);
+
+		expect(
+			getDashboardSidebarFocusableItems(root).map((element) => element.id),
+		).toEqual(["row", "footer"]);
 	});
 });

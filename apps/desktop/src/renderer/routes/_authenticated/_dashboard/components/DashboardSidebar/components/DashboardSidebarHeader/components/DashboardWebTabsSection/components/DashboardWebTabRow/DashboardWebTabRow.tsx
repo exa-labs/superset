@@ -75,6 +75,7 @@ export function DashboardWebTabRow({
 
 	return (
 		<li
+			data-dashboard-sidebar-action-scope
 			draggable
 			onDragStart={(event) => {
 				event.dataTransfer.setData("application/x-dashboard-web-tab", tab.id);
@@ -120,6 +121,7 @@ export function DashboardWebTabRow({
 			</button>
 			<button
 				type="button"
+				data-dashboard-sidebar-action="pin"
 				aria-label={
 					tab.isPinned
 						? `Unpin ${tab.title} from browser retention`
@@ -142,6 +144,7 @@ export function DashboardWebTabRow({
 			</button>
 			<button
 				type="button"
+				data-dashboard-sidebar-action="rename"
 				aria-label={`Rename ${tab.title}`}
 				onClick={() => setIsEditing(true)}
 				className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-0 transition hover:bg-accent group-hover:opacity-100 group-focus-within:opacity-100"
@@ -150,6 +153,7 @@ export function DashboardWebTabRow({
 			</button>
 			<button
 				type="button"
+				data-dashboard-sidebar-action="archive"
 				aria-label={`Close ${tab.title}`}
 				onClick={(event) => {
 					event.stopPropagation();

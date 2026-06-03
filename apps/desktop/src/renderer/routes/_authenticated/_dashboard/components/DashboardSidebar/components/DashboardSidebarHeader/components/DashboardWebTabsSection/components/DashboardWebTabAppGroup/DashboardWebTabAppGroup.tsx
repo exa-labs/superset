@@ -114,7 +114,10 @@ export function DashboardWebTabAppGroup({
 
 	return (
 		<div className="flex flex-col gap-1">
-			<div className="flex items-center gap-1">
+			<div
+				data-dashboard-sidebar-action-scope
+				className="flex items-center gap-1"
+			>
 				<button
 					type="button"
 					aria-label={`Open ${app.label}`}
@@ -168,6 +171,7 @@ export function DashboardWebTabAppGroup({
 						<button
 							type="button"
 							aria-label={`New ${app.label} tab`}
+							data-dashboard-sidebar-action="create"
 							onClick={() => onCreateTab(app.id)}
 							className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 						>
@@ -212,6 +216,7 @@ export function DashboardWebTabAppGroup({
 									<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
 									<button
 										type="button"
+										data-dashboard-sidebar-roving-item="true"
 										onClick={() =>
 											onFolderCollapsedChange(folder.id, !folder.isCollapsed)
 										}

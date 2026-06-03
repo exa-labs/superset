@@ -16,6 +16,17 @@ const INTERACTIVE_SELECTOR = [
 	"[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
+const PRIMARY_ROVING_SELECTOR = [
+	'[data-dashboard-sidebar-roving-item="true"]',
+	"[data-dashboard-web-page-trigger]",
+	"[data-dashboard-web-app-trigger]",
+	"[data-dashboard-web-tab-row-button]",
+	"[data-dashboard-quick-terminal-trigger]",
+	"[data-dashboard-native-provider-trigger]",
+	"[data-native-agent-folder-row-id]",
+	"[data-native-agent-session-row-id]",
+].join(",");
+
 function isHTMLElement(value: Element | null): value is HTMLElement {
 	return value instanceof HTMLElement;
 }
@@ -33,10 +44,13 @@ function isVisible(element: HTMLElement): boolean {
 	return rect.width > 0 && rect.height > 0;
 }
 
-function getFocusableItems(root: HTMLElement): HTMLElement[] {
+function collectFocusableItems(
+	root: HTMLElement,
+	selector: string,
+): HTMLElement[] {
 	const seen = new Set<HTMLElement>();
 	const items: HTMLElement[] = [];
-	for (const element of root.querySelectorAll(INTERACTIVE_SELECTOR)) {
+	for (const element of root.querySelectorAll(selector)) {
 		if (
 			!isHTMLElement(element) ||
 			seen.has(element) ||
@@ -49,6 +63,24 @@ function getFocusableItems(root: HTMLElement): HTMLElement[] {
 		items.push(element);
 	}
 	return items;
+}
+
+function isAuxiliarySidebarAction(element: HTMLElement): boolean {
+	if (element.matches("[data-dashboard-sidebar-action]")) return true;
+	const scope = element.closest<HTMLElement>(
+		"[data-dashboard-sidebar-action-scope]",
+	);
+	return scope != null && scope !== element;
+}
+
+export function getDashboardSidebarFocusableItems(
+	root: HTMLElement,
+): HTMLElement[] {
+	const primaryItems = collectFocusableItems(root, PRIMARY_ROVING_SELECTOR);
+	if (primaryItems.length > 0) return primaryItems;
+	return collectFocusableItems(root, INTERACTIVE_SELECTOR).filter(
+		(element) => !isAuxiliarySidebarAction(element),
+	);
 }
 
 function focusItem(item: HTMLElement): void {
@@ -149,7 +181,7 @@ export function useDashboardSidebarKeyboardNavigation(
 				return;
 			}
 
-			const items = getFocusableItems(root);
+			const items = getDashboardSidebarFocusableItems(root);
 			if (items.length === 0) return;
 
 			const activeIndex = focusInsideSidebar

@@ -26,6 +26,7 @@ export function DashboardQuickTerminalsGrid({
 								type="button"
 								aria-label={`Open ${terminal.label} terminal`}
 								data-testid={`dashboard-quick-terminal-${terminal.id}`}
+								data-dashboard-quick-terminal-trigger={terminal.id}
 								onClick={() => onOpenTerminal(terminal.id)}
 								className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 							>
@@ -50,6 +51,7 @@ export function DashboardQuickTerminalsGrid({
 							type="button"
 							aria-label={`Open ${terminal.label} terminal`}
 							data-testid={`dashboard-quick-terminal-${terminal.id}`}
+							data-dashboard-quick-terminal-trigger={terminal.id}
 							onClick={() => onOpenTerminal(terminal.id)}
 							className={cn(
 								"flex h-7 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent px-1.5 text-xs font-medium transition-colors",
