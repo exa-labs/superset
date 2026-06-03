@@ -4,9 +4,9 @@ import { Fragment } from "react";
 import { useHotkeyDisplay } from "renderer/hotkeys/hooks/useHotkeyDisplay";
 import type { Command } from "../../core/types";
 import {
-	commandShortcutKeycapGroups,
-	commandShortcutSearchText,
-} from "./command-shortcut-keycaps";
+	commandItemShortcutKeycapGroups,
+	commandItemShortcutSearchText,
+} from "./command-item-shortcut-keycaps";
 
 interface CommandItemRowProps {
 	command: Command;
@@ -20,7 +20,7 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 		Boolean(command.hotkeyId) && display.text !== "Unassigned"
 			? display.keys
 			: [];
-	const shortcutGroups = commandShortcutKeycapGroups({
+	const shortcutGroups = commandItemShortcutKeycapGroups({
 		hotkeyKeys,
 		hotkeyLabel: hotkeyKeys.length > 0 ? display.text : null,
 		shortcutLabel: command.shortcutLabel,
@@ -30,7 +30,7 @@ export function CommandItemRow({ command, onSelect }: CommandItemRowProps) {
 		shortcutGroups.length > 0
 			? shortcutGroups.map((group) => group.label).join(" / ")
 			: null;
-	const shortcutSearchText = commandShortcutSearchText({
+	const shortcutSearchText = commandItemShortcutSearchText({
 		keys: shortcutKeys,
 		label: shortcutText,
 	});
