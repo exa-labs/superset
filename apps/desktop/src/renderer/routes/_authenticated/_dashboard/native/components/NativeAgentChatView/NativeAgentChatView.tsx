@@ -29,9 +29,11 @@ import {
 	LuExternalLink,
 	LuFileText,
 	LuGitPullRequest,
+	LuGlobe,
 	LuImage,
 	LuInfo,
 	LuKeyRound,
+	LuMessageSquare,
 	LuPin,
 	LuRefreshCw,
 	LuSend,
@@ -284,20 +286,23 @@ function NativeAgentHeaderViewSwitcher({
 	const options: Array<{
 		actionHintLabel: string;
 		actionHintTitle: string;
+		icon: ReactNode;
 		key: NativeViewMode;
 		label: string;
 		shortcut: string;
 	}> = [
 		{
 			actionHintLabel: "n",
-			actionHintTitle: "Show native chat",
+			actionHintTitle: "Show chat",
+			icon: <LuMessageSquare className="size-3.5 shrink-0" />,
 			key: "native",
-			label: "Native",
+			label: "Chat",
 			shortcut: "",
 		},
 		{
 			actionHintLabel: "b",
 			actionHintTitle: "Show browser view",
+			icon: <LuGlobe className="size-3.5 shrink-0" />,
 			key: "browser",
 			label: "Browser",
 			shortcut: shortcutSequence(nativeBrowserShortcut, "b"),
@@ -305,6 +310,7 @@ function NativeAgentHeaderViewSwitcher({
 		{
 			actionHintLabel: "s",
 			actionHintTitle: "Show split view",
+			icon: <LuColumns2 className="size-3.5 shrink-0" />,
 			key: "split",
 			label: "Split",
 			shortcut: shortcutSequence(nativeSplitShortcut, "s"),
@@ -335,9 +341,7 @@ function NativeAgentHeaderViewSwitcher({
 								: "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
 						)}
 					>
-						{option.key === "split" ? (
-							<LuColumns2 className="hidden size-3.5 shrink-0 sm:block" />
-						) : null}
+						<span className="hidden sm:block">{option.icon}</span>
 						<span>{option.label}</span>
 					</button>
 				);

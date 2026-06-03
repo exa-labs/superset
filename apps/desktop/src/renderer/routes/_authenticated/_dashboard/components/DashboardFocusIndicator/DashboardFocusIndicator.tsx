@@ -1,4 +1,3 @@
-import { Kbd, KbdGroup } from "@superset/ui/kbd";
 import { cn } from "@superset/ui/utils";
 import { useEffect, useState } from "react";
 import { dashboardFocusIndicatorHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-indicator-hints";
@@ -54,30 +53,33 @@ export function DashboardFocusIndicator() {
 	}, []);
 
 	const hints = dashboardFocusIndicatorHints(scope.id, { vimModeEnabled });
+	const showCommandsHint = hints.includes("⌥K");
+	const showShortcutsHint = hints.includes("?");
+	const visibleHints = [
+		showCommandsHint ? "⌥K Commands" : null,
+		showShortcutsHint ? "? Shortcuts" : null,
+	].filter((hint): hint is string => hint !== null);
 
 	return (
 		<div
 			className={cn(
 				"pointer-events-none fixed bottom-3 left-3 z-[890]",
-				"flex items-center gap-2 rounded-md border border-border/75",
+				"flex max-w-[min(360px,calc(100vw-1.5rem))] items-center gap-2 rounded-md border border-border/75",
 				"bg-background/88 px-2.5 py-1.5 text-xs shadow-lg backdrop-blur",
 			)}
 			data-dashboard-focus-indicator="true"
 			title={`${scope.description}. Press ? for keyboard shortcuts.`}
 		>
-			<span className="text-muted-foreground">Focus</span>
+			<span className="shrink-0 text-muted-foreground">Focus</span>
 			<span className="h-3 w-px bg-border" />
-			<span className="font-mono font-semibold text-foreground">
+			<span className="shrink-0 font-mono font-semibold text-foreground">
 				{scope.label}
 			</span>
-			<KbdGroup className="hidden sm:flex">
-				{hints.map((hint) => (
-					<Kbd key={hint}>{hint}</Kbd>
-				))}
-			</KbdGroup>
-			<span className="hidden text-[11px] text-muted-foreground md:inline">
-				{hints.includes("⌥K") ? "Commands" : "Shortcuts"}
-			</span>
+			{visibleHints.length > 0 && (
+				<span className="hidden min-w-0 truncate text-[11px] text-muted-foreground sm:inline">
+					{visibleHints.join(" · ")}
+				</span>
+			)}
 		</div>
 	);
 }

@@ -22,6 +22,11 @@ interface ActiveHints {
 	targets: DashboardActionHintTarget[];
 }
 
+interface ActionHintsPanelProps {
+	activeHints: ActiveHints;
+	title: string;
+}
+
 function consume(event: KeyboardEvent): void {
 	event.preventDefault();
 	event.stopPropagation();
@@ -56,6 +61,53 @@ function sidebarPanelPosition(scope: HTMLElement): {
 		maxHeight: Math.max(96, viewportHeight - top - 12),
 		top,
 	};
+}
+
+function ActionHintsPanel({ activeHints, title }: ActionHintsPanelProps) {
+	const matchedLabels = new Set(
+		activeHints.targets
+			.filter((target) => target.label.startsWith(activeHints.prefix))
+			.map((target) => target.label),
+	);
+
+	return (
+		<div className="flex min-h-0 flex-col gap-1">
+			<div className="mb-1.5 flex items-center justify-between gap-2 px-1">
+				<div className="min-w-0">
+					<div className="text-[11px] font-semibold text-foreground">
+						{title}
+					</div>
+					<div className="truncate text-[10px] text-muted-foreground">
+						Type a key to run an action. Esc closes.
+					</div>
+				</div>
+				{activeHints.prefix && (
+					<kbd className="shrink-0 rounded border border-border/80 bg-muted px-1.5 py-1 font-mono text-[10px] font-semibold leading-none text-foreground">
+						{activeHints.prefix}
+					</kbd>
+				)}
+			</div>
+			<div className="grid min-h-0 gap-1 overflow-y-auto">
+				{activeHints.targets.map((target) => (
+					<div
+						key={target.label}
+						title={target.title}
+						className="grid grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded px-1 py-0.5 text-muted-foreground transition-opacity"
+						style={{
+							opacity: matchedLabels.has(target.label) ? 1 : 0.32,
+						}}
+					>
+						<kbd className="flex h-5 min-w-5 items-center justify-center rounded border border-border/80 bg-muted/70 px-1 font-mono text-[10px] font-semibold leading-none text-foreground shadow-sm">
+							{target.displayLabel}
+						</kbd>
+						<span className="truncate text-[11px] leading-4 text-foreground/90">
+							{dashboardActionHintDisplayTitle(target)}
+						</span>
+					</div>
+				))}
+			</div>
+		</div>
+	);
 }
 
 export function DashboardActionHintsOverlay() {
@@ -150,11 +202,6 @@ export function DashboardActionHintsOverlay() {
 
 	if (!activeHints) return null;
 
-	const matchedLabels = new Set(
-		activeHints.targets
-			.filter((target) => target.label.startsWith(activeHints.prefix))
-			.map((target) => target.label),
-	);
 	const sidebarScope = dashboardActionHintSidebarScopeForTargets(
 		activeHints.targets,
 	);
@@ -170,47 +217,17 @@ export function DashboardActionHintsOverlay() {
 			>
 				<div
 					data-dashboard-sidebar-action-hints-panel="true"
-					className="absolute w-[260px] overflow-hidden rounded-md border border-border/85 bg-background/95 p-2 text-[11px] shadow-2xl backdrop-blur"
+					className="absolute flex w-[260px] flex-col overflow-hidden rounded-md border border-border/85 bg-background/95 p-2 text-[11px] shadow-2xl backdrop-blur"
 					style={{
 						left: position.left,
 						maxHeight: position.maxHeight,
 						top: position.top,
 					}}
 				>
-					<div className="mb-1.5 flex items-center justify-between gap-2 px-1">
-						<div className="min-w-0">
-							<div className="text-[11px] font-semibold text-foreground">
-								{isNativeScope ? "Session actions" : "Row actions"}
-							</div>
-							<div className="truncate text-[10px] text-muted-foreground">
-								Type a key to run an action. Esc closes.
-							</div>
-						</div>
-						{activeHints.prefix && (
-							<kbd className="shrink-0 rounded border border-border/80 bg-muted px-1.5 py-1 font-mono text-[10px] font-semibold leading-none text-foreground">
-								{activeHints.prefix}
-							</kbd>
-						)}
-					</div>
-					<div className="grid max-h-full gap-1 overflow-y-auto">
-						{activeHints.targets.map((target) => (
-							<div
-								key={target.label}
-								title={target.title}
-								className="grid grid-cols-[24px_minmax(0,1fr)] items-center gap-2 rounded px-1 py-0.5 text-muted-foreground transition-opacity"
-								style={{
-									opacity: matchedLabels.has(target.label) ? 1 : 0.32,
-								}}
-							>
-								<kbd className="flex h-5 min-w-5 items-center justify-center rounded border border-border/80 bg-muted/70 px-1 font-mono text-[10px] font-semibold leading-none text-foreground shadow-sm">
-									{target.displayLabel}
-								</kbd>
-								<span className="truncate text-[11px] leading-4 text-foreground/90">
-									{dashboardActionHintDisplayTitle(target)}
-								</span>
-							</div>
-						))}
-					</div>
+					<ActionHintsPanel
+						activeHints={activeHints}
+						title={isNativeScope ? "Session actions" : "Row actions"}
+					/>
 				</div>
 			</div>
 		);
@@ -221,20 +238,9 @@ export function DashboardActionHintsOverlay() {
 			data-dashboard-action-hints-overlay="true"
 			className="pointer-events-none fixed inset-0 z-[1000]"
 		>
-			{activeHints.targets.map((target) => (
-				<div
-					key={target.label}
-					title={target.title}
-					className="absolute rounded border border-primary/70 bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold leading-none text-primary-foreground shadow-lg"
-					style={{
-						left: Math.max(4, target.rect.left),
-						opacity: matchedLabels.has(target.label) ? 1 : 0.25,
-						top: Math.max(4, target.rect.top),
-					}}
-				>
-					{target.displayLabel}
-				</div>
-			))}
+			<div className="absolute top-14 right-3 flex max-h-[min(560px,calc(100vh-5rem))] w-[300px] flex-col overflow-hidden rounded-md border border-border/85 bg-background/95 p-2 text-[11px] shadow-2xl backdrop-blur">
+				<ActionHintsPanel activeHints={activeHints} title="Visible actions" />
+			</div>
 		</div>
 	);
 }
