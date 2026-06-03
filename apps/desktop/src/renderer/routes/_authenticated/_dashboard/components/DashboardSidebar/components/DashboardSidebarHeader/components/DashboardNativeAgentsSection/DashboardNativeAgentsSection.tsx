@@ -436,6 +436,7 @@ const SESSION_ROW_KEY_HINTS = [
 const FOLDER_ROW_KEY_HINTS = [
 	{ key: ".", title: "Actions" },
 	{ key: "n", title: "Create session" },
+	{ key: "N", title: "Create folder" },
 	{ key: "e", title: "Rename" },
 	{ key: "c", title: "Cycle color" },
 	{ key: "d", title: "Delete" },
@@ -1642,6 +1643,7 @@ export function DashboardNativeAgentsSection({
 			(target instanceof HTMLElement && target.isContentEditable);
 
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.defaultPrevented) return;
 			const vimKey = shouldHandleDashboardVimKey(event)
 				? dashboardVimKey(event)
 				: null;
@@ -2051,14 +2053,17 @@ export function DashboardNativeAgentsSection({
 								<TooltipTrigger asChild>
 									<button
 										type="button"
+										data-dashboard-sidebar-action="create-folder"
+										aria-keyshortcuts="N"
 										aria-label={`New ${providerConfig.title} folder`}
+										title="New folder (N)"
 										onClick={() => createFolder(providerConfig.id)}
 										className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 									>
 										<LuFolderPlus className="size-3.5" />
 									</button>
 								</TooltipTrigger>
-								<TooltipContent side="right">New folder</TooltipContent>
+								<TooltipContent side="right">New folder (N)</TooltipContent>
 							</Tooltip>
 						</div>
 

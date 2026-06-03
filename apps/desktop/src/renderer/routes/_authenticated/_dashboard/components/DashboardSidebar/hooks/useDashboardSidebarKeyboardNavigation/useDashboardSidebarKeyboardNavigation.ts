@@ -176,6 +176,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.defaultPrevented) return;
 			const root = rootRef.current;
 			if (!root) return;
 			if (isEditableTarget(event.target)) return;

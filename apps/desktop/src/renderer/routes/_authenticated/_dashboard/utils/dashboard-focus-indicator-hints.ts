@@ -7,7 +7,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["?", "Esc"],
 	"native-agent": ["n/N", "u/U", "r", "o/b", "m/e", "p/x", "?"],
-	sidebar: ["↑↓/jk", "/", "Enter", "Space", "p/x", "."],
+	sidebar: ["↑↓/jk", "/", "Enter", "Space", "n/N", "p/x", "."],
 	terminal: ["Esc", "⌥K"],
 };
 

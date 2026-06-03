@@ -2,6 +2,7 @@ export type DashboardSidebarKeyboardAction =
 	| "archive"
 	| "color"
 	| "create"
+	| "create-folder"
 	| "delete"
 	| "menu"
 	| "move"
@@ -18,6 +19,7 @@ export function dashboardSidebarKeyboardActionFromKey(
 	key: string,
 ): DashboardSidebarKeyboardAction {
 	if (key === "n") return "create";
+	if (key === "N") return "create-folder";
 	if (key === ".") return "menu";
 	if (key === "p") return "pin";
 	if (key === "r") return "reply";

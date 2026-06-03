@@ -35,6 +35,7 @@ function makeVisible(element: HTMLElement): void {
 describe("dashboardSidebarKeyboardActionFromKey", () => {
 	const cases: Array<[string, DashboardSidebarKeyboardAction]> = [
 		["n", "create"],
+		["N", "create-folder"],
 		[".", "menu"],
 		["p", "pin"],
 		["r", "reply"],
@@ -66,6 +67,9 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 		);
 		expect(dashboardSidebarKeyboardActionSelector("delete")).toBe(
 			'[data-dashboard-sidebar-action="delete"]',
+		);
+		expect(dashboardSidebarKeyboardActionSelector("create-folder")).toBe(
+			'[data-dashboard-sidebar-action="create-folder"]',
 		);
 		expect(dashboardSidebarKeyboardActionSelector("menu")).toBe(
 			'[data-dashboard-sidebar-action="menu"]',
@@ -150,7 +154,7 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		for (const key of [".", "c", "d", "j", "k", "n", "p"]) {
+		for (const key of [".", "N", "c", "d", "j", "k", "n", "p"]) {
 			expect(
 				dashboardSidebarTypeaheadSeedFromKey({
 					altKey: false,
@@ -465,6 +469,27 @@ describe("findDashboardSidebarActionButton", () => {
 
 		expect(findDashboardSidebarActionButton(chrome, "menu")).toBe(menu);
 		expect(findDashboardSidebarActionButton(chrome, "create")).toBe(create);
+	});
+
+	test("resolves native provider folder creation from the focused provider row", () => {
+		if (typeof document === "undefined") return;
+
+		const providerScope = document.createElement("div");
+		providerScope.dataset.dashboardSidebarActionScope = "";
+
+		const provider = document.createElement("button");
+		provider.dataset.dashboardNativeProviderTrigger = "capy";
+		makeVisible(provider);
+
+		const createFolder = document.createElement("button");
+		createFolder.dataset.dashboardSidebarAction = "create-folder";
+		makeVisible(createFolder);
+
+		providerScope.append(provider, createFolder);
+
+		expect(findDashboardSidebarActionButton(provider, "create-folder")).toBe(
+			createFolder,
+		);
 	});
 
 	test("resolves folder action buttons from the focused folder row", () => {

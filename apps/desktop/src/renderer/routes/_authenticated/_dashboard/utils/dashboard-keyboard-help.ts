@@ -184,9 +184,14 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Collapse or expand focused folders and sidebar groups",
 				},
 				{
-					keys: ["N"],
+					keys: ["n"],
 					label: "Create from section",
-					description: "Create a session, folder, workspace, or tab from focus",
+					description: "Create a session, workspace, or tab from focus",
+				},
+				{
+					keys: ["N"],
+					label: "Create native folder",
+					description: "Create a folder for the focused Capy or Devin provider",
 				},
 				{
 					keys: ["P"],

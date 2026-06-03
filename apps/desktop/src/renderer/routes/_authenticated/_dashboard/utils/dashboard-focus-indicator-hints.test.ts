@@ -8,6 +8,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"/",
 			"Enter",
 			"Space",
+			"n/N",
 			"p/x",
 			".",
 		]);

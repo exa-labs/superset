@@ -76,6 +76,9 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["s", "[", "]", "=", "x"] }),
 		);
 		expect(entryByLabel.get("Create from section")).toEqual(
+			expect.objectContaining({ keys: ["n"] }),
+		);
+		expect(entryByLabel.get("Create native folder")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),
 		);
 		expect(entryByLabel.get("Pin or unpin selected")).toEqual(
