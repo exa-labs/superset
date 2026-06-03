@@ -116,6 +116,7 @@ import {
 	type NativeAgentProvider,
 	nativeAgentConversationLabel,
 	nativeAgentConversationSetLabel,
+	nativeAgentOverviewCardKeyboardHints,
 	nativeAgentProviderTitle,
 	nativeAgentStatusBadgeLabel,
 	nativeAgentStatusTone,
@@ -631,6 +632,10 @@ export function NativeAgentChatView({
 		ratio: nativeSplitRatio,
 		viewMode,
 	});
+	const overviewCardKeyboardHints = useMemo(
+		() => nativeAgentOverviewCardKeyboardHints(),
+		[],
+	);
 	const [openedBrowserTargets, setOpenedBrowserTargets] = useState<
 		NativeBrowserTarget[]
 	>([]);
@@ -2679,6 +2684,7 @@ export function NativeAgentChatView({
 											<button
 												type="button"
 												data-native-agent-overview-card-id={item.id}
+												aria-keyshortcuts="Enter o"
 												onClick={() => {
 													if (provider === "capy") {
 														navigate({
@@ -2713,6 +2719,16 @@ export function NativeAgentChatView({
 												<div className="mt-2 line-clamp-2 break-all text-xs text-muted-foreground">
 													{item.id}
 												</div>
+												<div
+													aria-hidden="true"
+													className="mt-2 flex flex-wrap items-center gap-1 opacity-70 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+												>
+													{overviewCardKeyboardHints.map((hint) => (
+														<ShortcutHint key={hint.key} title={hint.title}>
+															{hint.key}
+														</ShortcutHint>
+													))}
+												</div>
 											</button>
 											<div className="mt-3 flex items-center justify-between gap-2">
 												<span className="text-[10px] text-muted-foreground">
@@ -2731,6 +2747,7 @@ export function NativeAgentChatView({
 														)
 													}
 													disabled={setSidebarVisible.isPending}
+													aria-keyshortcuts="x"
 													className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
 												>
 													<LuPin
@@ -2742,6 +2759,7 @@ export function NativeAgentChatView({
 													<span>
 														{item.sidebarHidden ? "Show in sidebar" : "Hide"}
 													</span>
+													<ShortcutHint title="Archive or hide">x</ShortcutHint>
 												</button>
 												{item.sidebarHidden !== true && (
 													<button
@@ -2750,6 +2768,7 @@ export function NativeAgentChatView({
 															void handleSetPinned(item, !item.sidebarPinned)
 														}
 														disabled={setPinned.isPending}
+														aria-keyshortcuts="p"
 														className="flex h-7 items-center gap-1 rounded-md border border-border px-2 text-xs text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
 													>
 														<LuPin
@@ -2759,6 +2778,7 @@ export function NativeAgentChatView({
 															)}
 														/>
 														<span>{item.sidebarPinned ? "Unpin" : "Pin"}</span>
+														<ShortcutHint title="Pin or unpin">p</ShortcutHint>
 													</button>
 												)}
 											</div>

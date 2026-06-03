@@ -3,6 +3,7 @@ import {
 	isNativeAgentLiveStatus,
 	nativeAgentConversationLabel,
 	nativeAgentConversationSetLabel,
+	nativeAgentOverviewCardKeyboardHints,
 	nativeAgentProviderConfig,
 	nativeAgentStatusBadgeLabel,
 	normalizeNativeAgentRole,
@@ -66,5 +67,15 @@ describe("native agent UI terminology", () => {
 		expect(nativeAgentStatusBadgeLabel("running")).toBe("run");
 		expect(nativeAgentStatusBadgeLabel("ready")).toBe("ready");
 		expect(nativeAgentStatusBadgeLabel("waiting_for_input")).toBe("waiting");
+	});
+
+	it("surfaces overview card keyboard hints for primary inbox actions", () => {
+		expect(nativeAgentOverviewCardKeyboardHints()).toEqual([
+			{ key: "Enter", title: "Open" },
+			{ key: "p", title: "Pin or unpin" },
+			{ key: "m", title: "Move to folder" },
+			{ key: "e", title: "Rename" },
+			{ key: "x", title: "Archive or hide" },
+		]);
 	});
 });

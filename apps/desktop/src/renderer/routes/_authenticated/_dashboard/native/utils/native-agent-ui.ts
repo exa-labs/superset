@@ -23,6 +23,11 @@ export interface NativeAgentProviderConfig {
 	title: string;
 }
 
+export interface NativeAgentKeyboardHint {
+	key: string;
+	title: string;
+}
+
 const NATIVE_AGENT_PROVIDER_CONFIGS = {
 	capy: {
 		agentLabel: "Capy",
@@ -42,10 +47,22 @@ const NATIVE_AGENT_PROVIDER_CONFIGS = {
 	},
 } satisfies Record<NativeAgentProvider, NativeAgentProviderConfig>;
 
+const NATIVE_AGENT_OVERVIEW_CARD_KEYBOARD_HINTS = [
+	{ key: "Enter", title: "Open" },
+	{ key: "p", title: "Pin or unpin" },
+	{ key: "m", title: "Move to folder" },
+	{ key: "e", title: "Rename" },
+	{ key: "x", title: "Archive or hide" },
+] satisfies NativeAgentKeyboardHint[];
+
 export function nativeAgentProviderConfig(
 	provider: NativeAgentProvider,
 ): NativeAgentProviderConfig {
 	return NATIVE_AGENT_PROVIDER_CONFIGS[provider];
+}
+
+export function nativeAgentOverviewCardKeyboardHints(): NativeAgentKeyboardHint[] {
+	return [...NATIVE_AGENT_OVERVIEW_CARD_KEYBOARD_HINTS];
 }
 
 export function nativeAgentProviderTitle(
