@@ -39,5 +39,20 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "l") return "BROWSER_NEXT_TAB"',
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"pendingDashboardVimPrefix",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "c") return "OPEN_CAPY"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "d") return "OPEN_DEVIN"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "w") return "OPEN_WORKSPACES"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "TOGGLE_DASHBOARD_SIDEBAR"',
+		);
 	});
 });

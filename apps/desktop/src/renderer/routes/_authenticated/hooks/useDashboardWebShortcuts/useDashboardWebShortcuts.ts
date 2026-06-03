@@ -33,6 +33,7 @@ type DashboardWebShortcut =
 	| "CREATE_DEVIN"
 	| "OPEN_CHROME"
 	| "OPEN_WORKSPACES"
+	| "TOGGLE_DASHBOARD_SIDEBAR"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
 	| "TOGGLE_NATIVE_SPLIT_VIEW"
 	| "OPEN_CAPY_1"
@@ -320,6 +321,11 @@ export function useDashboardWebShortcuts() {
 			if (shortcut === "OPEN_WORKSPACES") {
 				clearPendingNativeProvider();
 				openWorkspaces();
+				return;
+			}
+			if (shortcut === "TOGGLE_DASHBOARD_SIDEBAR") {
+				clearPendingNativeProvider();
+				useWorkspaceSidebarStore.getState().toggleOpen();
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {

@@ -33,6 +33,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Show action hints in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["f"] }),
 		);
+		expect(entryByLabel.get("Toggle sidebar in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["H"] }),
+		);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_NEXT")).toBe(true);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_PREVIOUS")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CAPY")).toBe(true);

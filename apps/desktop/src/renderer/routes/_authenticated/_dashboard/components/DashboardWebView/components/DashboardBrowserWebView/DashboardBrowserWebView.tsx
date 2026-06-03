@@ -19,8 +19,26 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 	const hintKeys = "asdfghjklqwertyuiopzxcvbnm".split("");
 	let activeHints = null;
 	let activeHintPrefix = "";
+	let pendingDashboardVimPrefix = null;
+	let pendingDashboardVimPrefixTimeout = null;
 	const invokeShortcut = (shortcut) => {
 		console.info(prefix + shortcut);
+	};
+	const clearDashboardVimPrefix = () => {
+		if (pendingDashboardVimPrefixTimeout) {
+			clearTimeout(pendingDashboardVimPrefixTimeout);
+			pendingDashboardVimPrefixTimeout = null;
+		}
+		pendingDashboardVimPrefix = null;
+	};
+	const setDashboardVimPrefix = (nextPrefix) => {
+		clearDashboardVimPrefix();
+		pendingDashboardVimPrefix = nextPrefix;
+		if (!nextPrefix) return;
+		pendingDashboardVimPrefixTimeout = setTimeout(() => {
+			pendingDashboardVimPrefix = null;
+			pendingDashboardVimPrefixTimeout = null;
+		}, 900);
 	};
 	const hintLabelForIndex = (index) => {
 		if (!Number.isInteger(index) || index < 0) return "";
@@ -123,6 +141,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 	const closeHints = () => {
 		activeHints = null;
 		activeHintPrefix = "";
+		clearDashboardVimPrefix();
 		removeHintOverlay();
 	};
 	const openHints = () => {
@@ -149,7 +168,10 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 	};
 	window.__clankeeSetDashboardVimModeEnabled = (enabled) => {
 		window.__clankeeDashboardVimModeEnabled = enabled === true;
-		if (!window.__clankeeDashboardVimModeEnabled) closeHints();
+		if (!window.__clankeeDashboardVimModeEnabled) {
+			clearDashboardVimPrefix();
+			closeHints();
+		}
 	};
 	const digitShortcuts = [
 		"OPEN_WEB_PAGE_1",
@@ -198,6 +220,37 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (key === "l") return "BROWSER_NEXT_TAB";
 		return null;
 	};
+	const dashboardVimShortcutFromEvent = (event) => {
+		if (
+			window.__clankeeDashboardVimModeEnabled !== true ||
+			event.repeat ||
+			event.altKey ||
+			event.ctrlKey ||
+			event.metaKey ||
+			isEditableTarget(event.target)
+		) {
+			clearDashboardVimPrefix();
+			return null;
+		}
+		const key = String(event.key || "");
+		if (key === "H") {
+			clearDashboardVimPrefix();
+			return "TOGGLE_DASHBOARD_SIDEBAR";
+		}
+		if (pendingDashboardVimPrefix === "g") {
+			clearDashboardVimPrefix();
+			if (key === "c") return "OPEN_CAPY";
+			if (key === "d") return "OPEN_DEVIN";
+			if (key === "g") return "OPEN_CHROME";
+			if (key === "w") return "OPEN_WORKSPACES";
+			return null;
+		}
+		if (key === "g") {
+			setDashboardVimPrefix("g");
+			return "__PENDING__";
+		}
+		return null;
+	};
 	window.addEventListener(
 		"keydown",
 		(event) => {
@@ -239,6 +292,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				String(event.key || "") === "?" &&
 				!isEditableTarget(event.target)
 			) {
+				clearDashboardVimPrefix();
 				event.preventDefault();
 				event.stopPropagation();
 				invokeShortcut("SHOW_DASHBOARD_KEYBOARD_HELP");
@@ -254,14 +308,25 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				String(event.key || "").toLowerCase() === "f" &&
 				!isEditableTarget(event.target)
 			) {
+				clearDashboardVimPrefix();
 				if (openHints()) {
 					event.preventDefault();
 					event.stopPropagation();
 				}
 				return;
 			}
+			const dashboardVimShortcut = dashboardVimShortcutFromEvent(event);
+			if (dashboardVimShortcut) {
+				event.preventDefault();
+				event.stopPropagation();
+				if (dashboardVimShortcut !== "__PENDING__") {
+					invokeShortcut(dashboardVimShortcut);
+				}
+				return;
+			}
 			const browserVimShortcut = browserVimShortcutFromEvent(event);
 			if (browserVimShortcut) {
+				clearDashboardVimPrefix();
 				event.preventDefault();
 				event.stopPropagation();
 				invokeShortcut(browserVimShortcut);

@@ -71,6 +71,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Label visible actions without leaving Vim navigation mode",
 				},
 				{
+					keys: ["H"],
+					label: "Toggle sidebar in Vim mode",
+					description:
+						"Show or hide the navigation shell from embedded browsers and dashboard views",
+				},
+				{
 					hotkeyId: "OPEN_UNREAD_NATIVE_REPLY",
 					label: "Open unread native reply",
 					description:
