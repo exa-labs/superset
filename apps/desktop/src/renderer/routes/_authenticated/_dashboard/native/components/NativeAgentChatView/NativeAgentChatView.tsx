@@ -24,19 +24,16 @@ import type {
 } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-	LuArchive,
+	LuEllipsis,
 	LuExternalLink,
 	LuFileText,
 	LuGitPullRequest,
 	LuImage,
 	LuInfo,
 	LuKeyRound,
-	LuPanelLeft,
-	LuPencil,
 	LuPin,
 	LuRefreshCw,
 	LuSend,
-	LuSquare,
 } from "react-icons/lu";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -307,6 +304,79 @@ function NativeAgentHeaderShortcutsMenu({
 						<DropdownMenuShortcut>{shortcut.key}</DropdownMenuShortcut>
 					</DropdownMenuItem>
 				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
+
+function NativeAgentHeaderSessionMenu({
+	isArchiving,
+	isStopping,
+	onArchive,
+	onOpenExternal,
+	onPin,
+	onRename,
+	onSetSidebarVisible,
+	onStop,
+	selectedItem,
+	provider,
+}: {
+	isArchiving: boolean;
+	isStopping: boolean;
+	onArchive: () => void;
+	onOpenExternal: () => void;
+	onPin: () => void;
+	onRename: () => void;
+	onSetSidebarVisible: () => void;
+	onStop: () => void;
+	provider: NativeAgentProvider;
+	selectedItem: NativeItem;
+}) {
+	const stopLabel = provider === "capy" ? "Stop" : "Terminate";
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					aria-label="Show session actions"
+					title="Session actions"
+					className="flex h-8 items-center gap-1.5 rounded-md border border-border/70 bg-muted/30 px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+				>
+					<LuEllipsis className="size-4" />
+					<span className="hidden 2xl:inline">Session</span>
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="end" className="w-56">
+				<DropdownMenuItem onSelect={onPin}>
+					{selectedItem.sidebarPinned ? "Unpin" : "Pin"}
+					<DropdownMenuShortcut>p</DropdownMenuShortcut>
+				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={onSetSidebarVisible}>
+					{selectedItem.sidebarHidden ? "Show in sidebar" : "Move to overview"}
+					<DropdownMenuShortcut>x</DropdownMenuShortcut>
+				</DropdownMenuItem>
+				<DropdownMenuItem onSelect={onRename}>
+					Rename
+					<DropdownMenuShortcut>e</DropdownMenuShortcut>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				{selectedItem.url && (
+					<DropdownMenuItem onSelect={onOpenExternal}>
+						Open externally
+						<DropdownMenuShortcut>O</DropdownMenuShortcut>
+					</DropdownMenuItem>
+				)}
+				<DropdownMenuItem onSelect={onArchive} disabled={isArchiving}>
+					Archive
+				</DropdownMenuItem>
+				<DropdownMenuItem
+					variant="destructive"
+					onSelect={onStop}
+					disabled={isStopping}
+				>
+					{stopLabel}
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -2347,103 +2417,28 @@ export function NativeAgentChatView({
 					<TooltipContent>Diagnostics</TooltipContent>
 				</Tooltip>
 				{selectedItem && (
-					<Tooltip delayDuration={300}>
-						<TooltipTrigger asChild>
-							<button
-								type="button"
-								onClick={() =>
-									void handleSetSidebarVisible(
-										selectedItem,
-										selectedItem.sidebarHidden === true,
-									)
-								}
-								disabled={setSidebarVisible.isPending}
-								className={cn(
-									"flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50",
-									selectedItem.sidebarHidden !== true
-										? "border border-border/70 bg-muted/40 text-foreground"
-										: "text-muted-foreground",
-								)}
-								aria-label={
-									selectedItem.sidebarHidden
-										? "Show in native sidebar"
-										: "Move to overview"
-								}
-							>
-								<LuPanelLeft className="size-4" />
-								<span>
-									{selectedItem.sidebarHidden ? "Show" : "In sidebar"}
-								</span>
-							</button>
-						</TooltipTrigger>
-						<TooltipContent>
-							{selectedItem.sidebarHidden
-								? "Show in sidebar"
-								: "Move to overview"}
-						</TooltipContent>
-					</Tooltip>
-				)}
-				{selectedItem?.url && (
-					<Tooltip delayDuration={300}>
-						<TooltipTrigger asChild>
-							<button
-								type="button"
-								onClick={() => openExternal.mutate(selectedItem.url ?? "")}
-								className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-								aria-label="Open in browser"
-							>
-								<LuExternalLink className="size-4" />
-							</button>
-						</TooltipTrigger>
-						<TooltipContent>Open browser version</TooltipContent>
-					</Tooltip>
-				)}
-				{selectedItem && (
-					<>
-						<Tooltip delayDuration={300}>
-							<TooltipTrigger asChild>
-								<button
-									type="button"
-									onClick={() => openRenameDialog(selectedItem)}
-									className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-									aria-label="Rename session"
-								>
-									<LuPencil className="size-4" />
-								</button>
-							</TooltipTrigger>
-							<TooltipContent>Rename session (e)</TooltipContent>
-						</Tooltip>
-						<Tooltip delayDuration={300}>
-							<TooltipTrigger asChild>
-								<button
-									type="button"
-									onClick={handleArchive}
-									disabled={isArchiving}
-									className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
-									aria-label="Archive"
-								>
-									<LuArchive className="size-4" />
-								</button>
-							</TooltipTrigger>
-							<TooltipContent>Archive</TooltipContent>
-						</Tooltip>
-						<Tooltip delayDuration={300}>
-							<TooltipTrigger asChild>
-								<button
-									type="button"
-									onClick={handleStop}
-									disabled={isStopping}
-									className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
-									aria-label={provider === "capy" ? "Stop" : "Terminate"}
-								>
-									<LuSquare className="size-4" />
-								</button>
-							</TooltipTrigger>
-							<TooltipContent>
-								{provider === "capy" ? "Stop" : "Terminate"}
-							</TooltipContent>
-						</Tooltip>
-					</>
+					<NativeAgentHeaderSessionMenu
+						isArchiving={isArchiving}
+						isStopping={isStopping}
+						onArchive={handleArchive}
+						onOpenExternal={() => openExternal.mutate(selectedItem.url ?? "")}
+						onPin={() =>
+							void handleSetPinned(
+								selectedItem,
+								selectedItem.sidebarPinned !== true,
+							)
+						}
+						onRename={() => openRenameDialog(selectedItem)}
+						onSetSidebarVisible={() =>
+							void handleSetSidebarVisible(
+								selectedItem,
+								selectedItem.sidebarHidden === true,
+							)
+						}
+						onStop={handleStop}
+						provider={provider}
+						selectedItem={selectedItem}
+					/>
 				)}
 			</header>
 
