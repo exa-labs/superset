@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useFrameStackStore } from "renderer/commandPalette/core/frames";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
@@ -208,17 +209,14 @@ export function useDashboardWebShortcuts() {
 
 	const openNativeProviderAtIndex = useCallback(
 		(provider: NativeAgentProvider, index: number) => {
-			const rows = Array.from(
-				document.querySelectorAll<HTMLButtonElement>(
-					`[data-native-agent-session-row-provider="${provider}"]`,
-				),
-			);
-			const row = rows[index];
-			if (!row) {
+			const handled = dispatchDashboardNativeAgentOpenIndex({
+				index,
+				provider,
+			});
+			if (!handled) {
 				openNativeProvider(provider);
 				return;
 			}
-			row.click();
 			scheduleDashboardNavigationShellFocus();
 		},
 		[openNativeProvider],

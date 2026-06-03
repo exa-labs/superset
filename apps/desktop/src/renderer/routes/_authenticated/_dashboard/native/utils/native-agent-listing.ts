@@ -40,6 +40,18 @@ export interface NativeAgentSidebarListRow {
 	updatedAt?: number | string | null;
 }
 
+export interface SelectNativeAgentSidebarItemsInput<
+	T extends NativeAgentSidebarListRow,
+> {
+	activeId?: string | null;
+	isLiveStatus: (status: string | null) => boolean;
+	isUnread: (item: T) => boolean;
+	maxPriorityItems?: number;
+	recentFallbackWhenEmpty?: number;
+	recentFallbackWhenPriorityExists?: number;
+	searchQuery?: string;
+}
+
 export function nativeAgentMetadataKey(
 	provider: NativeAgentOptimisticProvider,
 	id: string,
@@ -220,18 +232,7 @@ function nativeAgentSidebarItemMatchesSearch(
 
 export function selectNativeAgentSidebarItems<
 	T extends NativeAgentSidebarListRow,
->(
-	items: readonly T[],
-	input: {
-		activeId?: string | null;
-		isLiveStatus: (status: string | null) => boolean;
-		isUnread: (item: T) => boolean;
-		maxPriorityItems?: number;
-		recentFallbackWhenEmpty?: number;
-		recentFallbackWhenPriorityExists?: number;
-		searchQuery?: string;
-	},
-): T[] {
+>(items: readonly T[], input: SelectNativeAgentSidebarItemsInput<T>): T[] {
 	const maxPriorityItems = input.maxPriorityItems ?? 10;
 	const recentFallbackWhenEmpty = input.recentFallbackWhenEmpty ?? 1;
 	const recentFallbackWhenPriorityExists =
@@ -291,6 +292,19 @@ export function selectNativeAgentSidebarItems<
 		return [activeItem, ...selectedItems].slice(0, maxPriorityItems + 1);
 	}
 	return selectedItems;
+}
+
+export function selectNativeAgentIndexedShortcutItem<
+	T extends NativeAgentSidebarListRow,
+>(
+	items: readonly T[],
+	input: SelectNativeAgentSidebarItemsInput<T> & {
+		index: number;
+	},
+): T | null {
+	if (!Number.isInteger(input.index) || input.index < 0) return null;
+	const selectedItems = selectNativeAgentSidebarItems(items, input);
+	return selectedItems[input.index] ?? null;
 }
 
 export function nativeAgentSidebarInclusionReasons<

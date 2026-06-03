@@ -90,6 +90,7 @@ import {
 	nativeAgentSidebarInclusionReasons,
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
+	selectNativeAgentIndexedShortcutItem,
 	selectNativeAgentProviderActiveRows,
 	selectNativeAgentSidebarItems,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
@@ -104,6 +105,10 @@ import {
 	writeLatestNativeAgentReplyNotification,
 	writeNativeAgentReadState,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import {
+	DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
+	dashboardNativeAgentOpenIndexDetail,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import {
 	type NativeAgentIndexedShortcutHint,
 	nativeAgentIndexedShortcutHint,
@@ -1311,6 +1316,19 @@ export function DashboardNativeAgentsSection({
 		});
 	};
 
+	const indexedShortcutItemForProvider = useCallback(
+		(provider: NativeAgentProvider, index: number) => {
+			return selectNativeAgentIndexedShortcutItem(itemsByProvider[provider], {
+				activeId: activeRoute.id,
+				index,
+				isLiveStatus: isNativeAgentLiveStatus,
+				isUnread: (item) => hasUnreadAgentResponse(item, readState),
+				searchQuery,
+			});
+		},
+		[activeRoute.id, itemsByProvider, readState, searchQuery],
+	);
+
 	useEffect(() => {
 		if (!activeRoute.provider || !activeRoute.id) return;
 		const item = itemsByProvider[activeRoute.provider].find(
@@ -1509,6 +1527,40 @@ export function DashboardNativeAgentsSection({
 			window.removeEventListener("dashboard-native-agent-create", handleCreate);
 		};
 	}, []);
+
+	useEffect(() => {
+		const handleOpenIndexedNativeAgent = (event: Event) => {
+			const detail = dashboardNativeAgentOpenIndexDetail(event);
+			if (!detail) return;
+			event.preventDefault();
+			setProviderCollapsed(detail.provider, false);
+			const item = indexedShortcutItemForProvider(
+				detail.provider,
+				detail.index,
+			);
+			if (!item) {
+				navigateToNativeProvider(detail.provider);
+				return;
+			}
+			handleOpen(item);
+		};
+
+		window.addEventListener(
+			DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
+			handleOpenIndexedNativeAgent,
+		);
+		return () => {
+			window.removeEventListener(
+				DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
+				handleOpenIndexedNativeAgent,
+			);
+		};
+	}, [
+		handleOpen,
+		indexedShortcutItemForProvider,
+		navigateToNativeProvider,
+		setProviderCollapsed,
+	]);
 
 	useEffect(() => {
 		const folderForProvider = (

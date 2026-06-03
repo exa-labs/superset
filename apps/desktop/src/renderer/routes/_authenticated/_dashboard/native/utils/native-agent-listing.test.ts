@@ -11,6 +11,7 @@ import {
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
 	restoreNativeAgentOptimisticTitle,
+	selectNativeAgentIndexedShortcutItem,
 	selectNativeAgentProviderActiveRows,
 	selectNativeAgentSidebarItems,
 } from "./native-agent-listing";
@@ -377,5 +378,52 @@ describe("selectNativeAgentSidebarItems", () => {
 				{ isLiveStatus, isUnread },
 			),
 		).toEqual(["recent-fallback"]);
+	});
+
+	it("selects indexed shortcut targets from the same sidebar priority order", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "recent", status: "ready", updatedAt: 40 },
+			{ id: "live", status: "running", updatedAt: 10 },
+			{ id: "unread", status: "ready", unread: true, updatedAt: 20 },
+			{ id: "pinned", status: "ready", sidebarPinned: true, updatedAt: 1 },
+			{ id: "hidden", sidebarHidden: true, sidebarPinned: true, updatedAt: 50 },
+		];
+
+		expect(
+			selectNativeAgentIndexedShortcutItem(items, {
+				index: 0,
+				isLiveStatus,
+				isUnread,
+			})?.id,
+		).toBe("pinned");
+		expect(
+			selectNativeAgentIndexedShortcutItem(items, {
+				index: 1,
+				isLiveStatus,
+				isUnread,
+			})?.id,
+		).toBe("unread");
+		expect(
+			selectNativeAgentIndexedShortcutItem(items, {
+				index: 3,
+				isLiveStatus,
+				isUnread,
+			})?.id,
+		).toBe("recent");
+	});
+
+	it("returns null for indexed shortcut targets outside the selected sidebar range", () => {
+		expect(
+			selectNativeAgentIndexedShortcutItem(
+				[{ id: "recent", status: "ready", updatedAt: 1 }],
+				{ index: 1, isLiveStatus, isUnread },
+			),
+		).toBeNull();
+		expect(
+			selectNativeAgentIndexedShortcutItem(
+				[{ id: "recent", status: "ready", updatedAt: 1 }],
+				{ index: -1, isLiveStatus, isUnread },
+			),
+		).toBeNull();
 	});
 });
