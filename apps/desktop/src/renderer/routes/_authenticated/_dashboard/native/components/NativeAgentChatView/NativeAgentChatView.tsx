@@ -50,6 +50,7 @@ import {
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
+	nativeAgentSelectedSessionVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
 } from "../../utils/native-agent-keyboard";
@@ -1348,7 +1349,7 @@ export function NativeAgentChatView({
 				return;
 			}
 
-			if (key === "r") {
+			if (key === "R") {
 				consumeNativeAgentKeyboardEvent(event);
 				void invalidateProvider();
 				return;
@@ -1372,14 +1373,48 @@ export function NativeAgentChatView({
 						return;
 					}
 				}
-				if (key === "i") {
-					consumeNativeAgentKeyboardEvent(event);
-					composerRef.current?.focus();
-					return;
-				}
 				if (key === "escape") {
 					consumeNativeAgentKeyboardEvent(event);
 					(document.activeElement as HTMLElement | null)?.blur?.();
+					return;
+				}
+				const selectedSessionAction =
+					nativeAgentSelectedSessionVimActionFromKey(key);
+				if (selectedSessionAction !== "none") {
+					consumeNativeAgentKeyboardEvent(event);
+					if (selectedSessionAction === "focus-composer") {
+						composerRef.current?.focus();
+						return;
+					}
+					if (selectedSessionAction === "refresh") {
+						void invalidateProvider();
+						return;
+					}
+					if (selectedSessionAction === "open-browser") {
+						if (selectedItem.url) handleSelectViewMode("browser");
+						return;
+					}
+					if (selectedSessionAction === "archive") {
+						void handleSetSidebarVisible(selectedItem, false);
+						return;
+					}
+					window.dispatchEvent(
+						new CustomEvent("dashboard-native-agent-folder-action", {
+							detail: {
+								action:
+									selectedSessionAction === "remove-from-folder"
+										? "remove-active"
+										: "move-active",
+								provider,
+								sessionId: selectedItem.id,
+							},
+						}),
+					);
+					return;
+				}
+				if (key === "i") {
+					consumeNativeAgentKeyboardEvent(event);
+					composerRef.current?.focus();
 					return;
 				}
 				const nextViewMode = nextNativeAgentKeyboardViewMode({
@@ -1397,19 +1432,6 @@ export function NativeAgentChatView({
 					void handleSetPinned(
 						selectedItem,
 						selectedItem.sidebarPinned !== true,
-					);
-					return;
-				}
-				if (key === "f" || key === "F") {
-					consumeNativeAgentKeyboardEvent(event);
-					window.dispatchEvent(
-						new CustomEvent("dashboard-native-agent-folder-action", {
-							detail: {
-								action: key === "F" ? "remove-active" : "move-active",
-								provider,
-								sessionId: selectedItem.id,
-							},
-						}),
 					);
 					return;
 				}
@@ -1492,6 +1514,7 @@ export function NativeAgentChatView({
 		workspaceItems,
 		navigate,
 		handleSetPinned,
+		handleSetSidebarVisible,
 	]);
 
 	useEffect(() => {
@@ -2088,6 +2111,11 @@ export function NativeAgentChatView({
 									placeholder="Send a follow-up..."
 									className="h-20 flex-1 resize-none rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-foreground/40"
 								/>
+								{isVimModeEnabled && (
+									<span className="mt-1 flex h-6 min-w-6 shrink-0 items-center justify-center rounded border border-border/70 bg-background/70 px-1 font-mono text-[10px] text-muted-foreground">
+										r
+									</span>
+								)}
 								<button
 									type="button"
 									onClick={handleSendMessage}

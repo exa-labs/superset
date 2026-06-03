@@ -24,11 +24,32 @@ export type NativeAgentSidebarVimAction =
 
 export type NativeAgentViewMode = "browser" | "native" | "split";
 
+export type NativeAgentSelectedSessionVimAction =
+	| "archive"
+	| "focus-composer"
+	| "move-to-folder"
+	| "none"
+	| "open-browser"
+	| "refresh"
+	| "remove-from-folder";
+
 export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
 ): NativeAgentSidebarVimAction {
 	if (key === "enter" || key === "o") return "open";
 	if (key === "p") return "pin";
+	if (key === "f" || key === "m") return "move-to-folder";
+	if (key === "F") return "remove-from-folder";
+	if (key === "a" || key === "x") return "archive";
+	return "none";
+}
+
+export function nativeAgentSelectedSessionVimActionFromKey(
+	key: string | null,
+): NativeAgentSelectedSessionVimAction {
+	if (key === "r") return "focus-composer";
+	if (key === "R") return "refresh";
+	if (key === "o") return "open-browser";
 	if (key === "f" || key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "a" || key === "x") return "archive";

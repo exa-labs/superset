@@ -4,6 +4,7 @@ import {
 	nativeAgentOverviewFocusDeltaFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
+	nativeAgentSelectedSessionVimActionFromKey,
 	nativeAgentSidebarVimActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
@@ -48,6 +49,28 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("archive");
 		expect(nativeAgentSidebarVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentSidebarVimActionFromKey("j")).toBe("none");
+	});
+
+	it("maps selected-session vim actions", () => {
+		expect(nativeAgentSelectedSessionVimActionFromKey("r")).toBe(
+			"focus-composer",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("R")).toBe("refresh");
+		expect(nativeAgentSelectedSessionVimActionFromKey("o")).toBe(
+			"open-browser",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("m")).toBe(
+			"move-to-folder",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("f")).toBe(
+			"move-to-folder",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("F")).toBe(
+			"remove-from-folder",
+		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("archive");
+		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("archive");
+		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("none");
 	});
 
 	it("maps chat vim scroll keys to predictable deltas", () => {

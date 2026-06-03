@@ -14,6 +14,9 @@ describe("dashboard keyboard help", () => {
 			entries.flatMap((entry) => (entry.hotkeyId ? [entry.hotkeyId] : [])),
 		);
 		const labels = new Set(entries.map((entry) => entry.label));
+		const entryByLabel = new Map(
+			entries.map((entry) => [entry.label, entry] as const),
+		);
 
 		expect(hotkeyIds.has("OPEN_CONTROL_PLANE")).toBe(true);
 		expect(hotkeyIds.has("TOGGLE_VIM_MODE")).toBe(true);
@@ -24,6 +27,15 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
 		expect(labels.has("Search sidebar")).toBe(true);
 		expect(labels.has("Split native/browser")).toBe(true);
+		expect(entryByLabel.get("Reply")).toEqual(
+			expect.objectContaining({ keys: ["r"] }),
+		);
+		expect(entryByLabel.get("Open browser version")).toEqual(
+			expect.objectContaining({ keys: ["o"] }),
+		);
+		expect(entryByLabel.get("Refresh native data")).toEqual(
+			expect.objectContaining({ keys: ["R"] }),
+		);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {
