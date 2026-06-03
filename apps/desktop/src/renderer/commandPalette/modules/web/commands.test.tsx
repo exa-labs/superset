@@ -8,6 +8,7 @@ import {
 	NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY,
 	NATIVE_AGENT_READ_STATE_STORAGE_KEY,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import { dashboardBrowserShortcutDescriptors } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-shortcuts";
 import {
 	createDashboardWebTab,
 	createDashboardWebTabFolder,
@@ -527,6 +528,60 @@ describe("web command provider", () => {
 		expect(shortcutById.get("web.current.close")).toBe("x");
 		expect(reload?.when?.(webContext)).toBe(true);
 		expect(reload?.when?.(nativeContext)).toBe(false);
+	});
+
+	it("keeps current Chrome command shortcuts aligned with the browser keyboard menu", () => {
+		const commands = webProvider.provide(
+			commandContext("/web-tabs/chrome-default"),
+		);
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+		const keyByAction = new Map(
+			dashboardBrowserShortcutDescriptors({ isSplitView: true }).map(
+				(shortcut) => [shortcut.action, shortcut.key] as const,
+			),
+		);
+
+		expect(shortcutById.get("web.current.reload")).toBe(
+			keyByAction.get("reload"),
+		);
+		expect(shortcutById.get("web.current.goBack")).toBe(
+			keyByAction.get("go-back"),
+		);
+		expect(shortcutById.get("web.current.goForward")).toBe(
+			keyByAction.get("go-forward"),
+		);
+		expect(shortcutById.get("web.current.previousTab")).toBe(
+			keyByAction.get("previous-tab"),
+		);
+		expect(shortcutById.get("web.current.nextTab")).toBe(
+			keyByAction.get("next-tab"),
+		);
+		expect(shortcutById.get("web.current.newFromCurrent")).toBe(
+			keyByAction.get("new-current-url-tab"),
+		);
+		expect(shortcutById.get("web.current.toggleSplit")).toBe(
+			keyByAction.get("toggle-split"),
+		);
+		expect(shortcutById.get("web.current.swapSplit")).toBe(
+			keyByAction.get("swap-split"),
+		);
+		expect(shortcutById.get("web.current.closeSplit")).toBe(
+			keyByAction.get("close-split"),
+		);
+		expect(shortcutById.get("web.current.narrowActiveSplit")).toBe(
+			keyByAction.get("narrow-active-split"),
+		);
+		expect(shortcutById.get("web.current.widenActiveSplit")).toBe(
+			keyByAction.get("widen-active-split"),
+		);
+		expect(shortcutById.get("web.current.equalizeSplit")).toBe(
+			keyByAction.get("equalize-split"),
+		);
+		expect(shortcutById.get("web.current.close")).toBe(
+			keyByAction.get("close-current-tab"),
+		);
 	});
 
 	it("dispatches Chrome browser actions from the control plane", () => {
