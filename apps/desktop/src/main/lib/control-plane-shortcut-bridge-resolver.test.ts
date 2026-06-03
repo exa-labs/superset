@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { createControlPlaneShortcutBridgeInputResolver } from "./control-plane-shortcut-bridge-resolver";
+import type { DashboardWebShortcut } from "./dashboard-web-shortcut";
 
 type ResolverInput = Parameters<
 	ReturnType<typeof createControlPlaneShortcutBridgeInputResolver>["resolve"]
@@ -148,6 +149,44 @@ describe("control plane shortcut bridge resolver", () => {
 			shortcut: "OPEN_DEVIN_9",
 			type: "dashboard-web-shortcut",
 		});
+	});
+
+	it("routes high-impact dashboard Option shortcuts through the main bridge", () => {
+		const cases: Array<{
+			input: Partial<ResolverInput>;
+			name: string;
+			shortcut: DashboardWebShortcut;
+		}> = [
+			{
+				input: { code: "KeyG", key: "Dead" },
+				name: "Option+G opens Chrome",
+				shortcut: "OPEN_CHROME",
+			},
+			{
+				input: { code: "KeyW", key: "Dead" },
+				name: "Option+W opens workspaces",
+				shortcut: "OPEN_WORKSPACES",
+			},
+			{
+				input: { code: "KeyB", key: "Dead" },
+				name: "Option+B toggles native/browser view",
+				shortcut: "TOGGLE_NATIVE_BROWSER_VIEW",
+			},
+			{
+				input: { code: "KeyS", key: "Dead" },
+				name: "Option+S toggles native split view",
+				shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
+			},
+		];
+
+		for (const testCase of cases) {
+			const { resolver } = createResolverHarness();
+			expect(resolver.resolve(input(testCase.input)), testCase.name).toEqual({
+				preventDefault: true,
+				shortcut: testCase.shortcut,
+				type: "dashboard-web-shortcut",
+			});
+		}
 	});
 
 	it("keeps C/D create chains for dashboard web shortcuts", () => {
