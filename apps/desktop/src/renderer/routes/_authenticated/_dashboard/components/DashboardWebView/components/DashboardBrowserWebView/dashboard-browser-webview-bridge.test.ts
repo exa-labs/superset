@@ -25,6 +25,12 @@ describe("dashboard browser webview bridge", () => {
 			"SHOW_DASHBOARD_KEYBOARD_HELP",
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "Escape")',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "FOCUS_DASHBOARD_SHELL"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (code === "keyw") return "OPEN_WORKSPACES"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

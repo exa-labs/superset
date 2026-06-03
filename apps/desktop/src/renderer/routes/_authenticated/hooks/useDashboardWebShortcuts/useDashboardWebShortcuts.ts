@@ -4,6 +4,7 @@ import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
+import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
 	dashboardVimGlobalActionFromKey,
@@ -36,6 +37,7 @@ type DashboardWebShortcut =
 	| "TOGGLE_DASHBOARD_SIDEBAR"
 	| "TOGGLE_NATIVE_BROWSER_VIEW"
 	| "TOGGLE_NATIVE_SPLIT_VIEW"
+	| "FOCUS_DASHBOARD_SHELL"
 	| "OPEN_CAPY_1"
 	| "OPEN_CAPY_2"
 	| "OPEN_CAPY_3"
@@ -295,6 +297,11 @@ export function useDashboardWebShortcuts() {
 
 			if (shortcut === "SHOW_DASHBOARD_KEYBOARD_HELP") {
 				openDashboardKeyboardHelp();
+				return;
+			}
+			if (shortcut === "FOCUS_DASHBOARD_SHELL") {
+				clearPendingNativeProvider();
+				handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 				return;
 			}
 			if (shortcut === "OPEN_CAPY") {

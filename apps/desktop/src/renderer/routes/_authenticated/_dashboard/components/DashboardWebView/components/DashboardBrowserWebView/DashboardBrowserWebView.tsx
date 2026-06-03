@@ -233,6 +233,10 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			return null;
 		}
 		const key = String(event.key || "");
+		if (key === "Escape") {
+			clearDashboardVimPrefix();
+			return "FOCUS_DASHBOARD_SHELL";
+		}
 		if (key === "H") {
 			clearDashboardVimPrefix();
 			return "TOGGLE_DASHBOARD_SIDEBAR";
