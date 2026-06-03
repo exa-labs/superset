@@ -31,6 +31,11 @@ describe("dashboard focus scope", () => {
 				.id,
 		).toBe("sidebar");
 		expect(
+			dashboardFocusScopeForElement(
+				element(["[data-workspace-right-sidebar-root]"]),
+			).id,
+		).toBe("sidebar");
+		expect(
 			dashboardFocusScopeForElement(element(["[data-native-agent-view-root]"]))
 				.id,
 		).toBe("native-agent");

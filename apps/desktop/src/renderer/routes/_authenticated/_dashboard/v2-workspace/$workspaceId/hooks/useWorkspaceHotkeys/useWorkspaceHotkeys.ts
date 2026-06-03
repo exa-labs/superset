@@ -8,6 +8,11 @@ import {
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useV2UserPreferences } from "renderer/hooks/useV2UserPreferences";
 import { useHotkey } from "renderer/hotkeys";
+import { dashboardFocusScopeForDocument } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
+import {
+	dashboardVimKey,
+	shouldHandleDashboardVimKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
 	addDashboardWorkspacePaneActionListener,
 	type DashboardWorkspacePaneAction,
@@ -17,6 +22,7 @@ import {
 	resolveV2WorkspacePaneResize,
 	swapV2WorkspacePanes,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
+import { dashboardWorkspacePaneVimActionFromKey } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-vim";
 import type { V2TerminalPresetRow } from "renderer/routes/_authenticated/providers/CollectionsProvider/dashboardSidebarLocal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import type { StoreApi } from "zustand";
@@ -439,6 +445,25 @@ export function useWorkspaceHotkeys({
 		() => addDashboardWorkspacePaneActionListener(handleWorkspacePaneAction),
 		[handleWorkspacePaneAction],
 	);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (!shouldHandleDashboardVimKey(event)) return;
+			if (dashboardFocusScopeForDocument(document).id !== "app") return;
+			const action = dashboardWorkspacePaneVimActionFromKey(
+				dashboardVimKey(event),
+			);
+			if (action === "none") return;
+
+			event.preventDefault();
+			event.stopPropagation();
+			handleWorkspacePaneAction(action);
+		};
+
+		window.addEventListener("keydown", handleKeyDown, { capture: true });
+		return () =>
+			window.removeEventListener("keydown", handleKeyDown, { capture: true });
+	}, [handleWorkspacePaneAction]);
 
 	// --- Preset hotkeys ---
 

@@ -80,7 +80,12 @@ export function dashboardFocusScopeForElement(
 	if (closest(element, "[data-dashboard-keyboard-help]")) {
 		return FOCUS_SCOPE_BY_ID["keyboard-help"];
 	}
-	if (closest(element, "[data-dashboard-sidebar-root]")) {
+	if (
+		closest(
+			element,
+			"[data-dashboard-sidebar-root], [data-workspace-right-sidebar-root]",
+		)
+	) {
 		return FOCUS_SCOPE_BY_ID.sidebar;
 	}
 	if (

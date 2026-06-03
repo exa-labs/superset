@@ -158,7 +158,10 @@ export function RightSidebar() {
 			: undefined;
 
 	return (
-		<aside className="h-full flex flex-col overflow-hidden">
+		<aside
+			className="h-full flex flex-col overflow-hidden"
+			data-workspace-right-sidebar-root="true"
+		>
 			<div className="flex items-center bg-background shrink-0 h-10 border-b">
 				<div className="flex items-center h-full">
 					{showChangesTab && (

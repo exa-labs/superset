@@ -70,6 +70,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: Columns2Icon,
 				hotkeyId: "SPLIT_AUTO",
 				keywords: ["pane", "layout", "keyboard"],
+				shortcutLabel: "s",
 				run: () => dispatchDashboardWorkspacePaneAction("split-auto"),
 			},
 			{
@@ -117,6 +118,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: EqualIcon,
 				hotkeyId: "EQUALIZE_PANE_SPLITS",
 				keywords: ["pane", "layout", "resize"],
+				shortcutLabel: "=",
 				run: () => dispatchDashboardWorkspacePaneAction("equalize"),
 			},
 			{
@@ -126,6 +128,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: PanelLeftIcon,
 				hotkeyId: "NARROW_PANE_SPLIT",
 				keywords: ["pane", "layout", "resize"],
+				shortcutLabel: "[",
 				run: () => dispatchDashboardWorkspacePaneAction("narrow-pane"),
 			},
 			{
@@ -135,6 +138,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: PanelRightIcon,
 				hotkeyId: "WIDEN_PANE_SPLIT",
 				keywords: ["pane", "layout", "resize"],
+				shortcutLabel: "]",
 				run: () => dispatchDashboardWorkspacePaneAction("widen-pane"),
 			},
 			{
@@ -144,6 +148,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: XIcon,
 				hotkeyId: "CLOSE_PANE",
 				keywords: ["pane", "remove"],
+				shortcutLabel: "x",
 				run: () => dispatchDashboardWorkspacePaneAction("close-pane"),
 			},
 			{
@@ -153,6 +158,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: ArrowLeftIcon,
 				hotkeyId: "FOCUS_PANE_LEFT",
 				keywords: ["pane", "move", "keyboard"],
+				shortcutLabel: "h",
 				run: () => dispatchDashboardWorkspacePaneAction("focus-left"),
 			},
 			{
@@ -162,6 +168,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: ArrowRightIcon,
 				hotkeyId: "FOCUS_PANE_RIGHT",
 				keywords: ["pane", "move", "keyboard"],
+				shortcutLabel: "l",
 				run: () => dispatchDashboardWorkspacePaneAction("focus-right"),
 			},
 			{
@@ -171,6 +178,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: ArrowUpIcon,
 				hotkeyId: "FOCUS_PANE_UP",
 				keywords: ["pane", "move", "keyboard"],
+				shortcutLabel: "k",
 				run: () => dispatchDashboardWorkspacePaneAction("focus-up"),
 			},
 			{
@@ -180,6 +188,7 @@ export const workspaceProvider: CommandProvider = {
 				icon: ArrowDownIcon,
 				hotkeyId: "FOCUS_PANE_DOWN",
 				keywords: ["pane", "move", "keyboard"],
+				shortcutLabel: "j",
 				run: () => dispatchDashboardWorkspacePaneAction("focus-down"),
 			},
 			{
@@ -188,6 +197,7 @@ export const workspaceProvider: CommandProvider = {
 				section: "workspace",
 				icon: ArrowLeftIcon,
 				keywords: ["pane", "move", "keyboard", "swap"],
+				shortcutLabel: "H",
 				run: () => dispatchDashboardWorkspacePaneAction("swap-left"),
 			},
 			{
@@ -196,6 +206,7 @@ export const workspaceProvider: CommandProvider = {
 				section: "workspace",
 				icon: ArrowRightIcon,
 				keywords: ["pane", "move", "keyboard", "swap"],
+				shortcutLabel: "L",
 				run: () => dispatchDashboardWorkspacePaneAction("swap-right"),
 			},
 			{
@@ -204,6 +215,7 @@ export const workspaceProvider: CommandProvider = {
 				section: "workspace",
 				icon: ArrowUpIcon,
 				keywords: ["pane", "move", "keyboard", "swap"],
+				shortcutLabel: "K",
 				run: () => dispatchDashboardWorkspacePaneAction("swap-up"),
 			},
 			{
@@ -212,6 +224,7 @@ export const workspaceProvider: CommandProvider = {
 				section: "workspace",
 				icon: ArrowDownIcon,
 				keywords: ["pane", "move", "keyboard", "swap"],
+				shortcutLabel: "J",
 				run: () => dispatchDashboardWorkspacePaneAction("swap-down"),
 			},
 		];

@@ -7,6 +7,11 @@ import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { electronTrpcClient as trpcClient } from "renderer/lib/trpc-client";
 import { usePresets } from "renderer/react-query/presets";
+import { dashboardFocusScopeForDocument } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
+import {
+	dashboardVimKey,
+	shouldHandleDashboardVimKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
 	addDashboardWorkspacePaneActionListener,
 	type DashboardWorkspacePaneAction,
@@ -16,6 +21,7 @@ import {
 	resizeMosaicWorkspacePane,
 	swapMosaicWorkspacePanes,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-pane-resize";
+import { dashboardWorkspacePaneVimActionFromKey } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-workspace-vim";
 import type { WorkspaceSearchParams } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { navigateToWorkspace } from "renderer/routes/_authenticated/_dashboard/utils/workspace-navigation";
 import { usePresetHotkeys } from "renderer/routes/_authenticated/_dashboard/workspace/$workspaceId/hooks/usePresetHotkeys";
@@ -590,6 +596,25 @@ function WorkspacePage() {
 		() => addDashboardWorkspacePaneActionListener(handleWorkspacePaneAction),
 		[handleWorkspacePaneAction],
 	);
+
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (!shouldHandleDashboardVimKey(event)) return;
+			if (dashboardFocusScopeForDocument(document).id !== "app") return;
+			const action = dashboardWorkspacePaneVimActionFromKey(
+				dashboardVimKey(event),
+			);
+			if (action === "none") return;
+
+			event.preventDefault();
+			event.stopPropagation();
+			handleWorkspacePaneAction(action);
+		};
+
+		window.addEventListener("keydown", handleKeyDown, { capture: true });
+		return () =>
+			window.removeEventListener("keydown", handleKeyDown, { capture: true });
+	}, [handleWorkspacePaneAction]);
 
 	const getPreviousWorkspace =
 		electronTrpc.workspaces.getPreviousWorkspace.useQuery(

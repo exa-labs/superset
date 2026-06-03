@@ -105,6 +105,9 @@ describe("workspace command provider", () => {
 		const hotkeyById = new Map(
 			commands.map((command) => [command.id, command.hotkeyId] as const),
 		);
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
 		const commandIds = new Set(commands.map((command) => command.id));
 
 		expect(hotkeyById.get("workspace.pane.splitAuto")).toBe("SPLIT_AUTO");
@@ -130,6 +133,19 @@ describe("workspace command provider", () => {
 		expect(commandIds.has("workspace.pane.swapRight")).toBe(true);
 		expect(commandIds.has("workspace.pane.swapUp")).toBe(true);
 		expect(commandIds.has("workspace.pane.swapDown")).toBe(true);
+		expect(shortcutById.get("workspace.pane.splitAuto")).toBe("s");
+		expect(shortcutById.get("workspace.pane.equalize")).toBe("=");
+		expect(shortcutById.get("workspace.pane.narrow")).toBe("[");
+		expect(shortcutById.get("workspace.pane.widen")).toBe("]");
+		expect(shortcutById.get("workspace.pane.close")).toBe("x");
+		expect(shortcutById.get("workspace.pane.focusLeft")).toBe("h");
+		expect(shortcutById.get("workspace.pane.focusRight")).toBe("l");
+		expect(shortcutById.get("workspace.pane.focusUp")).toBe("k");
+		expect(shortcutById.get("workspace.pane.focusDown")).toBe("j");
+		expect(shortcutById.get("workspace.pane.swapLeft")).toBe("H");
+		expect(shortcutById.get("workspace.pane.swapRight")).toBe("L");
+		expect(shortcutById.get("workspace.pane.swapUp")).toBe("K");
+		expect(shortcutById.get("workspace.pane.swapDown")).toBe("J");
 	});
 
 	it("dispatches workspace pane action events", () => {

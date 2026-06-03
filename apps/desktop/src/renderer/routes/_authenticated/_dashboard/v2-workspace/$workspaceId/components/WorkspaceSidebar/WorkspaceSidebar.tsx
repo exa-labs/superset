@@ -177,6 +177,7 @@ export function WorkspaceSidebar({
 		<div
 			ref={containerRef}
 			className="isolate flex h-full w-full min-h-0 flex-col overflow-hidden bg-background"
+			data-workspace-right-sidebar-root="true"
 		>
 			<PRActionHeader
 				workspaceId={workspaceId}

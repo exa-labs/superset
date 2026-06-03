@@ -57,8 +57,17 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("FOCUS_PANE_UP")).toBe(true);
 		expect(hotkeyIds.has("FOCUS_PANE_DOWN")).toBe(true);
 		expect(hotkeyIds.has("CLOSE_PANE")).toBe(true);
+		expect(entryByLabel.get("Focus workspace pane in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["h", "j", "k", "l"] }),
+		);
 		expect(entryByLabel.get("Swap workspace pane")).toEqual(
 			expect.objectContaining({ keys: ["⌥", "K"] }),
+		);
+		expect(entryByLabel.get("Swap workspace pane in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["H", "J", "K", "L"] }),
+		);
+		expect(entryByLabel.get("Control workspace panes in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["s", "[", "]", "=", "x"] }),
 		);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["N"] }),

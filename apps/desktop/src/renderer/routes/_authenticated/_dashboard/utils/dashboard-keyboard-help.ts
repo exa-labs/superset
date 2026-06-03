@@ -302,6 +302,23 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 			title: "Workspace Panes",
 			entries: [
 				{
+					keys: ["h", "j", "k", "l"],
+					label: "Focus workspace pane in Vim mode",
+					description: "Move focus through workspace panes by direction",
+				},
+				{
+					keys: ["H", "J", "K", "L"],
+					label: "Swap workspace pane in Vim mode",
+					description:
+						"Swap the focused workspace pane with a directional neighbor",
+				},
+				{
+					keys: ["s", "[", "]", "=", "x"],
+					label: "Control workspace panes in Vim mode",
+					description:
+						"Split, resize, equalize, or close the focused workspace pane",
+				},
+				{
 					hotkeyId: "SPLIT_RIGHT",
 					label: "Split pane right",
 					description: "Open a new terminal pane to the right",
