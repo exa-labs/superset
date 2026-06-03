@@ -2,6 +2,10 @@ import { formatHotkeyDisplay, type HotkeyId, PLATFORM } from "renderer/hotkeys";
 import { getBinding } from "renderer/hotkeys/hooks/useBinding/useBinding";
 import { getEffectiveLayoutMap } from "renderer/hotkeys/stores/keyboardPreferencesStore";
 import { bindingToDispatchChord } from "renderer/hotkeys/utils/binding";
+import {
+	isDashboardVimEditableTarget,
+	isDashboardVimModeEnabled,
+} from "./dashboard-vim-mode";
 
 export const DASHBOARD_KEYBOARD_HELP_OPEN_EVENT =
 	"dashboard-keyboard-help-open";
@@ -89,6 +93,17 @@ function hotkeySearchText(hotkeyId: HotkeyId): string {
 
 export function normalizeDashboardKeyboardHelpQuery(query: string): string[] {
 	return query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+export function shouldOpenDashboardKeyboardHelpFromQuestionKey(
+	event: KeyboardEvent,
+): boolean {
+	if (isDashboardVimModeEnabled()) return false;
+	if (event.defaultPrevented) return false;
+	if (event.isComposing) return false;
+	if (event.altKey || event.ctrlKey || event.metaKey) return false;
+	if (event.key !== "?") return false;
+	return !isDashboardVimEditableTarget(event.target);
 }
 
 function dashboardKeyboardHelpEntrySearchParts({
@@ -204,9 +219,9 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["?"],
-					label: "Show this overlay in Vim mode",
+					label: "Show this overlay from dashboard shell",
 					description:
-						"Open this guide from the dashboard shell or embedded browser pages",
+						"Open this guide from dashboard chrome without reaching for Option+/",
 				},
 				{
 					keys: ["Backspace"],

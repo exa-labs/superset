@@ -19,7 +19,10 @@ import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/comp
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
 import { DashboardVimModeIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardVimModeIndicator";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
-import { DASHBOARD_KEYBOARD_HELP_OPEN_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import {
+	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
+	shouldOpenDashboardKeyboardHelpFromQuestionKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useDashboardSidebarState } from "renderer/routes/_authenticated/hooks/useDashboardSidebarState";
 import { useDevSeedV2Sidebar } from "renderer/routes/_authenticated/hooks/useDevSeedV2Sidebar";
 import { useCollections } from "renderer/routes/_authenticated/providers/CollectionsProvider";
@@ -143,6 +146,12 @@ function DashboardLayout() {
 			event.preventDefault();
 			handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
 		};
+		const handleQuestionKeyKeyboardHelp = (event: KeyboardEvent) => {
+			if (!shouldOpenDashboardKeyboardHelpFromQuestionKey(event)) return;
+			event.preventDefault();
+			event.stopPropagation();
+			setKeyboardHelpOpen(true);
+		};
 
 		window.addEventListener(
 			DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
@@ -152,6 +161,7 @@ function DashboardLayout() {
 			TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
 			handleTerminalFocusDashboardShell,
 		);
+		window.addEventListener("keydown", handleQuestionKeyKeyboardHelp, true);
 		return () => {
 			window.removeEventListener(
 				DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
@@ -160,6 +170,11 @@ function DashboardLayout() {
 			window.removeEventListener(
 				TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
 				handleTerminalFocusDashboardShell,
+			);
+			window.removeEventListener(
+				"keydown",
+				handleQuestionKeyKeyboardHelp,
+				true,
 			);
 		};
 	}, []);

@@ -5,7 +5,26 @@ import {
 	filterDashboardKeyboardHelpSections,
 	normalizeDashboardKeyboardHelpQuery,
 	openDashboardKeyboardHelp,
+	shouldOpenDashboardKeyboardHelpFromQuestionKey,
 } from "./dashboard-keyboard-help";
+import { setDashboardVimModeEnabled } from "./dashboard-vim-mode";
+
+function keyEvent(
+	overrides: Partial<KeyboardEvent> & { target?: EventTarget | null } = {},
+) {
+	const target = overrides.target ?? null;
+	return {
+		altKey: false,
+		ctrlKey: false,
+		defaultPrevented: false,
+		isComposing: false,
+		key: "?",
+		metaKey: false,
+		shiftKey: true,
+		target,
+		...overrides,
+	} as KeyboardEvent;
+}
 
 describe("dashboard keyboard help", () => {
 	it("covers the keyboard-native dashboard pillars", () => {
@@ -218,6 +237,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
+		expect(entryByLabel.get("Show this overlay from dashboard shell")).toEqual(
+			expect.objectContaining({ keys: ["?"] }),
+		);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {
@@ -234,6 +256,83 @@ describe("dashboard keyboard help", () => {
 
 		expect(openDashboardKeyboardHelp()).toBe(true);
 		expect(seen).toBe(true);
+	});
+
+	it("opens keyboard help from plain question mark in dashboard chrome", () => {
+		setDashboardVimModeEnabled(false);
+		if (typeof document === "undefined") return;
+
+		const button = document.createElement("button");
+		document.body.append(button);
+
+		try {
+			expect(
+				shouldOpenDashboardKeyboardHelpFromQuestionKey(
+					keyEvent({ target: button }),
+				),
+			).toBe(true);
+		} finally {
+			button.remove();
+		}
+	});
+
+	it("keeps question mark out of Vim mode and focus-trapping surfaces", () => {
+		setDashboardVimModeEnabled(false);
+		expect(
+			shouldOpenDashboardKeyboardHelpFromQuestionKey(
+				keyEvent({ altKey: true }),
+			),
+		).toBe(false);
+		expect(
+			shouldOpenDashboardKeyboardHelpFromQuestionKey(
+				keyEvent({ defaultPrevented: true }),
+			),
+		).toBe(false);
+		expect(
+			shouldOpenDashboardKeyboardHelpFromQuestionKey(
+				keyEvent({ isComposing: true }),
+			),
+		).toBe(false);
+		expect(
+			shouldOpenDashboardKeyboardHelpFromQuestionKey(keyEvent({ key: "/" })),
+		).toBe(false);
+
+		setDashboardVimModeEnabled(true);
+		expect(shouldOpenDashboardKeyboardHelpFromQuestionKey(keyEvent())).toBe(
+			false,
+		);
+		setDashboardVimModeEnabled(false);
+
+		if (typeof document === "undefined") return;
+
+		const commandInput = document.createElement("input");
+		commandInput.setAttribute("data-command-palette-input", "true");
+		const browserView = document.createElement("div");
+		browserView.setAttribute("data-dashboard-browser-view", "true");
+		const terminalRoot = document.createElement("div");
+		terminalRoot.setAttribute("data-terminal-root", "true");
+		const monacoEditor = document.createElement("div");
+		monacoEditor.setAttribute("data-monaco-editor", "true");
+		const guardedTargets = [
+			commandInput,
+			document.createElement("webview"),
+			browserView,
+			terminalRoot,
+			monacoEditor,
+		];
+
+		try {
+			for (const target of guardedTargets) {
+				document.body.append(target);
+				expect(
+					shouldOpenDashboardKeyboardHelpFromQuestionKey(keyEvent({ target })),
+				).toBe(false);
+			}
+		} finally {
+			for (const target of guardedTargets) {
+				target.remove();
+			}
+		}
 	});
 
 	it("normalizes shortcut search queries into lowercase tokens", () => {
