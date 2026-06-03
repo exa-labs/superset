@@ -2,6 +2,7 @@ import { formatHotkeyDisplay, type HotkeyId, PLATFORM } from "renderer/hotkeys";
 import { getBinding } from "renderer/hotkeys/hooks/useBinding/useBinding";
 import { getEffectiveLayoutMap } from "renderer/hotkeys/stores/keyboardPreferencesStore";
 import { bindingToDispatchChord } from "renderer/hotkeys/utils/binding";
+import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcuts";
 import {
 	isDashboardVimEditableTarget,
 	isDashboardVimModeEnabled,
@@ -28,6 +29,49 @@ export interface DashboardKeyboardHelpSection {
 	entries: DashboardKeyboardHelpEntry[];
 	id: string;
 	title: string;
+}
+
+const BROWSER_SHORTCUT_DESCRIPTIONS = {
+	"close-current-tab": "Close the active embedded Chrome tab",
+	"close-split": "Return embedded Chrome to a single active tab pane",
+	"equalize-split": "Reset embedded Chrome split panes to equal widths",
+	"go-back": "Go backward in the active embedded Chrome tab",
+	"go-forward": "Go forward in the active embedded Chrome tab",
+	"narrow-active-split": "Narrow the active embedded Chrome pane",
+	"new-current-url-tab":
+		"Create a new embedded Chrome tab from the current URL",
+	"next-tab": "Move right through embedded Chrome tabs",
+	"previous-tab": "Move left through embedded Chrome tabs",
+	reload: "Reload the active embedded Chrome tab",
+	"swap-split": "Move focus between embedded Chrome split panes",
+	"toggle-tab-pin":
+		"Pin or unpin the current embedded Chrome view in the sidebar",
+	"toggle-split": "Toggle side-by-side embedded Chrome tabs",
+	"widen-active-split": "Widen the active embedded Chrome pane",
+} satisfies Record<
+	ReturnType<typeof dashboardBrowserShortcutDescriptors>[number]["action"],
+	string
+>;
+
+export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntry[] {
+	const regularShortcuts = dashboardBrowserShortcutDescriptors({
+		isSplitView: false,
+	});
+	const splitShortcuts = dashboardBrowserShortcutDescriptors({
+		isSplitView: true,
+	}).filter(
+		(shortcut) =>
+			shortcut.section === "split" && shortcut.action !== "toggle-split",
+	);
+
+	return [...regularShortcuts, ...splitShortcuts].map((shortcut) => ({
+		keys: [shortcut.key],
+		label:
+			shortcut.action === "toggle-split"
+				? "Open or close Chrome split"
+				: `Chrome: ${shortcut.label}`,
+		description: BROWSER_SHORTCUT_DESCRIPTIONS[shortcut.action],
+	}));
 }
 
 const DASHBOARD_KEYBOARD_HELP_KEY_ALIASES: Record<string, string[]> = {
@@ -662,65 +706,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 		{
 			id: "browser",
 			title: "Browser",
-			entries: [
-				{
-					keys: ["n"],
-					label: "Duplicate Chrome tab",
-					description: "Create a new embedded Chrome tab from the current URL",
-				},
-				{
-					keys: ["r"],
-					label: "Reload Chrome tab",
-					description: "Reload the active embedded Chrome tab",
-				},
-				{
-					keys: ["s"],
-					label: "Split Chrome view",
-					description: "Toggle side-by-side embedded Chrome tabs",
-				},
-				{
-					keys: ["w"],
-					label: "Swap Chrome split focus",
-					description: "Move focus between embedded Chrome split panes",
-				},
-				{
-					keys: ["q"],
-					label: "Close Chrome split",
-					description: "Return embedded Chrome to a single active tab pane",
-				},
-				{
-					keys: ["[", "]"],
-					label: "Resize Chrome split",
-					description: "Narrow or widen the active embedded Chrome pane",
-				},
-				{
-					keys: ["="],
-					label: "Equalize Chrome split",
-					description: "Reset embedded Chrome split panes to equal widths",
-				},
-				{
-					keys: ["x"],
-					label: "Close Chrome tab",
-					description: "Close the active embedded Chrome tab",
-				},
-				{
-					keys: ["p"],
-					label: "Pin Chrome tab",
-					description:
-						"Pin or unpin the current embedded Chrome view in the sidebar",
-				},
-				{
-					keys: ["h", "l"],
-					label: "Previous or next Chrome tab",
-					description: "Move left or right through embedded Chrome tabs",
-				},
-				{
-					keys: ["H", "L"],
-					label: "Back or forward Chrome history",
-					description:
-						"Go backward or forward in the active embedded Chrome tab",
-				},
-			],
+			entries: dashboardKeyboardHelpBrowserEntries(),
 		},
 		{
 			id: "root-terminals",

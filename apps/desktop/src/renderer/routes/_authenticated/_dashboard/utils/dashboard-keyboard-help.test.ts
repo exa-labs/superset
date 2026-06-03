@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcuts";
 import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	DASHBOARD_KEYBOARD_HELP_SECTIONS,
+	dashboardKeyboardHelpBrowserEntries,
 	filterDashboardKeyboardHelpSections,
 	normalizeDashboardKeyboardHelpQuery,
 	openDashboardKeyboardHelp,
@@ -123,9 +125,6 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Control workspace panes in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["s", "[", "]", "=", "x"] }),
 		);
-		expect(entryByLabel.get("Back or forward Chrome history")).toEqual(
-			expect.objectContaining({ keys: ["H", "L"] }),
-		);
 		expect(entryByLabel.get("Create from section")).toEqual(
 			expect.objectContaining({ keys: ["n"] }),
 		);
@@ -210,41 +209,80 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Delete folder")).toEqual(
 			expect.objectContaining({ keys: ["d"] }),
 		);
-		expect(entryByLabel.get("Duplicate Chrome tab")).toEqual(
+		expect(entryByLabel.get("Chrome: New tab from current page")).toEqual(
 			expect.objectContaining({ keys: ["n"] }),
 		);
-		expect(entryByLabel.get("Reload Chrome tab")).toEqual(
+		expect(entryByLabel.get("Chrome: Reload")).toEqual(
 			expect.objectContaining({ keys: ["r"] }),
 		);
-		expect(entryByLabel.get("Split Chrome view")).toEqual(
+		expect(entryByLabel.get("Open or close Chrome split")).toEqual(
 			expect.objectContaining({ keys: ["s"] }),
 		);
-		expect(entryByLabel.get("Swap Chrome split focus")).toEqual(
+		expect(entryByLabel.get("Chrome: Swap panes")).toEqual(
 			expect.objectContaining({ keys: ["w"] }),
 		);
-		expect(entryByLabel.get("Close Chrome split")).toEqual(
+		expect(entryByLabel.get("Chrome: Close split")).toEqual(
 			expect.objectContaining({ keys: ["q"] }),
 		);
-		expect(entryByLabel.get("Resize Chrome split")).toEqual(
-			expect.objectContaining({ keys: ["[", "]"] }),
+		expect(entryByLabel.get("Chrome: Narrow active pane")).toEqual(
+			expect.objectContaining({ keys: ["["] }),
 		);
-		expect(entryByLabel.get("Equalize Chrome split")).toEqual(
+		expect(entryByLabel.get("Chrome: Widen active pane")).toEqual(
+			expect.objectContaining({ keys: ["]"] }),
+		);
+		expect(entryByLabel.get("Chrome: Equalize panes")).toEqual(
 			expect.objectContaining({ keys: ["="] }),
 		);
-		expect(entryByLabel.get("Close Chrome tab")).toEqual(
+		expect(entryByLabel.get("Chrome: Close current tab")).toEqual(
 			expect.objectContaining({ keys: ["x"] }),
 		);
-		expect(entryByLabel.get("Pin Chrome tab")).toEqual(
+		expect(entryByLabel.get("Chrome: Pin or unpin sidebar tab")).toEqual(
 			expect.objectContaining({ keys: ["p"] }),
 		);
-		expect(entryByLabel.get("Previous or next Chrome tab")).toEqual(
-			expect.objectContaining({ keys: ["h", "l"] }),
+		expect(entryByLabel.get("Chrome: Previous tab")).toEqual(
+			expect.objectContaining({ keys: ["h"] }),
+		);
+		expect(entryByLabel.get("Chrome: Next tab")).toEqual(
+			expect.objectContaining({ keys: ["l"] }),
+		);
+		expect(entryByLabel.get("Chrome: Back")).toEqual(
+			expect.objectContaining({ keys: ["H"] }),
+		);
+		expect(entryByLabel.get("Chrome: Forward")).toEqual(
+			expect.objectContaining({ keys: ["L"] }),
 		);
 		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
 		expect(entryByLabel.get("Show this overlay from dashboard shell")).toEqual(
 			expect.objectContaining({ keys: ["?"] }),
+		);
+	});
+
+	it("keeps keyboard help Chrome shortcuts aligned with the browser descriptor source", () => {
+		const browserSection = DASHBOARD_KEYBOARD_HELP_SECTIONS.find(
+			(section) => section.id === "browser",
+		);
+		const expectedDescriptors = [
+			...dashboardBrowserShortcutDescriptors({ isSplitView: false }),
+			...dashboardBrowserShortcutDescriptors({ isSplitView: true }).filter(
+				(shortcut) =>
+					shortcut.section === "split" && shortcut.action !== "toggle-split",
+			),
+		];
+
+		expect(browserSection?.entries).toEqual(
+			dashboardKeyboardHelpBrowserEntries(),
+		);
+		expect(browserSection?.entries.map((entry) => entry.keys?.[0])).toEqual(
+			expectedDescriptors.map((shortcut) => shortcut.key),
+		);
+		expect(browserSection?.entries.map((entry) => entry.label)).toEqual(
+			expectedDescriptors.map((shortcut) =>
+				shortcut.action === "toggle-split"
+					? "Open or close Chrome split"
+					: `Chrome: ${shortcut.label}`,
+			),
 		);
 	});
 

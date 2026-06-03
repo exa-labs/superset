@@ -10,7 +10,7 @@ import { Input } from "@superset/ui/input";
 import { Kbd, KbdGroup } from "@superset/ui/kbd";
 import { cn } from "@superset/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { LuKeyboard, LuSearch } from "react-icons/lu";
 import { type HotkeyId, useHotkeyDisplay } from "renderer/hotkeys";
 import {
@@ -45,22 +45,57 @@ function HotkeyKeycaps({ hotkeyId }: { hotkeyId: HotkeyId }) {
 
 function StaticKeycaps({ keys }: { keys: string[] }) {
 	const occurrences = new Map<string, number>();
-	const keycaps = keys.map((key) => {
-		const occurrence = occurrences.get(key) ?? 0;
-		occurrences.set(key, occurrence + 1);
+	const keyGroups = dashboardKeyboardHelpStaticKeyGroups(keys);
+	const keycaps = keyGroups.map((group, groupIndex) => {
+		const groupKey = group.join(" ");
+		const occurrence = occurrences.get(groupKey) ?? 0;
+		occurrences.set(groupKey, occurrence + 1);
 		return {
-			id: `${key}-${occurrence}`,
-			label: key,
+			id: `${groupKey}-${groupIndex}-${occurrence}`,
+			keys: group,
 		};
 	});
 
 	return (
-		<KbdGroup className="justify-end">
-			{keycaps.map((key) => (
-				<Kbd key={key.id}>{key.label}</Kbd>
+		<KbdGroup className="justify-end gap-1">
+			{keycaps.map((group, groupIndex) => (
+				<Fragment key={group.id}>
+					{groupIndex > 0 && (
+						<span className="px-0.5 text-muted-foreground/55 text-[10px]">
+							/
+						</span>
+					)}
+					{group.keys.map((key) => {
+						const occurrence = occurrences.get(key) ?? 0;
+						occurrences.set(key, occurrence + 1);
+						return <Kbd key={`${group.id}-${key}-${occurrence}`}>{key}</Kbd>;
+					})}
+				</Fragment>
 			))}
 		</KbdGroup>
 	);
+}
+
+function dashboardKeyboardHelpStaticKeyGroups(keys: string[]): string[][] {
+	if (keys.length === 0) return [];
+	if (keys.length === 1) return [keys];
+
+	if (keys[0] === "g" && keys[1] === "g") {
+		return [["g", "g"], ...keys.slice(2).map((key) => [key])];
+	}
+
+	if (
+		keys[0] === "g" ||
+		keys[0] === "⌥" ||
+		keys[0] === "⌘" ||
+		keys[0] === "⌃" ||
+		keys[0] === "⇧" ||
+		keys.some((key) => key.startsWith("type"))
+	) {
+		return [keys];
+	}
+
+	return keys.map((key) => [key]);
 }
 
 function KeyboardHelpEntryRow({
