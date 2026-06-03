@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
+import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
 	dashboardVimGlobalActionFromKey,
@@ -302,6 +303,14 @@ export function useDashboardWebShortcuts() {
 			if (shouldHandleDashboardVimKey(event)) {
 				const key = dashboardVimKey(event);
 				const globalAction = dashboardVimGlobalActionFromKey(key);
+				if (globalAction === "show-action-hints") {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					openDashboardActionHints();
+					return;
+				}
 				if (globalAction === "show-keyboard-help") {
 					updatePendingVimPrefix(null);
 					event.preventDefault();

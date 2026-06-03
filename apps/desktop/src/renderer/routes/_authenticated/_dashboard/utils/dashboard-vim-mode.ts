@@ -5,6 +5,7 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 export type DashboardVimSequence = "g c" | "g d" | "g g" | "g w";
 export type DashboardVimGlobalAction =
 	| "none"
+	| "show-action-hints"
 	| "show-keyboard-help"
 	| "toggle-sidebar";
 export type DashboardVimNavigationAction =
@@ -133,6 +134,7 @@ export function dashboardVimKey(event: KeyboardEvent): string {
 export function dashboardVimGlobalActionFromKey(
 	key: string,
 ): DashboardVimGlobalAction {
+	if (key === "f") return "show-action-hints";
 	if (key === "?") return "show-keyboard-help";
 	if (key === "H") return "toggle-sidebar";
 	return "none";
