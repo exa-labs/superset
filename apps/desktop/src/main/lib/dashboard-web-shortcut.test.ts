@@ -231,11 +231,22 @@ describe("dashboardWebShortcutFromInput", () => {
 				"SIDEBAR_ACTIVATE",
 				"SIDEBAR_TOGGLE_EXPANSION",
 				"SIDEBAR_FOCUS_SEARCH",
+				"SIDEBAR_ACTION_ARCHIVE",
+				"SIDEBAR_ACTION_COLOR",
+				"SIDEBAR_ACTION_CREATE_FOLDER",
+				"SIDEBAR_ACTION_DELETE",
+				"SIDEBAR_ACTION_MENU",
+				"SIDEBAR_ACTION_MOVE",
+				"SIDEBAR_ACTION_OPEN_BROWSER",
+				"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+				"SIDEBAR_ACTION_RENAME",
+				"SIDEBAR_ACTION_TOGGLE_BROWSER",
 			]),
 		);
 		expect(isDashboardWebShortcut("BROWSER_GO_BACK")).toBe(true);
 		expect(isDashboardWebShortcut("BROWSER_GO_FORWARD")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_FOCUS_NEXT")).toBe(true);
+		expect(isDashboardWebShortcut("SIDEBAR_ACTION_MOVE")).toBe(true);
 		expect(isDashboardWebShortcut("NOT_A_SHORTCUT")).toBe(false);
 		expect(isDashboardWebShortcut(null)).toBe(false);
 	});

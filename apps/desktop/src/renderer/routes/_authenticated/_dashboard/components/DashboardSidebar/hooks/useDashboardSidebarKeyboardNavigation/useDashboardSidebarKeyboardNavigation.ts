@@ -4,6 +4,7 @@ import {
 	DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
 	type DashboardSidebarKeyboardCommand,
 	type DashboardSidebarKeyboardCommandDetail,
+	dashboardSidebarKeyboardActionFromCommand,
 	isDashboardSidebarKeyboardCommand,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
@@ -303,6 +304,19 @@ export function runDashboardSidebarKeyboardCommand(input: {
 	if (activeIndex < 0) return focusIndex(0);
 
 	const activeItem = items[activeIndex];
+	const sidebarAction = dashboardSidebarKeyboardActionFromCommand(
+		input.command,
+	);
+	if (sidebarAction) {
+		const actionButton = findDashboardSidebarActionButton(
+			activeItem,
+			sidebarAction,
+		);
+		if (!actionButton || actionButton.disabled) return false;
+		actionButton.click();
+		return true;
+	}
+
 	if (input.command === "activate") {
 		findDashboardSidebarActivationTarget(activeItem, "Enter").click();
 		return true;

@@ -303,6 +303,46 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			if (key === "w") return "OPEN_WORKSPACES";
 			return null;
 		}
+		if (key === ".") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_MENU";
+		}
+		if (key === "N") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_CREATE_FOLDER";
+		}
+		if (key === "o") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_OPEN_BROWSER";
+		}
+		if (key === "b") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_TOGGLE_BROWSER";
+		}
+		if (key === "m") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_MOVE";
+		}
+		if (key === "F") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER";
+		}
+		if (key === "a") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_ARCHIVE";
+		}
+		if (key === "e") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_RENAME";
+		}
+		if (key === "c") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_COLOR";
+		}
+		if (key === "d") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_DELETE";
+		}
 		if (key === "g") {
 			setDashboardVimPrefix("g");
 			return "__PENDING__";

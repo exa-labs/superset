@@ -73,6 +73,45 @@ describe("dashboard browser webview bridge", () => {
 			'return "SIDEBAR_FOCUS_SEARCH"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_MENU"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_CREATE_FOLDER"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_OPEN_BROWSER"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_TOGGLE_BROWSER"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_MOVE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_ARCHIVE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_RENAME"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_COLOR"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_DELETE"',
+		);
+		expect(
+			DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT.indexOf(
+				'if (pendingDashboardVimPrefix === "g")',
+			),
+		).toBeLessThan(
+			DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT.indexOf(
+				'return "SIDEBAR_ACTION_COLOR"',
+			),
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (shiftedCode === "keyc") return "CREATE_CAPY"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

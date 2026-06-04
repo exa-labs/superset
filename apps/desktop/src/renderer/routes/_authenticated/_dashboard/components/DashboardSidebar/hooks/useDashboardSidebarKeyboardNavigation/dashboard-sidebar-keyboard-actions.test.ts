@@ -884,6 +884,59 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 			root.remove();
 		}
 	});
+
+	test("runs row-scoped action commands from the preserved sidebar row", () => {
+		if (typeof document === "undefined") return;
+
+		let replyClicks = 0;
+		let moveClicks = 0;
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		session.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+		makeVisible(session);
+		const reply = document.createElement("button");
+		reply.dataset.dashboardSidebarAction = "reply";
+		reply.onclick = () => {
+			replyClicks += 1;
+		};
+		makeVisible(reply);
+		const move = document.createElement("button");
+		move.dataset.dashboardSidebarAction = "move";
+		move.onclick = () => {
+			moveClicks += 1;
+		};
+		makeVisible(move);
+		scope.append(session, reply, move);
+		root.append(scope);
+		document.body.append(root);
+
+		try {
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.body,
+					command: "action-reply",
+					root,
+				}),
+			).toBe(true);
+			expect(replyClicks).toBe(1);
+			expect(moveClicks).toBe(0);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.body,
+					command: "action-move",
+					root,
+				}),
+			).toBe(true);
+			expect(replyClicks).toBe(1);
+			expect(moveClicks).toBe(1);
+		} finally {
+			root.remove();
+		}
+	});
 });
 
 describe("dashboardSidebarKeyboardFocusIndex", () => {

@@ -109,6 +109,19 @@ const SIDEBAR_SHORTCUT_COMMANDS: Partial<
 	SIDEBAR_FOCUS_NEXT: "focus-next",
 	SIDEBAR_FOCUS_PREVIOUS: "focus-previous",
 	SIDEBAR_TOGGLE_EXPANSION: "toggle-expansion",
+	SIDEBAR_ACTION_ARCHIVE: "action-archive",
+	SIDEBAR_ACTION_COLOR: "action-color",
+	SIDEBAR_ACTION_CREATE: "action-create",
+	SIDEBAR_ACTION_CREATE_FOLDER: "action-create-folder",
+	SIDEBAR_ACTION_DELETE: "action-delete",
+	SIDEBAR_ACTION_MENU: "action-menu",
+	SIDEBAR_ACTION_MOVE: "action-move",
+	SIDEBAR_ACTION_OPEN_BROWSER: "action-open-browser",
+	SIDEBAR_ACTION_PIN: "action-pin",
+	SIDEBAR_ACTION_REMOVE_FROM_FOLDER: "action-remove-from-folder",
+	SIDEBAR_ACTION_RENAME: "action-rename",
+	SIDEBAR_ACTION_REPLY: "action-reply",
+	SIDEBAR_ACTION_TOGGLE_BROWSER: "action-toggle-browser",
 };
 
 const WEB_TAB_PREFIX_TIMEOUT_MS = 1_500;
