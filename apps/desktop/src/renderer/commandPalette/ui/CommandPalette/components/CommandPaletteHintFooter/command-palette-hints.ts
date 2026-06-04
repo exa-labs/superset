@@ -28,6 +28,6 @@ export function getCommandPaletteFooterHints({
 		);
 	}
 
-	hints.push({ keys: ["Esc"], label: "Close" });
+	hints.push({ keys: ["Esc"], label: "Sidebar" });
 	return hints;
 }

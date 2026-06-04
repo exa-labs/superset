@@ -14,6 +14,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useCommandContext } from "../../core/ContextProvider";
 import { executeCommand } from "../../core/execute";
@@ -22,7 +23,7 @@ import type { Command as CommandType } from "../../core/types";
 import { CommandListView } from "../CommandListView/CommandListView";
 import { SubPaletteView } from "../SubPaletteView/SubPaletteView";
 import { scheduleCommandPaletteInputFocus } from "./command-palette-focus";
-import { commandPaletteRootKeyboardActionFromKey } from "./command-palette-keyboard";
+import { commandPaletteKeyboardActionFromKey } from "./command-palette-keyboard";
 import { CommandPaletteHintFooter } from "./components/CommandPaletteHintFooter";
 
 const QueryContext = createContext<string>("");
@@ -74,13 +75,30 @@ export function CommandPalette() {
 		setQuery("");
 	}, [popFrame]);
 
+	const closeAndFocusNavigationShell = useCallback(() => {
+		handleOpenChange(false);
+		const focusNavigationShell = () => {
+			handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+		};
+		if (typeof window !== "undefined") {
+			window.setTimeout(focusNavigationShell, 0);
+			return;
+		}
+		setTimeout(focusNavigationShell, 0);
+	}, [handleOpenChange]);
+
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent) => {
-			const rootAction = commandPaletteRootKeyboardActionFromKey({
+			const keyboardAction = commandPaletteKeyboardActionFromKey({
 				depth,
 				key: event.key,
 			});
-			if (rootAction === "show-keyboard-help") {
+			if (keyboardAction === "close-to-navigation-shell") {
+				event.preventDefault();
+				closeAndFocusNavigationShell();
+				return;
+			}
+			if (keyboardAction === "show-keyboard-help") {
 				event.preventDefault();
 				handleOpenChange(false);
 				openDashboardKeyboardHelp();
@@ -92,7 +110,7 @@ export function CommandPalette() {
 				handleBack();
 			}
 		},
-		[query, depth, handleBack, handleOpenChange],
+		[query, depth, handleBack, handleOpenChange, closeAndFocusNavigationShell],
 	);
 
 	useEffect(() => {
@@ -131,6 +149,10 @@ export function CommandPalette() {
 				data-command-palette-root="global"
 				className="!max-w-[720px] sm:!max-w-[720px] translate-y-0 max-h-[80vh] overflow-hidden p-0"
 				style={{ top: "max(16px, calc(50% - 278px))" }}
+				onEscapeKeyDown={(event) => {
+					event.preventDefault();
+					closeAndFocusNavigationShell();
+				}}
 			>
 				<DialogHeader className="sr-only">
 					<DialogTitle>Command Palette</DialogTitle>

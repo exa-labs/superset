@@ -14,8 +14,18 @@ describe("CommandPalette root open focus wiring", () => {
 	it("wires the root '?' hint to dashboard keyboard help", async () => {
 		const source = await Bun.file(commandPalettePath).text();
 
-		expect(source).toContain("commandPaletteRootKeyboardActionFromKey");
+		expect(source).toContain("commandPaletteKeyboardActionFromKey");
 		expect(source).toContain("openDashboardKeyboardHelp");
-		expect(source).toContain('rootAction === "show-keyboard-help"');
+		expect(source).toContain('keyboardAction === "show-keyboard-help"');
+	});
+
+	it("wires Escape to close the palette and recover dashboard shell focus", async () => {
+		const source = await Bun.file(commandPalettePath).text();
+
+		expect(source).toContain("closeAndFocusNavigationShell");
+		expect(source).toContain(
+			'handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL")',
+		);
+		expect(source).toContain("onEscapeKeyDown");
 	});
 });

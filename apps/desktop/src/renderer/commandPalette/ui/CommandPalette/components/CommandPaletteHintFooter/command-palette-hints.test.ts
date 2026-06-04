@@ -9,7 +9,7 @@ describe("getCommandPaletteFooterHints", () => {
 			{ keys: ["Enter"], label: "Run" },
 			{ keys: ["⌥", "Tab"], label: "Recent" },
 			{ keys: ["?"], label: "Shortcuts" },
-			{ keys: ["Esc"], label: "Close" },
+			{ keys: ["Esc"], label: "Sidebar" },
 		]);
 	});
 
@@ -19,7 +19,7 @@ describe("getCommandPaletteFooterHints", () => {
 			{ keys: ["↑", "↓"], label: "Move" },
 			{ keys: ["Enter"], label: "Run" },
 			{ keys: ["Backspace"], label: "Back" },
-			{ keys: ["Esc"], label: "Close" },
+			{ keys: ["Esc"], label: "Sidebar" },
 		]);
 	});
 
@@ -30,7 +30,7 @@ describe("getCommandPaletteFooterHints", () => {
 			{ keys: ["type"], label: "Search" },
 			{ keys: ["↑", "↓"], label: "Move" },
 			{ keys: ["Enter"], label: "Run" },
-			{ keys: ["Esc"], label: "Close" },
+			{ keys: ["Esc"], label: "Sidebar" },
 		]);
 	});
 
