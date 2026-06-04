@@ -1,4 +1,8 @@
 import { describe, expect, it } from "bun:test";
+import {
+	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
+	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+} from "renderer/routes/_authenticated/hooks/useDashboardWebShortcuts/useDashboardWebShortcuts";
 import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcuts";
 import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
@@ -6,12 +10,14 @@ import {
 	dashboardKeyboardHelpBrowserChromeEntries,
 	dashboardKeyboardHelpBrowserEntries,
 	dashboardKeyboardHelpBrowserSidebarEntries,
+	dashboardKeyboardHelpPinnedWebPageEntries,
 	filterDashboardKeyboardHelpSections,
 	normalizeDashboardKeyboardHelpQuery,
 	openDashboardKeyboardHelp,
 	shouldOpenDashboardKeyboardHelpFromQuestionKey,
 } from "./dashboard-keyboard-help";
 import { setDashboardVimModeEnabled } from "./dashboard-vim-mode";
+import { DASHBOARD_WEB_PAGES } from "./dashboard-web-pages";
 
 function keyEvent(
 	overrides: Partial<KeyboardEvent> & { target?: EventTarget | null } = {},
@@ -385,6 +391,40 @@ describe("dashboard keyboard help", () => {
 			"Browser: Run sidebar row actions",
 			"Browser: Jump to dashboard sections",
 		]);
+	});
+
+	it("keeps keyboard help pinned page shortcuts aligned with the page registry", () => {
+		expect(dashboardKeyboardHelpPinnedWebPageEntries()).toEqual(
+			DASHBOARD_WEB_PAGES.map((page) => ({
+				hotkeyId: page.hotkeyId,
+				label: `Open ${page.shortLabel}`,
+				description: `Jump to the pinned ${page.label} page`,
+			})),
+		);
+	});
+
+	it("documents every renderer-level dashboard shortcut in the keyboard map", () => {
+		const documentedHotkeyIds = new Set<string>(
+			DASHBOARD_KEYBOARD_HELP_SECTIONS.flatMap((section) =>
+				section.entries.flatMap((entry) =>
+					entry.hotkeyId ? [entry.hotkeyId] : [],
+				),
+			),
+		);
+		const rendererHotkeyIds = [
+			...DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+			...Object.keys(DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS),
+		].sort();
+
+		expect(rendererHotkeyIds).toEqual(
+			Array.from(new Set(rendererHotkeyIds)).sort(),
+		);
+		for (const hotkeyId of rendererHotkeyIds) {
+			expect(
+				documentedHotkeyIds.has(hotkeyId),
+				`${hotkeyId} should be visible in the dashboard keyboard guide`,
+			).toBe(true);
+		}
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {

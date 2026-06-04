@@ -203,6 +203,9 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (event.shiftKey) {
 			if (shiftedCode === "keyc") return "CREATE_CAPY";
 			if (shiftedCode === "keyd") return "CREATE_DEVIN";
+			if (shiftedCode === "keys") return "OPEN_ROOT_TERMINAL_STAG";
+			if (shiftedCode === "keyp") return "OPEN_ROOT_TERMINAL_PROD";
+			if (shiftedCode === "keyh") return "OPEN_ROOT_TERMINAL_HEPH";
 			if (shiftedCode === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
 			return null;
 		}

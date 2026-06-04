@@ -12,6 +12,7 @@ import {
 	isDashboardVimEditableTarget,
 	isDashboardVimModeEnabled,
 } from "./dashboard-vim-mode";
+import { DASHBOARD_WEB_PAGES } from "./dashboard-web-pages";
 
 export const DASHBOARD_KEYBOARD_HELP_OPEN_EVENT =
 	"dashboard-keyboard-help-open";
@@ -143,6 +144,14 @@ export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntr
 		...dashboardKeyboardHelpBrowserChromeEntries(),
 		...dashboardKeyboardHelpBrowserSidebarEntries(),
 	];
+}
+
+export function dashboardKeyboardHelpPinnedWebPageEntries(): DashboardKeyboardHelpEntry[] {
+	return DASHBOARD_WEB_PAGES.map((page) => ({
+		hotkeyId: page.hotkeyId,
+		label: `Open ${page.shortLabel}`,
+		description: `Jump to the pinned ${page.label} page`,
+	}));
 }
 
 const DASHBOARD_KEYBOARD_HELP_KEY_ALIASES: Record<string, string[]> = {
@@ -380,6 +389,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 			id: "switching",
 			title: "Switching",
 			entries: [
+				...dashboardKeyboardHelpPinnedWebPageEntries(),
 				{
 					hotkeyId: "SWITCH_DASHBOARD_VIEW_NEXT",
 					label: "Switch recent view",

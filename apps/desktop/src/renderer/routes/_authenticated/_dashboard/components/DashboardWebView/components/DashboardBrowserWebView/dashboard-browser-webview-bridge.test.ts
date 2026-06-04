@@ -138,6 +138,15 @@ describe("dashboard browser webview bridge", () => {
 			'if (shiftedCode === "keyd") return "CREATE_DEVIN"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keys") return "OPEN_ROOT_TERMINAL_STAG"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keyp") return "OPEN_ROOT_TERMINAL_PROD"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keyh") return "OPEN_ROOT_TERMINAL_HEPH"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"browserVimShortcutFromEvent",
 		);
 		expect(
