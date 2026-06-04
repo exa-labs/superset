@@ -4,6 +4,7 @@ import {
 	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
 	dashboardRootTerminalTargetFromShortcut,
+	dashboardSidebarKeyboardCommandFromShortcut,
 	dashboardSidebarKeyboardCommandFromVimKey,
 } from "./useDashboardWebShortcuts";
 
@@ -65,6 +66,20 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			"toggle-expansion",
 		);
 		expect(dashboardSidebarKeyboardCommandFromVimKey("x")).toBeNull();
+	});
+
+	it("maps embedded-browser sidebar action shortcuts to shared sidebar commands", () => {
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_MARK_READ"),
+		).toBe("action-mark-read");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut(
+				"SIDEBAR_ACTION_HARD_ARCHIVE",
+			),
+		).toBe("action-hard-archive");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("BROWSER_GO_BACK"),
+		).toBeNull();
 	});
 });
 

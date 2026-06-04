@@ -119,6 +119,7 @@ const SIDEBAR_SHORTCUT_COMMANDS: Partial<
 	SIDEBAR_ACTION_CREATE_FOLDER: "action-create-folder",
 	SIDEBAR_ACTION_DELETE: "action-delete",
 	SIDEBAR_ACTION_HARD_ARCHIVE: "action-hard-archive",
+	SIDEBAR_ACTION_MARK_READ: "action-mark-read",
 	SIDEBAR_ACTION_MENU: "action-menu",
 	SIDEBAR_ACTION_MOVE: "action-move",
 	SIDEBAR_ACTION_OPEN_BROWSER: "action-open-browser",
@@ -193,6 +194,12 @@ export function dashboardSidebarKeyboardCommandFromVimKey(
 		return "toggle-expansion";
 	}
 	return null;
+}
+
+export function dashboardSidebarKeyboardCommandFromShortcut(
+	shortcut: DashboardWebShortcut,
+): DashboardSidebarKeyboardCommand | null {
+	return SIDEBAR_SHORTCUT_COMMANDS[shortcut] ?? null;
 }
 
 export function dashboardRootTerminalTargetFromShortcut(
@@ -375,7 +382,8 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 
-			const sidebarCommand = SIDEBAR_SHORTCUT_COMMANDS[shortcut];
+			const sidebarCommand =
+				dashboardSidebarKeyboardCommandFromShortcut(shortcut);
 			if (sidebarCommand) {
 				clearPendingKeyboardChains();
 				dispatchDashboardSidebarKeyboardCommand(sidebarCommand);

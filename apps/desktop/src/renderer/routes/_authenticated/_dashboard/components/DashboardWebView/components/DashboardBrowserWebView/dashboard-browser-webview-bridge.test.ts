@@ -100,12 +100,16 @@ describe("dashboard browser webview bridge", () => {
 			'return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_MARK_READ"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_HARD_ARCHIVE"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_ARCHIVE"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "X")');
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "U")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "a" || key === "x")',
 		);
