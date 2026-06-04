@@ -116,11 +116,10 @@ export function dispatchDashboardSidebarKeyboardCommand(
 	command: DashboardSidebarKeyboardCommand,
 ): boolean {
 	if (typeof window === "undefined") return false;
-	window.dispatchEvent(
-		new CustomEvent<DashboardSidebarKeyboardCommandDetail>(
-			DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
-			{ detail: { command } },
-		),
+	const event = new CustomEvent<DashboardSidebarKeyboardCommandDetail>(
+		DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+		{ cancelable: true, detail: { command } },
 	);
-	return true;
+	window.dispatchEvent(event);
+	return event.defaultPrevented;
 }

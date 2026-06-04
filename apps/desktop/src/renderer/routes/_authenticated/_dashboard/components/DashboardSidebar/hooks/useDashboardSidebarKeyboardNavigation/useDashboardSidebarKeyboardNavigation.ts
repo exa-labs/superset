@@ -370,7 +370,9 @@ export function useDashboardSidebarKeyboardNavigation(
 				event as CustomEvent<DashboardSidebarKeyboardCommandDetail>
 			).detail?.command;
 			if (!isDashboardSidebarKeyboardCommand(command)) return;
-			runDashboardSidebarKeyboardCommand({ command, root });
+			if (runDashboardSidebarKeyboardCommand({ command, root })) {
+				event.preventDefault();
+			}
 		};
 
 		const onKeyDown = (event: KeyboardEvent) => {

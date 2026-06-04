@@ -38,7 +38,7 @@ describe("dashboard sidebar keyboard command", () => {
 		expect(dashboardSidebarKeyboardActionFromCommand("focus-next")).toBeNull();
 	});
 
-	it("dispatches sidebar keyboard commands through a window event", () => {
+	it("dispatches sidebar keyboard commands through a cancelable window event", () => {
 		if (typeof window === "undefined") return;
 
 		const received: DashboardSidebarKeyboardCommandDetail[] = [];
@@ -50,7 +50,7 @@ describe("dashboard sidebar keyboard command", () => {
 
 		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
 		try {
-			expect(dispatchDashboardSidebarKeyboardCommand("focus-next")).toBe(true);
+			expect(dispatchDashboardSidebarKeyboardCommand("focus-next")).toBe(false);
 		} finally {
 			window.removeEventListener(
 				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
@@ -59,5 +59,23 @@ describe("dashboard sidebar keyboard command", () => {
 		}
 
 		expect(received).toEqual([{ command: "focus-next" }]);
+	});
+
+	it("returns true when a sidebar listener handles the command", () => {
+		if (typeof window === "undefined") return;
+
+		const listener = (event: Event) => {
+			event.preventDefault();
+		};
+
+		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
+		try {
+			expect(dispatchDashboardSidebarKeyboardCommand("focus-next")).toBe(true);
+		} finally {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+				listener,
+			);
+		}
 	});
 });
