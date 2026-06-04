@@ -998,16 +998,18 @@ export const webProvider: CommandProvider = {
 						? "Move the current Capy/Devin conversation back to the sidebar"
 						: "Hide the current Capy/Devin conversation from the sidebar without archiving it",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: [
-					"capy",
-					"devin",
-					"archive",
-					"hide",
-					"show",
-					"move",
-					"overview",
-					"sidebar",
-				],
+				keywords:
+					currentNativeVisibilityAction === "show"
+						? [
+								"capy",
+								"devin",
+								"hidden",
+								"archived",
+								"show",
+								"restore",
+								"sidebar",
+							]
+						: ["capy", "devin", "hide", "move", "overview", "sidebar"],
 				shortcutLabel: currentNativeVisibilityAction === "show" ? "p" : "a/x",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),

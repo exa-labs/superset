@@ -337,6 +337,10 @@ describe("web command provider", () => {
 		expect(
 			commands.find((command) => command.id === "native.current.hide")
 				?.keywords,
+		).not.toContain("archive");
+		expect(
+			commands.find((command) => command.id === "native.current.archive")
+				?.keywords,
 		).toContain("archive");
 		expect(
 			commands.find((command) => command.id === "native.current.reply")
