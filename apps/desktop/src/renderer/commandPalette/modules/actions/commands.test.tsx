@@ -115,10 +115,17 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.sidebar.collapse")).toBe(true);
 		expect(commandIds.has("actions.sidebar.expand")).toBe(true);
 		expect(commandIds.has("actions.sidebar.create")).toBe(true);
+		expect(commandIds.has("actions.sidebar.createFolder")).toBe(true);
+		expect(commandIds.has("actions.sidebar.menu")).toBe(true);
 		expect(commandIds.has("actions.sidebar.pin")).toBe(true);
 		expect(commandIds.has("actions.sidebar.reply")).toBe(true);
+		expect(commandIds.has("actions.sidebar.openBrowser")).toBe(true);
+		expect(commandIds.has("actions.sidebar.toggleBrowser")).toBe(true);
 		expect(commandIds.has("actions.sidebar.move")).toBe(true);
+		expect(commandIds.has("actions.sidebar.removeFromFolder")).toBe(true);
 		expect(commandIds.has("actions.sidebar.rename")).toBe(true);
+		expect(commandIds.has("actions.sidebar.color")).toBe(true);
+		expect(commandIds.has("actions.sidebar.delete")).toBe(true);
 		expect(commandIds.has("actions.sidebar.archive")).toBe(true);
 		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
 		expect(commandIds.has("actions.showDashboardKeyboardGuide")).toBe(true);
@@ -186,10 +193,17 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.collapse")).toBe("h");
 		expect(shortcutById.get("actions.sidebar.expand")).toBe("l");
 		expect(shortcutById.get("actions.sidebar.create")).toBe("n");
+		expect(shortcutById.get("actions.sidebar.createFolder")).toBe("N");
+		expect(shortcutById.get("actions.sidebar.menu")).toBe(".");
 		expect(shortcutById.get("actions.sidebar.pin")).toBe("p");
 		expect(shortcutById.get("actions.sidebar.reply")).toBe("r");
+		expect(shortcutById.get("actions.sidebar.openBrowser")).toBe("o");
+		expect(shortcutById.get("actions.sidebar.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("actions.sidebar.move")).toBe("m");
+		expect(shortcutById.get("actions.sidebar.removeFromFolder")).toBe("F");
 		expect(shortcutById.get("actions.sidebar.rename")).toBe("e");
+		expect(shortcutById.get("actions.sidebar.color")).toBe("c");
+		expect(shortcutById.get("actions.sidebar.delete")).toBe("d");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.archive")
@@ -363,8 +377,18 @@ describe("actions command provider", () => {
 				"actions.sidebar.toggleExpansion",
 				"actions.sidebar.collapse",
 				"actions.sidebar.expand",
+				"actions.sidebar.create",
+				"actions.sidebar.createFolder",
+				"actions.sidebar.menu",
 				"actions.sidebar.pin",
+				"actions.sidebar.reply",
+				"actions.sidebar.openBrowser",
+				"actions.sidebar.toggleBrowser",
 				"actions.sidebar.move",
+				"actions.sidebar.removeFromFolder",
+				"actions.sidebar.rename",
+				"actions.sidebar.color",
+				"actions.sidebar.delete",
 				"actions.sidebar.archive",
 			]) {
 				providedCommands
@@ -387,8 +411,18 @@ describe("actions command provider", () => {
 			"toggle-expansion",
 			"collapse",
 			"expand",
+			"action-create",
+			"action-create-folder",
+			"action-menu",
 			"action-pin",
+			"action-reply",
+			"action-open-browser",
+			"action-toggle-browser",
 			"action-move",
+			"action-remove-from-folder",
+			"action-rename",
+			"action-color",
+			"action-delete",
 			"action-archive",
 		]);
 	});
