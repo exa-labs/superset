@@ -1892,6 +1892,15 @@ export function NativeAgentChatView({
 						if (selectedItem.url) handleSelectViewMode("browser");
 						return;
 					}
+					if (selectedSessionAction === "toggle-browser") {
+						const nextViewMode = nextNativeAgentKeyboardViewMode({
+							currentMode: viewMode,
+							hasBrowserUrl: Boolean(selectedItem.url),
+							key: "b",
+						});
+						if (nextViewMode) handleSelectViewMode(nextViewMode);
+						return;
+					}
 					if (selectedSessionAction === "open-external") {
 						if (selectedItem.url) openExternal.mutate(selectedItem.url);
 						return;

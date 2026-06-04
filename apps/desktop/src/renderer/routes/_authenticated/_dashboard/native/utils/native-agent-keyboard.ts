@@ -75,7 +75,8 @@ export type NativeAgentSelectedSessionVimAction =
 	| "refresh"
 	| "rename"
 	| "remove-from-folder"
-	| "show-action-hints";
+	| "show-action-hints"
+	| "toggle-browser";
 
 export function nativeAgentSidebarVimActionFromKey(
 	key: string | null,
@@ -193,6 +194,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "R") return "refresh";
 	if (key === "o") return "open-browser";
 	if (key === "O") return "open-external";
+	if (key === "b") return "toggle-browser";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
