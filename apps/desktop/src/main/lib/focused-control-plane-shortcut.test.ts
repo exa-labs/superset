@@ -34,11 +34,13 @@ type ShortcutCallback = () => void;
 class FakeShortcutBackend extends EventEmitter {
 	focusedWindow: unknown | null = null;
 	registered = new Map<string, ShortcutCallback>();
+	registerCalls: string[] = [];
 	unregistered: string[] = [];
 
 	getFocusedWindow = () => this.focusedWindow;
 
 	register = (accelerator: string, callback: ShortcutCallback): boolean => {
+		this.registerCalls.push(accelerator);
 		this.registered.set(accelerator, callback);
 		return true;
 	};
@@ -95,6 +97,20 @@ describe("focused control plane shortcut", () => {
 		harness.controller.install();
 		harness.backend.registered.get("Alt+K")?.();
 
+		expect(harness.openCount).toBe(1);
+	});
+
+	it("keeps repeated focus events idempotent while preserving the callback", () => {
+		const harness = createHarness();
+		harness.backend.focusedWindow = {};
+
+		harness.controller.install();
+		harness.backend.emit("browser-window-focus");
+		harness.backend.emit("browser-window-focus");
+		harness.backend.registered.get("Alt+K")?.();
+
+		expect(harness.controller.isRegistered()).toBe(true);
+		expect(harness.backend.registerCalls).toEqual(["Alt+K"]);
 		expect(harness.openCount).toBe(1);
 	});
 
