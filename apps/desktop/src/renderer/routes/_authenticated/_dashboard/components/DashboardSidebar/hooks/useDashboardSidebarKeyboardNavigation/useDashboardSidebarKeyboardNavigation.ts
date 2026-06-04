@@ -1,5 +1,11 @@
 import { type RefObject, useEffect, useRef } from "react";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import {
+	DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+	type DashboardSidebarKeyboardCommand,
+	type DashboardSidebarKeyboardCommandDetail,
+	isDashboardSidebarKeyboardCommand,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import {
 	type DashboardSidebarKeyboardAction,
@@ -255,6 +261,67 @@ export function shouldToggleDashboardSidebarExpansion(input: {
 	return false;
 }
 
+export function runDashboardSidebarKeyboardCommand(input: {
+	activeElement?: Element | null;
+	command: DashboardSidebarKeyboardCommand;
+	root: HTMLElement;
+}): boolean {
+	const items = getDashboardSidebarFocusableItems(input.root);
+	if (items.length === 0) return false;
+
+	const activeElement =
+		input.activeElement ??
+		(typeof document === "undefined" ? null : document.activeElement);
+	const focusInsideSidebar =
+		isHTMLElement(activeElement) && input.root.contains(activeElement);
+	const activeIndex = dashboardSidebarKeyboardFocusIndex({
+		activeElement: isHTMLElement(activeElement) ? activeElement : null,
+		focusInsideSidebar,
+		items,
+		root: input.root,
+	});
+
+	const focusIndex = (index: number): boolean => {
+		const item = items[index];
+		if (!item) return false;
+		focusDashboardSidebarItem(item);
+		return true;
+	};
+
+	if (input.command === "focus-first") return focusIndex(0);
+	if (input.command === "focus-last") return focusIndex(items.length - 1);
+	if (input.command === "focus-next" || input.command === "focus-previous") {
+		return focusIndex(
+			dashboardSidebarNextRovingIndex({
+				activeIndex,
+				delta: input.command === "focus-next" ? 1 : -1,
+				itemCount: items.length,
+			}),
+		);
+	}
+
+	if (activeIndex < 0) return focusIndex(0);
+
+	const activeItem = items[activeIndex];
+	if (input.command === "activate") {
+		findDashboardSidebarActivationTarget(activeItem, "Enter").click();
+		return true;
+	}
+
+	if (input.command === "toggle-expansion") {
+		findDashboardSidebarActivationTarget(activeItem, " ").click();
+		return true;
+	}
+
+	const expansionTarget = findDashboardSidebarExpansionTarget(activeItem);
+	if (!expansionTarget) return false;
+	const expanded = dashboardSidebarExpansionValue(expansionTarget);
+	const key = input.command === "collapse" ? "h" : "l";
+	if (!shouldToggleDashboardSidebarExpansion({ expanded, key })) return false;
+	expansionTarget.click();
+	return true;
+}
+
 export function useDashboardSidebarKeyboardNavigation(
 	rootRef: React.RefObject<HTMLElement | null>,
 	options: {
@@ -269,6 +336,16 @@ export function useDashboardSidebarKeyboardNavigation(
 	const typeaheadRef = useRef({ lastAt: 0, query: "" });
 
 	useEffect(() => {
+		const onSidebarKeyboardCommand = (event: Event) => {
+			const root = rootRef.current;
+			if (!root) return;
+			const command = (
+				event as CustomEvent<DashboardSidebarKeyboardCommandDetail>
+			).detail?.command;
+			if (!isDashboardSidebarKeyboardCommand(command)) return;
+			runDashboardSidebarKeyboardCommand({ command, root });
+		};
+
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.defaultPrevented) return;
 			const root = rootRef.current;
@@ -542,8 +619,18 @@ export function useDashboardSidebarKeyboardNavigation(
 			}
 		};
 
+		window.addEventListener(
+			DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+			onSidebarKeyboardCommand,
+		);
 		document.addEventListener("keydown", onKeyDown, true);
-		return () => document.removeEventListener("keydown", onKeyDown, true);
+		return () => {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+				onSidebarKeyboardCommand,
+			);
+			document.removeEventListener("keydown", onKeyDown, true);
+		};
 	}, [
 		options.onClearSearch,
 		options.onCreateWorkspace,

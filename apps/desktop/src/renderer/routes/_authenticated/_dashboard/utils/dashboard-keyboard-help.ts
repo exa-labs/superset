@@ -371,8 +371,8 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["g", "g"],
-					label: "Open Chrome in Vim mode",
-					description: "Jump to the embedded Chrome tab set",
+					label: "Jump to sidebar top in Vim mode",
+					description: "Move keyboard focus to the first visible sidebar item",
 				},
 				{
 					keys: ["⌥", "C", "1"],

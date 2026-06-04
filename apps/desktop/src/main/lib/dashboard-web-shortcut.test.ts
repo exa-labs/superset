@@ -224,10 +224,18 @@ describe("dashboardWebShortcutFromInput", () => {
 				"BROWSER_NEXT_TAB",
 				"BROWSER_CLOSE_TAB",
 				"BROWSER_TOGGLE_PIN",
+				"SIDEBAR_FOCUS_NEXT",
+				"SIDEBAR_FOCUS_PREVIOUS",
+				"SIDEBAR_FOCUS_FIRST",
+				"SIDEBAR_FOCUS_LAST",
+				"SIDEBAR_ACTIVATE",
+				"SIDEBAR_TOGGLE_EXPANSION",
+				"SIDEBAR_FOCUS_SEARCH",
 			]),
 		);
 		expect(isDashboardWebShortcut("BROWSER_GO_BACK")).toBe(true);
 		expect(isDashboardWebShortcut("BROWSER_GO_FORWARD")).toBe(true);
+		expect(isDashboardWebShortcut("SIDEBAR_FOCUS_NEXT")).toBe(true);
 		expect(isDashboardWebShortcut("NOT_A_SHORTCUT")).toBe(false);
 		expect(isDashboardWebShortcut(null)).toBe(false);
 	});

@@ -52,6 +52,27 @@ describe("dashboard browser webview bridge", () => {
 			'return "MARK_LATEST_NATIVE_REPLY_READ"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_FOCUS_NEXT"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_FOCUS_PREVIOUS"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_FOCUS_FIRST"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_FOCUS_LAST"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTIVATE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_TOGGLE_EXPANSION"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_FOCUS_SEARCH"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (shiftedCode === "keyc") return "CREATE_CAPY"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

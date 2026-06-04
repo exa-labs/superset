@@ -156,7 +156,9 @@ describe("dashboard vim mode", () => {
 	it("maps g-prefixed jumps to dashboard navigation actions", () => {
 		expect(dashboardVimNavigationActionFromSequence("g c")).toBe("open-capy");
 		expect(dashboardVimNavigationActionFromSequence("g d")).toBe("open-devin");
-		expect(dashboardVimNavigationActionFromSequence("g g")).toBe("open-chrome");
+		expect(dashboardVimNavigationActionFromSequence("g g")).toBe(
+			"focus-sidebar-first",
+		);
 		expect(dashboardVimNavigationActionFromSequence("g w")).toBe(
 			"open-workspaces",
 		);

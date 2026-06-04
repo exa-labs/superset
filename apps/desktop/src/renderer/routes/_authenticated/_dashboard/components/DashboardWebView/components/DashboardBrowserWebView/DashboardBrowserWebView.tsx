@@ -271,11 +271,35 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "TOGGLE_DASHBOARD_SIDEBAR";
 		}
+		if (key === "/") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_FOCUS_SEARCH";
+		}
+		if (key === "j") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_FOCUS_NEXT";
+		}
+		if (key === "k") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_FOCUS_PREVIOUS";
+		}
+		if (key === "G") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_FOCUS_LAST";
+		}
+		if (key === "Enter") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTIVATE";
+		}
+		if (key === " " || key === "Space" || key === "Spacebar") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_TOGGLE_EXPANSION";
+		}
 		if (pendingDashboardVimPrefix === "g") {
 			clearDashboardVimPrefix();
 			if (key === "c") return "OPEN_CAPY";
 			if (key === "d") return "OPEN_DEVIN";
-			if (key === "g") return "OPEN_CHROME";
+			if (key === "g") return "SIDEBAR_FOCUS_FIRST";
 			if (key === "w") return "OPEN_WORKSPACES";
 			return null;
 		}

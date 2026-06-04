@@ -26,6 +26,7 @@ import {
 	focusDashboardSidebarItem,
 	focusFirstDashboardSidebarItem,
 	getDashboardSidebarFocusableItems,
+	runDashboardSidebarKeyboardCommand,
 	shouldToggleDashboardSidebarExpansion,
 } from "./useDashboardSidebarKeyboardNavigation";
 
@@ -753,6 +754,132 @@ describe("focusFirstDashboardSidebarItem", () => {
 				second.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
 			).toBe("true");
 			expect(document.activeElement).toBe(second);
+		} finally {
+			root.remove();
+		}
+	});
+});
+
+describe("runDashboardSidebarKeyboardCommand", () => {
+	test("moves sidebar focus through visible rows from a preserved row marker", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const first = document.createElement("button");
+		first.id = "first";
+		first.dataset.dashboardWebAppTrigger = "chrome";
+		makeVisible(first);
+		const second = document.createElement("button");
+		second.id = "second";
+		second.dataset.nativeAgentSessionRowId = "devin-1";
+		makeVisible(second);
+		const third = document.createElement("button");
+		third.id = "third";
+		third.dataset.nativeAgentSessionRowId = "devin-2";
+		makeVisible(third);
+		second.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+		root.append(first, second, third);
+		document.body.append(root);
+
+		try {
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.body,
+					command: "focus-next",
+					root,
+				}),
+			).toBe(true);
+			expect(document.activeElement).toBe(third);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.activeElement,
+					command: "focus-previous",
+					root,
+				}),
+			).toBe(true);
+			expect(document.activeElement).toBe(second);
+		} finally {
+			root.remove();
+		}
+	});
+
+	test("jumps to the top and bottom sidebar rows", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		const first = document.createElement("button");
+		first.dataset.dashboardWebAppTrigger = "chrome";
+		makeVisible(first);
+		const second = document.createElement("button");
+		second.dataset.nativeAgentSessionRowId = "capy-1";
+		makeVisible(second);
+		root.append(first, second);
+		document.body.append(root);
+
+		try {
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					command: "focus-last",
+					root,
+				}),
+			).toBe(true);
+			expect(document.activeElement).toBe(second);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					command: "focus-first",
+					root,
+				}),
+			).toBe(true);
+			expect(document.activeElement).toBe(first);
+		} finally {
+			root.remove();
+		}
+	});
+
+	test("activates the focused row and toggles row-scoped expansion", () => {
+		if (typeof document === "undefined") return;
+
+		let rowClicks = 0;
+		let expansionClicks = 0;
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const row = document.createElement("button");
+		row.dataset.nativeAgentFolderRowId = "folder-1";
+		row.onclick = () => {
+			rowClicks += 1;
+		};
+		makeVisible(row);
+		const expansion = document.createElement("button");
+		expansion.setAttribute("aria-expanded", "false");
+		expansion.onclick = () => {
+			expansionClicks += 1;
+		};
+		makeVisible(expansion);
+		scope.append(row, expansion);
+		root.append(scope);
+		document.body.append(root);
+
+		try {
+			focusDashboardSidebarItem(row);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					command: "activate",
+					root,
+				}),
+			).toBe(true);
+			expect(rowClicks).toBe(1);
+			expect(expansionClicks).toBe(0);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					command: "toggle-expansion",
+					root,
+				}),
+			).toBe(true);
+			expect(rowClicks).toBe(1);
+			expect(expansionClicks).toBe(1);
 		} finally {
 			root.remove();
 		}

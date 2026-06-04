@@ -79,7 +79,7 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open Devin in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "d"] }),
 		);
-		expect(entryByLabel.get("Open Chrome in Vim mode")).toEqual(
+		expect(entryByLabel.get("Jump to sidebar top in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "g"] }),
 		);
 		expect(entryByLabel.get("Create Capy thread")).toEqual(

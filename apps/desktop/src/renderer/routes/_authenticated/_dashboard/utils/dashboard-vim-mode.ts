@@ -9,6 +9,7 @@ export type DashboardVimGlobalAction =
 	| "show-keyboard-help"
 	| "toggle-sidebar";
 export type DashboardVimNavigationAction =
+	| "focus-sidebar-first"
 	| "none"
 	| "open-capy"
 	| "open-chrome"
@@ -183,7 +184,7 @@ export function dashboardVimNavigationActionFromSequence(
 ): DashboardVimNavigationAction {
 	if (sequence === "g c") return "open-capy";
 	if (sequence === "g d") return "open-devin";
-	if (sequence === "g g") return "open-chrome";
+	if (sequence === "g g") return "focus-sidebar-first";
 	if (sequence === "g w") return "open-workspaces";
 	return "none";
 }

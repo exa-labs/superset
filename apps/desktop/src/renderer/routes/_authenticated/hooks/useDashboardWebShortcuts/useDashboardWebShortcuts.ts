@@ -12,6 +12,11 @@ import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authent
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
+	type DashboardSidebarKeyboardCommand,
+	dispatchDashboardSidebarKeyboardCommand,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
+import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
+import {
 	dashboardVimGlobalActionFromKey,
 	dashboardVimKey,
 	dashboardVimNavigationActionFromSequence,
@@ -93,6 +98,18 @@ const BROWSER_SHORTCUT_ACTIONS: Partial<
 	BROWSER_PREVIOUS_TAB: "previous-tab",
 	BROWSER_NEXT_TAB: "next-tab",
 };
+const SIDEBAR_SHORTCUT_COMMANDS: Partial<
+	Record<DashboardWebShortcut, DashboardSidebarKeyboardCommand>
+> = {
+	SIDEBAR_ACTIVATE: "activate",
+	SIDEBAR_COLLAPSE: "collapse",
+	SIDEBAR_EXPAND: "expand",
+	SIDEBAR_FOCUS_FIRST: "focus-first",
+	SIDEBAR_FOCUS_LAST: "focus-last",
+	SIDEBAR_FOCUS_NEXT: "focus-next",
+	SIDEBAR_FOCUS_PREVIOUS: "focus-previous",
+	SIDEBAR_TOGGLE_EXPANSION: "toggle-expansion",
+};
 
 const WEB_TAB_PREFIX_TIMEOUT_MS = 1_500;
 const VIM_PREFIX_TIMEOUT_MS = 900;
@@ -113,6 +130,19 @@ function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
 			detail: { action },
 		}),
 	);
+}
+
+function dashboardSidebarKeyboardCommandFromVimKey(
+	key: string,
+): DashboardSidebarKeyboardCommand | null {
+	if (key === "j") return "focus-next";
+	if (key === "k") return "focus-previous";
+	if (key === "G") return "focus-last";
+	if (key === "enter") return "activate";
+	if (key === " " || key === "space" || key === "spacebar") {
+		return "toggle-expansion";
+	}
+	return null;
 }
 
 export function useDashboardWebShortcuts() {
@@ -264,6 +294,19 @@ export function useDashboardWebShortcuts() {
 			const browserAction = BROWSER_SHORTCUT_ACTIONS[shortcut];
 			if (browserAction) {
 				dispatchBrowserCurrentAction(browserAction);
+				return;
+			}
+
+			const sidebarCommand = SIDEBAR_SHORTCUT_COMMANDS[shortcut];
+			if (sidebarCommand) {
+				clearPendingKeyboardChains();
+				dispatchDashboardSidebarKeyboardCommand(sidebarCommand);
+				return;
+			}
+
+			if (shortcut === "SIDEBAR_FOCUS_SEARCH") {
+				clearPendingKeyboardChains();
+				focusDashboardSidebarSearch();
 				return;
 			}
 
@@ -421,7 +464,31 @@ export function useDashboardWebShortcuts() {
 					return;
 				}
 
-				if (isDashboardLocalVimSequenceScopeActive(event.target)) {
+				const localVimScopeActive = isDashboardLocalVimSequenceScopeActive(
+					event.target,
+				);
+				if (!localVimScopeActive && key === "/") {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					focusDashboardSidebarSearch();
+					return;
+				}
+
+				const sidebarCommand = !localVimScopeActive
+					? dashboardSidebarKeyboardCommandFromVimKey(key)
+					: null;
+				if (sidebarCommand) {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					dispatchDashboardSidebarKeyboardCommand(sidebarCommand);
+					return;
+				}
+
+				if (localVimScopeActive) {
 					updatePendingVimPrefix(null);
 					return;
 				}
@@ -444,6 +511,9 @@ export function useDashboardWebShortcuts() {
 				if (navigationAction === "open-devin") openNativeProvider("devin");
 				if (navigationAction === "open-chrome") openChrome();
 				if (navigationAction === "open-workspaces") openWorkspaces();
+				if (navigationAction === "focus-sidebar-first") {
+					dispatchDashboardSidebarKeyboardCommand("focus-first");
+				}
 				if (navigationAction !== "none") return;
 			}
 
