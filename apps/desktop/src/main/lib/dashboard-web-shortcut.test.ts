@@ -80,7 +80,9 @@ describe("dashboardWebShortcutFromInput", () => {
 			{ hotkeyId: "OPEN_WEB_PAGE_5", shortcut: "OPEN_WEB_PAGE_5" },
 			{ hotkeyId: "OPEN_WEB_PAGE_6", shortcut: "OPEN_WEB_PAGE_6" },
 			{ hotkeyId: "OPEN_CAPY", shortcut: "OPEN_CAPY" },
+			{ hotkeyId: "CREATE_CAPY", shortcut: "CREATE_CAPY" },
 			{ hotkeyId: "OPEN_DEVIN", shortcut: "OPEN_DEVIN" },
+			{ hotkeyId: "CREATE_DEVIN", shortcut: "CREATE_DEVIN" },
 			{ hotkeyId: "OPEN_CHROME", shortcut: "OPEN_CHROME" },
 			{ hotkeyId: "OPEN_WORKSPACES", shortcut: "OPEN_WORKSPACES" },
 			{
@@ -119,6 +121,16 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyD", key: "Dead" })),
 		).toBe("OPEN_DEVIN");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyC", key: "Dead", shift: true }),
+			),
+		).toBe("CREATE_CAPY");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyD", key: "Dead", shift: true }),
+			),
+		).toBe("CREATE_DEVIN");
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyG", key: "Dead" })),
 		).toBe("OPEN_CHROME");

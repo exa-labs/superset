@@ -650,10 +650,10 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("capy"),
+				hotkeyId: "CREATE_CAPY",
 				description: "Open Capy Native and start a thread",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["capy", "capi", "native", "new", "thread", "agent"],
-				shortcutLabel: "⌥C n",
 				run: (context) => {
 					context.navigate("/native/capy");
 					window.setTimeout(() => {
@@ -667,10 +667,10 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("devin"),
+				hotkeyId: "CREATE_DEVIN",
 				description: "Open Devin Native and start a session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["devin", "native", "new", "session", "agent"],
-				shortcutLabel: "⌥D n",
 				run: (context) => {
 					context.navigate("/native/devin");
 					window.setTimeout(() => {

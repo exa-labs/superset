@@ -166,6 +166,16 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Open Capy threads; press a number next to choose a thread",
 	},
+	CREATE_CAPY: {
+		key: {
+			mac: L("alt+shift+c"),
+			windows: L("ctrl+alt+shift+c"),
+			linux: L("ctrl+alt+shift+c"),
+		},
+		label: "Create Capy Thread",
+		category: "Web Pages",
+		description: "Create a new Capy thread from anywhere in the dashboard",
+	},
 	OPEN_DEVIN: {
 		key: {
 			mac: L("alt+d"),
@@ -175,6 +185,16 @@ export const HOTKEYS_REGISTRY = {
 		label: "Open Devin",
 		category: "Web Pages",
 		description: "Open Devin sessions; press a number next to choose a session",
+	},
+	CREATE_DEVIN: {
+		key: {
+			mac: L("alt+shift+d"),
+			windows: L("ctrl+alt+shift+d"),
+			linux: L("ctrl+alt+shift+d"),
+		},
+		label: "Create Devin Session",
+		category: "Web Pages",
+		description: "Create a new Devin session from anywhere in the dashboard",
 	},
 	OPEN_CHROME: {
 		key: {

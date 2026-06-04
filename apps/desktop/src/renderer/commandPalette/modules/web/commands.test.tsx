@@ -199,12 +199,12 @@ describe("web command provider", () => {
 
 	it("shows shortcut paths for primary native create actions", () => {
 		const commands = webProvider.provide(commandContext("/native/capy"));
-		const shortcutById = new Map(
-			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		const hotkeyById = new Map(
+			commands.map((command) => [command.id, command.hotkeyId] as const),
 		);
 
-		expect(shortcutById.get("native.capy.create")).toBe("⌥C n");
-		expect(shortcutById.get("native.devin.create")).toBe("⌥D n");
+		expect(hotkeyById.get("native.capy.create")).toBe("CREATE_CAPY");
+		expect(hotkeyById.get("native.devin.create")).toBe("CREATE_DEVIN");
 	});
 
 	it("exposes native browser/split keybindings in the control plane", () => {

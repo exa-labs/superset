@@ -65,7 +65,9 @@ describe("dashboard keyboard help", () => {
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_NEXT")).toBe(true);
 		expect(hotkeyIds.has("SWITCH_DASHBOARD_VIEW_PREVIOUS")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CAPY")).toBe(true);
+		expect(hotkeyIds.has("CREATE_CAPY")).toBe(true);
 		expect(hotkeyIds.has("OPEN_DEVIN")).toBe(true);
+		expect(hotkeyIds.has("CREATE_DEVIN")).toBe(true);
 		expect(hotkeyIds.has("OPEN_CHROME")).toBe(true);
 		expect(hotkeyIds.has("OPEN_WORKSPACES")).toBe(true);
 		expect(entryByLabel.get("Open workspaces in Vim mode")).toEqual(
@@ -81,9 +83,15 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["g", "g"] }),
 		);
 		expect(entryByLabel.get("Create Capy thread")).toEqual(
+			expect.objectContaining({ hotkeyId: "CREATE_CAPY" }),
+		);
+		expect(entryByLabel.get("Create Capy thread from Capy chord")).toEqual(
 			expect.objectContaining({ keys: ["⌥", "C", "n"] }),
 		);
 		expect(entryByLabel.get("Create Devin session")).toEqual(
+			expect.objectContaining({ hotkeyId: "CREATE_DEVIN" }),
+		);
+		expect(entryByLabel.get("Create Devin session from Devin chord")).toEqual(
 			expect.objectContaining({ keys: ["⌥", "D", "n"] }),
 		);
 		expect(entryByLabel.get("Show selected item actions")).toEqual(

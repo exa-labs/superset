@@ -182,10 +182,16 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		"OPEN_WEB_PAGE_6",
 	];
 	const shortcutFromEvent = (event) => {
-		if (!event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return null;
+		if (!event.altKey || event.ctrlKey || event.metaKey || event.repeat) return null;
+		const shiftedCode = String(event.code || "").toLowerCase();
+		if (event.shiftKey) {
+			if (shiftedCode === "keyc") return "CREATE_CAPY";
+			if (shiftedCode === "keyd") return "CREATE_DEVIN";
+			return null;
+		}
 		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
 		if (digit) return digitShortcuts[Number.parseInt(digit[1], 10) - 1] || null;
-		const code = String(event.code || "").toLowerCase();
+		const code = shiftedCode;
 		if (code === "keyk") return "OPEN_CONTROL_PLANE";
 		if (code === "keyc") return "OPEN_CAPY";
 		if (code === "keyd") return "OPEN_DEVIN";

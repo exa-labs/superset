@@ -335,9 +335,21 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Jump to Capy; chain a number for visible threads",
 				},
 				{
+					hotkeyId: "CREATE_CAPY",
+					label: "Create Capy thread",
+					description:
+						"Start a new Capy thread directly from browsers, terminals, or native views",
+				},
+				{
 					hotkeyId: "OPEN_DEVIN",
 					label: "Open Devin",
 					description: "Jump to Devin; chain a number for visible sessions",
+				},
+				{
+					hotkeyId: "CREATE_DEVIN",
+					label: "Create Devin session",
+					description:
+						"Start a new Devin session directly from browsers, terminals, or native views",
 				},
 				{
 					keys: ["g", "w"],
@@ -367,7 +379,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["⌥", "C", "n"],
-					label: "Create Capy thread",
+					label: "Create Capy thread from Capy chord",
 					description:
 						"Create a new Capy thread after the Capy chord, even from browsers",
 				},
@@ -378,7 +390,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["⌥", "D", "n"],
-					label: "Create Devin session",
+					label: "Create Devin session from Devin chord",
 					description:
 						"Create a new Devin session after the Devin chord, even from browsers",
 				},

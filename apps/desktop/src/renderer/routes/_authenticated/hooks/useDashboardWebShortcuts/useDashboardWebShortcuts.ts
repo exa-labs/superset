@@ -362,7 +362,9 @@ export function useDashboardWebShortcuts() {
 	useHotkey("OPEN_WEB_PAGE_5", () => runShortcut("OPEN_WEB_PAGE_5"));
 	useHotkey("OPEN_WEB_PAGE_6", () => runShortcut("OPEN_WEB_PAGE_6"));
 	useHotkey("OPEN_CAPY", () => runShortcut("OPEN_CAPY"));
+	useHotkey("CREATE_CAPY", () => runShortcut("CREATE_CAPY"));
 	useHotkey("OPEN_DEVIN", () => runShortcut("OPEN_DEVIN"));
+	useHotkey("CREATE_DEVIN", () => runShortcut("CREATE_DEVIN"));
 	useHotkey("OPEN_CHROME", () => runShortcut("OPEN_CHROME"));
 	useHotkey("OPEN_WORKSPACES", () => runShortcut("OPEN_WORKSPACES"));
 

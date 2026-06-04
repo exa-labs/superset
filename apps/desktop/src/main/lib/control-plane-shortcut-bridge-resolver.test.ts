@@ -189,6 +189,34 @@ describe("control plane shortcut bridge resolver", () => {
 		}
 	});
 
+	it("routes direct native create shortcuts through the main bridge", () => {
+		const cases: Array<{
+			input: Partial<ResolverInput>;
+			name: string;
+			shortcut: DashboardWebShortcut;
+		}> = [
+			{
+				input: { code: "KeyC", key: "Dead", shift: true },
+				name: "Option+Shift+C creates a Capy thread",
+				shortcut: "CREATE_CAPY",
+			},
+			{
+				input: { code: "KeyD", key: "Dead", shift: true },
+				name: "Option+Shift+D creates a Devin session",
+				shortcut: "CREATE_DEVIN",
+			},
+		];
+
+		for (const testCase of cases) {
+			const { resolver } = createResolverHarness();
+			expect(resolver.resolve(input(testCase.input)), testCase.name).toEqual({
+				preventDefault: true,
+				shortcut: testCase.shortcut,
+				type: "dashboard-web-shortcut",
+			});
+		}
+	});
+
 	it("keeps C/D create chains for dashboard web shortcuts", () => {
 		const { resolver } = createResolverHarness();
 

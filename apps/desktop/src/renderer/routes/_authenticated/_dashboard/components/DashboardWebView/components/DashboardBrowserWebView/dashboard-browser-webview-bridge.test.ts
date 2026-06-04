@@ -37,6 +37,12 @@ describe("dashboard browser webview bridge", () => {
 			'if (code === "keyw") return "OPEN_WORKSPACES"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keyc") return "CREATE_CAPY"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keyd") return "CREATE_DEVIN"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"browserVimShortcutFromEvent",
 		);
 		expect(

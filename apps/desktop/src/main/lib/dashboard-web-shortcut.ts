@@ -116,6 +116,24 @@ function isShortcutKeyDownType(type: string): boolean {
 	return type === "keyDown" || type === "rawKeyDown" || type === "char";
 }
 
+function dashboardWebDirectCreateShortcutFromInput(
+	input: DashboardWebShortcutInput,
+): DashboardWebShortcut | null {
+	if (!isShortcutKeyDownType(input.type)) return null;
+	if (input.isAutoRepeat) return null;
+	if (!input.alt || input.control || input.meta || !input.shift) return null;
+
+	const code = input.code.toLowerCase();
+	if (code === "keyc") return "CREATE_CAPY";
+	if (code === "keyd") return "CREATE_DEVIN";
+
+	const key = input.key.toLowerCase();
+	if (key === "c") return "CREATE_CAPY";
+	if (key === "d") return "CREATE_DEVIN";
+
+	return null;
+}
+
 function isPendingShortcutInput(input: DashboardWebShortcutInput): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
@@ -164,6 +182,9 @@ export function dashboardWebCreateShortcutFromInput(
 export function dashboardWebShortcutFromInput(
 	input: DashboardWebShortcutInput,
 ): DashboardWebShortcut | null {
+	const directCreateShortcut = dashboardWebDirectCreateShortcutFromInput(input);
+	if (directCreateShortcut) return directCreateShortcut;
+
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
 	if (!input.alt || input.control || input.meta || input.shift) return null;
