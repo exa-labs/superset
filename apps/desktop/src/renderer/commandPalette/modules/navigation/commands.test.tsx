@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { CommandContext } from "../../core/types";
 
 mock.module("../../ui/RecentlyViewed/RecentlyViewedFrame", () => ({
@@ -12,6 +12,16 @@ mock.module("../../ui/WorkspaceList", () => ({
 mock.module("../settings/commands", () => ({
 	settingsTabCommands: [],
 }));
+
+let scheduledShellFocusCount = 0;
+mock.module(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus",
+	() => ({
+		scheduleDashboardNavigationShellFocus: () => {
+			scheduledShellFocusCount += 1;
+		},
+	}),
+);
 
 const { navigationProvider } = await import("./commands");
 
@@ -32,6 +42,10 @@ function commandContext(
 }
 
 describe("navigation command provider", () => {
+	afterEach(() => {
+		scheduledShellFocusCount = 0;
+	});
+
 	it("does not register duplicate command ids", () => {
 		const commands = navigationProvider.provide(commandContext());
 		const commandIds = commands.map((command) => command.id);
@@ -61,5 +75,6 @@ describe("navigation command provider", () => {
 		command?.run?.(context);
 
 		expect(navigated).toEqual(["/v2-workspaces"]);
+		expect(scheduledShellFocusCount).toBe(1);
 	});
 });

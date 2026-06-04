@@ -1,9 +1,18 @@
 import { BookOpenIcon, HistoryIcon, SettingsIcon } from "lucide-react";
 import { LuLayers } from "react-icons/lu";
+import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import type { Command, CommandProvider } from "../../core/types";
 import { RecentlyViewedFrame } from "../../ui/RecentlyViewed/RecentlyViewedFrame";
 import { WorkspaceListFrame } from "../../ui/WorkspaceList";
 import { settingsTabCommands } from "../settings/commands";
+
+function navigateDashboardShellCommand(
+	navigate: (path: string) => void,
+	path: string,
+): void {
+	navigate(path);
+	scheduleDashboardNavigationShellFocus();
+}
 
 export const navigationProvider: CommandProvider = {
 	id: "navigation",
@@ -41,7 +50,8 @@ export const navigationProvider: CommandProvider = {
 				icon: LuLayers,
 				hotkeyId: "OPEN_WORKSPACES",
 				keywords: ["workspace", "project", "repo", "repository", "overview"],
-				run: (ctx) => ctx.navigate("/v2-workspaces"),
+				run: (ctx) =>
+					navigateDashboardShellCommand(ctx.navigate, "/v2-workspaces"),
 			},
 			{
 				id: "nav.docs",
