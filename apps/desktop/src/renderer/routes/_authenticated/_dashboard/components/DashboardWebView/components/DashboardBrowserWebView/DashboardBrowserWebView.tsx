@@ -182,11 +182,28 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		"OPEN_WEB_PAGE_6",
 	];
 	const shortcutFromEvent = (event) => {
+		if (!event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+			const key = String(event.key || "").toLowerCase();
+			const code = String(event.code || "").toLowerCase();
+			if (!event.repeat && (code === "escape" || key === "escape")) {
+				return "FOCUS_DASHBOARD_SHELL";
+			}
+		}
 		if (!event.altKey || event.ctrlKey || event.metaKey || event.repeat) return null;
+		const key = String(event.key || "").toLowerCase();
 		const shiftedCode = String(event.code || "").toLowerCase();
+		if (shiftedCode === "tab") {
+			return event.shiftKey
+				? "SWITCH_DASHBOARD_VIEW_PREVIOUS"
+				: "SWITCH_DASHBOARD_VIEW_NEXT";
+		}
+		if (shiftedCode === "slash" || key === "/" || key === "?") {
+			return "SHOW_DASHBOARD_KEYBOARD_HELP";
+		}
 		if (event.shiftKey) {
 			if (shiftedCode === "keyc") return "CREATE_CAPY";
 			if (shiftedCode === "keyd") return "CREATE_DEVIN";
+			if (shiftedCode === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
 			return null;
 		}
 		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
@@ -195,7 +212,10 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (code === "keyk") return "OPEN_CONTROL_PLANE";
 		if (code === "keyc") return "OPEN_CAPY";
 		if (code === "keyd") return "OPEN_DEVIN";
+		if (code === "keyf") return "SHOW_DASHBOARD_ACTION_HINTS";
 		if (code === "keyg") return "OPEN_CHROME";
+		if (code === "keyn") return "OPEN_UNREAD_NATIVE_REPLY";
+		if (code === "keyv") return "TOGGLE_VIM_MODE";
 		if (code === "keyw") return "OPEN_WORKSPACES";
 		if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
 		if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";

@@ -37,6 +37,21 @@ describe("dashboard browser webview bridge", () => {
 			'if (code === "keyw") return "OPEN_WORKSPACES"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'"SWITCH_DASHBOARD_VIEW_NEXT"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'"SWITCH_DASHBOARD_VIEW_PREVIOUS"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "TOGGLE_VIM_MODE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "OPEN_UNREAD_NATIVE_REPLY"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "MARK_LATEST_NATIVE_REPLY_READ"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (shiftedCode === "keyc") return "CREATE_CAPY"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

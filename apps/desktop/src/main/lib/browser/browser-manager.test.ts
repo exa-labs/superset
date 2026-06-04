@@ -19,6 +19,10 @@ class FakeWebContents extends EventEmitter {
 
 	setWindowOpenHandler() {}
 
+	executeJavaScript() {
+		return Promise.resolve(false);
+	}
+
 	canGoBack() {
 		return false;
 	}
@@ -122,6 +126,49 @@ describe("BrowserManager webview shortcuts", () => {
 		expect(dashboardShortcuts).toEqual(["OPEN_CAPY"]);
 
 		manager.unregister("pane-1");
+		fakeWebContentsById.clear();
+	});
+
+	it("routes global keyboard actions emitted by the injected webview bridge", () => {
+		const webContents = new FakeWebContents(2);
+		fakeWebContentsById.set(webContents.id, webContents);
+		const manager = new BrowserManager();
+		const dashboardShortcuts: DashboardWebShortcut[] = [];
+		const globalActions: string[] = [];
+		manager.on("dashboard-web-shortcut", (shortcut: DashboardWebShortcut) => {
+			dashboardShortcuts.push(shortcut);
+		});
+		manager.on("global-keyboard-action", (action: string) => {
+			globalActions.push(action);
+		});
+		manager.register("pane-2", webContents.id);
+
+		webContents.emit(
+			"console-message",
+			{},
+			3,
+			"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:FOCUS_DASHBOARD_SHELL",
+		);
+		webContents.emit(
+			"console-message",
+			{},
+			3,
+			"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:SWITCH_DASHBOARD_VIEW_NEXT",
+		);
+		webContents.emit(
+			"console-message",
+			{},
+			3,
+			"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:TOGGLE_VIM_MODE",
+		);
+
+		expect(dashboardShortcuts).toEqual(["FOCUS_DASHBOARD_SHELL"]);
+		expect(globalActions).toEqual([
+			"SWITCH_DASHBOARD_VIEW_NEXT",
+			"TOGGLE_VIM_MODE",
+		]);
+
+		manager.unregister("pane-2");
 		fakeWebContentsById.clear();
 	});
 });

@@ -10,6 +10,25 @@ export type GlobalKeyboardAction =
 	| "SWITCH_DASHBOARD_VIEW_PREVIOUS"
 	| "TOGGLE_VIM_MODE";
 
+const GLOBAL_KEYBOARD_ACTIONS: readonly GlobalKeyboardAction[] = [
+	"FOCUS_DASHBOARD_SHELL",
+	"MARK_LATEST_NATIVE_REPLY_READ",
+	"OPEN_UNREAD_NATIVE_REPLY",
+	"SHOW_DASHBOARD_ACTION_HINTS",
+	"SHOW_DASHBOARD_KEYBOARD_HELP",
+	"SWITCH_DASHBOARD_VIEW_NEXT",
+	"SWITCH_DASHBOARD_VIEW_PREVIOUS",
+	"TOGGLE_VIM_MODE",
+];
+
+const GLOBAL_KEYBOARD_ACTION_SET = new Set<string>(GLOBAL_KEYBOARD_ACTIONS);
+
+export function isGlobalKeyboardAction(
+	action: string | null | undefined,
+): action is GlobalKeyboardAction {
+	return action != null && GLOBAL_KEYBOARD_ACTION_SET.has(action);
+}
+
 type GlobalKeyboardShortcutInput = Pick<
 	Input,
 	| "alt"

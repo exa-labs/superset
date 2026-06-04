@@ -13,6 +13,7 @@ import {
 import {
 	type GlobalKeyboardAction,
 	globalKeyboardActionFromInput,
+	isGlobalKeyboardAction,
 	shouldPreventDefaultForGlobalKeyboardAction,
 } from "main/lib/global-keyboard-shortcut";
 import { safeOpenExternal } from "main/lib/safe-url";
@@ -462,6 +463,14 @@ export class BrowserManager extends EventEmitter {
 				}
 				if (isDashboardWebShortcut(shortcut)) {
 					this.openDashboardWebShortcut(shortcut);
+					return;
+				}
+				if (isGlobalKeyboardAction(shortcut)) {
+					if (shortcut === "SHOW_DASHBOARD_ACTION_HINTS") {
+						this.openPageActionHints(wc);
+						return;
+					}
+					this.dispatchGlobalKeyboardAction(shortcut);
 					return;
 				}
 			}

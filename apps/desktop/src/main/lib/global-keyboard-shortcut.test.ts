@@ -3,6 +3,7 @@ import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
 import {
 	type GlobalKeyboardAction,
 	globalKeyboardActionFromInput,
+	isGlobalKeyboardAction,
 	shouldPreventDefaultForGlobalKeyboardAction,
 } from "./global-keyboard-shortcut";
 
@@ -58,6 +59,14 @@ function inputFromMacChord(chord: string): GlobalKeyboardShortcutInput {
 }
 
 describe("globalKeyboardActionFromInput", () => {
+	it("recognizes global keyboard actions emitted by embedded webview bridges", () => {
+		expect(isGlobalKeyboardAction("TOGGLE_VIM_MODE")).toBe(true);
+		expect(isGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_NEXT")).toBe(true);
+		expect(isGlobalKeyboardAction("OPEN_UNREAD_NATIVE_REPLY")).toBe(true);
+		expect(isGlobalKeyboardAction("OPEN_CHROME")).toBe(false);
+		expect(isGlobalKeyboardAction(null)).toBe(false);
+	});
+
 	it("keeps globally captured shortcuts aligned with renderer registry mac defaults", () => {
 		const cases: Array<{
 			action: GlobalKeyboardAction;
