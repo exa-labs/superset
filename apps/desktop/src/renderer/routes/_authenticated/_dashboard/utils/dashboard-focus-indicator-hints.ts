@@ -50,15 +50,15 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "↵") return "↵ Open";
 	if (hint === "↵/Space") return "↵ Open · Space Toggle";
 	if (hint === "h/l") return "h/l Collapse";
-	if (hint === "n /") return "n / New/Search";
+	if (hint === "n /") return "n New, / Search";
 	if (hint === ".") return ". Actions";
-	if (hint === "p/x") return "p/x Pin/Hide";
+	if (hint === "p/x") return "p Pin, x Hide";
 	if (hint === "r") return "r Reply";
-	if (hint === "b/p/x") return "b/p/x View/Pin";
-	if (hint === "u/U") return "u/U Unread";
+	if (hint === "b/p/x") return "b View, p Pin, x Hide";
+	if (hint === "u/U") return "u Open unread, U Mark read";
 	if (hint === "f") return "f Hints";
-	if (hint === "f/?") return "f/? Hints";
-	if (hint === "j/k /") return "j/k / Sidebar";
+	if (hint === "f/?") return "f Hints, ? Map";
+	if (hint === "j/k /") return "j/k Move, / Search";
 	return null;
 }
 
@@ -88,11 +88,13 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↵") return "Enter";
 	if (hint === "↵/Space") return "Enter/Space";
-	if (hint === "b/p/x") return "b/p/x";
+	if (hint === "b/p/x") return "b, p, x";
 	if (hint === "h/l") return "h/l";
-	if (hint === "n /") return "n /";
-	if (hint === "p/x") return "p/x";
-	if (hint === "u/U") return "u/U";
+	if (hint === "n /") return "n, /";
+	if (hint === "p/x") return "p, x";
+	if (hint === "f/?") return "f, ?";
+	if (hint === "j/k /") return "j/k, /";
+	if (hint === "u/U") return "u, U";
 	return hint;
 }
 

@@ -96,7 +96,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K, j/k /, f/?. Press ? for full keyboard shortcuts.",
+			"Browser focus. Keys: Esc, Option+K, j/k, /, f, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
@@ -113,7 +113,12 @@ describe("dashboardFocusIndicatorHints", () => {
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "j/k /", "f/?"], {
 				vimModeEnabled: true,
 			}),
-		).toEqual(["⌥K Commands", "Esc Sidebar", "j/k / Sidebar", "f/? Hints"]);
+		).toEqual([
+			"⌥K Commands",
+			"Esc Sidebar",
+			"j/k Move, / Search",
+			"f Hints, ? Map",
+		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K"], {
 				vimModeEnabled: false,
@@ -129,14 +134,19 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual([
 			"↑↓ Move",
 			"↵ Open · Space Toggle",
-			"n / New/Search",
-			"p/x Pin/Hide",
+			"n New, / Search",
+			"p Pin, x Hide",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r", "u/U"], {
 				vimModeEnabled: true,
 			}),
-		).toEqual(["⌥K Commands", "Esc Sidebar", "r Reply", "u/U Unread"]);
+		).toEqual([
+			"⌥K Commands",
+			"Esc Sidebar",
+			"r Reply",
+			"u Open unread, U Mark read",
+		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["type", "↑↓", "↵", "Esc"], {
 				vimModeEnabled: true,
