@@ -922,6 +922,24 @@ export const webProvider: CommandProvider = {
 					),
 			},
 			{
+				id: "native.folder.moveCurrent",
+				title: `Move current ${currentNativeLabel} to remembered folder`,
+				section: "web",
+				iconUrl: currentNativeIconUrl,
+				description:
+					"Move the current Capy/Devin session to the last selected folder",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
+				keywords: ["capy", "devin", "folder", "move", "native"],
+				shortcutLabel: "m",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeFolderAction(
+						nativeProviderFromPathname(context.route.pathname),
+						"move-active",
+					),
+			},
+			{
 				id: `native.current.${currentNativePinAction}`,
 				title:
 					currentNativePinAction === "unpin"
@@ -1190,24 +1208,6 @@ export const webProvider: CommandProvider = {
 					dispatchNativeFolderAction(
 						nativeProviderFromPathname(context.route.pathname),
 						"delete",
-					),
-			},
-			{
-				id: "native.folder.moveCurrent",
-				title: `Move current ${currentNativeLabel} to remembered folder`,
-				section: "web",
-				iconUrl: currentNativeIconUrl,
-				description:
-					"Move the current Capy/Devin session to the last selected folder",
-				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: ["capy", "devin", "folder", "move", "native"],
-				shortcutLabel: "m",
-				when: (context) =>
-					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
-				run: (context) =>
-					dispatchNativeFolderAction(
-						nativeProviderFromPathname(context.route.pathname),
-						"move-active",
 					),
 			},
 			{

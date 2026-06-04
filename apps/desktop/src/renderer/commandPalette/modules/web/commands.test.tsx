@@ -369,10 +369,11 @@ describe("web command provider", () => {
 				commandContext("/native/devin/session-1"),
 			);
 
-			expect(commandIds.slice(0, 5)).toEqual([
+			expect(commandIds.slice(0, 6)).toEqual([
 				"native.current.reply",
 				"native.current.openBrowser",
 				"native.current.openExternal",
+				"native.folder.moveCurrent",
 				"native.current.pin",
 				"native.current.rename",
 			]);
@@ -381,6 +382,9 @@ describe("web command provider", () => {
 			);
 			expect(commandIds.indexOf("native.current.hide")).toBeLessThan(
 				commandIds.indexOf("native.capy.create"),
+			);
+			expect(commandIds.indexOf("native.folder.moveCurrent")).toBeLessThan(
+				commandIds.indexOf("native.folder.create"),
 			);
 		});
 	});
