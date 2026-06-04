@@ -43,6 +43,8 @@ export function dashboardFocusIndicatorHints(
 }
 
 function visibleDashboardFocusHintLabel(hint: string): string | null {
+	if (hint === "type") return "type Search";
+	if (hint === "Esc") return "Esc Sidebar";
 	if (hint === "↑↓") return "↑↓ Move";
 	if (hint === "↵") return "↵ Open";
 	if (hint === ".") return ". Actions";
