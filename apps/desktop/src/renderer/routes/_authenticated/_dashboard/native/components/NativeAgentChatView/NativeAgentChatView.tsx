@@ -434,8 +434,13 @@ function NativeAgentHeaderActionsMenu({
 				<div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
 					Danger
 				</div>
-				<DropdownMenuItem onSelect={onArchive} disabled={isArchiving}>
-					Archive
+				<DropdownMenuItem
+					onSelect={onArchive}
+					disabled={isArchiving}
+					className="grid grid-cols-[minmax(0,1fr)_auto] gap-3"
+				>
+					<span className="truncate">Archive</span>
+					<DropdownMenuShortcut className="ml-0">X</DropdownMenuShortcut>
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					variant="destructive"
@@ -2345,6 +2350,13 @@ export function NativeAgentChatView({
 					key: "R",
 					label: "Refresh",
 					onSelect: () => void invalidateProvider(),
+					section: "utility",
+				},
+				{
+					key: "f",
+					label: "Show action hints",
+					onSelect: () =>
+						handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS"),
 					section: "utility",
 				},
 				{
