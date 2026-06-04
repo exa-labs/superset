@@ -79,6 +79,15 @@ describe("dashboard browser webview bridge", () => {
 			'return "SIDEBAR_ACTION_CREATE_FOLDER"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_CREATE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_PIN"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "SIDEBAR_ACTION_REPLY"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_OPEN_BROWSER"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
@@ -92,6 +101,9 @@ describe("dashboard browser webview bridge", () => {
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_ARCHIVE"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "a" || key === "x")',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_RENAME"',

@@ -311,6 +311,18 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_CREATE_FOLDER";
 		}
+		if (key === "n") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_CREATE";
+		}
+		if (key === "p") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_PIN";
+		}
+		if (key === "r") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_REPLY";
+		}
 		if (key === "o") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_OPEN_BROWSER";
@@ -327,7 +339,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER";
 		}
-		if (key === "a") {
+		if (key === "a" || key === "x") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_ARCHIVE";
 		}
