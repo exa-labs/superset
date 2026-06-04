@@ -41,7 +41,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"Esc",
 			"⌥K",
 			"r",
-			"b/p/x",
+			"u/U",
 		]);
 	});
 
@@ -128,10 +128,10 @@ describe("dashboardFocusIndicatorHints", () => {
 			),
 		).toEqual(["↑↓ Move", "↵/Space Open", "n / New/Search", "p/x Pin/Hide"]);
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r", "b/p/x"], {
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r", "u/U"], {
 				vimModeEnabled: true,
 			}),
-		).toEqual(["⌥K Commands", "Esc Sidebar", "r Reply", "b/p/x View/Pin"]);
+		).toEqual(["⌥K Commands", "Esc Sidebar", "r Reply", "u/U Unread"]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["type", "↑↓", "↵", "Esc"], {
 				vimModeEnabled: true,
