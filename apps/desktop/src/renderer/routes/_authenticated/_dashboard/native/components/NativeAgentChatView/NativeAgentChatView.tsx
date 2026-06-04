@@ -117,6 +117,7 @@ import {
 } from "../../utils/native-agent-optimistic-messages";
 import {
 	type NativeAgentOverviewFilter,
+	nativeAgentOverviewFilterLabel,
 	nativeAgentOverviewHoverTitle,
 	selectNativeAgentOverviewItems,
 } from "../../utils/native-agent-overview";
@@ -2894,7 +2895,7 @@ export function NativeAgentChatView({
 											: "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",
 									)}
 								>
-									{filter}
+									{nativeAgentOverviewFilterLabel(filter)}
 								</button>
 							))}
 						</div>

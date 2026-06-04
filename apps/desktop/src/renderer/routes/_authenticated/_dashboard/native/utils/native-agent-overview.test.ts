@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	type NativeAgentOverviewRow,
+	nativeAgentOverviewFilterLabel,
 	nativeAgentOverviewHoverTitle,
 	selectNativeAgentOverviewItems,
 } from "./native-agent-overview";
@@ -82,6 +83,12 @@ describe("selectNativeAgentOverviewItems", () => {
 		]);
 	});
 
+	it("labels hidden sidebar items as archived for users", () => {
+		expect(nativeAgentOverviewFilterLabel("hidden")).toBe("archived");
+		expect(nativeAgentOverviewFilterLabel("active")).toBe("active");
+		expect(nativeAgentOverviewFilterLabel("unread")).toBe("unread");
+	});
+
 	it("searches title, id, and status case-insensitively", () => {
 		const items: TestRow[] = [
 			{ id: "devin-123", status: "ready", title: "QES panels" },
@@ -101,6 +108,7 @@ describe("selectNativeAgentOverviewItems", () => {
 					latestMessage: {
 						body: 'Done\n\nATTACHMENT:{"url":"https://app.devin.ai/file.png","fileSize":1}',
 					},
+					sidebarHidden: true,
 					sidebarPinned: true,
 					status: "working",
 					title: "QES panels",
@@ -120,6 +128,7 @@ describe("selectNativeAgentOverviewItems", () => {
 				"https://app.devin.ai/sessions/123",
 				"unread agent reply",
 				"pinned in sidebar",
+				"archived from sidebar",
 				"latest: Done\n\n[attachment]",
 			].join("\n"),
 		);

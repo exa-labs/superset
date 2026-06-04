@@ -6,6 +6,13 @@ export type NativeAgentOverviewFilter =
 	| "pinned"
 	| "unread";
 
+export function nativeAgentOverviewFilterLabel(
+	filter: NativeAgentOverviewFilter,
+): string {
+	if (filter === "hidden") return "archived";
+	return filter;
+}
+
 export interface NativeAgentOverviewRow {
 	id: string;
 	isProviderActive?: boolean;
@@ -92,7 +99,7 @@ export function nativeAgentOverviewHoverTitle(
 	if (item.url) lines.push(item.url);
 	if (input.isUnread) lines.push("unread agent reply");
 	if (item.sidebarPinned) lines.push("pinned in sidebar");
-	if (item.sidebarHidden) lines.push("hidden from sidebar");
+	if (item.sidebarHidden) lines.push("archived from sidebar");
 	const preview = item.latestMessage?.body
 		? input.formatPreview(item.latestMessage.body, 180)
 		: null;

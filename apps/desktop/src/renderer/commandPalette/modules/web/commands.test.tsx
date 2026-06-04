@@ -184,8 +184,10 @@ describe("web command provider", () => {
 	});
 
 	it("registers native control-plane commands for active and unread runs", () => {
-		const commandIds = new Set(
-			webProvider.provide(commandContext()).map((command) => command.id),
+		const commands = webProvider.provide(commandContext());
+		const commandIds = new Set(commands.map((command) => command.id));
+		const commandById = new Map(
+			commands.map((command) => [command.id, command] as const),
 		);
 
 		expect(commandIds.has("native.capy.create")).toBe(true);
@@ -222,6 +224,21 @@ describe("web command provider", () => {
 		expect(commandIds.has("native.folder.delete")).toBe(true);
 		expect(commandIds.has("native.folder.moveCurrent")).toBe(true);
 		expect(commandIds.has("native.folder.removeCurrent")).toBe(true);
+		expect(commandById.get("native.capy.hidden")?.title).toBe(
+			"Open archived Capy threads",
+		);
+		expect(commandById.get("native.devin.hidden")?.title).toBe(
+			"Open archived Devin sessions",
+		);
+		expect(commandById.get("native.capy.hidden")?.description).toContain(
+			"archived threads",
+		);
+		expect(commandById.get("native.devin.hidden")?.keywords).toContain(
+			"hidden",
+		);
+		expect(commandById.get("native.devin.hidden")?.keywords).toContain(
+			"archive",
+		);
 	});
 
 	it("shows shortcut paths for primary native create actions", () => {

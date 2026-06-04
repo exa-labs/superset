@@ -12,6 +12,7 @@ import {
 	markNativeAgentReplyNotificationRead,
 	readLatestNativeAgentReplyNotification,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import { nativeAgentOverviewFilterLabel } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-overview";
 import {
 	type DashboardBrowserShortcutAction,
 	dashboardBrowserShortcutDescriptors,
@@ -226,8 +227,8 @@ const NATIVE_FILTER_COMMANDS: Array<{
 	},
 	{
 		filter: "hidden",
-		keywords: ["hidden", "overview", "archived"],
-		title: "Open hidden",
+		keywords: ["archived", "archive", "hidden", "overview"],
+		title: "Open archived",
 	},
 	{
 		filter: "finished",
@@ -740,17 +741,21 @@ export const webProvider: CommandProvider = {
 			for (const filterCommand of NATIVE_FILTER_COMMANDS) {
 				const providerTitle = nativeProviderTitle(provider);
 				const noun = nativeConversationNoun(provider, filterCommand.filter);
+				const filterLabel = nativeAgentOverviewFilterLabel(
+					filterCommand.filter,
+				);
 				commands.push({
 					id: `native.${provider}.${filterCommand.filter}`,
 					title: `${filterCommand.title} ${providerTitle} ${noun}`,
 					section: "web",
 					iconUrl: nativeProviderIconUrl(provider),
-					description: `Open ${providerTitle} Native filtered to ${filterCommand.filter} ${noun}`,
+					description: `Open ${providerTitle} Native filtered to ${filterLabel} ${noun}`,
 					priority: CONTROL_PLANE_PRIORITY.nativeFilter,
 					keywords: [
 						provider,
 						providerTitle,
 						filterCommand.filter,
+						filterLabel,
 						...filterCommand.keywords,
 						"native",
 						noun,
