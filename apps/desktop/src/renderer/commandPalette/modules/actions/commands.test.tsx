@@ -163,6 +163,28 @@ describe("actions command provider", () => {
 		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
 	});
 
+	it("makes the Vim mode command state-aware", () => {
+		setDashboardVimModeEnabled(false);
+		const enableCommand = actionsProvider
+			.provide(commandContext())
+			.find((command) => command.id === "actions.toggleDashboardVimMode");
+
+		expect(enableCommand?.title).toBe("Enable Vim mode");
+		expect(enableCommand?.description).toContain("Turn on j/k");
+		expect(enableCommand?.keywords).toContain("disabled");
+
+		setDashboardVimModeEnabled(true);
+		const disableCommand = actionsProvider
+			.provide(commandContext())
+			.find((command) => command.id === "actions.toggleDashboardVimMode");
+
+		expect(disableCommand?.title).toBe("Disable Vim mode");
+		expect(disableCommand?.description).toContain("Turn off j/k");
+		expect(disableCommand?.keywords).toContain("enabled");
+
+		setDashboardVimModeEnabled(false);
+	});
+
 	it("routes MRU command-palette actions through the dashboard switch event", () => {
 		const directions: unknown[] = [];
 		const originalWindow = globalThis.window;

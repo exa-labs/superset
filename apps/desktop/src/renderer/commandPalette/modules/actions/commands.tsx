@@ -15,7 +15,10 @@ import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
-import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import {
+	isDashboardVimModeEnabled,
+	toggleDashboardVimMode,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import { SYSTEM_THEME_ID, useThemeStore } from "renderer/stores/theme/store";
@@ -60,6 +63,7 @@ async function toggleNotificationSoundsMuted(
 export const actionsProvider: CommandProvider = {
 	id: "actions",
 	provide: (context) => {
+		const vimModeEnabled = isDashboardVimModeEnabled();
 		const commands: Command[] = [
 			{
 				id: "actions.newWorkspace",
@@ -73,12 +77,24 @@ export const actionsProvider: CommandProvider = {
 			},
 			{
 				id: "actions.toggleDashboardVimMode",
-				title: "Toggle Vim mode",
+				title: vimModeEnabled ? "Disable Vim mode" : "Enable Vim mode",
 				section: "actions",
+				description: vimModeEnabled
+					? "Turn off j/k, g-prefix navigation, and local Vim action keys"
+					: "Turn on j/k, g-prefix navigation, and local Vim action keys",
 				icon: KeyboardIcon,
 				hotkeyId: "TOGGLE_VIM_MODE",
 				priority: ACTION_COMMAND_PRIORITY.vimMode,
-				keywords: ["vim", "keyboard", "j", "k", "navigation", "dashboard"],
+				keywords: [
+					"vim",
+					"toggle",
+					"keyboard",
+					"j",
+					"k",
+					"navigation",
+					"dashboard",
+					vimModeEnabled ? "enabled" : "disabled",
+				],
 				run: () => {
 					const enabled = toggleDashboardVimMode();
 					toast.success(enabled ? "Vim mode enabled" : "Vim mode disabled");
