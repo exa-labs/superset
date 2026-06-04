@@ -297,6 +297,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		}
 		if (pendingDashboardVimPrefix === "g") {
 			clearDashboardVimPrefix();
+			if (key === "b") return "OPEN_CHROME";
 			if (key === "c") return "OPEN_CAPY";
 			if (key === "d") return "OPEN_DEVIN";
 			if (key === "g") return "SIDEBAR_FOCUS_FIRST";

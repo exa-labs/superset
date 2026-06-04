@@ -75,6 +75,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open workspaces in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "w"] }),
 		);
+		expect(entryByLabel.get("Open Chrome in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["g", "b"] }),
+		);
 		expect(entryByLabel.get("Open Capy in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["g", "c"] }),
 		);
@@ -306,7 +309,7 @@ describe("dashboard keyboard help", () => {
 			}),
 		);
 		expect(entryByLabel.get("Browser: Jump to dashboard sections")).toEqual(
-			expect.objectContaining({ keys: ["g", "c", "d", "w"] }),
+			expect.objectContaining({ keys: ["g", "b", "c", "d", "w"] }),
 		);
 		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),

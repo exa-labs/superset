@@ -163,6 +163,9 @@ describe("dashboard browser webview bridge", () => {
 			"pendingDashboardVimPrefix",
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "b") return "OPEN_CHROME"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "c") return "OPEN_CAPY"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

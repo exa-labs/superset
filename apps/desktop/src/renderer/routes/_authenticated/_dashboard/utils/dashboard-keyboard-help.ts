@@ -127,10 +127,10 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"Use the focused sidebar row's menu, create, pin, reply, browser, move, archive, rename, color, and delete actions from embedded Chrome",
 		},
 		{
-			keys: ["g", "c", "d", "w"],
+			keys: ["g", "b", "c", "d", "w"],
 			label: "Browser: Jump to dashboard sections",
 			description:
-				"Use Vim destination chords from embedded Chrome for Capy, Devin, and workspaces",
+				"Use Vim destination chords from embedded Chrome for Chrome, Capy, Devin, and workspaces",
 		},
 	];
 }
@@ -418,6 +418,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					label: "Create Devin session",
 					description:
 						"Start a new Devin session directly from browsers, terminals, or native views",
+				},
+				{
+					keys: ["g", "b"],
+					label: "Open Chrome in Vim mode",
+					description: "Jump to the embedded Chrome tab set",
 				},
 				{
 					keys: ["g", "w"],

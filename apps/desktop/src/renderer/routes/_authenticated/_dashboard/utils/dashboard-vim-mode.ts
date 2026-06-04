@@ -2,7 +2,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
-export type DashboardVimSequence = "g c" | "g d" | "g g" | "g w";
+export type DashboardVimSequence = "g b" | "g c" | "g d" | "g g" | "g w";
 export type DashboardVimGlobalAction =
 	| "none"
 	| "show-action-hints"
@@ -172,6 +172,7 @@ export function nextDashboardVimSequence(
 	}
 
 	if (pendingPrefix !== "g") return { pendingPrefix: null, sequence: null };
+	if (key === "b") return { pendingPrefix: null, sequence: "g b" };
 	if (key === "c") return { pendingPrefix: null, sequence: "g c" };
 	if (key === "d") return { pendingPrefix: null, sequence: "g d" };
 	if (key === "g") return { pendingPrefix: null, sequence: "g g" };
@@ -182,6 +183,7 @@ export function nextDashboardVimSequence(
 export function dashboardVimNavigationActionFromSequence(
 	sequence: DashboardVimSequence | null,
 ): DashboardVimNavigationAction {
+	if (sequence === "g b") return "open-chrome";
 	if (sequence === "g c") return "open-capy";
 	if (sequence === "g d") return "open-devin";
 	if (sequence === "g g") return "focus-sidebar-first";

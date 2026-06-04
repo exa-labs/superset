@@ -93,6 +93,10 @@ describe("dashboard vim mode", () => {
 			pendingPrefix: null,
 			sequence: "g c",
 		});
+		expect(nextDashboardVimSequence("g", "b")).toEqual({
+			pendingPrefix: null,
+			sequence: "g b",
+		});
 		expect(nextDashboardVimSequence("g", "d")).toEqual({
 			pendingPrefix: null,
 			sequence: "g d",
@@ -154,6 +158,7 @@ describe("dashboard vim mode", () => {
 	});
 
 	it("maps g-prefixed jumps to dashboard navigation actions", () => {
+		expect(dashboardVimNavigationActionFromSequence("g b")).toBe("open-chrome");
 		expect(dashboardVimNavigationActionFromSequence("g c")).toBe("open-capy");
 		expect(dashboardVimNavigationActionFromSequence("g d")).toBe("open-devin");
 		expect(dashboardVimNavigationActionFromSequence("g g")).toBe(
