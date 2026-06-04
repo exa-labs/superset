@@ -7,7 +7,7 @@ interface DashboardFocusIndicatorHintOptions {
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	app: ["Esc", "⌥K", "?"],
-	browser: ["Esc", "⌥K", "f", "?"],
+	browser: ["Esc", "⌥K", "j/k /", "f/?"],
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
@@ -19,7 +19,9 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 const VIM_ONLY_HINTS = new Set([
 	"?",
 	"f",
+	"f/?",
 	"gg/gc/gd/gw",
+	"j/k /",
 	"m/e",
 	"n/r",
 	"n/N",
@@ -52,6 +54,8 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "r") return "r Reply";
 	if (hint === "b/p/x") return "b/p/x View/Pin";
 	if (hint === "f") return "f Hints";
+	if (hint === "f/?") return "f/? Hints";
+	if (hint === "j/k /") return "j/k / Sidebar";
 	return null;
 }
 

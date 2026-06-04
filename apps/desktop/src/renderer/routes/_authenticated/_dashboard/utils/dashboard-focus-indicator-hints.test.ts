@@ -18,7 +18,7 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces global and Vim action hints from browser focus", () => {
 		expect(
 			dashboardFocusIndicatorHints("browser", { vimModeEnabled: true }),
-		).toEqual(["Esc", "⌥K", "f", "?"]);
+		).toEqual(["Esc", "⌥K", "j/k /", "f/?"]);
 	});
 
 	it("hides Vim-only action hints when Vim mode is disabled", () => {
@@ -92,11 +92,11 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("advertises the shortcut that works in the current keyboard mode", () => {
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
-				hints: ["Esc", "⌥K", "f", "?"],
+				hints: ["Esc", "⌥K", "j/k /", "f/?"],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K, f, ?. Press ? for full keyboard shortcuts.",
+			"Browser focus. Keys: Esc, Option+K, j/k /, f/?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
@@ -110,10 +110,10 @@ describe("dashboardFocusIndicatorHints", () => {
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "f", "?"], {
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "j/k /", "f/?"], {
 				vimModeEnabled: true,
 			}),
-		).toEqual(["⌥K Commands", "Esc Sidebar", "f Hints", "? Shortcuts"]);
+		).toEqual(["⌥K Commands", "Esc Sidebar", "j/k / Sidebar", "f/? Hints"]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K"], {
 				vimModeEnabled: false,
