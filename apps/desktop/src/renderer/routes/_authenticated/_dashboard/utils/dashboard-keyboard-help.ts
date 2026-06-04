@@ -5,6 +5,7 @@ import { bindingToDispatchChord } from "renderer/hotkeys/utils/binding";
 import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcuts";
 import {
 	DASHBOARD_QUICK_TERMINALS,
+	dashboardQuickTerminalHotkeyId,
 	dashboardQuickTerminalShortcutLabel,
 } from "./dashboard-quick-terminals";
 import {
@@ -823,9 +824,9 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open the Option+K control plane, type kr9, stag, prod, or heph, then choose a root terminal",
 				},
 				...DASHBOARD_QUICK_TERMINALS.map((terminal) => ({
-					keys: ["⌥K", `type ${terminal.id}`],
+					hotkeyId: dashboardQuickTerminalHotkeyId(terminal.id),
 					label: `Open ${terminal.label} root kr9`,
-					description: `Open ${terminal.label} directly from the control plane with ${dashboardQuickTerminalShortcutLabel(terminal.id)}`,
+					description: `Open ${terminal.label} directly, or use ${dashboardQuickTerminalShortcutLabel(terminal.id)} in the control plane`,
 				})),
 			],
 		},

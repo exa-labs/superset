@@ -3,6 +3,8 @@ import {
 	consumePendingDashboardQuickTerminalLaunch,
 	DASHBOARD_QUICK_TERMINALS,
 	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalDirectShortcutLabel,
+	dashboardQuickTerminalHotkeyId,
 	dashboardQuickTerminalShortcutLabel,
 	dashboardQuickTerminalTitle,
 	writePendingDashboardQuickTerminalLaunch,
@@ -45,6 +47,21 @@ describe("dashboard quick terminals", () => {
 		expect(dashboardQuickTerminalShortcutLabel("stag")).toBe("⌥K stag");
 		expect(dashboardQuickTerminalShortcutLabel("prod")).toBe("⌥K prod");
 		expect(dashboardQuickTerminalShortcutLabel("heph")).toBe("⌥K heph");
+	});
+
+	it("maps each root terminal to a direct global hotkey", () => {
+		expect(dashboardQuickTerminalHotkeyId("stag")).toBe(
+			"OPEN_ROOT_TERMINAL_STAG",
+		);
+		expect(dashboardQuickTerminalHotkeyId("prod")).toBe(
+			"OPEN_ROOT_TERMINAL_PROD",
+		);
+		expect(dashboardQuickTerminalHotkeyId("heph")).toBe(
+			"OPEN_ROOT_TERMINAL_HEPH",
+		);
+		expect(dashboardQuickTerminalDirectShortcutLabel("stag")).toBe("⌥⇧S");
+		expect(dashboardQuickTerminalDirectShortcutLabel("prod")).toBe("⌥⇧P");
+		expect(dashboardQuickTerminalDirectShortcutLabel("heph")).toBe("⌥⇧H");
 	});
 
 	it("persists and consumes a pending quick launch for the target workspace", () => {

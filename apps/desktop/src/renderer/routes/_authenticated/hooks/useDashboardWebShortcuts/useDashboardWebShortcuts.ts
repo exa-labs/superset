@@ -14,6 +14,7 @@ import {
 import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
+import type { DashboardQuickTerminalId } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	type DashboardSidebarKeyboardCommand,
@@ -144,6 +145,9 @@ export const DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS = [
 	"CREATE_DEVIN",
 	"OPEN_CHROME",
 	"OPEN_WORKSPACES",
+	"OPEN_ROOT_TERMINAL_STAG",
+	"OPEN_ROOT_TERMINAL_PROD",
+	"OPEN_ROOT_TERMINAL_HEPH",
 	"TOGGLE_NATIVE_BROWSER_VIEW",
 	"TOGGLE_NATIVE_SPLIT_VIEW",
 ] as const satisfies readonly DashboardWebShortcut[];
@@ -186,6 +190,15 @@ function dashboardSidebarKeyboardCommandFromVimKey(
 	if (key === " " || key === "space" || key === "spacebar") {
 		return "toggle-expansion";
 	}
+	return null;
+}
+
+export function dashboardRootTerminalTargetFromShortcut(
+	shortcut: DashboardWebShortcut,
+): DashboardQuickTerminalId | null {
+	if (shortcut === "OPEN_ROOT_TERMINAL_STAG") return "stag";
+	if (shortcut === "OPEN_ROOT_TERMINAL_PROD") return "prod";
+	if (shortcut === "OPEN_ROOT_TERMINAL_HEPH") return "heph";
 	return null;
 }
 
@@ -291,6 +304,17 @@ export function useDashboardWebShortcuts() {
 		scheduleDashboardNavigationShellFocus();
 	}, [navigate]);
 
+	const openRootTerminal = useCallback(
+		(target: DashboardQuickTerminalId) => {
+			void navigate({
+				to: "/root-terminal/$target",
+				params: { target },
+			});
+			scheduleDashboardNavigationShellFocus();
+		},
+		[navigate],
+	);
+
 	const openNativeProviderAtIndex = useCallback(
 		(provider: NativeAgentProvider, index: number) => {
 			const handled = dispatchDashboardNativeAgentOpenIndex({
@@ -353,6 +377,14 @@ export function useDashboardWebShortcuts() {
 			if (sidebarCommand) {
 				clearPendingKeyboardChains();
 				dispatchDashboardSidebarKeyboardCommand(sidebarCommand);
+				return;
+			}
+
+			const rootTerminalTarget =
+				dashboardRootTerminalTargetFromShortcut(shortcut);
+			if (rootTerminalTarget) {
+				clearPendingKeyboardChains();
+				openRootTerminal(rootTerminalTarget);
 				return;
 			}
 
@@ -448,6 +480,7 @@ export function useDashboardWebShortcuts() {
 			openChrome,
 			openNativeProviderAtIndex,
 			openNativeProviderWithPrefix,
+			openRootTerminal,
 			openWorkspaces,
 			runGlobalKeyboardAction,
 		],
@@ -465,6 +498,15 @@ export function useDashboardWebShortcuts() {
 	useHotkey("CREATE_DEVIN", () => runShortcut("CREATE_DEVIN"));
 	useHotkey("OPEN_CHROME", () => runShortcut("OPEN_CHROME"));
 	useHotkey("OPEN_WORKSPACES", () => runShortcut("OPEN_WORKSPACES"));
+	useHotkey("OPEN_ROOT_TERMINAL_STAG", () =>
+		runShortcut("OPEN_ROOT_TERMINAL_STAG"),
+	);
+	useHotkey("OPEN_ROOT_TERMINAL_PROD", () =>
+		runShortcut("OPEN_ROOT_TERMINAL_PROD"),
+	);
+	useHotkey("OPEN_ROOT_TERMINAL_HEPH", () =>
+		runShortcut("OPEN_ROOT_TERMINAL_HEPH"),
+	);
 	useHotkey("TOGGLE_NATIVE_BROWSER_VIEW", () =>
 		runShortcut("TOGGLE_NATIVE_BROWSER_VIEW"),
 	);

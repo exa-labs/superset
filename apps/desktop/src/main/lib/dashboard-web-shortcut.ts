@@ -14,6 +14,9 @@ export const DASHBOARD_WEB_SHORTCUTS = [
 	"CREATE_DEVIN",
 	"OPEN_CHROME",
 	"OPEN_WORKSPACES",
+	"OPEN_ROOT_TERMINAL_STAG",
+	"OPEN_ROOT_TERMINAL_PROD",
+	"OPEN_ROOT_TERMINAL_HEPH",
 	"TOGGLE_DASHBOARD_SIDEBAR",
 	"TOGGLE_NATIVE_BROWSER_VIEW",
 	"TOGGLE_NATIVE_SPLIT_VIEW",
@@ -150,10 +153,16 @@ function dashboardWebDirectCreateShortcutFromInput(
 	const code = input.code.toLowerCase();
 	if (code === "keyc") return "CREATE_CAPY";
 	if (code === "keyd") return "CREATE_DEVIN";
+	if (code === "keys") return "OPEN_ROOT_TERMINAL_STAG";
+	if (code === "keyp") return "OPEN_ROOT_TERMINAL_PROD";
+	if (code === "keyh") return "OPEN_ROOT_TERMINAL_HEPH";
 
 	const key = input.key.toLowerCase();
 	if (key === "c") return "CREATE_CAPY";
 	if (key === "d") return "CREATE_DEVIN";
+	if (key === "s") return "OPEN_ROOT_TERMINAL_STAG";
+	if (key === "p") return "OPEN_ROOT_TERMINAL_PROD";
+	if (key === "h") return "OPEN_ROOT_TERMINAL_HEPH";
 
 	return null;
 }

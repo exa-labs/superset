@@ -3,6 +3,7 @@ import { HOTKEYS_REGISTRY } from "renderer/hotkeys/registry";
 import {
 	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+	dashboardRootTerminalTargetFromShortcut,
 } from "./useDashboardWebShortcuts";
 
 describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
@@ -20,6 +21,9 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			"CREATE_DEVIN",
 			"OPEN_CHROME",
 			"OPEN_WORKSPACES",
+			"OPEN_ROOT_TERMINAL_STAG",
+			"OPEN_ROOT_TERMINAL_PROD",
+			"OPEN_ROOT_TERMINAL_HEPH",
 			"TOGGLE_NATIVE_BROWSER_VIEW",
 			"TOGGLE_NATIVE_SPLIT_VIEW",
 		]);
@@ -32,6 +36,19 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 				`${hotkeyId} should remain a visible, customizable hotkey`,
 			).toBeDefined();
 		}
+	});
+
+	it("maps root terminal shortcuts to their sidebar targets", () => {
+		expect(
+			dashboardRootTerminalTargetFromShortcut("OPEN_ROOT_TERMINAL_STAG"),
+		).toBe("stag");
+		expect(
+			dashboardRootTerminalTargetFromShortcut("OPEN_ROOT_TERMINAL_PROD"),
+		).toBe("prod");
+		expect(
+			dashboardRootTerminalTargetFromShortcut("OPEN_ROOT_TERMINAL_HEPH"),
+		).toBe("heph");
+		expect(dashboardRootTerminalTargetFromShortcut("OPEN_CHROME")).toBeNull();
 	});
 });
 

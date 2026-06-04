@@ -1,3 +1,5 @@
+import type { HotkeyId } from "renderer/hotkeys/registry";
+
 export const DASHBOARD_QUICK_TERMINAL_EVENT = "dashboard-quick-terminal-launch";
 const DASHBOARD_QUICK_TERMINAL_PENDING_STORAGE_KEY =
 	"dashboard.quickTerminal.pendingLaunch";
@@ -45,6 +47,22 @@ export function dashboardQuickTerminalShortcutLabel(
 	target: DashboardQuickTerminalId,
 ): string {
 	return `⌥K ${target}`;
+}
+
+export function dashboardQuickTerminalDirectShortcutLabel(
+	target: DashboardQuickTerminalId,
+): string {
+	if (target === "stag") return "⌥⇧S";
+	if (target === "prod") return "⌥⇧P";
+	return "⌥⇧H";
+}
+
+export function dashboardQuickTerminalHotkeyId(
+	target: DashboardQuickTerminalId,
+): HotkeyId {
+	if (target === "stag") return "OPEN_ROOT_TERMINAL_STAG";
+	if (target === "prod") return "OPEN_ROOT_TERMINAL_PROD";
+	return "OPEN_ROOT_TERMINAL_HEPH";
 }
 
 export function dashboardQuickTerminalTitle(

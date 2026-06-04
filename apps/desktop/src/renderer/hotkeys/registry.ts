@@ -216,6 +216,36 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Open the workspace overview",
 	},
+	OPEN_ROOT_TERMINAL_STAG: {
+		key: {
+			mac: L("alt+shift+s"),
+			windows: L("ctrl+alt+shift+s"),
+			linux: L("ctrl+alt+shift+s"),
+		},
+		label: "Open stag kr9",
+		category: "Terminal",
+		description: "Open a root terminal and run kr9",
+	},
+	OPEN_ROOT_TERMINAL_PROD: {
+		key: {
+			mac: L("alt+shift+p"),
+			windows: L("ctrl+alt+shift+p"),
+			linux: L("ctrl+alt+shift+p"),
+		},
+		label: "Open prod kr9",
+		category: "Terminal",
+		description: "Open a root terminal and run kr9",
+	},
+	OPEN_ROOT_TERMINAL_HEPH: {
+		key: {
+			mac: L("alt+shift+h"),
+			windows: L("ctrl+alt+shift+h"),
+			linux: L("ctrl+alt+shift+h"),
+		},
+		label: "Open heph kr9",
+		category: "Terminal",
+		description: "Open a root terminal and run kr9",
+	},
 	TOGGLE_NATIVE_BROWSER_VIEW: {
 		key: {
 			mac: L("alt+b"),

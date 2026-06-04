@@ -624,9 +624,8 @@ describe("web command provider", () => {
 			commands.find((command) => command.id === "terminal.root.heph")?.title,
 		).toBe("Open heph kr9");
 		expect(
-			commands.find((command) => command.id === "terminal.root.heph")
-				?.shortcutLabel,
-		).toBe("⌥K heph");
+			commands.find((command) => command.id === "terminal.root.heph")?.hotkeyId,
+		).toBe("OPEN_ROOT_TERMINAL_HEPH");
 		expect(
 			commands.find((command) => command.id === "terminal.root.heph")
 				?.description,

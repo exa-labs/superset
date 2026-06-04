@@ -5,6 +5,7 @@ import {
 	DASHBOARD_QUICK_TERMINALS,
 	type DashboardQuickTerminalId,
 	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalDirectShortcutLabel,
 	dashboardQuickTerminalShortcutLabel,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
 
@@ -20,7 +21,7 @@ export function DashboardQuickTerminalsGrid({
 	const terminalTitle = (
 		terminal: (typeof DASHBOARD_QUICK_TERMINALS)[number],
 	) =>
-		`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. ${dashboardQuickTerminalShortcutLabel(terminal.id)} from control plane.`;
+		`Open ${terminal.label} root terminal: ${dashboardQuickTerminalCommand(terminal.id)}. ${dashboardQuickTerminalDirectShortcutLabel(terminal.id)} direct, or ${dashboardQuickTerminalShortcutLabel(terminal.id)} from control plane.`;
 
 	if (variant === "collapsed") {
 		return (
@@ -44,6 +45,7 @@ export function DashboardQuickTerminalsGrid({
 						<TooltipContent side="right">
 							{terminal.label} root terminal -{" "}
 							{dashboardQuickTerminalCommand(terminal.id)} (
+							{dashboardQuickTerminalDirectShortcutLabel(terminal.id)} /{" "}
 							{dashboardQuickTerminalShortcutLabel(terminal.id)})
 						</TooltipContent>
 					</Tooltip>
@@ -76,6 +78,7 @@ export function DashboardQuickTerminalsGrid({
 					</TooltipTrigger>
 					<TooltipContent side="right">
 						{dashboardQuickTerminalCommand(terminal.id)} in repo root (
+						{dashboardQuickTerminalDirectShortcutLabel(terminal.id)} /{" "}
 						{dashboardQuickTerminalShortcutLabel(terminal.id)})
 					</TooltipContent>
 				</Tooltip>

@@ -205,6 +205,21 @@ describe("control plane shortcut bridge resolver", () => {
 				name: "Option+Shift+D creates a Devin session",
 				shortcut: "CREATE_DEVIN",
 			},
+			{
+				input: { code: "KeyS", key: "Dead", shift: true },
+				name: "Option+Shift+S opens the stag root kr9 terminal",
+				shortcut: "OPEN_ROOT_TERMINAL_STAG",
+			},
+			{
+				input: { code: "KeyP", key: "Dead", shift: true },
+				name: "Option+Shift+P opens the prod root kr9 terminal",
+				shortcut: "OPEN_ROOT_TERMINAL_PROD",
+			},
+			{
+				input: { code: "KeyH", key: "Dead", shift: true },
+				name: "Option+Shift+H opens the heph root kr9 terminal",
+				shortcut: "OPEN_ROOT_TERMINAL_HEPH",
+			},
 		];
 
 		for (const testCase of cases) {

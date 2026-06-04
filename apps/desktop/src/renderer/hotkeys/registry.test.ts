@@ -175,5 +175,17 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+shift+n",
 		});
+		expect(HOTKEYS_REGISTRY.OPEN_ROOT_TERMINAL_STAG.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+s",
+		});
+		expect(HOTKEYS_REGISTRY.OPEN_ROOT_TERMINAL_PROD.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+p",
+		});
+		expect(HOTKEYS_REGISTRY.OPEN_ROOT_TERMINAL_HEPH.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+h",
+		});
 	});
 });

@@ -86,6 +86,18 @@ describe("dashboardWebShortcutFromInput", () => {
 			{ hotkeyId: "OPEN_CHROME", shortcut: "OPEN_CHROME" },
 			{ hotkeyId: "OPEN_WORKSPACES", shortcut: "OPEN_WORKSPACES" },
 			{
+				hotkeyId: "OPEN_ROOT_TERMINAL_STAG",
+				shortcut: "OPEN_ROOT_TERMINAL_STAG",
+			},
+			{
+				hotkeyId: "OPEN_ROOT_TERMINAL_PROD",
+				shortcut: "OPEN_ROOT_TERMINAL_PROD",
+			},
+			{
+				hotkeyId: "OPEN_ROOT_TERMINAL_HEPH",
+				shortcut: "OPEN_ROOT_TERMINAL_HEPH",
+			},
+			{
 				hotkeyId: "TOGGLE_NATIVE_BROWSER_VIEW",
 				shortcut: "TOGGLE_NATIVE_BROWSER_VIEW",
 			},
@@ -131,6 +143,21 @@ describe("dashboardWebShortcutFromInput", () => {
 				input({ code: "KeyD", key: "Dead", shift: true }),
 			),
 		).toBe("CREATE_DEVIN");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyS", key: "Dead", shift: true }),
+			),
+		).toBe("OPEN_ROOT_TERMINAL_STAG");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyP", key: "Dead", shift: true }),
+			),
+		).toBe("OPEN_ROOT_TERMINAL_PROD");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyH", key: "Dead", shift: true }),
+			),
+		).toBe("OPEN_ROOT_TERMINAL_HEPH");
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyG", key: "Dead" })),
 		).toBe("OPEN_CHROME");
