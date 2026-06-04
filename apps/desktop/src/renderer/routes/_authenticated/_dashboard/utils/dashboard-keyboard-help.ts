@@ -666,9 +666,9 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["U"],
-					label: "Mark latest reply read",
+					label: "Mark current or latest reply read",
 					description:
-						"Acknowledge the latest Capy or Devin response without opening it",
+						"Acknowledge the current session's reply; from overview, acknowledge the latest unread Capy or Devin response",
 				},
 				{
 					keys: ["o"],

@@ -204,7 +204,7 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Mark latest native reply read")).toEqual(
 			expect.objectContaining({ hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ" }),
 		);
-		expect(entryByLabel.get("Mark latest reply read")).toEqual(
+		expect(entryByLabel.get("Mark current or latest reply read")).toEqual(
 			expect.objectContaining({ keys: ["U"] }),
 		);
 		expect(entryByLabel.get("Open browser version")).toEqual(
@@ -503,7 +503,11 @@ describe("dashboard keyboard help", () => {
 				"Open unread native reply",
 				"Mark latest native reply read",
 				"Mark selected reply read",
+				"Mark current or latest reply read",
 			]),
+		);
+		expect(labelsForQuery("current reply read")).toEqual(
+			expect.arrayContaining(["Mark current or latest reply read"]),
 		);
 		expect(labelsForQuery("selected reply read")).toEqual(
 			expect.arrayContaining(["Mark selected reply read"]),
