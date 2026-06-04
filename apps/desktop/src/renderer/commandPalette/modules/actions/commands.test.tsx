@@ -106,8 +106,14 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
 		expect(commandIds.has("actions.searchSidebar")).toBe(true);
+		expect(commandIds.has("actions.sidebar.focusNext")).toBe(true);
+		expect(commandIds.has("actions.sidebar.focusPrevious")).toBe(true);
+		expect(commandIds.has("actions.sidebar.focusFirst")).toBe(true);
+		expect(commandIds.has("actions.sidebar.focusLast")).toBe(true);
 		expect(commandIds.has("actions.sidebar.activate")).toBe(true);
 		expect(commandIds.has("actions.sidebar.toggleExpansion")).toBe(true);
+		expect(commandIds.has("actions.sidebar.collapse")).toBe(true);
+		expect(commandIds.has("actions.sidebar.expand")).toBe(true);
 		expect(commandIds.has("actions.sidebar.create")).toBe(true);
 		expect(commandIds.has("actions.sidebar.pin")).toBe(true);
 		expect(commandIds.has("actions.sidebar.reply")).toBe(true);
@@ -171,8 +177,14 @@ describe("actions command provider", () => {
 				.filter((command) => command.id.startsWith("actions.sidebar."))
 				.map((command) => [command.id, command.shortcutLabel] as const),
 		);
+		expect(shortcutById.get("actions.sidebar.focusNext")).toBe("↓/j");
+		expect(shortcutById.get("actions.sidebar.focusPrevious")).toBe("↑/k");
+		expect(shortcutById.get("actions.sidebar.focusFirst")).toBe("Home/gg");
+		expect(shortcutById.get("actions.sidebar.focusLast")).toBe("End/G");
 		expect(shortcutById.get("actions.sidebar.activate")).toBe("Enter");
 		expect(shortcutById.get("actions.sidebar.toggleExpansion")).toBe("Space");
+		expect(shortcutById.get("actions.sidebar.collapse")).toBe("h");
+		expect(shortcutById.get("actions.sidebar.expand")).toBe("l");
 		expect(shortcutById.get("actions.sidebar.create")).toBe("n");
 		expect(shortcutById.get("actions.sidebar.pin")).toBe("p");
 		expect(shortcutById.get("actions.sidebar.reply")).toBe("r");
@@ -339,8 +351,14 @@ describe("actions command provider", () => {
 		try {
 			const providedCommands = actionsProvider.provide(commandContext());
 			for (const id of [
+				"actions.sidebar.focusNext",
+				"actions.sidebar.focusPrevious",
+				"actions.sidebar.focusFirst",
+				"actions.sidebar.focusLast",
 				"actions.sidebar.activate",
 				"actions.sidebar.toggleExpansion",
+				"actions.sidebar.collapse",
+				"actions.sidebar.expand",
 				"actions.sidebar.pin",
 				"actions.sidebar.move",
 				"actions.sidebar.archive",
@@ -357,8 +375,14 @@ describe("actions command provider", () => {
 		}
 
 		expect(commands).toEqual([
+			"focus-next",
+			"focus-previous",
+			"focus-first",
+			"focus-last",
 			"activate",
 			"toggle-expansion",
+			"collapse",
+			"expand",
 			"action-pin",
 			"action-move",
 			"action-archive",

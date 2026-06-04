@@ -1,8 +1,12 @@
 import { toast } from "@superset/ui/sonner";
 import {
 	ArchiveIcon,
+	ArrowDownIcon,
+	ArrowUpIcon,
 	BellIcon,
 	BellOffIcon,
+	ChevronsDownIcon,
+	ChevronsUpIcon,
 	FolderInputIcon,
 	KeyboardIcon,
 	MessageSquareIcon,
@@ -81,6 +85,43 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	title: string;
 }> = [
 	{
+		command: "focus-next",
+		description: "Move keyboard focus to the next visible row in the sidebar",
+		icon: ArrowDownIcon,
+		id: "focusNext",
+		keywords: ["next", "down", "j", "sidebar", "focus", "navigation"],
+		shortcutLabel: "↓/j",
+		title: "Focus next sidebar item",
+	},
+	{
+		command: "focus-previous",
+		description:
+			"Move keyboard focus to the previous visible row in the sidebar",
+		icon: ArrowUpIcon,
+		id: "focusPrevious",
+		keywords: ["previous", "up", "k", "sidebar", "focus", "navigation"],
+		shortcutLabel: "↑/k",
+		title: "Focus previous sidebar item",
+	},
+	{
+		command: "focus-first",
+		description: "Jump keyboard focus to the first visible row in the sidebar",
+		icon: ChevronsUpIcon,
+		id: "focusFirst",
+		keywords: ["first", "top", "home", "gg", "sidebar", "focus"],
+		shortcutLabel: "Home/gg",
+		title: "Focus first sidebar item",
+	},
+	{
+		command: "focus-last",
+		description: "Jump keyboard focus to the last visible row in the sidebar",
+		icon: ChevronsDownIcon,
+		id: "focusLast",
+		keywords: ["last", "bottom", "end", "g", "sidebar", "focus"],
+		shortcutLabel: "End/G",
+		title: "Focus last sidebar item",
+	},
+	{
 		command: "activate",
 		description: "Open the row currently focused in the left sidebar",
 		icon: SquareMousePointerIcon,
@@ -97,6 +138,24 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		keywords: ["toggle", "collapse", "expand", "folder", "sidebar", "space"],
 		shortcutLabel: "Space",
 		title: "Toggle focused sidebar item",
+	},
+	{
+		command: "collapse",
+		description: "Collapse the currently focused sidebar group",
+		icon: PanelLeftIcon,
+		id: "collapse",
+		keywords: ["collapse", "close", "h", "folder", "sidebar", "focused"],
+		shortcutLabel: "h",
+		title: "Collapse focused sidebar item",
+	},
+	{
+		command: "expand",
+		description: "Expand the currently focused sidebar group",
+		icon: PanelRightIcon,
+		id: "expand",
+		keywords: ["expand", "open", "l", "folder", "sidebar", "focused"],
+		shortcutLabel: "l",
+		title: "Expand focused sidebar item",
 	},
 	{
 		command: "action-create",
