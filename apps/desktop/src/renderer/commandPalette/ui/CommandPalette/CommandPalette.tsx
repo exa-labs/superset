@@ -14,6 +14,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useCommandContext } from "../../core/ContextProvider";
 import { executeCommand } from "../../core/execute";
 import { useFrameStackStore } from "../../core/frames";
@@ -21,6 +22,7 @@ import type { Command as CommandType } from "../../core/types";
 import { CommandListView } from "../CommandListView/CommandListView";
 import { SubPaletteView } from "../SubPaletteView/SubPaletteView";
 import { scheduleCommandPaletteInputFocus } from "./command-palette-focus";
+import { commandPaletteRootKeyboardActionFromKey } from "./command-palette-keyboard";
 import { CommandPaletteHintFooter } from "./components/CommandPaletteHintFooter";
 
 const QueryContext = createContext<string>("");
@@ -74,12 +76,23 @@ export function CommandPalette() {
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent) => {
+			const rootAction = commandPaletteRootKeyboardActionFromKey({
+				depth,
+				key: event.key,
+			});
+			if (rootAction === "show-keyboard-help") {
+				event.preventDefault();
+				handleOpenChange(false);
+				openDashboardKeyboardHelp();
+				return;
+			}
+
 			if (event.key === "Backspace" && !query && depth > 0) {
 				event.preventDefault();
 				handleBack();
 			}
 		},
-		[query, depth, handleBack],
+		[query, depth, handleBack, handleOpenChange],
 	);
 
 	useEffect(() => {

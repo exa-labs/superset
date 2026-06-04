@@ -10,4 +10,12 @@ describe("CommandPalette root open focus wiring", () => {
 		expect(source).toContain('data-command-palette-root="global"');
 		expect(source).toContain("rootOpenQueryResetKey");
 	});
+
+	it("wires the root '?' hint to dashboard keyboard help", async () => {
+		const source = await Bun.file(commandPalettePath).text();
+
+		expect(source).toContain("commandPaletteRootKeyboardActionFromKey");
+		expect(source).toContain("openDashboardKeyboardHelp");
+		expect(source).toContain('rootAction === "show-keyboard-help"');
+	});
 });
