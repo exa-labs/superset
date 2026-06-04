@@ -7,7 +7,10 @@ import { electronTrpc } from "renderer/lib/electron-trpc";
 import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
-import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import {
+	type DashboardGlobalKeyboardAction,
+	handleDashboardGlobalKeyboardAction,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
@@ -127,6 +130,16 @@ const SIDEBAR_SHORTCUT_COMMANDS: Partial<
 const WEB_TAB_PREFIX_TIMEOUT_MS = 1_500;
 const VIM_PREFIX_TIMEOUT_MS = 900;
 
+export const DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS = {
+	MARK_LATEST_NATIVE_REPLY_READ: "MARK_LATEST_NATIVE_REPLY_READ",
+	OPEN_UNREAD_NATIVE_REPLY: "OPEN_UNREAD_NATIVE_REPLY",
+	SHOW_DASHBOARD_ACTION_HINTS: "SHOW_DASHBOARD_ACTION_HINTS",
+	SHOW_DASHBOARD_KEYBOARD_HELP: "SHOW_DASHBOARD_KEYBOARD_HELP",
+	SWITCH_DASHBOARD_VIEW_NEXT: "SWITCH_DASHBOARD_VIEW_NEXT",
+	SWITCH_DASHBOARD_VIEW_PREVIOUS: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+	TOGGLE_VIM_MODE: "TOGGLE_VIM_MODE",
+} as const satisfies Record<string, DashboardGlobalKeyboardAction>;
+
 function digitIndexFromEvent(event: KeyboardEvent): number | null {
 	const digitMatch = /^(?:Digit|Numpad)([1-9])$/.exec(event.code);
 	if (!digitMatch) return null;
@@ -193,6 +206,14 @@ export function useDashboardWebShortcuts() {
 		clearPendingNativeProvider();
 		updatePendingVimPrefix(null);
 	}, [clearPendingNativeProvider, updatePendingVimPrefix]);
+
+	const runGlobalKeyboardAction = useCallback(
+		(action: DashboardGlobalKeyboardAction) => {
+			clearPendingKeyboardChains();
+			handleDashboardGlobalKeyboardAction(action);
+		},
+		[clearPendingKeyboardChains],
+	);
 
 	const openWebPage = useCallback(
 		(index: number) => {
@@ -324,7 +345,7 @@ export function useDashboardWebShortcuts() {
 			}
 
 			if (shortcut === "SHOW_DASHBOARD_KEYBOARD_HELP") {
-				openDashboardKeyboardHelp();
+				runGlobalKeyboardAction("SHOW_DASHBOARD_KEYBOARD_HELP");
 				return;
 			}
 			if (shortcut === "OPEN_CONTROL_PLANE") {
@@ -410,6 +431,7 @@ export function useDashboardWebShortcuts() {
 			openNativeProviderAtIndex,
 			openNativeProviderWithPrefix,
 			openWorkspaces,
+			runGlobalKeyboardAction,
 		],
 	);
 
@@ -425,6 +447,41 @@ export function useDashboardWebShortcuts() {
 	useHotkey("CREATE_DEVIN", () => runShortcut("CREATE_DEVIN"));
 	useHotkey("OPEN_CHROME", () => runShortcut("OPEN_CHROME"));
 	useHotkey("OPEN_WORKSPACES", () => runShortcut("OPEN_WORKSPACES"));
+	useHotkey("SHOW_DASHBOARD_KEYBOARD_HELP", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.SHOW_DASHBOARD_KEYBOARD_HELP,
+		),
+	);
+	useHotkey("SHOW_DASHBOARD_ACTION_HINTS", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.SHOW_DASHBOARD_ACTION_HINTS,
+		),
+	);
+	useHotkey("OPEN_UNREAD_NATIVE_REPLY", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.OPEN_UNREAD_NATIVE_REPLY,
+		),
+	);
+	useHotkey("MARK_LATEST_NATIVE_REPLY_READ", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.MARK_LATEST_NATIVE_REPLY_READ,
+		),
+	);
+	useHotkey("SWITCH_DASHBOARD_VIEW_NEXT", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.SWITCH_DASHBOARD_VIEW_NEXT,
+		),
+	);
+	useHotkey("SWITCH_DASHBOARD_VIEW_PREVIOUS", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.SWITCH_DASHBOARD_VIEW_PREVIOUS,
+		),
+	);
+	useHotkey("TOGGLE_VIM_MODE", () =>
+		runGlobalKeyboardAction(
+			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.TOGGLE_VIM_MODE,
+		),
+	);
 
 	electronTrpc.browser.onDashboardWebShortcut.useSubscription(undefined, {
 		onData: ({ shortcut }) => runShortcut(shortcut),
