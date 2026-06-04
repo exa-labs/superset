@@ -8,11 +8,13 @@ import {
 	PanelRightIcon,
 	PlusIcon,
 	RefreshCwIcon,
+	SearchIcon,
 	SettingsIcon,
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
@@ -27,6 +29,7 @@ const ACTION_COMMAND_PRIORITY = {
 	keyboardHelp: 170,
 	markUnreadNativeReply: 188,
 	newWorkspace: 160,
+	sidebarSearch: 178,
 	unreadNativeReply: 190,
 	vimMode: 150,
 	viewSwitching: 140,
@@ -193,6 +196,27 @@ export const actionsProvider: CommandProvider = {
 				priority: ACTION_COMMAND_PRIORITY.focusRecovery,
 				run: () => {
 					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+				},
+			},
+			{
+				id: "actions.searchSidebar",
+				title: "Search sidebar",
+				section: "actions",
+				description:
+					"Focus the left sidebar search from browsers, terminals, settings, and native agents",
+				icon: SearchIcon,
+				keywords: [
+					"sidebar",
+					"search",
+					"filter",
+					"typeahead",
+					"navigation",
+					"shell",
+				],
+				priority: ACTION_COMMAND_PRIORITY.sidebarSearch,
+				shortcutLabel: "/",
+				run: () => {
+					focusDashboardSidebarSearch();
 				},
 			},
 			{

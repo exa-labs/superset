@@ -29,6 +29,7 @@ import { HiOutlineCog6Tooth } from "react-icons/hi2";
 import { LuSearch, LuX } from "react-icons/lu";
 import { V2AvailableBanner } from "renderer/components/V2AvailableBanner";
 import { useHotkeyDisplay } from "renderer/hotkeys";
+import { DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import {
 	toggleDashboardVimMode,
 	useDashboardVimModeStore,
@@ -156,6 +157,34 @@ export function DashboardSidebar({
 		(seed: string) => setSidebarSearchQuery(seed),
 		[],
 	);
+	useEffect(() => {
+		const handleSidebarSearchFocus = (event: Event) => {
+			const seed =
+				(event as CustomEvent<{ seed?: string }>).detail?.seed?.trim() ?? "";
+			setSidebarSearchQuery(seed);
+			window.setTimeout(() => {
+				const input = sidebarSearchInputRef.current;
+				if (!input) return;
+				input.focus();
+				if (seed) {
+					input.setSelectionRange(seed.length, seed.length);
+					return;
+				}
+				input.select();
+			}, 0);
+		};
+
+		window.addEventListener(
+			DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT,
+			handleSidebarSearchFocus,
+		);
+		return () => {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT,
+				handleSidebarSearchFocus,
+			);
+		};
+	}, []);
 	useDashboardSidebarKeyboardNavigation(sidebarRootRef, {
 		onClearSearch: clearSidebarSearch,
 		onCreateWorkspace: openNewWorkspaceModal,

@@ -421,6 +421,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Filter long workspace, Capy, and Devin lists from sidebar focus or Vim mode",
 				},
 				{
+					keys: ["⌥K", "type sidebar"],
+					label: "Search sidebar from anywhere",
+					description:
+						"Open the control plane and focus sidebar search from browsers, terminals, settings, and native agents",
+				},
+				{
 					keys: ["type"],
 					label: "Typeahead jump",
 					description:

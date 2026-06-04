@@ -58,6 +58,9 @@ const { isDashboardVimModeEnabled, setDashboardVimModeEnabled } = await import(
 const { DASHBOARD_ACTION_HINTS_OPEN_EVENT } = await import(
 	"renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints"
 );
+const { DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT } = await import(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus"
+);
 const { actionsProvider } = await import("./commands");
 
 function commandContext(pathname = "/native/capy"): CommandContext {
@@ -95,6 +98,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.openSettings")).toBe(true);
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
+		expect(commandIds.has("actions.searchSidebar")).toBe(true);
 		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
 		expect(commandIds.has("actions.showDashboardKeyboardGuide")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
@@ -143,6 +147,10 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.focusNavigationShell")
 				?.shortcutLabel,
 		).toBe("Esc");
+		expect(
+			commands.find((command) => command.id === "actions.searchSidebar")
+				?.shortcutLabel,
+		).toBe("/");
 		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardActionHints",
@@ -250,6 +258,23 @@ describe("actions command provider", () => {
 
 		expect(isDashboardVimModeEnabled()).toBe(true);
 		setDashboardVimModeEnabled(false);
+	});
+
+	it("opens sidebar search from the command palette", () => {
+		if (typeof window === "undefined") return;
+		let openEventCount = 0;
+		const listener = () => {
+			openEventCount += 1;
+		};
+		window.addEventListener(DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT, listener);
+		const command = actionsProvider
+			.provide(commandContext("/web-tabs/google"))
+			.find((candidate) => candidate.id === "actions.searchSidebar");
+
+		command?.run?.(commandContext("/web-tabs/google"));
+		window.removeEventListener(DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT, listener);
+
+		expect(openEventCount).toBe(1);
 	});
 
 	it("opens dashboard action hints from the command palette", () => {
