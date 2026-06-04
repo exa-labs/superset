@@ -6,6 +6,7 @@ import {
 	dashboardWebIndexedShortcut,
 	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
+	shouldCancelDashboardWebPendingShortcut,
 } from "main/lib/dashboard-web-shortcut";
 import {
 	type GlobalKeyboardAction,
@@ -64,25 +65,6 @@ export interface ControlPlaneShortcutBridgeInputResolver {
 }
 
 const DEFAULT_PENDING_WEB_APP_SHORTCUT_MS = 1500;
-const SHORTCUT_KEY_DOWN_TYPES = new Set(["char", "keyDown", "rawKeyDown"]);
-const MODIFIER_KEYS = new Set(["alt", "control", "ctrl", "meta", "shift"]);
-
-function isPendingDashboardWebChainCancelInput(
-	input: ControlPlaneShortcutBridgeInput,
-): boolean {
-	if (!SHORTCUT_KEY_DOWN_TYPES.has(input.type)) return false;
-	if (input.isAutoRepeat) return false;
-	const key = input.key.toLowerCase();
-	if (MODIFIER_KEYS.has(key)) return false;
-	const code = input.code.toLowerCase();
-	return !(
-		code.startsWith("alt") ||
-		code.startsWith("control") ||
-		code.startsWith("ctrl") ||
-		code.startsWith("meta") ||
-		code.startsWith("shift")
-	);
-}
 
 export function createControlPlaneShortcutBridgeInputResolver(
 	options: ControlPlaneShortcutBridgeResolverOptions = {},
@@ -188,7 +170,7 @@ export function createControlPlaneShortcutBridgeInputResolver(
 
 			if (
 				pendingDashboardWebAppShortcut &&
-				isPendingDashboardWebChainCancelInput(input)
+				shouldCancelDashboardWebPendingShortcut(input)
 			) {
 				clearPending();
 			}

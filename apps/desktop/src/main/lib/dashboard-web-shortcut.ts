@@ -133,6 +133,7 @@ const DEVIN_INDEX_SHORTCUTS: DashboardWebShortcut[] = [
 	"OPEN_DEVIN_8",
 	"OPEN_DEVIN_9",
 ];
+const MODIFIER_KEYS = new Set(["alt", "control", "ctrl", "meta", "shift"]);
 
 function digitIndexFromCode(code: string): number | null {
 	const match = /^(?:digit|numpad)([1-9])$/.exec(code.toLowerCase());
@@ -142,6 +143,23 @@ function digitIndexFromCode(code: string): number | null {
 
 function isShortcutKeyDownType(type: string): boolean {
 	return type === "keyDown" || type === "rawKeyDown" || type === "char";
+}
+
+export function shouldCancelDashboardWebPendingShortcut(
+	input: DashboardWebShortcutInput,
+): boolean {
+	if (!isShortcutKeyDownType(input.type)) return false;
+	if (input.isAutoRepeat) return false;
+	const key = input.key.toLowerCase();
+	if (MODIFIER_KEYS.has(key)) return false;
+	const code = input.code.toLowerCase();
+	return !(
+		code.startsWith("alt") ||
+		code.startsWith("control") ||
+		code.startsWith("ctrl") ||
+		code.startsWith("meta") ||
+		code.startsWith("shift")
+	);
 }
 
 function dashboardWebDirectCreateShortcutFromInput(

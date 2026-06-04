@@ -132,6 +132,42 @@ describe("BrowserManager webview shortcuts", () => {
 		fakeWebContentsById.clear();
 	});
 
+	it("clears pending Capy/Devin chains on unrelated webview keys", () => {
+		const webContents = new FakeWebContents(4);
+		fakeWebContentsById.set(webContents.id, webContents);
+		const manager = new BrowserManager();
+		const dashboardShortcuts: DashboardWebShortcut[] = [];
+		manager.on("dashboard-web-shortcut", (shortcut: DashboardWebShortcut) => {
+			dashboardShortcuts.push(shortcut);
+		});
+		manager.register("pane-4", webContents.id);
+
+		const capyEvent = beforeInputEvent();
+		webContents.emit("before-input-event", capyEvent, input({}));
+		expect(capyEvent.defaultPrevented).toBe(true);
+		expect(dashboardShortcuts).toEqual(["OPEN_CAPY"]);
+
+		const unrelatedEvent = beforeInputEvent();
+		webContents.emit(
+			"before-input-event",
+			unrelatedEvent,
+			input({ alt: false, code: "KeyX", key: "x" }),
+		);
+		expect(unrelatedEvent.defaultPrevented).toBe(false);
+
+		const digitEvent = beforeInputEvent();
+		webContents.emit(
+			"before-input-event",
+			digitEvent,
+			input({ alt: false, code: "Digit2", key: "2" }),
+		);
+		expect(digitEvent.defaultPrevented).toBe(false);
+		expect(dashboardShortcuts).toEqual(["OPEN_CAPY"]);
+
+		manager.unregister("pane-4");
+		fakeWebContentsById.clear();
+	});
+
 	it("routes global keyboard actions emitted by the injected webview bridge", () => {
 		const webContents = new FakeWebContents(2);
 		fakeWebContentsById.set(webContents.id, webContents);

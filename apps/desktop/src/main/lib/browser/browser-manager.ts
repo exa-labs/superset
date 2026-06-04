@@ -9,6 +9,7 @@ import {
 	dashboardWebPendingDigitIndexFromInput,
 	dashboardWebShortcutFromInput,
 	isDashboardWebShortcut,
+	shouldCancelDashboardWebPendingShortcut,
 } from "main/lib/dashboard-web-shortcut";
 import {
 	type GlobalKeyboardAction,
@@ -441,6 +442,13 @@ export class BrowserManager extends EventEmitter {
 				event.preventDefault();
 				this.openDashboardWebShortcut(dashboardWebShortcut);
 				return;
+			}
+
+			if (
+				this.pendingDashboardWebAppShortcut &&
+				shouldCancelDashboardWebPendingShortcut(input)
+			) {
+				this.clearPendingDashboardWebAppShortcut();
 			}
 
 			if (input.type !== "keyDown") return;
