@@ -29,7 +29,7 @@ import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authentica
 import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
 import {
 	type DashboardSidebarKeyboardCommand,
-	dispatchDashboardSidebarKeyboardCommand,
+	dispatchDashboardSidebarKeyboardCommandWithFallback,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import {
@@ -560,7 +560,10 @@ export const actionsProvider: CommandProvider = {
 				priority: ACTION_COMMAND_PRIORITY.sidebarFocusedRow,
 				shortcutLabel: sidebarCommand.shortcutLabel,
 				run: () => {
-					dispatchDashboardSidebarKeyboardCommand(sidebarCommand.command);
+					dispatchDashboardSidebarKeyboardCommandWithFallback(
+						sidebarCommand.command,
+						() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+					);
 				},
 			});
 		}

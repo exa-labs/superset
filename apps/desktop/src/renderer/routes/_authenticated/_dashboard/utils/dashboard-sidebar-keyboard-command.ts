@@ -123,3 +123,12 @@ export function dispatchDashboardSidebarKeyboardCommand(
 	window.dispatchEvent(event);
 	return event.defaultPrevented;
 }
+
+export function dispatchDashboardSidebarKeyboardCommandWithFallback(
+	command: DashboardSidebarKeyboardCommand,
+	onUnhandled: (command: DashboardSidebarKeyboardCommand) => void,
+): boolean {
+	const handled = dispatchDashboardSidebarKeyboardCommand(command);
+	if (!handled) onUnhandled(command);
+	return handled;
+}

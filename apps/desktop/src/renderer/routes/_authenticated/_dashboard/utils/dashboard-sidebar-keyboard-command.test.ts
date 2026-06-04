@@ -4,6 +4,7 @@ import {
 	type DashboardSidebarKeyboardCommandDetail,
 	dashboardSidebarKeyboardActionFromCommand,
 	dispatchDashboardSidebarKeyboardCommand,
+	dispatchDashboardSidebarKeyboardCommandWithFallback,
 	isDashboardSidebarKeyboardCommand,
 } from "./dashboard-sidebar-keyboard-command";
 
@@ -77,5 +78,45 @@ describe("dashboard sidebar keyboard command", () => {
 				listener,
 			);
 		}
+	});
+
+	it("runs fallback only for unhandled sidebar keyboard commands", () => {
+		if (typeof window === "undefined") return;
+
+		const fallbackCommands: string[] = [];
+		const handledListener = (event: Event) => {
+			event.preventDefault();
+		};
+
+		expect(
+			dispatchDashboardSidebarKeyboardCommandWithFallback(
+				"focus-next",
+				(command) => {
+					fallbackCommands.push(command);
+				},
+			),
+		).toBe(false);
+		expect(fallbackCommands).toEqual(["focus-next"]);
+
+		window.addEventListener(
+			DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+			handledListener,
+		);
+		try {
+			expect(
+				dispatchDashboardSidebarKeyboardCommandWithFallback(
+					"focus-previous",
+					(command) => {
+						fallbackCommands.push(command);
+					},
+				),
+			).toBe(true);
+		} finally {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+				handledListener,
+			);
+		}
+		expect(fallbackCommands).toEqual(["focus-next"]);
 	});
 });

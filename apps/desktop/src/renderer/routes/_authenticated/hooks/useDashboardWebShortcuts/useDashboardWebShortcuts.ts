@@ -18,7 +18,7 @@ import type { DashboardQuickTerminalId } from "renderer/routes/_authenticated/_d
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	type DashboardSidebarKeyboardCommand,
-	dispatchDashboardSidebarKeyboardCommand,
+	dispatchDashboardSidebarKeyboardCommandWithFallback,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import {
@@ -386,7 +386,10 @@ export function useDashboardWebShortcuts() {
 				dashboardSidebarKeyboardCommandFromShortcut(shortcut);
 			if (sidebarCommand) {
 				clearPendingKeyboardChains();
-				dispatchDashboardSidebarKeyboardCommand(sidebarCommand);
+				dispatchDashboardSidebarKeyboardCommandWithFallback(
+					sidebarCommand,
+					() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+				);
 				return;
 			}
 
@@ -630,7 +633,10 @@ export function useDashboardWebShortcuts() {
 					event.preventDefault();
 					event.stopPropagation();
 					event.stopImmediatePropagation();
-					dispatchDashboardSidebarKeyboardCommand(sidebarCommand);
+					dispatchDashboardSidebarKeyboardCommandWithFallback(
+						sidebarCommand,
+						() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+					);
 					return;
 				}
 
@@ -658,7 +664,10 @@ export function useDashboardWebShortcuts() {
 				if (navigationAction === "open-chrome") openChrome();
 				if (navigationAction === "open-workspaces") openWorkspaces();
 				if (navigationAction === "focus-sidebar-first") {
-					dispatchDashboardSidebarKeyboardCommand("focus-first");
+					dispatchDashboardSidebarKeyboardCommandWithFallback(
+						"focus-first",
+						() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+					);
 				}
 				if (navigationAction !== "none") return;
 			}
