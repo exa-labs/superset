@@ -121,14 +121,13 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"U",
 				"X",
 				"a",
-				"x",
 				"e",
 				"c",
 				"d",
 			],
 			label: "Browser: Run sidebar row actions",
 			description:
-				"Use the focused sidebar row's menu, create, pin, reply, browser, move, read, hide, archive, rename, color, and delete actions from embedded Chrome",
+				"Use menu, create, pin, reply, browser, move, read, hide, archive, rename, color, and delete actions from embedded Chrome; lowercase x stays Chrome close-tab, so use X for native archive",
 		},
 		{
 			keys: ["g", "b", "c", "d", "w"],

@@ -174,6 +174,9 @@ describe("dashboard browser webview bridge", () => {
 			'if (key === "O") return "BROWSER_OPEN_EXTERNAL"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "x") return "BROWSER_CLOSE_TAB"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "h") return "BROWSER_PREVIOUS_TAB"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

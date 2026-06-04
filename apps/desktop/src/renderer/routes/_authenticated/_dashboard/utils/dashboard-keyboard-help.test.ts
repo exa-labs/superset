@@ -321,11 +321,13 @@ describe("dashboard keyboard help", () => {
 					"U",
 					"X",
 					"a",
-					"x",
 					"e",
 					"c",
 					"d",
 				],
+				description: expect.stringContaining(
+					"lowercase x stays Chrome close-tab",
+				),
 			}),
 		);
 		expect(entryByLabel.get("Browser: Jump to dashboard sections")).toEqual(
