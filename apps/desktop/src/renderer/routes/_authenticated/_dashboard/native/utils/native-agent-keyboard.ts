@@ -69,7 +69,8 @@ export type NativeAgentOverviewCardVimAction =
 	| "open-browser"
 	| "pin"
 	| "remove-from-folder"
-	| "rename";
+	| "rename"
+	| "show-action-hints";
 
 export const NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS = [
 	{ filter: "all", key: "1" },
@@ -109,8 +110,8 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "b") return "toggle-browser";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
-	if (key === "m") return "move-to-folder";
 	if (key === "f") return "show-action-hints";
+	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "U") return "mark-read";
 	if (key === "x" || key === "X") return "archive";
@@ -270,6 +271,7 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	if (key === "b" || key === "o") return "open-browser";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
+	if (key === "f") return "show-action-hints";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
 	if (key === "U") return "mark-read";

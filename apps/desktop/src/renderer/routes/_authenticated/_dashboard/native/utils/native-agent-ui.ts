@@ -50,6 +50,7 @@ const NATIVE_AGENT_PROVIDER_CONFIGS = {
 const NATIVE_AGENT_OVERVIEW_CARD_KEYBOARD_HINTS = [
 	{ key: "Enter", title: "Open" },
 	{ key: "r or i", title: "Reply" },
+	{ key: "f", title: "Show action hints" },
 	{ key: "o or b", title: "Open browser" },
 	{ key: "p", title: "Pin or unpin" },
 	{ key: "m", title: "Move to folder" },

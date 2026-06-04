@@ -268,6 +268,9 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentOverviewCardVimActionFromKey("b")).toBe("open-browser");
 		expect(nativeAgentOverviewCardVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentOverviewCardVimActionFromKey("e")).toBe("rename");
+		expect(nativeAgentOverviewCardVimActionFromKey("f")).toBe(
+			"show-action-hints",
+		);
 		expect(nativeAgentOverviewCardVimActionFromKey("m")).toBe("move-to-folder");
 		expect(nativeAgentOverviewCardVimActionFromKey("F")).toBe(
 			"remove-from-folder",

@@ -2167,6 +2167,10 @@ export function NativeAgentChatView({
 					openItemForReply(item);
 					return;
 				}
+				if (overviewCardAction === "show-action-hints") {
+					handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+					return;
+				}
 				if (overviewCardAction === "open-browser") {
 					openItemInBrowser(item);
 					return;
