@@ -165,6 +165,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Remove selected from folder")).toEqual(
 			expect.objectContaining({ keys: ["F"] }),
 		);
+		expect(entryByLabel.get("Mark selected reply read")).toEqual(
+			expect.objectContaining({ keys: ["U"] }),
+		);
 		expect(entryByLabel.get("Archive selected")).toEqual(
 			expect.objectContaining({ keys: ["a", "x"] }),
 		);
@@ -306,6 +309,7 @@ describe("dashboard keyboard help", () => {
 					"b",
 					"m",
 					"F",
+					"U",
 					"X",
 					"a",
 					"x",
@@ -498,7 +502,11 @@ describe("dashboard keyboard help", () => {
 			expect.arrayContaining([
 				"Open unread native reply",
 				"Mark latest native reply read",
+				"Mark selected reply read",
 			]),
+		);
+		expect(labelsForQuery("selected reply read")).toEqual(
+			expect.arrayContaining(["Mark selected reply read"]),
 		);
 		expect(labelsForQuery("archived filter native")).toEqual(
 			expect.arrayContaining(["Filter native overview"]),
@@ -540,6 +548,9 @@ describe("dashboard keyboard help", () => {
 			]),
 		);
 		expect(labelsForQuery("chrome reply pin")).toEqual(
+			expect.arrayContaining(["Browser: Run sidebar row actions"]),
+		);
+		expect(labelsForQuery("chrome read reply")).toEqual(
 			expect.arrayContaining(["Browser: Run sidebar row actions"]),
 		);
 		expect(labelsForQuery("does-not-exist")).toEqual([]);

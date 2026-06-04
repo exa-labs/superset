@@ -117,6 +117,7 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"b",
 				"m",
 				"F",
+				"U",
 				"X",
 				"a",
 				"x",
@@ -126,7 +127,7 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 			],
 			label: "Browser: Run sidebar row actions",
 			description:
-				"Use the focused sidebar row's menu, create, pin, reply, browser, move, hide, archive, rename, color, and delete actions from embedded Chrome",
+				"Use the focused sidebar row's menu, create, pin, reply, browser, move, read, hide, archive, rename, color, and delete actions from embedded Chrome",
 		},
 		{
 			keys: ["g", "b", "c", "d", "w"],
@@ -569,6 +570,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					label: "Remove selected from folder",
 					description:
 						"Move the focused native session, Chrome tab, or workspace out of its folder/group",
+				},
+				{
+					keys: ["U"],
+					label: "Mark selected reply read",
+					description:
+						"Acknowledge the focused native Capy or Devin sidebar session's latest reply",
 				},
 				{
 					keys: ["a", "x"],
