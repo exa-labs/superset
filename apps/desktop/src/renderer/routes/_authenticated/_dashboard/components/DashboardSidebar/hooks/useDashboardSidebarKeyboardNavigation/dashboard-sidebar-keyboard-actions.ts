@@ -13,7 +13,10 @@ export type DashboardSidebarKeyboardAction =
 	| "rename"
 	| "reply"
 	| "toggle-browser";
-export type DashboardSidebarActivationAction = "activate" | "none";
+export type DashboardSidebarActivationAction =
+	| "activate"
+	| "none"
+	| "toggle-expansion";
 export type DashboardSidebarLocalCommand =
 	| "focus-search"
 	| "none"
@@ -74,7 +77,8 @@ export function dashboardSidebarKeyboardActionSelector(
 export function dashboardSidebarActivationActionFromKey(
 	key: string,
 ): DashboardSidebarActivationAction {
-	if (key === "Enter" || isDashboardSidebarSpaceKey(key)) return "activate";
+	if (key === "Enter") return "activate";
+	if (isDashboardSidebarSpaceKey(key)) return "toggle-expansion";
 	return "none";
 }
 

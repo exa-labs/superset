@@ -94,12 +94,16 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 });
 
 describe("dashboardSidebarActivationActionFromKey", () => {
-	test("maps Enter and Space variants to generic sidebar activation", () => {
+	test("maps Enter to activation and Space variants to expansion toggle", () => {
 		expect(dashboardSidebarActivationActionFromKey("Enter")).toBe("activate");
-		expect(dashboardSidebarActivationActionFromKey(" ")).toBe("activate");
-		expect(dashboardSidebarActivationActionFromKey("Space")).toBe("activate");
+		expect(dashboardSidebarActivationActionFromKey(" ")).toBe(
+			"toggle-expansion",
+		);
+		expect(dashboardSidebarActivationActionFromKey("Space")).toBe(
+			"toggle-expansion",
+		);
 		expect(dashboardSidebarActivationActionFromKey("Spacebar")).toBe(
-			"activate",
+			"toggle-expansion",
 		);
 		expect(dashboardSidebarActivationActionFromKey("j")).toBe("none");
 	});
@@ -885,6 +889,35 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 		}
 	});
 
+	test("does not open a non-expandable row when toggling expansion", () => {
+		if (typeof document === "undefined") return;
+
+		let rowClicks = 0;
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const row = document.createElement("button");
+		row.dataset.nativeAgentSessionRowId = "devin-1";
+		row.onclick = () => {
+			rowClicks += 1;
+		};
+		makeVisible(row);
+		root.append(row);
+		document.body.append(root);
+
+		try {
+			focusDashboardSidebarItem(row);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					command: "toggle-expansion",
+					root,
+				}),
+			).toBe(false);
+			expect(rowClicks).toBe(0);
+		} finally {
+			root.remove();
+		}
+	});
+
 	test("runs row-scoped action commands from the preserved sidebar row", () => {
 		if (typeof document === "undefined") return;
 
@@ -1271,13 +1304,13 @@ describe("findDashboardSidebarActivationTarget", () => {
 		);
 	});
 
-	test("falls back to the focused row for Space when no expansion target exists", () => {
+	test("does not fall back to opening the focused row for Space", () => {
 		if (typeof document === "undefined") return;
 
 		const row = document.createElement("button");
 		makeVisible(row);
 
-		expect(findDashboardSidebarActivationTarget(row, " ")).toBe(row);
+		expect(findDashboardSidebarActivationTarget(row, " ")).toBeNull();
 	});
 });
 

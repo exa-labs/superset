@@ -237,9 +237,9 @@ export function findDashboardSidebarExpansionTarget(
 export function findDashboardSidebarActivationTarget(
 	activeItem: HTMLElement,
 	key: string,
-): HTMLElement {
+): HTMLElement | null {
 	if (isDashboardSidebarSpaceKey(key)) {
-		return findDashboardSidebarExpansionTarget(activeItem) ?? activeItem;
+		return findDashboardSidebarExpansionTarget(activeItem);
 	}
 	return activeItem;
 }
@@ -318,12 +318,22 @@ export function runDashboardSidebarKeyboardCommand(input: {
 	}
 
 	if (input.command === "activate") {
-		findDashboardSidebarActivationTarget(activeItem, "Enter").click();
+		const activationTarget = findDashboardSidebarActivationTarget(
+			activeItem,
+			"Enter",
+		);
+		if (!activationTarget) return false;
+		activationTarget.click();
 		return true;
 	}
 
 	if (input.command === "toggle-expansion") {
-		findDashboardSidebarActivationTarget(activeItem, " ").click();
+		const activationTarget = findDashboardSidebarActivationTarget(
+			activeItem,
+			" ",
+		);
+		if (!activationTarget) return false;
+		activationTarget.click();
 		return true;
 	}
 
@@ -523,10 +533,10 @@ export function useDashboardSidebarKeyboardNavigation(
 				event.preventDefault();
 				if (activeIndex >= 0) {
 					const activationTarget = findDashboardSidebarActivationTarget(
-						activeElement as HTMLElement,
+						items[activeIndex],
 						event.key,
 					);
-					activationTarget.click();
+					activationTarget?.click();
 					return;
 				}
 				if (focusInsideSidebar && isHTMLElement(activeElement)) {
@@ -534,7 +544,7 @@ export function useDashboardSidebarKeyboardNavigation(
 						activeElement,
 						event.key,
 					);
-					activationTarget.click();
+					activationTarget?.click();
 					return;
 				}
 				focusDashboardSidebarItem(items[0]);
@@ -628,7 +638,7 @@ export function useDashboardSidebarKeyboardNavigation(
 
 			if (event.key === "Enter" || event.key === " ") {
 				event.preventDefault();
-				findDashboardSidebarActivationTarget(activeItem, event.key).click();
+				findDashboardSidebarActivationTarget(activeItem, event.key)?.click();
 				return;
 			}
 		};

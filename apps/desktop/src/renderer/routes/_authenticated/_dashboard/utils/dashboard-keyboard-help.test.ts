@@ -274,7 +274,10 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["j", "k", "G"] }),
 		);
 		expect(entryByLabel.get("Browser: Open focused sidebar item")).toEqual(
-			expect.objectContaining({ keys: ["Enter", "Space"] }),
+			expect.objectContaining({ keys: ["Enter"] }),
+		);
+		expect(entryByLabel.get("Browser: Toggle focused sidebar item")).toEqual(
+			expect.objectContaining({ keys: ["Space"] }),
 		);
 		expect(entryByLabel.get("Browser: Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/"] }),
@@ -333,6 +336,7 @@ describe("dashboard keyboard help", () => {
 		).toEqual([
 			"Browser: Move sidebar focus",
 			"Browser: Open focused sidebar item",
+			"Browser: Toggle focused sidebar item",
 			"Browser: Search sidebar",
 			"Browser: Run sidebar row actions",
 			"Browser: Jump to dashboard sections",

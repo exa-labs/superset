@@ -85,10 +85,16 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"Move through sidebar rows from embedded Chrome in Vim mode without reloading the page",
 		},
 		{
-			keys: ["Enter", "Space"],
+			keys: ["Enter"],
 			label: "Browser: Open focused sidebar item",
 			description:
-				"Open or toggle the focused sidebar row while embedded Chrome keeps focus",
+				"Open the focused sidebar row while embedded Chrome keeps focus",
+		},
+		{
+			keys: ["Space"],
+			label: "Browser: Toggle focused sidebar item",
+			description:
+				"Collapse or expand the focused sidebar row while embedded Chrome keeps focus",
 		},
 		{
 			keys: ["/"],
@@ -467,7 +473,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				{
 					keys: ["Space"],
 					label: "Toggle selected item",
-					description: "Open, collapse, or expand the focused item",
+					description: "Collapse or expand the focused folder or sidebar group",
 				},
 				{
 					keys: ["/", "type"],
