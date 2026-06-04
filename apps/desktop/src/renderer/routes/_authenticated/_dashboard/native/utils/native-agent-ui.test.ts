@@ -76,6 +76,7 @@ describe("native agent UI terminology", () => {
 			{ key: "o or b", title: "Open browser" },
 			{ key: "p", title: "Pin or unpin" },
 			{ key: "m", title: "Move to folder" },
+			{ key: "F", title: "Remove from folder" },
 			{ key: "e", title: "Rename" },
 			{ key: "a or x", title: "Hide from sidebar" },
 			{ key: "X", title: "Archive" },
