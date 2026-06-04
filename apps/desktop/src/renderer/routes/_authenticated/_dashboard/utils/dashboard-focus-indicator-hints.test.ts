@@ -10,7 +10,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"↑↓",
 			"↵/Space",
-			"n /",
+			"n / ?",
 			"p/x",
 		]);
 	});
@@ -33,7 +33,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["Esc", "⌥K"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
-		).toEqual(["↑↓", "↵/Space", "n /", "p/x"]);
+		).toEqual(["↑↓", "↵/Space", "n / ?", "p/x"]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
@@ -126,7 +126,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["⌥K Commands", "Esc Sidebar", "⌥/ Shortcuts"]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["↑↓", "↵/Space", "n /", "p/x"],
+				["↑↓", "↵/Space", "n / ?", "p/x"],
 				{
 					vimModeEnabled: false,
 				},
@@ -134,7 +134,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual([
 			"↑↓ Move",
 			"↵ Open · Space Toggle",
-			"n New, / Search",
+			"n New, / Search, ? Map",
 			"p Pin, x Hide",
 		]);
 		expect(

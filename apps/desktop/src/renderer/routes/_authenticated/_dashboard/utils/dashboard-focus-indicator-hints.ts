@@ -12,7 +12,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", "⌥K", "r", "u/U"],
-	sidebar: ["↑↓", "↵/Space", "n /", "p/x"],
+	sidebar: ["↑↓", "↵/Space", "n / ?", "p/x"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -50,7 +50,7 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "↵") return "↵ Open";
 	if (hint === "↵/Space") return "↵ Open · Space Toggle";
 	if (hint === "h/l") return "h/l Collapse";
-	if (hint === "n /") return "n New, / Search";
+	if (hint === "n / ?") return "n New, / Search, ? Map";
 	if (hint === ".") return ". Actions";
 	if (hint === "p/x") return "p Pin, x Hide";
 	if (hint === "r") return "r Reply";
@@ -90,7 +90,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "↵/Space") return "Enter/Space";
 	if (hint === "b/p/x") return "b, p, x";
 	if (hint === "h/l") return "h/l";
-	if (hint === "n /") return "n, /";
+	if (hint === "n / ?") return "n, /, ?";
 	if (hint === "p/x") return "p, x";
 	if (hint === "f/?") return "f, ?";
 	if (hint === "j/k /") return "j/k, /";
