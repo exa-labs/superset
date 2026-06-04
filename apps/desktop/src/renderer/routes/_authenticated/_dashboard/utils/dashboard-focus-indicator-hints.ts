@@ -12,7 +12,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", "⌥K", "r", "u/U"],
-	sidebar: ["↑↓", "↵/Space", "n / ?", "p/x"],
+	sidebar: ["⌥K", "↑↓", "↵/Space", "n/p/x/?"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -50,7 +50,7 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "↵") return "↵ Open";
 	if (hint === "↵/Space") return "↵ Open · Space Toggle";
 	if (hint === "h/l") return "h/l Collapse";
-	if (hint === "n / ?") return "n New, / Search, ? Map";
+	if (hint === "n/p/x/?") return "n New, p Pin, x Hide, ? Map";
 	if (hint === ".") return ". Actions";
 	if (hint === "p/x") return "p Pin, x Hide";
 	if (hint === "r") return "r Reply";
@@ -62,14 +62,23 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	return null;
 }
 
+function dashboardFocusHintIncludesKeyboardMap(hint: string): boolean {
+	return hint.includes("?");
+}
+
 export function dashboardFocusIndicatorVisibleHintLabels(
 	hints: string[],
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string[] {
 	const showCommandsHint = hints.includes("⌥K");
 	const showVimShortcutsHint = hints.includes("?");
+	const hasLocalKeyboardMapHint = hints.some(
+		dashboardFocusHintIncludesKeyboardMap,
+	);
 	const showOptionShortcutsHint =
-		options.vimModeEnabled === false && showCommandsHint;
+		options.vimModeEnabled === false &&
+		showCommandsHint &&
+		!hasLocalKeyboardMapHint;
 	const localHintLabels = hints
 		.map(visibleDashboardFocusHintLabel)
 		.filter((hint): hint is string => hint !== null);
@@ -90,7 +99,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "↵/Space") return "Enter/Space";
 	if (hint === "b/p/x") return "b, p, x";
 	if (hint === "h/l") return "h/l";
-	if (hint === "n / ?") return "n, /, ?";
+	if (hint === "n/p/x/?") return "n, p, x, ?";
 	if (hint === "p/x") return "p, x";
 	if (hint === "f/?") return "f, ?";
 	if (hint === "j/k /") return "j/k, /";
@@ -102,7 +111,12 @@ export function dashboardFocusIndicatorShortcutTitle(
 	scopeDescription: string,
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string {
-	const shortcut = options.vimModeEnabled === false ? "Option+/" : "?";
+	const hasLocalKeyboardMapHint =
+		options.hints?.some(dashboardFocusHintIncludesKeyboardMap) ?? false;
+	const shortcut =
+		options.vimModeEnabled === false && !hasLocalKeyboardMapHint
+			? "Option+/"
+			: "?";
 	const hints = options.hints
 		?.map(readableDashboardFocusHint)
 		.filter((hint) => hint.trim().length > 0);

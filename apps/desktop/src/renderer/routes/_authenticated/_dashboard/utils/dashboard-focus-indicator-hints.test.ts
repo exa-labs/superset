@@ -8,10 +8,10 @@ import {
 describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar movement, activation, create/search, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
+			"⌥K",
 			"↑↓",
 			"↵/Space",
-			"n / ?",
-			"p/x",
+			"n/p/x/?",
 		]);
 	});
 
@@ -33,7 +33,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["Esc", "⌥K"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
-		).toEqual(["↑↓", "↵/Space", "n / ?", "p/x"]);
+		).toEqual(["⌥K", "↑↓", "↵/Space", "n/p/x/?"]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
@@ -106,6 +106,14 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toBe(
 			"Browser focus. Keys: Esc, Option+K. Press Option+/ for full keyboard shortcuts.",
 		);
+		expect(
+			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
+				hints: ["⌥K", "↑↓", "↵/Space", "n/p/x/?"],
+				vimModeEnabled: false,
+			}),
+		).toBe(
+			"Sidebar focus. Keys: Option+K, Up/Down, Enter/Space, n, p, x, ?. Press ? for full keyboard shortcuts.",
+		);
 	});
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {
@@ -126,16 +134,16 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["⌥K Commands", "Esc Sidebar", "⌥/ Shortcuts"]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["↑↓", "↵/Space", "n / ?", "p/x"],
+				["⌥K", "↑↓", "↵/Space", "n/p/x/?"],
 				{
 					vimModeEnabled: false,
 				},
 			),
 		).toEqual([
+			"⌥K Commands",
 			"↑↓ Move",
 			"↵ Open · Space Toggle",
-			"n New, / Search, ? Map",
-			"p Pin, x Hide",
+			"n New, p Pin, x Hide, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r", "u/U"], {
