@@ -15,7 +15,7 @@ describe("CommandPalette root open focus wiring", () => {
 		const source = await Bun.file(commandPalettePath).text();
 
 		expect(source).toContain("commandPaletteKeyboardActionFromKey");
-		expect(source).toContain("openDashboardKeyboardHelp");
+		expect(source).toContain("openCommandPaletteKeyboardHelp");
 		expect(source).toContain('keyboardAction === "show-keyboard-help"');
 	});
 

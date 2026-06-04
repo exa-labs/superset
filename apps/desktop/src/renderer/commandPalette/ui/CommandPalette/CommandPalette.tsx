@@ -15,10 +15,10 @@ import {
 	useState,
 } from "react";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
-import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { useCommandContext } from "../../core/ContextProvider";
 import { executeCommand } from "../../core/execute";
 import { useFrameStackStore } from "../../core/frames";
+import { openCommandPaletteKeyboardHelp } from "../../core/keyboard-help";
 import type { Command as CommandType } from "../../core/types";
 import { CommandListView } from "../CommandListView/CommandListView";
 import { SubPaletteView } from "../SubPaletteView/SubPaletteView";
@@ -101,7 +101,7 @@ export function CommandPalette() {
 			if (keyboardAction === "show-keyboard-help") {
 				event.preventDefault();
 				handleOpenChange(false);
-				openDashboardKeyboardHelp();
+				openCommandPaletteKeyboardHelp(context);
 				return;
 			}
 
@@ -110,7 +110,14 @@ export function CommandPalette() {
 				handleBack();
 			}
 		},
-		[query, depth, handleBack, handleOpenChange, closeAndFocusNavigationShell],
+		[
+			query,
+			depth,
+			handleBack,
+			handleOpenChange,
+			closeAndFocusNavigationShell,
+			context,
+		],
 	);
 
 	useEffect(() => {

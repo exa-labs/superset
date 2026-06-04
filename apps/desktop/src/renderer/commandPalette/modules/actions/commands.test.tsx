@@ -313,12 +313,18 @@ describe("actions command provider", () => {
 			...commandContext("/settings/account"),
 			navigate: (path: string) => navigated.push(path),
 		};
-		const command = actionsProvider
-			.provide(context)
-			.find((candidate) => candidate.id === "actions.showShortcuts");
 
-		command?.run?.(context);
+		for (const commandId of [
+			"actions.showShortcuts",
+			"actions.showDashboardKeyboardGuide",
+		]) {
+			const command = actionsProvider
+				.provide(context)
+				.find((candidate) => candidate.id === commandId);
 
-		expect(navigated).toEqual(["/settings/keyboard"]);
+			command?.run?.(context);
+		}
+
+		expect(navigated).toEqual(["/settings/keyboard", "/settings/keyboard"]);
 	});
 });

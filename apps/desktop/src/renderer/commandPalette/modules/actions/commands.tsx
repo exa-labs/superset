@@ -13,12 +13,12 @@ import {
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
-import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import { SYSTEM_THEME_ID, useThemeStore } from "renderer/stores/theme/store";
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
+import { openCommandPaletteKeyboardHelp } from "../../core/keyboard-help";
 import type { Command, CommandProvider } from "../../core/types";
 import { ThemeFrame } from "../../ui/ThemeFrame/ThemeFrame";
 
@@ -41,16 +41,6 @@ function cycleTheme(): void {
 				? SYSTEM_THEME_ID
 				: "light";
 	useThemeStore.getState().setTheme(next);
-}
-
-function showKeyboardShortcuts(
-	context: Parameters<NonNullable<Command["run"]>>[0],
-): void {
-	if (context.route.pathname.startsWith("/settings")) {
-		context.navigate("/settings/keyboard");
-		return;
-	}
-	openDashboardKeyboardHelp();
 }
 
 async function toggleNotificationSoundsMuted(
@@ -235,8 +225,8 @@ export const actionsProvider: CommandProvider = {
 					"shortcuts",
 					"guide",
 				],
-				run: () => {
-					openDashboardKeyboardHelp();
+				run: (ctx) => {
+					openCommandPaletteKeyboardHelp(ctx);
 				},
 			},
 		];
@@ -271,7 +261,9 @@ export const actionsProvider: CommandProvider = {
 				icon: KeyboardIcon,
 				hotkeyId: "SHOW_HOTKEYS",
 				keywords: ["hotkeys"],
-				run: showKeyboardShortcuts,
+				run: (ctx) => {
+					openCommandPaletteKeyboardHelp(ctx);
+				},
 			},
 			{
 				id: "actions.checkUpdates",
