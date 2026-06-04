@@ -175,7 +175,7 @@ export function findDashboardSidebarTypeaheadMatch(input: {
 export function focusDashboardSidebarItem(item: HTMLElement): void {
 	markDashboardSidebarKeyboardFocus(item);
 	item.focus({ preventScroll: true });
-	item.scrollIntoView({ block: "nearest" });
+	item.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
 
 export function focusFirstDashboardSidebarItem(

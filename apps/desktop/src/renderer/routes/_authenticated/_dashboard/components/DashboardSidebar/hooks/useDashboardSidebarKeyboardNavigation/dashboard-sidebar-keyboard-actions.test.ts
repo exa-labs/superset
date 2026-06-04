@@ -864,6 +864,31 @@ describe("focusFirstDashboardSidebarItem", () => {
 			root.remove();
 		}
 	});
+
+	test("keeps focused sidebar rows visible in both scroll axes", () => {
+		if (typeof document === "undefined") return;
+
+		const row = document.createElement("button");
+		makeVisible(row);
+		document.body.append(row);
+
+		const scrollCalls: ScrollIntoViewOptions[] = [];
+		const originalScrollIntoView = row.scrollIntoView;
+		row.scrollIntoView = (options?: boolean | ScrollIntoViewOptions) => {
+			if (typeof options === "object") {
+				scrollCalls.push(options);
+			}
+		};
+
+		try {
+			focusDashboardSidebarItem(row);
+
+			expect(scrollCalls).toEqual([{ block: "nearest", inline: "nearest" }]);
+		} finally {
+			row.scrollIntoView = originalScrollIntoView;
+			row.remove();
+		}
+	});
 });
 
 describe("runDashboardSidebarKeyboardCommand", () => {

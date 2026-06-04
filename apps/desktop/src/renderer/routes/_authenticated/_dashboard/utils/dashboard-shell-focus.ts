@@ -138,7 +138,7 @@ export function focusDashboardNavigationShell(
 
 	markSidebarKeyboardFocus(root, target);
 	target.focus({ preventScroll: true });
-	target.scrollIntoView({ block: "nearest" });
+	target.scrollIntoView({ block: "nearest", inline: "nearest" });
 	return true;
 }
 

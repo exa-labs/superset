@@ -8,6 +8,7 @@ class FakeElement {
 	tabIndex = 0;
 	focusCount = 0;
 	scrollCount = 0;
+	scrollOptions: ScrollIntoViewOptions | null = null;
 	private readonly attributes = new Map<string, string>();
 
 	constructor(
@@ -87,8 +88,9 @@ class FakeElement {
 		return null;
 	}
 
-	scrollIntoView() {
+	scrollIntoView(options?: boolean | ScrollIntoViewOptions) {
 		this.scrollCount += 1;
+		this.scrollOptions = typeof options === "object" ? options : null;
 	}
 
 	toString() {
@@ -156,6 +158,10 @@ describe("focusDashboardNavigationShell", () => {
 		expect(first.focusCount).toBe(0);
 		expect(active.focusCount).toBe(1);
 		expect(active.scrollCount).toBe(1);
+		expect(active.scrollOptions).toEqual({
+			block: "nearest",
+			inline: "nearest",
+		});
 		expect(active.getAttribute("data-dashboard-sidebar-keyboard-focus")).toBe(
 			"true",
 		);
