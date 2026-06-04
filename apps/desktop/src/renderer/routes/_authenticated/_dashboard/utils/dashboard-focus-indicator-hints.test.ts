@@ -40,8 +40,8 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"Esc",
 			"⌥K",
-			"r",
-			"u/U",
+			"r/u/U",
+			"x/X",
 		]);
 	});
 
@@ -146,14 +146,14 @@ describe("dashboardFocusIndicatorHints", () => {
 			"n New, p Pin, x Hide, ? Map",
 		]);
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r", "u/U"], {
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r/u/U", "x/X"], {
 				vimModeEnabled: true,
 			}),
 		).toEqual([
 			"⌥K Commands",
 			"Esc Sidebar",
-			"r Reply",
-			"u Open unread, U Mark read",
+			"r Reply, u Unread, U Read",
+			"x Hide, X Archive",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["type", "↑↓", "↵", "Esc"], {

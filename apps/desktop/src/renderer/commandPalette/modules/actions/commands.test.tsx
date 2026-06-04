@@ -192,6 +192,10 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.rename")).toBe("e");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
 		expect(
+			commands.find((command) => command.id === "actions.sidebar.archive")
+				?.title,
+		).toBe("Move focused sidebar item to overview");
+		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardActionHints",
 			)?.hotkeyId,

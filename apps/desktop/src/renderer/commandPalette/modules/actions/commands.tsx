@@ -204,12 +204,13 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	},
 	{
 		command: "action-archive",
-		description: "Archive or hide the currently focused sidebar item",
+		description:
+			"Hide the focused sidebar item or move it away from the active list",
 		icon: ArchiveIcon,
 		id: "archive",
-		keywords: ["archive", "hide", "remove", "sidebar", "focused"],
+		keywords: ["archive", "hide", "overview", "remove", "sidebar", "focused"],
 		shortcutLabel: "a/x",
-		title: "Archive focused sidebar item",
+		title: "Move focused sidebar item to overview",
 	},
 ];
 
