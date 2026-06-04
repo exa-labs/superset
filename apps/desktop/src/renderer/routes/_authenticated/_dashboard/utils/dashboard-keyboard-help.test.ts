@@ -287,7 +287,22 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(entryByLabel.get("Browser: Run sidebar row actions")).toEqual(
 			expect.objectContaining({
-				keys: [".", "N", "o", "b", "m", "F", "a", "e", "c", "d"],
+				keys: [
+					".",
+					"n",
+					"N",
+					"p",
+					"r",
+					"o",
+					"b",
+					"m",
+					"F",
+					"a",
+					"x",
+					"e",
+					"c",
+					"d",
+				],
 			}),
 		);
 		expect(entryByLabel.get("Browser: Jump to dashboard sections")).toEqual(
@@ -513,6 +528,9 @@ describe("dashboard keyboard help", () => {
 				"Browser: Move sidebar focus",
 				"Browser: Run sidebar row actions",
 			]),
+		);
+		expect(labelsForQuery("chrome reply pin")).toEqual(
+			expect.arrayContaining(["Browser: Run sidebar row actions"]),
 		);
 		expect(labelsForQuery("does-not-exist")).toEqual([]);
 	});

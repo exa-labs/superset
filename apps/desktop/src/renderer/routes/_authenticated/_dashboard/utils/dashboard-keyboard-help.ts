@@ -106,10 +106,25 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 			description: "Jump to sidebar search from embedded Chrome in Vim mode",
 		},
 		{
-			keys: [".", "N", "o", "b", "m", "F", "a", "e", "c", "d"],
+			keys: [
+				".",
+				"n",
+				"N",
+				"p",
+				"r",
+				"o",
+				"b",
+				"m",
+				"F",
+				"a",
+				"x",
+				"e",
+				"c",
+				"d",
+			],
 			label: "Browser: Run sidebar row actions",
 			description:
-				"Use the focused sidebar row's action menu, folder, browser, move, archive, rename, color, and delete actions from embedded Chrome",
+				"Use the focused sidebar row's menu, create, pin, reply, browser, move, archive, rename, color, and delete actions from embedded Chrome",
 		},
 		{
 			keys: ["g", "c", "d", "w"],
