@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
 	type DashboardSidebarKeyboardAction,
 	dashboardSidebarActivationActionFromKey,
+	dashboardSidebarExpansionIntentFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarLocalCommandFromKey,
@@ -155,6 +156,15 @@ describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
 		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
 			null,
 		);
+	});
+});
+
+describe("dashboardSidebarExpansionIntentFromKey", () => {
+	test("maps h/l to sidebar collapse and expand intents", () => {
+		expect(dashboardSidebarExpansionIntentFromKey("h")).toBe("collapse");
+		expect(dashboardSidebarExpansionIntentFromKey("l")).toBe("expand");
+		expect(dashboardSidebarExpansionIntentFromKey("H")).toBe("none");
+		expect(dashboardSidebarExpansionIntentFromKey("ArrowLeft")).toBe("none");
 	});
 });
 
@@ -333,7 +343,20 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 	});
 
 	test("does not steal sidebar action keys", () => {
-		for (const key of [".", "/", "?", "N", "c", "d", "j", "k", "n", "p"]) {
+		for (const key of [
+			".",
+			"/",
+			"?",
+			"N",
+			"c",
+			"d",
+			"h",
+			"j",
+			"k",
+			"l",
+			"n",
+			"p",
+		]) {
 			expect(
 				dashboardSidebarTypeaheadSeedFromKey({
 					altKey: false,

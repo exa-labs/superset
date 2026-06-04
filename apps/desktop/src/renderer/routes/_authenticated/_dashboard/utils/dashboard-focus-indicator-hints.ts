@@ -12,7 +12,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", "⌥K", "r", "b/p/x"],
-	sidebar: ["↑↓", "↵", ".", "p/x"],
+	sidebar: ["↑↓", "↵", "h/l", "p/x"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -20,7 +20,6 @@ const VIM_ONLY_HINTS = new Set([
 	"?",
 	"f",
 	"gg/gc/gd/gw",
-	"h/l",
 	"m/e",
 	"n/r",
 	"n/N",
@@ -47,6 +46,7 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "Esc") return "Esc Sidebar";
 	if (hint === "↑↓") return "↑↓ Move";
 	if (hint === "↵") return "↵ Open";
+	if (hint === "h/l") return "h/l Collapse";
 	if (hint === ".") return ". Actions";
 	if (hint === "p/x") return "p/x Pin/Hide";
 	if (hint === "r") return "r Reply";
@@ -81,6 +81,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↵") return "Enter";
 	if (hint === "b/p/x") return "b/p/x";
+	if (hint === "h/l") return "h/l";
 	if (hint === "p/x") return "p/x";
 	return hint;
 }

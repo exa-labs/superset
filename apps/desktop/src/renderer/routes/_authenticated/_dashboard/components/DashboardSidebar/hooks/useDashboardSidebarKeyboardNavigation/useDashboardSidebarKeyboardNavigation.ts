@@ -4,6 +4,7 @@ import { useDashboardVimModeStore } from "renderer/routes/_authenticated/_dashbo
 import {
 	type DashboardSidebarKeyboardAction,
 	dashboardSidebarActivationActionFromKey,
+	dashboardSidebarExpansionIntentFromKey,
 	dashboardSidebarKeyboardActionFromKey,
 	dashboardSidebarKeyboardActionSelector,
 	dashboardSidebarLocalCommandFromKey,
@@ -291,6 +292,10 @@ export function useDashboardSidebarKeyboardNavigation(
 				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
 					? dashboardSidebarRovingNavigationBoundaryFromKey(event.key)
 					: null;
+			const expansionIntent =
+				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
+					? dashboardSidebarExpansionIntentFromKey(event.key)
+					: "none";
 			const activationAction = localSidebarKey
 				? dashboardSidebarActivationActionFromKey(event.key)
 				: "none";
@@ -334,6 +339,7 @@ export function useDashboardSidebarKeyboardNavigation(
 			if (
 				!rovingNavigation &&
 				!rovingBoundary &&
+				expansionIntent === "none" &&
 				!vimNavigation &&
 				!activationKey &&
 				!sidebarActionKey &&
@@ -470,6 +476,29 @@ export function useDashboardSidebarKeyboardNavigation(
 				return;
 			}
 
+			if (expansionIntent !== "none") {
+				event.preventDefault();
+				if (activeIndex < 0) {
+					focusDashboardSidebarItem(items[0]);
+					return;
+				}
+
+				const activeItem = items[activeIndex];
+				const expansionTarget = findDashboardSidebarExpansionTarget(activeItem);
+				const expanded = expansionTarget
+					? dashboardSidebarExpansionValue(expansionTarget)
+					: null;
+				if (
+					shouldToggleDashboardSidebarExpansion({
+						expanded,
+						key: event.key,
+					})
+				) {
+					expansionTarget?.click();
+				}
+				return;
+			}
+
 			if (!vimModeEnabled) return;
 
 			if (event.key === "Escape") {
@@ -510,22 +539,6 @@ export function useDashboardSidebarKeyboardNavigation(
 				event.preventDefault();
 				findDashboardSidebarActivationTarget(activeItem, event.key).click();
 				return;
-			}
-
-			if (event.key === "h" || event.key === "l") {
-				const expansionTarget = findDashboardSidebarExpansionTarget(activeItem);
-				const expanded = expansionTarget
-					? dashboardSidebarExpansionValue(expansionTarget)
-					: null;
-				if (
-					shouldToggleDashboardSidebarExpansion({
-						expanded,
-						key: event.key,
-					})
-				) {
-					event.preventDefault();
-					expansionTarget?.click();
-				}
 			}
 		};
 

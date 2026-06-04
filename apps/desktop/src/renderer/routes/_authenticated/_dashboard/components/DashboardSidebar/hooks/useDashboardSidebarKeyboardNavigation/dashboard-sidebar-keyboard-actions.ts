@@ -18,6 +18,7 @@ export type DashboardSidebarLocalCommand =
 	| "focus-search"
 	| "none"
 	| "show-help";
+export type DashboardSidebarExpansionIntent = "collapse" | "expand" | "none";
 export type DashboardSidebarVimJumpAction = "first" | "last" | "none";
 
 export function dashboardSidebarTypeaheadQueryFromSeed(input: {
@@ -93,6 +94,14 @@ export function dashboardSidebarRovingNavigationBoundaryFromKey(
 	return null;
 }
 
+export function dashboardSidebarExpansionIntentFromKey(
+	key: string,
+): DashboardSidebarExpansionIntent {
+	if (key === "h") return "collapse";
+	if (key === "l") return "expand";
+	return "none";
+}
+
 export function dashboardSidebarNextRovingIndex(input: {
 	activeIndex: number;
 	delta: -1 | 1;
@@ -160,6 +169,7 @@ export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	if (dashboardSidebarRovingNavigationDeltaFromKey(input.key) !== 0) {
 		return null;
 	}
+	if (dashboardSidebarExpansionIntentFromKey(input.key) !== "none") return null;
 	if (dashboardSidebarKeyboardActionFromKey(input.key) !== "none") return null;
 	return input.key;
 }
