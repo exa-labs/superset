@@ -54,6 +54,13 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 	});
 
+	it("surfaces keyboard-help search and close hints instead of reopening help", () => {
+		expect(dashboardFocusIndicatorHints("keyboard-help")).toEqual([
+			"type",
+			"Esc",
+		]);
+	});
+
 	it("keeps the persistent focus indicator compact", () => {
 		expect(
 			[
@@ -127,5 +134,10 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: true,
 			}),
 		).toEqual(["type Search", "↑↓ Move", "↵ Open", "Esc Sidebar"]);
+		expect(
+			dashboardFocusIndicatorVisibleHintLabels(["type", "Esc"], {
+				vimModeEnabled: true,
+			}),
+		).toEqual(["type Search", "Esc Sidebar"]);
 	});
 });
