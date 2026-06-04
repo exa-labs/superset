@@ -683,7 +683,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					keys: ["U"],
 					label: "Mark current or latest reply read",
 					description:
-						"Acknowledge the current session's reply; from overview, acknowledge the latest unread Capy or Devin response",
+						"Acknowledge the current session's reply, the focused overview card, or the latest unread Capy/Devin response",
 				},
 				{
 					keys: ["o", "b"],

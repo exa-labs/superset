@@ -2179,6 +2179,10 @@ export function NativeAgentChatView({
 					void handleSetSidebarVisible(item, false);
 					return;
 				}
+				if (overviewCardAction === "mark-read") {
+					markSelectedReplyRead(item);
+					return;
+				}
 				if (overviewCardAction === "archive") {
 					void handleArchiveItem(item);
 					return;

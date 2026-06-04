@@ -214,7 +214,10 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ" }),
 		);
 		expect(entryByLabel.get("Mark current or latest reply read")).toEqual(
-			expect.objectContaining({ keys: ["U"] }),
+			expect.objectContaining({
+				description: expect.stringContaining("focused overview card"),
+				keys: ["U"],
+			}),
 		);
 		expect(entryByLabel.get("Open browser version")).toEqual(
 			expect.objectContaining({ keys: ["o", "b"] }),

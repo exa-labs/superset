@@ -272,6 +272,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentOverviewCardVimActionFromKey("F")).toBe(
 			"remove-from-folder",
 		);
+		expect(nativeAgentOverviewCardVimActionFromKey("U")).toBe("mark-read");
 		expect(nativeAgentOverviewCardVimActionFromKey("X")).toBe("archive");
 		expect(nativeAgentOverviewCardVimActionFromKey("x")).toBe("archive");
 		expect(nativeAgentOverviewCardVimActionFromKey("a")).toBe("hide");

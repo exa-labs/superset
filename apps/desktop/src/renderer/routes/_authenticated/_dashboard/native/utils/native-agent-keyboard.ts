@@ -63,6 +63,7 @@ export type NativeAgentOverviewCardVimAction =
 	| "archive"
 	| "focus-composer"
 	| "hide"
+	| "mark-read"
 	| "move-to-folder"
 	| "none"
 	| "open-browser"
@@ -271,6 +272,7 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
+	if (key === "U") return "mark-read";
 	if (key === "x" || key === "X") return "archive";
 	if (key === "a") return "hide";
 	return "none";
