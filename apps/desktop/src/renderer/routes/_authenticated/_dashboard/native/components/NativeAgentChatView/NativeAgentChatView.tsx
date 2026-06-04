@@ -1968,7 +1968,7 @@ export function NativeAgentChatView({
 						);
 						return;
 					}
-					if (selectedSessionAction === "archive") {
+					if (selectedSessionAction === "hide") {
 						void handleSetSidebarVisible(selectedItem, false);
 						return;
 					}
@@ -2065,7 +2065,7 @@ export function NativeAgentChatView({
 					openRenameDialog(item);
 					return;
 				}
-				if (overviewCardAction === "archive") {
+				if (overviewCardAction === "hide") {
 					void handleSetSidebarVisible(item, false);
 					return;
 				}

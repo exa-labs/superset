@@ -1883,7 +1883,7 @@ export function DashboardNativeAgentsSection({
 					void handlePin(rowItem, rowItem.sidebarPinned !== true);
 					return;
 				}
-				if (sidebarAction === "archive") {
+				if (sidebarAction === "hide") {
 					void handleSidebarVisible(rowItem, false);
 					return;
 				}

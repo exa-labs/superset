@@ -64,8 +64,8 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSidebarVimActionFromKey("f")).toBe("show-action-hints");
 		expect(nativeAgentSidebarVimActionFromKey("m")).toBe("move-to-folder");
 		expect(nativeAgentSidebarVimActionFromKey("F")).toBe("remove-from-folder");
-		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("archive");
-		expect(nativeAgentSidebarVimActionFromKey("x")).toBe("archive");
+		expect(nativeAgentSidebarVimActionFromKey("a")).toBe("hide");
+		expect(nativeAgentSidebarVimActionFromKey("x")).toBe("hide");
 		expect(nativeAgentSidebarVimActionFromKey("j")).toBe("none");
 	});
 
@@ -254,8 +254,8 @@ describe("native agent keyboard helpers", () => {
 			"remove-from-folder",
 		);
 		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("pin");
-		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("archive");
-		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("archive");
+		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("hide");
+		expect(nativeAgentSelectedSessionVimActionFromKey("a")).toBe("hide");
 	});
 
 	it("maps overview card vim actions for inbox management", () => {
@@ -265,8 +265,8 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentOverviewCardVimActionFromKey("F")).toBe(
 			"remove-from-folder",
 		);
-		expect(nativeAgentOverviewCardVimActionFromKey("a")).toBe("archive");
-		expect(nativeAgentOverviewCardVimActionFromKey("x")).toBe("archive");
+		expect(nativeAgentOverviewCardVimActionFromKey("a")).toBe("hide");
+		expect(nativeAgentOverviewCardVimActionFromKey("x")).toBe("hide");
 		expect(nativeAgentOverviewCardVimActionFromKey("j")).toBe("none");
 	});
 
