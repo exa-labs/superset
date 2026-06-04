@@ -3,6 +3,7 @@ import {
 	DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
 	type DashboardSidebarKeyboardCommandDetail,
 	dashboardSidebarKeyboardActionFromCommand,
+	dashboardSidebarKeyboardFallbackCommands,
 	dispatchDashboardSidebarKeyboardCommand,
 	dispatchDashboardSidebarKeyboardCommandWithFallback,
 	isDashboardSidebarKeyboardCommand,
@@ -37,6 +38,16 @@ describe("dashboard sidebar keyboard command", () => {
 			"mark-read",
 		);
 		expect(dashboardSidebarKeyboardActionFromCommand("focus-next")).toBeNull();
+	});
+
+	it("falls native hard archive back to generic move-away when a row has no hard archive action", () => {
+		expect(
+			dashboardSidebarKeyboardFallbackCommands("action-hard-archive"),
+		).toEqual(["action-archive"]);
+		expect(dashboardSidebarKeyboardFallbackCommands("action-archive")).toEqual(
+			[],
+		);
+		expect(dashboardSidebarKeyboardFallbackCommands("focus-next")).toEqual([]);
 	});
 
 	it("dispatches sidebar keyboard commands through a cancelable window event", () => {

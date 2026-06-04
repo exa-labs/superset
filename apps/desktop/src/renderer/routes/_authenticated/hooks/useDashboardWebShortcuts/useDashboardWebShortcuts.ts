@@ -18,6 +18,8 @@ import type { DashboardQuickTerminalId } from "renderer/routes/_authenticated/_d
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	type DashboardSidebarKeyboardCommand,
+	dashboardSidebarKeyboardFallbackCommands,
+	dispatchDashboardSidebarKeyboardCommand,
 	dispatchDashboardSidebarKeyboardCommandWithFallback,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
@@ -179,6 +181,19 @@ function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
 			detail: { action },
 		}),
 	);
+}
+
+function dispatchDashboardSidebarKeyboardCommandWithShellFallback(
+	command: DashboardSidebarKeyboardCommand,
+) {
+	dispatchDashboardSidebarKeyboardCommandWithFallback(command, (unhandled) => {
+		for (const fallbackCommand of dashboardSidebarKeyboardFallbackCommands(
+			unhandled,
+		)) {
+			if (dispatchDashboardSidebarKeyboardCommand(fallbackCommand)) return;
+		}
+		handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+	});
 }
 
 export function dashboardSidebarKeyboardCommandFromVimKey(
@@ -386,9 +401,8 @@ export function useDashboardWebShortcuts() {
 				dashboardSidebarKeyboardCommandFromShortcut(shortcut);
 			if (sidebarCommand) {
 				clearPendingKeyboardChains();
-				dispatchDashboardSidebarKeyboardCommandWithFallback(
+				dispatchDashboardSidebarKeyboardCommandWithShellFallback(
 					sidebarCommand,
-					() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
 				);
 				return;
 			}
@@ -633,9 +647,8 @@ export function useDashboardWebShortcuts() {
 					event.preventDefault();
 					event.stopPropagation();
 					event.stopImmediatePropagation();
-					dispatchDashboardSidebarKeyboardCommandWithFallback(
+					dispatchDashboardSidebarKeyboardCommandWithShellFallback(
 						sidebarCommand,
-						() => handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
 					);
 					return;
 				}

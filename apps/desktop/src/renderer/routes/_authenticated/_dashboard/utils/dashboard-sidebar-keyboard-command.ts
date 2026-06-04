@@ -112,6 +112,13 @@ export function dashboardSidebarKeyboardActionFromCommand(
 		: null;
 }
 
+export function dashboardSidebarKeyboardFallbackCommands(
+	command: DashboardSidebarKeyboardCommand,
+): DashboardSidebarKeyboardCommand[] {
+	if (command === "action-hard-archive") return ["action-archive"];
+	return [];
+}
+
 export function dispatchDashboardSidebarKeyboardCommand(
 	command: DashboardSidebarKeyboardCommand,
 ): boolean {
