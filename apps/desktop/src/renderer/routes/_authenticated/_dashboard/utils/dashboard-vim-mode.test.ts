@@ -162,6 +162,12 @@ describe("dashboard vim mode", () => {
 		expect(dashboardVimGlobalActionFromKey("f")).toBe("show-action-hints");
 		expect(dashboardVimGlobalActionFromKey("?")).toBe("show-keyboard-help");
 		expect(dashboardVimGlobalActionFromKey("H")).toBe("toggle-sidebar");
+		expect(dashboardVimGlobalActionFromKey("u")).toBe(
+			"open-unread-native-reply",
+		);
+		expect(dashboardVimGlobalActionFromKey("U")).toBe(
+			"mark-latest-native-reply-read",
+		);
 		expect(dashboardVimGlobalActionFromKey("h")).toBe("none");
 		expect(dashboardVimGlobalActionFromKey("p")).toBe("none");
 	});

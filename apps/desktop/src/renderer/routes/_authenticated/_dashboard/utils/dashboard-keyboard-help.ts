@@ -377,10 +377,22 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Jump to the newest unread Capy or Devin response from any dashboard view",
 				},
 				{
+					keys: ["u"],
+					label: "Open unread native reply in Vim mode",
+					description:
+						"Jump to the newest unread Capy or Devin response without leaving Vim navigation mode",
+				},
+				{
 					hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ",
 					label: "Mark latest native reply read",
 					description:
 						"Acknowledge the newest unread Capy or Devin response from any dashboard view",
+				},
+				{
+					keys: ["U"],
+					label: "Mark latest native reply read in Vim mode",
+					description:
+						"Acknowledge the newest unread Capy or Devin response without leaving Vim navigation mode",
 				},
 			],
 		},

@@ -602,6 +602,9 @@ export function useDashboardWebShortcuts() {
 			if (shouldHandleDashboardVimKey(event)) {
 				const key = dashboardVimKey(event);
 				const globalAction = dashboardVimGlobalActionFromKey(key);
+				const localVimScopeActive = isDashboardLocalVimSequenceScopeActive(
+					event.target,
+				);
 				if (globalAction === "show-action-hints") {
 					updatePendingVimPrefix(null);
 					event.preventDefault();
@@ -626,10 +629,32 @@ export function useDashboardWebShortcuts() {
 					toggleDashboardNavigationSidebar();
 					return;
 				}
-
-				const localVimScopeActive = isDashboardLocalVimSequenceScopeActive(
-					event.target,
-				);
+				if (
+					globalAction === "open-unread-native-reply" &&
+					!localVimScopeActive
+				) {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					runGlobalKeyboardAction(
+						DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.OPEN_UNREAD_NATIVE_REPLY,
+					);
+					return;
+				}
+				if (
+					globalAction === "mark-latest-native-reply-read" &&
+					!localVimScopeActive
+				) {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					runGlobalKeyboardAction(
+						DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS.MARK_LATEST_NATIVE_REPLY_READ,
+					);
+					return;
+				}
 				if (!localVimScopeActive && key === "/") {
 					updatePendingVimPrefix(null);
 					event.preventDefault();
@@ -721,6 +746,7 @@ export function useDashboardWebShortcuts() {
 		openNativeProvider,
 		openNativeProviderAtIndex,
 		openWorkspaces,
+		runGlobalKeyboardAction,
 		updatePendingVimPrefix,
 	]);
 }

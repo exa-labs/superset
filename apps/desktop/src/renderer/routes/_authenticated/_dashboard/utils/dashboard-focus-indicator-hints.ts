@@ -7,7 +7,7 @@ interface DashboardFocusIndicatorHintOptions {
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	app: ["Esc", "⌥K/Tab", "?"],
-	browser: ["Esc", "⌥K/Tab", "j/k /", "h/l/r/s/p/x/f/?"],
+	browser: ["Esc", "⌥K/Tab", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K/Tab"],
 	"keyboard-help": ["type", "Esc"],
@@ -21,7 +21,7 @@ const VIM_ONLY_HINTS = new Set([
 	"f",
 	"f/?",
 	"gg/gc/gd/gw",
-	"h/l/r/s/p/x/f/?",
+	"h/l/r/s/p/x/u/U/f/?",
 	"j/k /",
 	"m/e",
 	"n/r",
@@ -97,8 +97,8 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "x/X/f/?") return "x Hide, X Archive, f Hints, ? Map";
 	if (hint === "f") return "f Hints";
 	if (hint === "f/?") return "f Hints, ? Map";
-	if (hint === "h/l/r/s/p/x/f/?") {
-		return "h/l Tabs, r Reload, s Split, p/x Tab, f Map";
+	if (hint === "h/l/r/s/p/x/u/U/f/?") {
+		return "h/l Tabs, r Reload, s Split, p/x Tab, u/U Unread, f Map";
 	}
 	if (hint === "j/k /") return "j/k Move, / Search";
 	return null;
@@ -161,7 +161,9 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "n/N/p/m/e/x/?") return "n, N, p, m, e, x, ?";
 	if (hint === "p/x") return "p, x";
 	if (hint === "f/?") return "f, ?";
-	if (hint === "h/l/r/s/p/x/f/?") return "h/l, r, s, p, x, f, ?";
+	if (hint === "h/l/r/s/p/x/u/U/f/?") {
+		return "h/l, r, s, p, x, u, U, f, ?";
+	}
 	if (hint === "j/k /") return "j/k, /";
 	if (hint === "r/o/b/m/e") return "r, o, b, m, e";
 	if (hint === "r/o/b/m/e/u/U/x/X/f/?") {

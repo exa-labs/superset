@@ -210,9 +210,15 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open unread native reply")).toEqual(
 			expect.objectContaining({ hotkeyId: "OPEN_UNREAD_NATIVE_REPLY" }),
 		);
+		expect(entryByLabel.get("Open unread native reply in Vim mode")).toEqual(
+			expect.objectContaining({ keys: ["u"] }),
+		);
 		expect(entryByLabel.get("Mark latest native reply read")).toEqual(
 			expect.objectContaining({ hotkeyId: "MARK_LATEST_NATIVE_REPLY_READ" }),
 		);
+		expect(
+			entryByLabel.get("Mark latest native reply read in Vim mode"),
+		).toEqual(expect.objectContaining({ keys: ["U"] }));
 		expect(entryByLabel.get("Mark current or latest reply read")).toEqual(
 			expect.objectContaining({
 				description: expect.stringContaining("focused overview card"),
@@ -558,7 +564,9 @@ describe("dashboard keyboard help", () => {
 		expect(labelsForQuery("native reply")).toEqual(
 			expect.arrayContaining([
 				"Open unread native reply",
+				"Open unread native reply in Vim mode",
 				"Mark latest native reply read",
+				"Mark latest native reply read in Vim mode",
 				"Mark selected reply read",
 				"Mark current or latest reply read",
 			]),
@@ -601,6 +609,12 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(labelsForQuery("option n")).toEqual(
 			expect.arrayContaining(["Open unread native reply"]),
+		);
+		expect(labelsForQuery("vim unread reply")).toEqual(
+			expect.arrayContaining(["Open unread native reply in Vim mode"]),
+		);
+		expect(labelsForQuery("vim reply read")).toEqual(
+			expect.arrayContaining(["Mark latest native reply read in Vim mode"]),
 		);
 		expect(labelsForQuery("embedded chrome sidebar")).toEqual(
 			expect.arrayContaining([

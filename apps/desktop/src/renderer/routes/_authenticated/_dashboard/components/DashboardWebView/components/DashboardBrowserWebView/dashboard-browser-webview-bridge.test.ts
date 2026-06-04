@@ -102,6 +102,10 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER"',
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "u")');
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'return "OPEN_UNREAD_NATIVE_REPLY"',
+		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_MARK_READ"',
 		);

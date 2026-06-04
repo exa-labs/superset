@@ -347,6 +347,10 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER";
 		}
+		if (key === "u") {
+			clearDashboardVimPrefix();
+			return "OPEN_UNREAD_NATIVE_REPLY";
+		}
 		if (key === "U") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_MARK_READ";

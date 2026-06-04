@@ -4,7 +4,9 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 export type DashboardVimSequence = "g b" | "g c" | "g d" | "g g" | "g w";
 export type DashboardVimGlobalAction =
+	| "mark-latest-native-reply-read"
 	| "none"
+	| "open-unread-native-reply"
 	| "show-action-hints"
 	| "show-keyboard-help"
 	| "toggle-sidebar";
@@ -158,6 +160,8 @@ export function dashboardVimGlobalActionFromKey(
 	if (key === "f") return "show-action-hints";
 	if (key === "?") return "show-keyboard-help";
 	if (key === "H") return "toggle-sidebar";
+	if (key === "u") return "open-unread-native-reply";
+	if (key === "U") return "mark-latest-native-reply-read";
 	return "none";
 }
 
