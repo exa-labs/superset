@@ -209,8 +209,12 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			if (shiftedCode === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
 			return null;
 		}
-		const digit = /^(?:Digit|Numpad)([1-9])$/.exec(event.code || "");
-		if (digit) return digitShortcuts[Number.parseInt(digit[1], 10) - 1] || null;
+		const digit =
+			/^(?:Digit|Numpad)([1-9])$/i.exec(event.code || "") ||
+			/^[1-9]$/.exec(String(event.key || "").trim());
+		if (digit) {
+			return digitShortcuts[Number.parseInt(digit[1] || digit[0], 10) - 1] || null;
+		}
 		const code = shiftedCode;
 		if (code === "keyk") return "OPEN_CONTROL_PLANE";
 		if (code === "keyc") return "OPEN_CAPY";

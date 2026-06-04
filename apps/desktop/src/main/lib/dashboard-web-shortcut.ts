@@ -135,10 +135,19 @@ const DEVIN_INDEX_SHORTCUTS: DashboardWebShortcut[] = [
 ];
 const MODIFIER_KEYS = new Set(["alt", "control", "ctrl", "meta", "shift"]);
 
-function digitIndexFromCode(code: string): number | null {
-	const match = /^(?:digit|numpad)([1-9])$/.exec(code.toLowerCase());
-	if (!match) return null;
-	return Number.parseInt(match[1], 10) - 1;
+function digitIndexFromInputToken({
+	code,
+	key,
+}: {
+	code: string;
+	key: string;
+}): number | null {
+	const codeMatch = /^(?:digit|numpad)([1-9])$/.exec(code.toLowerCase());
+	if (codeMatch) return Number.parseInt(codeMatch[1], 10) - 1;
+
+	const keyMatch = /^[1-9]$/.exec(key.trim());
+	if (keyMatch) return Number.parseInt(keyMatch[0], 10) - 1;
+	return null;
 }
 
 function isShortcutKeyDownType(type: string): boolean {
@@ -198,14 +207,14 @@ export function dashboardWebDigitIndexFromInput(
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
 	if (!input.alt || input.control || input.meta || input.shift) return null;
-	return digitIndexFromCode(input.code);
+	return digitIndexFromInputToken(input);
 }
 
 export function dashboardWebPendingDigitIndexFromInput(
 	input: DashboardWebShortcutInput,
 ): number | null {
 	if (!isPendingShortcutInput(input)) return null;
-	return digitIndexFromCode(input.code);
+	return digitIndexFromInputToken(input);
 }
 
 export function dashboardWebIndexedShortcut(

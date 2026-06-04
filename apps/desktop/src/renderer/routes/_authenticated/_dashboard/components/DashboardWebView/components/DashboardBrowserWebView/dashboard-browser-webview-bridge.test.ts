@@ -43,6 +43,9 @@ describe("dashboard browser webview bridge", () => {
 			'"SWITCH_DASHBOARD_VIEW_PREVIOUS"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'/^[1-9]$/.exec(String(event.key || "").trim())',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "TOGGLE_VIM_MODE"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

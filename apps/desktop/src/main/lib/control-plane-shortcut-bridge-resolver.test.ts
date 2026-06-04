@@ -151,6 +151,21 @@ describe("control plane shortcut bridge resolver", () => {
 		});
 	});
 
+	it("keeps C/D numeric chains when Electron only reports the digit key", () => {
+		const { resolver } = createResolverHarness();
+
+		expect(resolver.resolve(input({ code: "KeyC", key: "c" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(resolver.resolve(input({ alt: false, code: "", key: "4" }))).toEqual(
+			{
+				preventDefault: true,
+				shortcut: "OPEN_CAPY_4",
+				type: "dashboard-web-shortcut",
+			},
+		);
+	});
+
 	it("routes high-impact dashboard Option shortcuts through the main bridge", () => {
 		const cases: Array<{
 			input: Partial<ResolverInput>;

@@ -117,12 +117,15 @@ describe("dashboardWebShortcutFromInput", () => {
 		}
 	});
 
-	it("matches Option+number shortcuts by physical digit code", () => {
+	it("matches Option+number shortcuts by physical digit code and key fallback", () => {
 		expect(dashboardWebShortcutFromInput(input({ code: "Digit1" }))).toBe(
 			"OPEN_WEB_PAGE_1",
 		);
 		expect(dashboardWebShortcutFromInput(input({ code: "Numpad6" }))).toBe(
 			"OPEN_WEB_PAGE_6",
+		);
+		expect(dashboardWebShortcutFromInput(input({ code: "", key: "4" }))).toBe(
+			"OPEN_WEB_PAGE_4",
 		);
 	});
 
@@ -180,7 +183,7 @@ describe("dashboardWebShortcutFromInput", () => {
 		).toBe("OPEN_CHROME");
 		expect(
 			dashboardWebDigitIndexFromInput(
-				input({ code: "Digit3", key: "3", type: "rawKeyDown" }),
+				input({ code: "", key: "3", type: "rawKeyDown" }),
 			),
 		).toBe(2);
 	});
@@ -236,7 +239,7 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(dashboardWebShortcutFromInput(input({ code: "Digit7" }))).toBe(null);
 		expect(
 			dashboardWebPendingDigitIndexFromInput(
-				input({ alt: false, code: "Digit7" }),
+				input({ alt: false, code: "", key: "7" }),
 			),
 		).toBe(6);
 	});
