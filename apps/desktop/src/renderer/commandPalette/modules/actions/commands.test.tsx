@@ -384,6 +384,7 @@ describe("actions command provider", () => {
 			commands.push(
 				(event as CustomEvent<{ command?: string }>).detail?.command ?? "",
 			);
+			event.preventDefault();
 		};
 		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
 		try {
@@ -449,6 +450,31 @@ describe("actions command provider", () => {
 			"action-hard-archive",
 			"action-archive",
 		]);
+	});
+
+	it("falls the control-plane native archive action back to generic move-away when hard archive is unhandled", () => {
+		if (typeof window === "undefined") return;
+		const commands: string[] = [];
+		const listener = (event: Event) => {
+			const command =
+				(event as CustomEvent<{ command?: string }>).detail?.command ?? "";
+			commands.push(command);
+			if (command === "action-archive") event.preventDefault();
+		};
+		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
+		try {
+			actionsProvider
+				.provide(commandContext())
+				.find((candidate) => candidate.id === "actions.sidebar.hardArchive")
+				?.run?.(commandContext());
+		} finally {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+				listener,
+			);
+		}
+
+		expect(commands).toEqual(["action-hard-archive", "action-archive"]);
 	});
 
 	it("opens dashboard action hints from the command palette", () => {
