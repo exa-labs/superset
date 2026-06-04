@@ -634,7 +634,7 @@ function SessionRow({
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => onSidebarVisible(item, false)}>
 							Move to overview
-							<DropdownMenuShortcut>a/x</DropdownMenuShortcut>
+							<DropdownMenuShortcut>a</DropdownMenuShortcut>
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => onCreate(item.provider)}>
 							Create new {nativeAgentConversationLabel(item.provider)}

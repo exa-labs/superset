@@ -177,14 +177,14 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Mark selected reply read")).toEqual(
 			expect.objectContaining({ keys: ["U"] }),
 		);
-		expect(entryByLabel.get("Archive selected")).toEqual(
+		expect(entryByLabel.get("Move selected away")).toEqual(
 			expect.objectContaining({ keys: ["a", "x"] }),
 		);
 		expect(entryByLabel.get("Hide from sidebar")).toEqual(
-			expect.objectContaining({ keys: ["a", "x"] }),
+			expect.objectContaining({ keys: ["a"] }),
 		);
 		expect(entryByLabel.get("Archive session")).toEqual(
-			expect.objectContaining({ keys: ["X"] }),
+			expect.objectContaining({ keys: ["x", "X"] }),
 		);
 		expect(entryByLabel.get("Color selected folder")).toEqual(
 			expect.objectContaining({ keys: ["c"] }),

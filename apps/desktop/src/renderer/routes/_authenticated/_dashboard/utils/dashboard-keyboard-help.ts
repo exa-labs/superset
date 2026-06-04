@@ -589,9 +589,9 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["a", "x"],
-					label: "Archive selected",
+					label: "Move selected away",
 					description:
-						"Move the focused native session, Chrome tab, or workspace away from the active sidebar",
+						"Move the focused Chrome tab or workspace away from the active sidebar; native sessions use a to hide and x/X to archive",
 				},
 				{
 					keys: ["c"],
@@ -703,13 +703,13 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Keep the current session in the sidebar or let it hide",
 				},
 				{
-					keys: ["a", "x"],
+					keys: ["a"],
 					label: "Hide from sidebar",
 					description:
 						"Move the current session away from the active sidebar without hard-archiving it",
 				},
 				{
-					keys: ["X"],
+					keys: ["x", "X"],
 					label: "Archive session",
 					description: "Hard-archive the current Capy or Devin session",
 				},
