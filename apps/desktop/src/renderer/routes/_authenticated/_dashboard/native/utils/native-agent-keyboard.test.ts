@@ -265,6 +265,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentOverviewCardVimActionFromKey("r")).toBe("focus-composer");
 		expect(nativeAgentOverviewCardVimActionFromKey("i")).toBe("focus-composer");
 		expect(nativeAgentOverviewCardVimActionFromKey("o")).toBe("open-browser");
+		expect(nativeAgentOverviewCardVimActionFromKey("b")).toBe("open-browser");
 		expect(nativeAgentOverviewCardVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentOverviewCardVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentOverviewCardVimActionFromKey("m")).toBe("move-to-folder");

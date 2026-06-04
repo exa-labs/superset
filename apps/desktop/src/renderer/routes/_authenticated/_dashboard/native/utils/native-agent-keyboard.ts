@@ -266,7 +266,7 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	key: string | null,
 ): NativeAgentOverviewCardVimAction {
 	if (key === "i" || key === "r") return "focus-composer";
-	if (key === "o") return "open-browser";
+	if (key === "b" || key === "o") return "open-browser";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";

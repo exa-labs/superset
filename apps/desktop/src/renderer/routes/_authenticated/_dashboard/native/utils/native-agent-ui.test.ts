@@ -73,7 +73,7 @@ describe("native agent UI terminology", () => {
 		expect(nativeAgentOverviewCardKeyboardHints()).toEqual([
 			{ key: "Enter", title: "Open" },
 			{ key: "r or i", title: "Reply" },
-			{ key: "o", title: "Open browser" },
+			{ key: "o or b", title: "Open browser" },
 			{ key: "p", title: "Pin or unpin" },
 			{ key: "m", title: "Move to folder" },
 			{ key: "e", title: "Rename" },
