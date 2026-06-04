@@ -1038,6 +1038,7 @@ export const webProvider: CommandProvider = {
 					"session",
 					"thread",
 				],
+				shortcutLabel: "X",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>

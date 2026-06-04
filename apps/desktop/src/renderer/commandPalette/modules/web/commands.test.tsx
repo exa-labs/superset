@@ -308,6 +308,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.unpin")).toBeUndefined();
 		expect(shortcutById.get("native.current.rename")).toBe("e");
 		expect(shortcutById.get("native.current.hide")).toBe("a/x");
+		expect(shortcutById.get("native.current.archive")).toBe("X");
 		expect(shortcutById.get("native.current.show")).toBeUndefined();
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
@@ -853,6 +854,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.reply")).toBe("r/i");
 		expect(shortcutById.get("native.current.openBrowser")).toBe("o");
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
+		expect(shortcutById.get("native.current.archive")).toBe("X");
 		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
 		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
 		expect(

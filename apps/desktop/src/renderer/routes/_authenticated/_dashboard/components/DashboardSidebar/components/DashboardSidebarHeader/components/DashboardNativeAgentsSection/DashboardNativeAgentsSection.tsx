@@ -173,6 +173,7 @@ type NativeAgentFolderCommandAction =
 	| "remove-active"
 	| "rename";
 type NativeAgentSidebarSessionAction =
+	| "archive"
 	| "focus-composer"
 	| "open-browser"
 	| "rename"
@@ -1722,6 +1723,7 @@ export function DashboardNativeAgentsSection({
 				vimKey !== "p" &&
 				vimKey !== "u" &&
 				vimKey !== "U" &&
+				vimKey !== "X" &&
 				vimKey !== "x" &&
 				vimKey !== "F"
 			) {
@@ -1885,6 +1887,10 @@ export function DashboardNativeAgentsSection({
 				}
 				if (sidebarAction === "hide") {
 					void handleSidebarVisible(rowItem, false);
+					return;
+				}
+				if (sidebarAction === "archive") {
+					handleSessionAction(rowItem, "archive");
 					return;
 				}
 				if (sidebarAction === "remove-from-folder") {

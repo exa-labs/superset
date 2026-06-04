@@ -116,6 +116,7 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"b",
 				"m",
 				"F",
+				"X",
 				"a",
 				"x",
 				"e",
@@ -124,7 +125,7 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 			],
 			label: "Browser: Run sidebar row actions",
 			description:
-				"Use the focused sidebar row's menu, create, pin, reply, browser, move, archive, rename, color, and delete actions from embedded Chrome",
+				"Use the focused sidebar row's menu, create, pin, reply, browser, move, hide, archive, rename, color, and delete actions from embedded Chrome",
 		},
 		{
 			keys: ["g", "b", "c", "d", "w"],
@@ -678,8 +679,14 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 				},
 				{
 					keys: ["a", "x"],
-					label: "Archive or hide",
-					description: "Move the current session away from the active sidebar",
+					label: "Hide from sidebar",
+					description:
+						"Move the current session away from the active sidebar without hard-archiving it",
+				},
+				{
+					keys: ["X"],
+					label: "Archive session",
+					description: "Hard-archive the current Capy or Devin session",
 				},
 				{
 					keys: ["m"],

@@ -1662,30 +1662,31 @@ export function NativeAgentChatView({
 		}
 	};
 
-	const handleArchive = useCallback(async () => {
-		if (!selectedId) return;
-		try {
-			if (provider === "devin") {
-				await archiveDevinSession.mutateAsync({ sessionId: selectedId });
-			} else {
-				await archiveMetadata.mutateAsync({
-					archived: true,
-					id: selectedId,
-					provider,
-				});
+	const handleArchiveItem = useCallback(
+		async (item: NativeItem) => {
+			try {
+				if (provider === "devin") {
+					await archiveDevinSession.mutateAsync({ sessionId: item.id });
+				} else {
+					await archiveMetadata.mutateAsync({
+						archived: true,
+						id: item.id,
+						provider,
+					});
+				}
+				await invalidateProvider();
+				toast.success(`${nativeAgentConversationLabel(provider)} archived`);
+			} catch (error) {
+				toast.error(error instanceof Error ? error.message : String(error));
 			}
-			await invalidateProvider();
-			toast.success(`${nativeAgentConversationLabel(provider)} archived`);
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : String(error));
-		}
-	}, [
-		archiveDevinSession,
-		archiveMetadata,
-		invalidateProvider,
-		provider,
-		selectedId,
-	]);
+		},
+		[archiveDevinSession, archiveMetadata, invalidateProvider, provider],
+	);
+
+	const handleArchive = useCallback(async () => {
+		if (!selectedItem) return;
+		await handleArchiveItem(selectedItem);
+	}, [handleArchiveItem, selectedItem]);
 
 	const handleSelectViewMode = useCallback(
 		(mode: NativeViewMode) => {
@@ -1972,6 +1973,10 @@ export function NativeAgentChatView({
 						void handleSetSidebarVisible(selectedItem, false);
 						return;
 					}
+					if (selectedSessionAction === "archive") {
+						void handleArchiveItem(selectedItem);
+						return;
+					}
 					window.dispatchEvent(
 						new CustomEvent("dashboard-native-agent-folder-action", {
 							detail: {
@@ -2069,6 +2074,10 @@ export function NativeAgentChatView({
 					void handleSetSidebarVisible(item, false);
 					return;
 				}
+				if (overviewCardAction === "archive") {
+					void handleArchiveItem(item);
+					return;
+				}
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-folder-action", {
 						detail: {
@@ -2103,6 +2112,7 @@ export function NativeAgentChatView({
 		navigate,
 		handleSetPinned,
 		handleSetSidebarVisible,
+		handleArchiveItem,
 		openRenameDialog,
 	]);
 
@@ -3039,7 +3049,7 @@ export function NativeAgentChatView({
 												>
 													<LuKeyRound className="size-3 shrink-0" />
 													<span className="truncate">
-														Enter opens, p pins, a/x hides
+														Enter opens, p pins, a/x hides, X archives
 													</span>
 												</div>
 											</button>

@@ -16,6 +16,7 @@ export function nativeAgentSearchEscapeResult(
 }
 
 export type NativeAgentSidebarVimAction =
+	| "archive"
 	| "focus-composer"
 	| "hide"
 	| "move-to-folder"
@@ -58,6 +59,7 @@ export type NativeAgentSplitPaneAction =
 	| "swap"
 	| "widen-native";
 export type NativeAgentOverviewCardVimAction =
+	| "archive"
 	| "hide"
 	| "move-to-folder"
 	| "none"
@@ -78,6 +80,7 @@ export const NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS = [
 }[];
 
 export type NativeAgentSelectedSessionVimAction =
+	| "archive"
 	| "focus-composer"
 	| "focus-navigation-shell"
 	| "hide"
@@ -104,6 +107,7 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "m") return "move-to-folder";
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
+	if (key === "X") return "archive";
 	if (key === "a" || key === "x") return "hide";
 	return "none";
 }
@@ -221,6 +225,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "m") return "move-to-folder";
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
+	if (key === "X") return "archive";
 	if (key === "a" || key === "x") return "hide";
 	return "none";
 }
@@ -258,6 +263,7 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
+	if (key === "X") return "archive";
 	if (key === "a" || key === "x") return "hide";
 	return "none";
 }

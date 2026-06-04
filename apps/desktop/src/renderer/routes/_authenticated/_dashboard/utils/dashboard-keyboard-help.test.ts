@@ -168,6 +168,12 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Archive selected")).toEqual(
 			expect.objectContaining({ keys: ["a", "x"] }),
 		);
+		expect(entryByLabel.get("Hide from sidebar")).toEqual(
+			expect.objectContaining({ keys: ["a", "x"] }),
+		);
+		expect(entryByLabel.get("Archive session")).toEqual(
+			expect.objectContaining({ keys: ["X"] }),
+		);
 		expect(entryByLabel.get("Color selected folder")).toEqual(
 			expect.objectContaining({ keys: ["c"] }),
 		);
@@ -300,6 +306,7 @@ describe("dashboard keyboard help", () => {
 					"b",
 					"m",
 					"F",
+					"X",
 					"a",
 					"x",
 					"e",
