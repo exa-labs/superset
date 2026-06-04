@@ -11,7 +11,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
-	"native-agent": ["Esc", "⌥K", "r/u/U", "x/X/f/?"],
+	"native-agent": ["Esc", "⌥K", "r/o/b/m/e", "u/U/x/X/f/?"],
 	sidebar: ["⌥K", "↑↓", "↵/Space", "n/N/p/m/e/x/?"],
 	terminal: ["Esc", "⌥K"],
 };
@@ -27,12 +27,14 @@ const VIM_ONLY_HINTS = new Set([
 	"n/N",
 	"b/p/x",
 	"o/O/b",
+	"r/o/b/m/e",
 	"r",
 	"r/u/U",
 	"s/b",
 	"s/q",
 	"s/w/[/]/=",
 	"u/U",
+	"u/U/x/X/f/?",
 	"x/X",
 	"x/X/f/?",
 ]);
@@ -60,9 +62,15 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === ".") return ". Actions";
 	if (hint === "p/x") return "p Pin, x Hide";
 	if (hint === "r") return "r Reply";
+	if (hint === "r/o/b/m/e") {
+		return "r Reply, o Browser, b View, m Move, e Rename";
+	}
 	if (hint === "r/u/U") return "r Reply, u Unread, U Read";
 	if (hint === "b/p/x") return "b View, p Pin, x Hide";
 	if (hint === "u/U") return "u Open unread, U Mark read";
+	if (hint === "u/U/x/X/f/?") {
+		return "u Unread, U Read, x Hide, X Archive, f Hints, ? Map";
+	}
 	if (hint === "x/X") return "x Hide, X Archive";
 	if (hint === "x/X/f/?") return "x Hide, X Archive, f Hints, ? Map";
 	if (hint === "f") return "f Hints";
@@ -113,8 +121,10 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "p/x") return "p, x";
 	if (hint === "f/?") return "f, ?";
 	if (hint === "j/k /") return "j/k, /";
+	if (hint === "r/o/b/m/e") return "r, o, b, m, e";
 	if (hint === "r/u/U") return "r, u, U";
 	if (hint === "u/U") return "u, U";
+	if (hint === "u/U/x/X/f/?") return "u, U, x, X, f, ?";
 	if (hint === "x/X") return "x, X";
 	if (hint === "x/X/f/?") return "x, X, f, ?";
 	return hint;
