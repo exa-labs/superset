@@ -335,13 +335,22 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
 		expect(entryByLabel.get("Open stag root kr9")).toEqual(
-			expect.objectContaining({ hotkeyId: "OPEN_ROOT_TERMINAL_STAG" }),
+			expect.objectContaining({
+				hotkeyId: "OPEN_ROOT_TERMINAL_STAG",
+				description: "Open stag directly, or use ⌥K stag in the control plane",
+			}),
 		);
 		expect(entryByLabel.get("Open prod root kr9")).toEqual(
-			expect.objectContaining({ hotkeyId: "OPEN_ROOT_TERMINAL_PROD" }),
+			expect.objectContaining({
+				hotkeyId: "OPEN_ROOT_TERMINAL_PROD",
+				description: "Open prod directly, or use ⌥K prod in the control plane",
+			}),
 		);
 		expect(entryByLabel.get("Open heph root kr9")).toEqual(
-			expect.objectContaining({ hotkeyId: "OPEN_ROOT_TERMINAL_HEPH" }),
+			expect.objectContaining({
+				hotkeyId: "OPEN_ROOT_TERMINAL_HEPH",
+				description: "Open heph directly, or use ⌥K heph in the control plane",
+			}),
 		);
 		expect(entryByLabel.get("Show this overlay from dashboard shell")).toEqual(
 			expect.objectContaining({ keys: ["?"] }),
