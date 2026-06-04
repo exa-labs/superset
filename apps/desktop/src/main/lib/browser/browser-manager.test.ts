@@ -5,6 +5,7 @@ import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
 
 class FakeWebContents extends EventEmitter {
 	id: number;
+	windowOpenHandler: ((details: { url: string }) => unknown) | null = null;
 
 	constructor(id: number) {
 		super();
@@ -17,7 +18,9 @@ class FakeWebContents extends EventEmitter {
 
 	setBackgroundThrottling() {}
 
-	setWindowOpenHandler() {}
+	setWindowOpenHandler(handler: (details: { url: string }) => unknown) {
+		this.windowOpenHandler = handler;
+	}
 
 	executeJavaScript() {
 		return Promise.resolve(false);
@@ -162,13 +165,50 @@ describe("BrowserManager webview shortcuts", () => {
 			"__CLANKEE_DASHBOARD_WEB_SHORTCUT__:TOGGLE_VIM_MODE",
 		);
 
-		expect(dashboardShortcuts).toEqual(["FOCUS_DASHBOARD_SHELL"]);
+		expect(dashboardShortcuts).toEqual([]);
 		expect(globalActions).toEqual([
+			"FOCUS_DASHBOARD_SHELL",
 			"SWITCH_DASHBOARD_VIEW_NEXT",
 			"TOGGLE_VIM_MODE",
 		]);
 
 		manager.unregister("pane-2");
+		fakeWebContentsById.clear();
+	});
+
+	it("routes bridge URL global actions before dashboard web shortcuts", () => {
+		const webContents = new FakeWebContents(3);
+		fakeWebContentsById.set(webContents.id, webContents);
+		const manager = new BrowserManager();
+		const dashboardShortcuts: DashboardWebShortcut[] = [];
+		const globalActions: string[] = [];
+		manager.on("dashboard-web-shortcut", (shortcut: DashboardWebShortcut) => {
+			dashboardShortcuts.push(shortcut);
+		});
+		manager.on("global-keyboard-action", (action: string) => {
+			globalActions.push(action);
+		});
+		manager.register("pane-3", webContents.id);
+
+		const focusEvent = beforeInputEvent();
+		webContents.emit(
+			"will-navigate",
+			focusEvent,
+			"clankee-dashboard-shortcut://bridge?shortcut=FOCUS_DASHBOARD_SHELL",
+		);
+		const reloadEvent = beforeInputEvent();
+		webContents.emit(
+			"will-navigate",
+			reloadEvent,
+			"clankee-dashboard-shortcut://bridge?shortcut=BROWSER_RELOAD",
+		);
+
+		expect(focusEvent.defaultPrevented).toBe(true);
+		expect(reloadEvent.defaultPrevented).toBe(true);
+		expect(globalActions).toEqual(["FOCUS_DASHBOARD_SHELL"]);
+		expect(dashboardShortcuts).toEqual(["BROWSER_RELOAD"]);
+
+		manager.unregister("pane-3");
 		fakeWebContentsById.clear();
 	});
 });

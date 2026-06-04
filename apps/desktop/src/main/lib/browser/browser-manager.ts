@@ -42,14 +42,19 @@ function sanitizeUrl(url: string): string {
 	return `https://www.google.com/search?q=${encodeURIComponent(url)}`;
 }
 
-function dashboardWebShortcutFromBridgeUrl(
-	url: string,
-): DashboardWebShortcut | null {
+function dashboardBridgeShortcutFromUrl(url: string): string | null {
 	try {
 		const parsed = new URL(url);
 		if (parsed.protocol !== DASHBOARD_WEB_SHORTCUT_URL_PROTOCOL) return null;
 		const shortcut = parsed.searchParams.get("shortcut");
-		return isDashboardWebShortcut(shortcut) ? shortcut : null;
+		if (
+			shortcut === "OPEN_CONTROL_PLANE" ||
+			isGlobalKeyboardAction(shortcut) ||
+			isDashboardWebShortcut(shortcut)
+		) {
+			return shortcut;
+		}
+		return null;
 	} catch {
 		return null;
 	}
@@ -92,9 +97,9 @@ export class BrowserManager extends EventEmitter {
 			// run at full speed in the background.
 			wc.setBackgroundThrottling(true);
 			wc.setWindowOpenHandler(({ url }) => {
-				const dashboardWebShortcut = dashboardWebShortcutFromBridgeUrl(url);
-				if (dashboardWebShortcut) {
-					this.openDashboardWebShortcut(dashboardWebShortcut);
+				const dashboardBridgeShortcut = dashboardBridgeShortcutFromUrl(url);
+				if (dashboardBridgeShortcut) {
+					this.dispatchDashboardBridgeShortcut(dashboardBridgeShortcut, wc);
 					return { action: "deny" as const };
 				}
 				if (url && url !== "about:blank") {
@@ -158,6 +163,32 @@ export class BrowserManager extends EventEmitter {
 			.catch(() => {
 				this.dispatchGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
 			});
+	}
+
+	private dispatchDashboardBridgeShortcut(
+		shortcut: string,
+		wc?: Electron.WebContents,
+	): boolean {
+		if (shortcut === "OPEN_CONTROL_PLANE") {
+			this.openControlPlane();
+			return true;
+		}
+
+		if (isGlobalKeyboardAction(shortcut)) {
+			if (shortcut === "SHOW_DASHBOARD_ACTION_HINTS" && wc) {
+				this.openPageActionHints(wc);
+				return true;
+			}
+			this.dispatchGlobalKeyboardAction(shortcut);
+			return true;
+		}
+
+		if (isDashboardWebShortcut(shortcut)) {
+			this.openDashboardWebShortcut(shortcut);
+			return true;
+		}
+
+		return false;
 	}
 
 	private clearPendingDashboardWebAppShortcut(): void {
@@ -457,22 +488,7 @@ export class BrowserManager extends EventEmitter {
 				const shortcut = message.slice(
 					DASHBOARD_WEB_SHORTCUT_CONSOLE_PREFIX.length,
 				);
-				if (shortcut === "OPEN_CONTROL_PLANE") {
-					this.openControlPlane();
-					return;
-				}
-				if (isDashboardWebShortcut(shortcut)) {
-					this.openDashboardWebShortcut(shortcut);
-					return;
-				}
-				if (isGlobalKeyboardAction(shortcut)) {
-					if (shortcut === "SHOW_DASHBOARD_ACTION_HINTS") {
-						this.openPageActionHints(wc);
-						return;
-					}
-					this.dispatchGlobalKeyboardAction(shortcut);
-					return;
-				}
+				if (this.dispatchDashboardBridgeShortcut(shortcut, wc)) return;
 			}
 
 			const entries = this.consoleLogs.get(paneId) ?? [];
@@ -503,10 +519,10 @@ export class BrowserManager extends EventEmitter {
 		wc: Electron.WebContents,
 	): void {
 		const handler = (event: Electron.Event, url: string) => {
-			const dashboardWebShortcut = dashboardWebShortcutFromBridgeUrl(url);
-			if (!dashboardWebShortcut) return;
+			const dashboardBridgeShortcut = dashboardBridgeShortcutFromUrl(url);
+			if (!dashboardBridgeShortcut) return;
 			event.preventDefault();
-			this.openDashboardWebShortcut(dashboardWebShortcut);
+			this.dispatchDashboardBridgeShortcut(dashboardBridgeShortcut, wc);
 		};
 
 		wc.on("will-navigate", handler);
