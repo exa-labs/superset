@@ -289,6 +289,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		id: "hardArchive",
 		keywords: [
 			"archive",
+			"x",
 			"hard",
 			"session",
 			"capy",
@@ -296,7 +297,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 			"agent",
 			"focused",
 		],
-		shortcutLabel: "X",
+		shortcutLabel: "x/X",
 		title: "Archive focused native agent session",
 	},
 	{
@@ -321,12 +322,12 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-archive",
 		description:
-			"Hide the focused sidebar item or move it away from the active list",
+			"Move the focused Chrome tab or workspace away; native sessions use a to hide and x/X to archive",
 		icon: ArchiveIcon,
 		id: "archive",
-		keywords: ["archive", "hide", "overview", "remove", "sidebar", "focused"],
+		keywords: ["away", "hide", "overview", "remove", "sidebar", "focused"],
 		shortcutLabel: "a/x",
-		title: "Move focused sidebar item to overview",
+		title: "Move focused sidebar item away",
 	},
 ];
 

@@ -215,7 +215,7 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.color")).toBe("c");
 		expect(shortcutById.get("actions.sidebar.delete")).toBe("d");
 		expect(shortcutById.get("actions.sidebar.markRead")).toBe("U");
-		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("X");
+		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("x/X");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.hardArchive")
@@ -228,7 +228,7 @@ describe("actions command provider", () => {
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.archive")
 				?.title,
-		).toBe("Move focused sidebar item to overview");
+		).toBe("Move focused sidebar item away");
 		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardActionHints",
