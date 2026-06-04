@@ -48,7 +48,9 @@ const NATIVE_AGENT_PROVIDER_CONFIGS = {
 } satisfies Record<NativeAgentProvider, NativeAgentProviderConfig>;
 
 const NATIVE_AGENT_OVERVIEW_CARD_KEYBOARD_HINTS = [
-	{ key: "Enter or o", title: "Open" },
+	{ key: "Enter", title: "Open" },
+	{ key: "r or i", title: "Reply" },
+	{ key: "o", title: "Open browser" },
 	{ key: "p", title: "Pin or unpin" },
 	{ key: "m", title: "Move to folder" },
 	{ key: "e", title: "Rename" },

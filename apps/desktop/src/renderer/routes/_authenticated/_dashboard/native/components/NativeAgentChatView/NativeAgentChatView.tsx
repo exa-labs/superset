@@ -3132,7 +3132,7 @@ export function NativeAgentChatView({
 											<button
 												type="button"
 												data-native-agent-overview-card-id={item.id}
-												aria-keyshortcuts="Enter o"
+												aria-keyshortcuts="Enter r i o p m e a x X"
 												onClick={() => {
 													if (provider === "capy") {
 														navigate({
@@ -3173,7 +3173,8 @@ export function NativeAgentChatView({
 												>
 													<LuKeyRound className="size-3 shrink-0" />
 													<span className="truncate">
-														Enter opens, p pins, a/x hides, X archives
+														Enter opens, r replies, o browser, p pins, a/x
+														hides, X archives
 													</span>
 												</div>
 											</button>

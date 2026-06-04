@@ -71,7 +71,9 @@ describe("native agent UI terminology", () => {
 
 	it("surfaces overview card keyboard hints for primary inbox actions", () => {
 		expect(nativeAgentOverviewCardKeyboardHints()).toEqual([
-			{ key: "Enter or o", title: "Open" },
+			{ key: "Enter", title: "Open" },
+			{ key: "r or i", title: "Reply" },
+			{ key: "o", title: "Open browser" },
 			{ key: "p", title: "Pin or unpin" },
 			{ key: "m", title: "Move to folder" },
 			{ key: "e", title: "Rename" },
