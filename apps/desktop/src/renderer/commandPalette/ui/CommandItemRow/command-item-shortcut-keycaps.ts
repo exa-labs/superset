@@ -13,13 +13,21 @@ const KEY_SEARCH_ALIASES: Record<string, string[]> = {
 	"⎋": ["escape", "esc"],
 	"⇥": ["tab"],
 	alt: ["option", "opt"],
+	backspace: ["delete"],
 	cmd: ["command", "meta"],
 	command: ["cmd", "meta"],
 	control: ["ctrl"],
 	ctrl: ["control"],
+	enter: ["return"],
+	esc: ["escape"],
+	escape: ["esc"],
 	meta: ["command", "cmd"],
 	option: ["alt", "opt"],
 	opt: ["option", "alt"],
+	return: ["enter"],
+	space: ["spacebar"],
+	spacebar: ["space"],
+	tab: ["tab"],
 };
 
 export interface CommandItemShortcutKeycapGroup {

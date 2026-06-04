@@ -96,6 +96,26 @@ describe("commandShortcutSearchText", () => {
 		expect(searchText).toContain("K");
 	});
 
+	it("adds full-word aliases for named local shortcuts", () => {
+		const escapeSearchText = commandShortcutSearchText({
+			keys: commandShortcutKeycapsFromLabel("Esc"),
+			label: "Esc",
+		});
+		const backspaceSearchText = commandShortcutSearchText({
+			keys: commandShortcutKeycapsFromLabel("Backspace"),
+			label: "Backspace",
+		});
+		const enterSearchText = commandShortcutSearchText({
+			keys: commandShortcutKeycapsFromLabel("Enter"),
+			label: "Enter",
+		});
+
+		expect(escapeSearchText).toContain("escape");
+		expect(escapeSearchText).toContain("esc");
+		expect(backspaceSearchText).toContain("delete");
+		expect(enterSearchText).toContain("return");
+	});
+
 	it("indexes combined global and local command shortcuts", () => {
 		const groups = commandShortcutKeycapGroups({
 			hotkeyKeys: ["⌥", "B"],
