@@ -112,6 +112,8 @@ import {
 import {
 	type NativeAgentIndexedShortcutHint,
 	nativeAgentIndexedShortcutHint,
+	nativeAgentShortcutDisplayLabel,
+	nativeAgentShortcutTitleSuffix,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcuts";
 import {
 	formatNativeAgentTimestamp,
@@ -424,6 +426,8 @@ function NativeCreateDialog({
 
 function SessionRow({
 	activeId,
+	createShortcutLabel,
+	createShortcutTitleSuffix,
 	item,
 	onCreate,
 	onMoveToFolder,
@@ -436,6 +440,8 @@ function SessionRow({
 	variant,
 }: {
 	activeId: string | null;
+	createShortcutLabel: string;
+	createShortcutTitleSuffix: string;
 	item: NativeAgentItem;
 	onCreate: (provider: NativeAgentProvider) => void;
 	onMoveToFolder: (item: NativeAgentItem, folderId: string | null) => void;
@@ -621,7 +627,7 @@ function SessionRow({
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => onCreate(item.provider)}>
 							Create new {nativeAgentConversationLabel(item.provider)}
-							<DropdownMenuShortcut>n</DropdownMenuShortcut>
+							<DropdownMenuShortcut>{createShortcutLabel}</DropdownMenuShortcut>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -676,7 +682,7 @@ function SessionRow({
 				tabIndex={-1}
 				aria-keyshortcuts="n"
 				aria-label={`Create ${nativeAgentProviderConfig(item.provider).title} session`}
-				title="Create session (n)"
+				title={`Create ${nativeAgentConversationLabel(item.provider)}. ${createShortcutTitleSuffix}`}
 				onClick={(event) => {
 					event.stopPropagation();
 					onCreate(item.provider);
@@ -763,7 +769,9 @@ export function DashboardNativeAgentsSection({
 	const activePathname = hashPathname ?? location.pathname;
 	const activeRoute = activeNativeRoute(activePathname);
 	const capyShortcut = useHotkeyDisplay("OPEN_CAPY").text;
+	const capyCreateShortcut = useHotkeyDisplay("CREATE_CAPY").text;
 	const devinShortcut = useHotkeyDisplay("OPEN_DEVIN").text;
+	const devinCreateShortcut = useHotkeyDisplay("CREATE_DEVIN").text;
 	const credentialStatus =
 		electronTrpc.nativeAgents.credentials.status.useQuery(undefined, {
 			staleTime: 15_000,
@@ -1947,6 +1955,16 @@ export function DashboardNativeAgentsSection({
 					providerConfig.id === "capy" ? capyShortcut : devinShortcut;
 				const providerShortcutLabel =
 					providerShortcut === "Unassigned" ? null : providerShortcut;
+				const providerCreateShortcut =
+					providerConfig.id === "capy"
+						? capyCreateShortcut
+						: devinCreateShortcut;
+				const providerCreateShortcutLabel = nativeAgentShortcutDisplayLabel(
+					"n",
+					providerCreateShortcut,
+				);
+				const providerCreateShortcutTitleSuffix =
+					nativeAgentShortcutTitleSuffix("n", providerCreateShortcut);
 				const shortcutHintForItem = (item: NativeAgentItem) => {
 					const index = displayedItems.findIndex(
 						(candidate) => candidate.id === item.id,
@@ -2054,7 +2072,7 @@ export function DashboardNativeAgentsSection({
 										data-dashboard-sidebar-action="create"
 										aria-keyshortcuts="n"
 										aria-label={`New ${providerConfig.title}`}
-										title={`New ${nativeAgentConversationLabel(providerConfig.id)} (n)`}
+										title={`New ${nativeAgentConversationLabel(providerConfig.id)}. ${providerCreateShortcutTitleSuffix}`}
 										onClick={() => setCreateProvider(providerConfig.id)}
 										className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
 									>
@@ -2062,7 +2080,8 @@ export function DashboardNativeAgentsSection({
 									</button>
 								</TooltipTrigger>
 								<TooltipContent side="right">
-									New {nativeAgentConversationLabel(providerConfig.id)} (n)
+									New {nativeAgentConversationLabel(providerConfig.id)} (
+									{providerCreateShortcutLabel})
 								</TooltipContent>
 							</Tooltip>
 							<Tooltip delayDuration={300}>
@@ -2222,7 +2241,9 @@ export function DashboardNativeAgentsSection({
 																{nativeAgentConversationLabel(
 																	providerConfig.id,
 																)}
-																<DropdownMenuShortcut>n</DropdownMenuShortcut>
+																<DropdownMenuShortcut>
+																	{providerCreateShortcutLabel}
+																</DropdownMenuShortcut>
 															</DropdownMenuItem>
 															<DropdownMenuItem
 																onSelect={() => createFolder(providerConfig.id)}
@@ -2245,7 +2266,7 @@ export function DashboardNativeAgentsSection({
 														tabIndex={-1}
 														aria-keyshortcuts="n"
 														aria-label={`New ${providerConfig.title} ${nativeAgentConversationLabel(providerConfig.id)}`}
-														title="Create session (n)"
+														title={`Create ${nativeAgentConversationLabel(providerConfig.id)}. ${providerCreateShortcutTitleSuffix}`}
 														onClick={(event) => {
 															event.stopPropagation();
 															setCreateProvider(providerConfig.id);
@@ -2306,6 +2327,12 @@ export function DashboardNativeAgentsSection({
 															<SessionRow
 																key={item.id}
 																activeId={activeRoute.id}
+																createShortcutLabel={
+																	providerCreateShortcutLabel
+																}
+																createShortcutTitleSuffix={
+																	providerCreateShortcutTitleSuffix
+																}
 																item={item}
 																onCreate={setCreateProvider}
 																onMoveToFolder={moveToFolder}
@@ -2327,6 +2354,10 @@ export function DashboardNativeAgentsSection({
 									<SessionRow
 										key={item.id}
 										activeId={activeRoute.id}
+										createShortcutLabel={providerCreateShortcutLabel}
+										createShortcutTitleSuffix={
+											providerCreateShortcutTitleSuffix
+										}
 										item={item}
 										onCreate={setCreateProvider}
 										onMoveToFolder={moveToFolder}
