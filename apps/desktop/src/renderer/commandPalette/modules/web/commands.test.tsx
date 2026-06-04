@@ -226,8 +226,27 @@ describe("web command provider", () => {
 
 		expect(openCapy?.hotkeyId).toBe("OPEN_CAPY");
 		expect(openDevin?.hotkeyId).toBe("OPEN_DEVIN");
+		expect(
+			commands.find((command) => command.id === "native.current.new")?.hotkeyId,
+		).toBe("CREATE_DEVIN");
 		expect(toggleBrowser?.hotkeyId).toBe("TOGGLE_NATIVE_BROWSER_VIEW");
 		expect(toggleSplit?.hotkeyId).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
+	});
+
+	it("uses provider-specific global create shortcuts for current native commands", () => {
+		const capyCommands = webProvider.provide(commandContext("/native/capy"));
+		const devinCommands = webProvider.provide(
+			commandContext("/native/devin/session-1"),
+		);
+
+		expect(
+			capyCommands.find((command) => command.id === "native.current.new")
+				?.hotkeyId,
+		).toBe("CREATE_CAPY");
+		expect(
+			devinCommands.find((command) => command.id === "native.current.new")
+				?.hotkeyId,
+		).toBe("CREATE_DEVIN");
 	});
 
 	it("exposes local native session shortcuts in command palette rows", () => {

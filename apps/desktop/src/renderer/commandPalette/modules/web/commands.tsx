@@ -798,6 +798,12 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				icon: PlusIcon,
 				iconUrl: currentNativeIconUrl,
+				hotkeyId:
+					currentNativeProvider === "capy"
+						? "CREATE_CAPY"
+						: currentNativeProvider === "devin"
+							? "CREATE_DEVIN"
+							: undefined,
 				description:
 					"Create a Capy thread or Devin session for the current native provider",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
