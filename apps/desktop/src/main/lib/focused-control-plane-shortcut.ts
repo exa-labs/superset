@@ -1,0 +1,157 @@
+import { app, BrowserWindow, globalShortcut } from "electron";
+import { openControlPlaneAccelerator } from "./control-plane-shortcut";
+
+type FocusedControlPlaneShortcutEvent =
+	| "browser-window-blur"
+	| "browser-window-focus"
+	| "will-quit";
+
+interface FocusedControlPlaneShortcutBackend {
+	getFocusedWindow: () => unknown | null;
+	off: (
+		event: FocusedControlPlaneShortcutEvent,
+		listener: (...args: unknown[]) => void,
+	) => void;
+	on: (
+		event: FocusedControlPlaneShortcutEvent,
+		listener: (...args: unknown[]) => void,
+	) => void;
+	register: (accelerator: string, callback: () => void) => boolean;
+	unregister: (accelerator: string) => void;
+}
+
+interface FocusedControlPlaneShortcutControllerOptions {
+	accelerator: string;
+	backend: FocusedControlPlaneShortcutBackend;
+	onOpenControlPlane: () => void;
+	scheduleFocusCheck?: (callback: () => void) => void;
+}
+
+interface FocusedControlPlaneShortcutController {
+	dispose: () => void;
+	install: () => void;
+	isRegistered: () => boolean;
+}
+
+const defaultScheduleFocusCheck = (callback: () => void) => {
+	setTimeout(callback, 0);
+};
+
+function onAppShortcutEvent(
+	event: FocusedControlPlaneShortcutEvent,
+	listener: (...args: unknown[]) => void,
+): void {
+	if (event === "browser-window-focus") {
+		app.on("browser-window-focus", listener);
+		return;
+	}
+	if (event === "browser-window-blur") {
+		app.on("browser-window-blur", listener);
+		return;
+	}
+	app.on("will-quit", listener);
+}
+
+function offAppShortcutEvent(
+	event: FocusedControlPlaneShortcutEvent,
+	listener: (...args: unknown[]) => void,
+): void {
+	if (event === "browser-window-focus") {
+		app.off("browser-window-focus", listener);
+		return;
+	}
+	if (event === "browser-window-blur") {
+		app.off("browser-window-blur", listener);
+		return;
+	}
+	app.off("will-quit", listener);
+}
+
+export function createFocusedControlPlaneShortcutController({
+	accelerator,
+	backend,
+	onOpenControlPlane,
+	scheduleFocusCheck = defaultScheduleFocusCheck,
+}: FocusedControlPlaneShortcutControllerOptions): FocusedControlPlaneShortcutController {
+	let installed = false;
+	let registered = false;
+	let disposed = false;
+
+	const register = () => {
+		if (disposed || registered) return;
+		registered = backend.register(accelerator, onOpenControlPlane);
+		if (!registered) {
+			console.warn(
+				`[keyboard] Failed to register focused control-plane shortcut: ${accelerator}`,
+			);
+		}
+	};
+
+	const unregister = () => {
+		if (!registered) return;
+		backend.unregister(accelerator);
+		registered = false;
+	};
+
+	const syncRegistrationToFocus = () => {
+		if (backend.getFocusedWindow()) {
+			register();
+			return;
+		}
+		unregister();
+	};
+
+	const handleWindowFocus = () => {
+		register();
+	};
+	const handleWindowBlur = () => {
+		scheduleFocusCheck(syncRegistrationToFocus);
+	};
+	const handleWillQuit = () => {
+		unregister();
+	};
+
+	return {
+		dispose: () => {
+			if (!installed) return;
+			backend.off("browser-window-focus", handleWindowFocus);
+			backend.off("browser-window-blur", handleWindowBlur);
+			backend.off("will-quit", handleWillQuit);
+			unregister();
+			disposed = true;
+			installed = false;
+		},
+		install: () => {
+			if (installed || disposed) return;
+			installed = true;
+			backend.on("browser-window-focus", handleWindowFocus);
+			backend.on("browser-window-blur", handleWindowBlur);
+			backend.on("will-quit", handleWillQuit);
+			syncRegistrationToFocus();
+		},
+		isRegistered: () => registered,
+	};
+}
+
+let focusedControlPlaneShortcutController: FocusedControlPlaneShortcutController | null =
+	null;
+
+export function installFocusedControlPlaneShortcut(
+	onOpenControlPlane: () => void,
+): void {
+	if (focusedControlPlaneShortcutController) return;
+	focusedControlPlaneShortcutController =
+		createFocusedControlPlaneShortcutController({
+			accelerator: openControlPlaneAccelerator(),
+			backend: {
+				getFocusedWindow: () => BrowserWindow.getFocusedWindow(),
+				off: offAppShortcutEvent,
+				on: onAppShortcutEvent,
+				register: (accelerator, callback) =>
+					globalShortcut.register(accelerator, callback),
+				unregister: (accelerator) => globalShortcut.unregister(accelerator),
+			},
+			onOpenControlPlane,
+		});
+	focusedControlPlaneShortcutController.install();
+}

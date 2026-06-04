@@ -22,6 +22,7 @@ import { productName } from "~/package.json";
 import { appState } from "../lib/app-state";
 import { browserManager } from "../lib/browser/browser-manager";
 import { installControlPlaneShortcutBridge } from "../lib/control-plane-shortcut-bridge";
+import { installFocusedControlPlaneShortcut } from "../lib/focused-control-plane-shortcut";
 import { createApplicationMenu } from "../lib/menu";
 import { menuEmitter } from "../lib/menu-events";
 import { playNotificationSound } from "../lib/notification-sound";
@@ -144,6 +145,9 @@ export async function MainWindow() {
 
 	createApplicationMenu();
 	installControlPlaneMenuBridge();
+	installFocusedControlPlaneShortcut(() => {
+		browserManager.openControlPlane();
+	});
 	installControlPlaneShortcutBridge(
 		() => {
 			browserManager.openControlPlane();
