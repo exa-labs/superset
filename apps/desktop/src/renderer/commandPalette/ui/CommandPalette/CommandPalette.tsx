@@ -20,6 +20,7 @@ import { useFrameStackStore } from "../../core/frames";
 import type { Command as CommandType } from "../../core/types";
 import { CommandListView } from "../CommandListView/CommandListView";
 import { SubPaletteView } from "../SubPaletteView/SubPaletteView";
+import { scheduleCommandPaletteInputFocus } from "./command-palette-focus";
 import { CommandPaletteHintFooter } from "./components/CommandPaletteHintFooter";
 
 const QueryContext = createContext<string>("");
@@ -82,12 +83,17 @@ export function CommandPalette() {
 	);
 
 	useEffect(() => {
-		if (!open) setQuery("");
+		if (!open) {
+			setQuery("");
+			return;
+		}
+		scheduleCommandPaletteInputFocus();
 	}, [open]);
 
 	useEffect(() => {
 		if (rootOpenQueryResetKey === null) return;
 		setQuery("");
+		scheduleCommandPaletteInputFocus();
 	}, [rootOpenQueryResetKey]);
 
 	const placeholder = currentFrame
@@ -109,6 +115,7 @@ export function CommandPalette() {
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent
 				showCloseButton={false}
+				data-command-palette-root="global"
 				className="!max-w-[720px] sm:!max-w-[720px] translate-y-0 max-h-[80vh] overflow-hidden p-0"
 				style={{ top: "max(16px, calc(50% - 278px))" }}
 			>
