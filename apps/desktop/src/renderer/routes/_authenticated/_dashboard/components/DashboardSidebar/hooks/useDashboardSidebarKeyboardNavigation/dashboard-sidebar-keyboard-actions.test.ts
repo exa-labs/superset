@@ -866,12 +866,57 @@ describe("focusFirstDashboardSidebarItem", () => {
 		}
 	});
 
-	test("keeps focused sidebar rows visible in both scroll axes", () => {
+	test("keeps focused sidebar rows visible inside the sidebar scroller", () => {
 		if (typeof document === "undefined") return;
 
+		const container = document.createElement("div");
+		container.dataset.dashboardSidebarScrollContainer = "true";
+		container.scrollTop = 80;
+		container.scrollLeft = 10;
+		Object.defineProperty(container, "clientHeight", {
+			configurable: true,
+			value: 100,
+		});
+		Object.defineProperty(container, "clientWidth", {
+			configurable: true,
+			value: 100,
+		});
+		Object.defineProperty(container, "scrollHeight", {
+			configurable: true,
+			value: 400,
+		});
+		Object.defineProperty(container, "scrollWidth", {
+			configurable: true,
+			value: 400,
+		});
+		container.getBoundingClientRect = () =>
+			({
+				bottom: 100,
+				height: 100,
+				left: 0,
+				right: 100,
+				top: 0,
+				width: 100,
+				x: 0,
+				y: 0,
+				toJSON: () => ({}),
+			}) as DOMRect;
+
 		const row = document.createElement("button");
-		makeVisible(row);
-		document.body.append(row);
+		row.getBoundingClientRect = () =>
+			({
+				bottom: 150,
+				height: 30,
+				left: 130,
+				right: 170,
+				top: 120,
+				width: 40,
+				x: 130,
+				y: 120,
+				toJSON: () => ({}),
+			}) as DOMRect;
+		container.append(row);
+		document.body.append(container);
 
 		const scrollCalls: ScrollIntoViewOptions[] = [];
 		const originalScrollIntoView = row.scrollIntoView;
@@ -884,10 +929,12 @@ describe("focusFirstDashboardSidebarItem", () => {
 		try {
 			focusDashboardSidebarItem(row);
 
-			expect(scrollCalls).toEqual([{ block: "nearest", inline: "nearest" }]);
+			expect(scrollCalls).toEqual([]);
+			expect(container.scrollTop).toBe(130);
+			expect(container.scrollLeft).toBe(80);
 		} finally {
 			row.scrollIntoView = originalScrollIntoView;
-			row.remove();
+			container.remove();
 		}
 	});
 });

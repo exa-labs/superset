@@ -294,7 +294,10 @@ export function DashboardSidebar({
 							"[&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:bg-primary/10 [&_[data-dashboard-sidebar-keyboard-focus=true]:focus]:text-foreground",
 						)}
 					>
-						<div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+						<div
+							data-dashboard-sidebar-scroll-container="true"
+							className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
+						>
 							<DashboardSidebarHeader
 								isCollapsed={isCollapsed}
 								searchQuery={sidebarSearchQuery}
