@@ -222,6 +222,82 @@ describe("focusDashboardNavigationShell", () => {
 		);
 	});
 
+	it("keeps restored shell focus visible inside the sidebar scroller", () => {
+		if (typeof document === "undefined") return;
+
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const container = document.createElement("div");
+		container.dataset.dashboardSidebarScrollContainer = "true";
+		container.scrollTop = 60;
+		container.scrollLeft = 20;
+		Object.defineProperty(container, "clientHeight", {
+			configurable: true,
+			value: 100,
+		});
+		Object.defineProperty(container, "clientWidth", {
+			configurable: true,
+			value: 100,
+		});
+		Object.defineProperty(container, "scrollHeight", {
+			configurable: true,
+			value: 500,
+		});
+		Object.defineProperty(container, "scrollWidth", {
+			configurable: true,
+			value: 500,
+		});
+		container.getBoundingClientRect = () =>
+			({
+				bottom: 100,
+				height: 100,
+				left: 0,
+				right: 100,
+				top: 0,
+				width: 100,
+				x: 0,
+				y: 0,
+				toJSON: () => ({}),
+			}) as DOMRect;
+
+		const active = document.createElement("button");
+		active.dataset.dashboardSidebarActive = "true";
+		active.getBoundingClientRect = () =>
+			({
+				bottom: 180,
+				height: 40,
+				left: 120,
+				right: 170,
+				top: 140,
+				width: 50,
+				x: 120,
+				y: 140,
+				toJSON: () => ({}),
+			}) as DOMRect;
+		const scrollCalls: ScrollIntoViewOptions[] = [];
+		const originalScrollIntoView = active.scrollIntoView;
+		active.scrollIntoView = (options?: boolean | ScrollIntoViewOptions) => {
+			if (typeof options === "object") {
+				scrollCalls.push(options);
+			}
+		};
+
+		container.append(active);
+		root.append(container);
+		document.body.append(root);
+
+		try {
+			expect(focusDashboardNavigationShell(document)).toBe(true);
+			expect(document.activeElement).toBe(active);
+			expect(scrollCalls).toEqual([]);
+			expect(container.scrollTop).toBe(140);
+			expect(container.scrollLeft).toBe(90);
+		} finally {
+			active.scrollIntoView = originalScrollIntoView;
+			root.remove();
+		}
+	});
+
 	it("ignores hidden keyboard focus markers and falls back to the active route row", () => {
 		const hiddenFocused = new FakeElement("hidden keyboard focused", {
 			height: 0,

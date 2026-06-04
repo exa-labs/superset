@@ -1,3 +1,5 @@
+import { scrollDashboardSidebarItemIntoView } from "./dashboard-sidebar-scroll";
+
 const ACTIVE_SIDEBAR_SELECTOR =
 	'[data-dashboard-sidebar-active="true"]:not([disabled])';
 const SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE =
@@ -138,7 +140,7 @@ export function focusDashboardNavigationShell(
 
 	markSidebarKeyboardFocus(root, target);
 	target.focus({ preventScroll: true });
-	target.scrollIntoView({ block: "nearest", inline: "nearest" });
+	scrollDashboardSidebarItemIntoView(target);
 	return true;
 }
 
