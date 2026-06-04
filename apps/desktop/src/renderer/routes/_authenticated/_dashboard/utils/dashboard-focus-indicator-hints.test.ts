@@ -9,7 +9,7 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces sidebar movement, activation, create/search, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
 			"⌥K/Tab",
-			"↑↓",
+			"↑↓ /",
 			"↵/Space/h/l",
 			"n/N/p/m/F/e/U/a/x/?",
 		]);
@@ -33,7 +33,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["Esc", "⌥K/Tab", "⌥N/⌥⇧N"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
-		).toEqual(["⌥K/Tab", "↑↓", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"]);
+		).toEqual(["⌥K/Tab", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
@@ -108,11 +108,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
-				hints: ["⌥K/Tab", "↑↓", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+				hints: ["⌥K/Tab", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Sidebar focus. Keys: Option+K/Option+Tab, Up/Down, Enter/Space/h/l, n, N, p, m, F, e, U, a/x, ?. Press ? for full keyboard shortcuts.",
+			"Sidebar focus. Keys: Option+K/Option+Tab, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a/x, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
@@ -145,14 +145,14 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["⌥K Commands · ⌥Tab MRU", "Esc Sidebar", "⌥/ Shortcuts"]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["⌥K/Tab", "↑↓", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+				["⌥K/Tab", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
 				{
 					vimModeEnabled: false,
 				},
 			),
 		).toEqual([
 			"⌥K Commands · ⌥Tab MRU",
-			"↑↓ Move",
+			"↑↓ Move · / Search",
 			"↵ Open · Space Toggle · h/l Expand",
 			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a/x Away, ? Map",
 		]);
