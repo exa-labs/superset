@@ -64,6 +64,7 @@ import {
 	shouldHandleDashboardVimKey,
 	useDashboardVimModeStore,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import { publishDashboardNativeAgentCurrentSessionState } from "../../utils/native-agent-current-session-state";
 import {
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
@@ -1324,6 +1325,30 @@ export function NativeAgentChatView({
 			return next;
 		});
 	}, [provider, selectedItem]);
+
+	useEffect(() => {
+		if (!selectedItem) {
+			publishDashboardNativeAgentCurrentSessionState(null);
+			return;
+		}
+		publishDashboardNativeAgentCurrentSessionState({
+			id: selectedItem.id,
+			provider,
+			sidebarHidden: selectedItem.sidebarHidden === true,
+			sidebarPinned: selectedItem.sidebarPinned === true,
+			title: selectedItem.title,
+		});
+		return () => {
+			publishDashboardNativeAgentCurrentSessionState(null);
+		};
+	}, [
+		provider,
+		selectedItem?.id,
+		selectedItem?.sidebarHidden,
+		selectedItem?.sidebarPinned,
+		selectedItem?.title,
+		selectedItem,
+	]);
 
 	useEffect(() => {
 		if (!selectedId || confirmedMessages.length === 0) return;

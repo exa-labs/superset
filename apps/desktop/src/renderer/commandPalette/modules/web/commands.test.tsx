@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { publishDashboardNativeAgentCurrentSessionState } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-session-state";
 import {
 	NATIVE_AGENT_FOLDER_COLORS,
 	NATIVE_AGENT_FOLDERS_STORAGE_KEY,
@@ -69,6 +70,32 @@ function withLocalStorage(
 			Object.defineProperty(globalThis, "localStorage", previous);
 		} else {
 			delete (globalThis as { localStorage?: unknown }).localStorage;
+		}
+	}
+}
+
+function withNativeCurrentSessionState(
+	state: Parameters<typeof publishDashboardNativeAgentCurrentSessionState>[0],
+	run: () => void,
+): void {
+	const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+	const target = new EventTarget();
+	const windowLike = {
+		dispatchEvent: (event: Event) => target.dispatchEvent(event),
+	};
+
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: windowLike,
+	});
+	try {
+		publishDashboardNativeAgentCurrentSessionState(state);
+		run();
+	} finally {
+		if (previousWindow) {
+			Object.defineProperty(globalThis, "window", previousWindow);
+		} else {
+			delete (globalThis as { window?: unknown }).window;
 		}
 	}
 }
@@ -179,10 +206,10 @@ describe("web command provider", () => {
 		expect(commandIds.has("native.current.new")).toBe(true);
 		expect(commandIds.has("native.current.refresh")).toBe(true);
 		expect(commandIds.has("native.current.pin")).toBe(true);
-		expect(commandIds.has("native.current.unpin")).toBe(true);
+		expect(commandIds.has("native.current.unpin")).toBe(false);
 		expect(commandIds.has("native.current.rename")).toBe(true);
 		expect(commandIds.has("native.current.hide")).toBe(true);
-		expect(commandIds.has("native.current.show")).toBe(true);
+		expect(commandIds.has("native.current.show")).toBe(false);
 		expect(commandIds.has("native.current.toggleBrowser")).toBe(true);
 		expect(commandIds.has("native.current.toggleSplit")).toBe(true);
 		expect(commandIds.has("native.current.narrowSplit")).toBe(true);
@@ -261,10 +288,10 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.refresh")).toBe("R");
 		expect(shortcutById.get("native.current.reply")).toBe("r/i");
 		expect(shortcutById.get("native.current.pin")).toBe("p");
-		expect(shortcutById.get("native.current.unpin")).toBe("p");
+		expect(shortcutById.get("native.current.unpin")).toBeUndefined();
 		expect(shortcutById.get("native.current.rename")).toBe("e");
 		expect(shortcutById.get("native.current.hide")).toBe("a/x");
-		expect(shortcutById.get("native.current.show")).toBe("p");
+		expect(shortcutById.get("native.current.show")).toBeUndefined();
 		expect(shortcutById.get("native.current.openExternal")).toBe("O");
 		expect(shortcutById.get("native.current.toggleBrowser")).toBe("b");
 		expect(shortcutById.get("native.current.toggleSplit")).toBe("s");
@@ -290,6 +317,52 @@ describe("web command provider", () => {
 		).toContain("insert");
 	});
 
+	it("uses current native session state for pin and sidebar visibility toggles", () => {
+		withNativeCurrentSessionState(
+			{
+				id: "session-1",
+				provider: "devin",
+				sidebarHidden: false,
+				sidebarPinned: true,
+				title: "Pinned session",
+			},
+			() => {
+				const commandIds = new Set(
+					webProvider
+						.provide(commandContext("/native/devin/session-1"))
+						.map((command) => command.id),
+				);
+
+				expect(commandIds.has("native.current.pin")).toBe(false);
+				expect(commandIds.has("native.current.unpin")).toBe(true);
+				expect(commandIds.has("native.current.hide")).toBe(true);
+				expect(commandIds.has("native.current.show")).toBe(false);
+			},
+		);
+
+		withNativeCurrentSessionState(
+			{
+				id: "session-1",
+				provider: "devin",
+				sidebarHidden: true,
+				sidebarPinned: false,
+				title: "Archived session",
+			},
+			() => {
+				const shortcutById = new Map(
+					webProvider
+						.provide(commandContext("/native/devin/session-1"))
+						.map((command) => [command.id, command.shortcutLabel] as const),
+				);
+
+				expect(shortcutById.has("native.current.pin")).toBe(true);
+				expect(shortcutById.has("native.current.unpin")).toBe(false);
+				expect(shortcutById.has("native.current.hide")).toBe(false);
+				expect(shortcutById.get("native.current.show")).toBe("p");
+			},
+		);
+	});
+
 	it("prioritizes current native session actions above generic native commands", () => {
 		withLocalStorage({}, () => {
 			const commandIds = activeOrderedCommandIds(
@@ -301,7 +374,7 @@ describe("web command provider", () => {
 				"native.current.openBrowser",
 				"native.current.openExternal",
 				"native.current.pin",
-				"native.current.unpin",
+				"native.current.rename",
 			]);
 			expect(commandIds.indexOf("native.current.reply")).toBeLessThan(
 				commandIds.indexOf("native.current.new"),
@@ -721,10 +794,8 @@ describe("web command provider", () => {
 			"native.current.openBrowser",
 			"native.current.openExternal",
 			"native.current.pin",
-			"native.current.unpin",
 			"native.current.rename",
 			"native.current.hide",
-			"native.current.show",
 			"native.current.toggleBrowser",
 			"native.current.toggleSplit",
 			"native.current.narrowSplit",

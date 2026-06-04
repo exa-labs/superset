@@ -1,5 +1,6 @@
 import { PlusIcon, TerminalIcon } from "lucide-react";
 import type { HotkeyId } from "renderer/hotkeys/registry";
+import { readDashboardNativeAgentCurrentSessionState } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-session-state";
 import {
 	NATIVE_AGENT_FOLDER_COLORS,
 	type NativeAgentFolderProvider,
@@ -625,6 +626,15 @@ export const webProvider: CommandProvider = {
 		const currentNativeLabel = nativeCurrentConversationLabel(
 			currentNativeProvider,
 		);
+		const currentNativeState = readDashboardNativeAgentCurrentSessionState(
+			context.route.pathname,
+		);
+		const currentNativePinAction = currentNativeState?.sidebarPinned
+			? "unpin"
+			: "pin";
+		const currentNativeVisibilityAction = currentNativeState?.sidebarHidden
+			? "show"
+			: "hide";
 		const nativeFolders = readNativeAgentFoldersFromLocalStorage();
 		const latestNativeReply = readLatestNativeAgentReplyNotification();
 		const actionableLatestNativeReply =
@@ -912,37 +922,25 @@ export const webProvider: CommandProvider = {
 					),
 			},
 			{
-				id: "native.current.pin",
-				title: `Pin current ${currentNativeLabel}`,
-				section: "web",
-				iconUrl: currentNativeIconUrl,
-				description: "Keep the current Capy/Devin conversation in the sidebar",
-				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: ["capy", "devin", "pin", "sidebar", "native"],
-				shortcutLabel: "p",
-				when: (context) =>
-					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
-				run: (context) =>
-					dispatchNativeAgentAction(
-						"pin",
-						nativeProviderFromPathname(context.route.pathname),
-					),
-			},
-			{
-				id: "native.current.unpin",
-				title: `Unpin current ${currentNativeLabel}`,
+				id: `native.current.${currentNativePinAction}`,
+				title:
+					currentNativePinAction === "unpin"
+						? `Unpin current ${currentNativeLabel}`
+						: `Pin current ${currentNativeLabel}`,
 				section: "web",
 				iconUrl: currentNativeIconUrl,
 				description:
-					"Let the current conversation leave the sidebar automatically",
+					currentNativePinAction === "unpin"
+						? "Let the current conversation leave the sidebar automatically"
+						: "Keep the current Capy/Devin conversation in the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: ["capy", "devin", "unpin", "sidebar", "native"],
+				keywords: ["capy", "devin", "pin", "unpin", "sidebar", "native"],
 				shortcutLabel: "p",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
 					dispatchNativeAgentAction(
-						"unpin",
+						currentNativePinAction,
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},
@@ -964,46 +962,34 @@ export const webProvider: CommandProvider = {
 					),
 			},
 			{
-				id: "native.current.hide",
-				title: `Archive current ${currentNativeLabel}`,
+				id: `native.current.${currentNativeVisibilityAction}`,
+				title:
+					currentNativeVisibilityAction === "show"
+						? `Show current ${currentNativeLabel} in sidebar`
+						: `Archive current ${currentNativeLabel}`,
 				section: "web",
 				iconUrl: currentNativeIconUrl,
 				description:
-					"Hide the current Capy/Devin conversation from the sidebar",
+					currentNativeVisibilityAction === "show"
+						? "Move the current Capy/Devin conversation back to the sidebar"
+						: "Hide the current Capy/Devin conversation from the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
 					"capy",
 					"devin",
 					"archive",
 					"hide",
+					"show",
 					"move",
 					"overview",
 					"sidebar",
 				],
-				shortcutLabel: "a/x",
+				shortcutLabel: currentNativeVisibilityAction === "show" ? "p" : "a/x",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
 					dispatchNativeAgentAction(
-						"hide",
-						nativeProviderFromPathname(context.route.pathname),
-					),
-			},
-			{
-				id: "native.current.show",
-				title: `Show current ${currentNativeLabel} in sidebar`,
-				section: "web",
-				iconUrl: currentNativeIconUrl,
-				description:
-					"Move the current Capy/Devin conversation back to the sidebar",
-				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
-				keywords: ["capy", "devin", "show", "overview", "sidebar"],
-				shortcutLabel: "p",
-				when: (context) =>
-					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
-				run: (context) =>
-					dispatchNativeAgentAction(
-						"show",
+						currentNativeVisibilityAction,
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},
