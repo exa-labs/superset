@@ -337,4 +337,59 @@ describe("control plane shortcut bridge resolver", () => {
 			type: "global-keyboard-action",
 		});
 	});
+
+	it("clears pending Capy/Devin chains on unrelated real keys", () => {
+		const { cleared, resolver } = createResolverHarness();
+
+		expect(resolver.resolve(input({ code: "KeyC", key: "c" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(
+			resolver.resolve(input({ alt: false, code: "KeyX", key: "x" })),
+		).toEqual({
+			preventDefault: false,
+			type: "none",
+		});
+		expect(cleared).toHaveLength(1);
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit2", key: "2" })),
+		).toEqual({
+			preventDefault: false,
+			type: "none",
+		});
+		expect(resolver.resolve(input({ code: "Digit2", key: "2" }))).toEqual({
+			preventDefault: true,
+			shortcut: "OPEN_WEB_PAGE_2",
+			type: "dashboard-web-shortcut",
+		});
+	});
+
+	it("keeps pending Capy/Devin chains across modifier key noise", () => {
+		const { cleared, resolver } = createResolverHarness();
+
+		expect(resolver.resolve(input({ code: "KeyD", key: "d" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(
+			resolver.resolve(
+				input({
+					alt: false,
+					code: "AltLeft",
+					key: "Alt",
+					type: "keyUp",
+				}),
+			),
+		).toEqual({
+			preventDefault: false,
+			type: "none",
+		});
+		expect(cleared).toHaveLength(0);
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit4", key: "4" })),
+		).toEqual({
+			preventDefault: true,
+			shortcut: "OPEN_DEVIN_4",
+			type: "dashboard-web-shortcut",
+		});
+	});
 });
