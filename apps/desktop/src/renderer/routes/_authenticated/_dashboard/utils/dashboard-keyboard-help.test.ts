@@ -3,7 +3,9 @@ import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcu
 import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	DASHBOARD_KEYBOARD_HELP_SECTIONS,
+	dashboardKeyboardHelpBrowserChromeEntries,
 	dashboardKeyboardHelpBrowserEntries,
+	dashboardKeyboardHelpBrowserSidebarEntries,
 	filterDashboardKeyboardHelpSections,
 	normalizeDashboardKeyboardHelpQuery,
 	openDashboardKeyboardHelp,
@@ -268,6 +270,23 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Chrome: Forward")).toEqual(
 			expect.objectContaining({ keys: ["L"] }),
 		);
+		expect(entryByLabel.get("Browser: Move sidebar focus")).toEqual(
+			expect.objectContaining({ keys: ["j", "k", "G"] }),
+		);
+		expect(entryByLabel.get("Browser: Open focused sidebar item")).toEqual(
+			expect.objectContaining({ keys: ["Enter", "Space"] }),
+		);
+		expect(entryByLabel.get("Browser: Search sidebar")).toEqual(
+			expect.objectContaining({ keys: ["/"] }),
+		);
+		expect(entryByLabel.get("Browser: Run sidebar row actions")).toEqual(
+			expect.objectContaining({
+				keys: [".", "N", "o", "b", "m", "F", "a", "e", "c", "d"],
+			}),
+		);
+		expect(entryByLabel.get("Browser: Jump to dashboard sections")).toEqual(
+			expect.objectContaining({ keys: ["g", "c", "d", "w"] }),
+		);
 		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
@@ -287,20 +306,37 @@ describe("dashboard keyboard help", () => {
 					shortcut.section === "split" && shortcut.action !== "toggle-split",
 			),
 		];
+		const browserEntries = browserSection?.entries ?? [];
 
-		expect(browserSection?.entries).toEqual(
-			dashboardKeyboardHelpBrowserEntries(),
-		);
-		expect(browserSection?.entries.map((entry) => entry.keys?.[0])).toEqual(
-			expectedDescriptors.map((shortcut) => shortcut.key),
-		);
-		expect(browserSection?.entries.map((entry) => entry.label)).toEqual(
+		expect(browserSection).toBeDefined();
+		expect(browserEntries).toEqual([
+			...dashboardKeyboardHelpBrowserChromeEntries(),
+			...dashboardKeyboardHelpBrowserSidebarEntries(),
+		]);
+		expect(dashboardKeyboardHelpBrowserEntries()).toEqual(browserEntries);
+		expect(
+			dashboardKeyboardHelpBrowserChromeEntries().map(
+				(entry) => entry.keys?.[0],
+			),
+		).toEqual(expectedDescriptors.map((shortcut) => shortcut.key));
+		expect(
+			dashboardKeyboardHelpBrowserChromeEntries().map((entry) => entry.label),
+		).toEqual(
 			expectedDescriptors.map((shortcut) =>
 				shortcut.action === "toggle-split"
 					? "Open or close Chrome split"
 					: `Chrome: ${shortcut.label}`,
 			),
 		);
+		expect(
+			dashboardKeyboardHelpBrowserSidebarEntries().map((entry) => entry.label),
+		).toEqual([
+			"Browser: Move sidebar focus",
+			"Browser: Open focused sidebar item",
+			"Browser: Search sidebar",
+			"Browser: Run sidebar row actions",
+			"Browser: Jump to dashboard sections",
+		]);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {
@@ -452,6 +488,12 @@ describe("dashboard keyboard help", () => {
 		);
 		expect(labelsForQuery("option n")).toEqual(
 			expect.arrayContaining(["Open unread native reply"]),
+		);
+		expect(labelsForQuery("embedded chrome sidebar")).toEqual(
+			expect.arrayContaining([
+				"Browser: Move sidebar focus",
+				"Browser: Run sidebar row actions",
+			]),
 		);
 		expect(labelsForQuery("does-not-exist")).toEqual([]);
 	});

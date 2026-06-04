@@ -55,7 +55,7 @@ const BROWSER_SHORTCUT_DESCRIPTIONS = {
 	string
 >;
 
-export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntry[] {
+export function dashboardKeyboardHelpBrowserChromeEntries(): DashboardKeyboardHelpEntry[] {
 	const regularShortcuts = dashboardBrowserShortcutDescriptors({
 		isSplitView: false,
 	});
@@ -74,6 +74,47 @@ export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntr
 				: `Chrome: ${shortcut.label}`,
 		description: BROWSER_SHORTCUT_DESCRIPTIONS[shortcut.action],
 	}));
+}
+
+export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardHelpEntry[] {
+	return [
+		{
+			keys: ["j", "k", "G"],
+			label: "Browser: Move sidebar focus",
+			description:
+				"Move through sidebar rows from embedded Chrome in Vim mode without reloading the page",
+		},
+		{
+			keys: ["Enter", "Space"],
+			label: "Browser: Open focused sidebar item",
+			description:
+				"Open or toggle the focused sidebar row while embedded Chrome keeps focus",
+		},
+		{
+			keys: ["/"],
+			label: "Browser: Search sidebar",
+			description: "Jump to sidebar search from embedded Chrome in Vim mode",
+		},
+		{
+			keys: [".", "N", "o", "b", "m", "F", "a", "e", "c", "d"],
+			label: "Browser: Run sidebar row actions",
+			description:
+				"Use the focused sidebar row's action menu, folder, browser, move, archive, rename, color, and delete actions from embedded Chrome",
+		},
+		{
+			keys: ["g", "c", "d", "w"],
+			label: "Browser: Jump to dashboard sections",
+			description:
+				"Use Vim destination chords from embedded Chrome for Capy, Devin, and workspaces",
+		},
+	];
+}
+
+export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntry[] {
+	return [
+		...dashboardKeyboardHelpBrowserChromeEntries(),
+		...dashboardKeyboardHelpBrowserSidebarEntries(),
+	];
 }
 
 const DASHBOARD_KEYBOARD_HELP_KEY_ALIASES: Record<string, string[]> = {
