@@ -351,10 +351,11 @@ describe("web command provider", () => {
 			commandContext("/web-tabs/chrome-default"),
 		);
 
-		expect(commandIds.slice(0, 8)).toEqual([
+		expect(commandIds.slice(0, 9)).toEqual([
 			"web.current.reload",
 			"web.current.goBack",
 			"web.current.goForward",
+			"web.current.openExternal",
 			"web.current.previousTab",
 			"web.current.nextTab",
 			"web.current.newFromCurrent",
@@ -623,6 +624,9 @@ describe("web command provider", () => {
 		expect(shortcutById.get("web.current.goForward")).toBe(
 			keyByAction.get("go-forward"),
 		);
+		expect(shortcutById.get("web.current.openExternal")).toBe(
+			keyByAction.get("open-external"),
+		);
 		expect(shortcutById.get("web.current.previousTab")).toBe(
 			keyByAction.get("previous-tab"),
 		);
@@ -667,6 +671,9 @@ describe("web command provider", () => {
 				.find((command) => command.id === "web.current.goForward")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "web.current.openExternal")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "web.current.previousTab")
 				?.run?.(context);
 			commands
@@ -682,6 +689,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "go-forward" },
+				type: "dashboard-browser-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "open-external" },
 				type: "dashboard-browser-current-action",
 			});
 			expect(events).toContainEqual({

@@ -908,6 +908,10 @@ export function DashboardWebView({
 				goForward();
 				return;
 			}
+			if (action === "open-external") {
+				openExternal.mutate(currentUrl);
+				return;
+			}
 			if (action === "toggle-split") {
 				toggleSplitView();
 				return;
@@ -972,6 +976,8 @@ export function DashboardWebView({
 			equalizeSplitPanes,
 			goBack,
 			goForward,
+			currentUrl,
+			openExternal,
 			reload,
 			resizeActiveSplitPane,
 			swapSplitFocus,
@@ -1304,6 +1310,8 @@ export function DashboardWebView({
 					size="icon-xs"
 					onClick={() => openExternal.mutate(currentUrl)}
 					aria-label="Open in external browser"
+					aria-keyshortcuts="O"
+					title="Open in external browser (O)"
 				>
 					<LuExternalLink className="size-3.5" />
 				</Button>

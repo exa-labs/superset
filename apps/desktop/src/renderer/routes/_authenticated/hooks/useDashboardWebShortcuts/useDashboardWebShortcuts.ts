@@ -36,6 +36,7 @@ type DashboardBrowserCurrentAction =
 	| "narrow-active-split"
 	| "new-current-url-tab"
 	| "next-tab"
+	| "open-external"
 	| "previous-tab"
 	| "reload"
 	| "swap-split"
@@ -86,6 +87,7 @@ const BROWSER_SHORTCUT_ACTIONS: Partial<
 	BROWSER_EQUALIZE_SPLIT: "equalize-split",
 	BROWSER_GO_BACK: "go-back",
 	BROWSER_GO_FORWARD: "go-forward",
+	BROWSER_OPEN_EXTERNAL: "open-external",
 	BROWSER_CLOSE_TAB: "close-current-tab",
 	BROWSER_TOGGLE_PIN: "toggle-tab-pin",
 	BROWSER_PREVIOUS_TAB: "previous-tab",

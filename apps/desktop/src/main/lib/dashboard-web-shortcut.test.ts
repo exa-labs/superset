@@ -219,6 +219,7 @@ describe("dashboardWebShortcutFromInput", () => {
 			expect.arrayContaining([
 				"BROWSER_GO_BACK",
 				"BROWSER_GO_FORWARD",
+				"BROWSER_OPEN_EXTERNAL",
 				"BROWSER_PREVIOUS_TAB",
 				"BROWSER_NEXT_TAB",
 				"BROWSER_CLOSE_TAB",

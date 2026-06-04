@@ -41,6 +41,8 @@ const BROWSER_SHORTCUT_DESCRIPTIONS = {
 	"new-current-url-tab":
 		"Create a new embedded Chrome tab from the current URL",
 	"next-tab": "Move right through embedded Chrome tabs",
+	"open-external":
+		"Open the current embedded Chrome page in the system browser",
 	"previous-tab": "Move left through embedded Chrome tabs",
 	reload: "Reload the active embedded Chrome tab",
 	"swap-split": "Move focus between embedded Chrome split panes",

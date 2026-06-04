@@ -225,6 +225,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (key === "p") return "BROWSER_TOGGLE_PIN";
 		if (key === "H") return "BROWSER_GO_BACK";
 		if (key === "L") return "BROWSER_GO_FORWARD";
+		if (key === "O") return "BROWSER_OPEN_EXTERNAL";
 		if (key === "h") return "BROWSER_PREVIOUS_TAB";
 		if (key === "l") return "BROWSER_NEXT_TAB";
 		return null;

@@ -7,6 +7,7 @@ export type DashboardBrowserShortcutAction =
 	| "narrow-active-split"
 	| "new-current-url-tab"
 	| "next-tab"
+	| "open-external"
 	| "previous-tab"
 	| "reload"
 	| "swap-split"
@@ -26,6 +27,12 @@ export interface DashboardBrowserShortcutDescriptor {
 const BASE_BROWSER_SHORTCUTS: DashboardBrowserShortcutDescriptor[] = [
 	{ action: "go-back", key: "H", label: "Back", section: "navigation" },
 	{ action: "go-forward", key: "L", label: "Forward", section: "navigation" },
+	{
+		action: "open-external",
+		key: "O",
+		label: "Open externally",
+		section: "navigation",
+	},
 	{ action: "reload", key: "r", label: "Reload", section: "navigation" },
 	{
 		action: "new-current-url-tab",

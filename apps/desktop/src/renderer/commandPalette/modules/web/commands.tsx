@@ -384,6 +384,18 @@ export const webProvider: CommandProvider = {
 				run: () => dispatchBrowserAction("go-forward"),
 			},
 			{
+				id: "web.current.openExternal",
+				title: "Open current Chrome tab externally",
+				section: "web",
+				description:
+					"Open the active embedded Chrome tab in the system browser",
+				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
+				keywords: ["chrome", "browser", "external", "system", "open", "tab"],
+				shortcutLabel: browserCurrentShortcut("open-external"),
+				when: (context) => context.route.pathname.startsWith("/web"),
+				run: () => dispatchBrowserAction("open-external"),
+			},
+			{
 				id: "web.current.previousTab",
 				title: "Go to previous Chrome tab",
 				section: "web",

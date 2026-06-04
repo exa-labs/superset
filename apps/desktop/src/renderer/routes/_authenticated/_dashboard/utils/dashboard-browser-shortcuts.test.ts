@@ -13,6 +13,12 @@ describe("dashboardBrowserShortcutDescriptors", () => {
 					section: "navigation",
 				},
 				{
+					action: "open-external",
+					key: "O",
+					label: "Open externally",
+					section: "navigation",
+				},
+				{
 					action: "reload",
 					key: "r",
 					label: "Reload",

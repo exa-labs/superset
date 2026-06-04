@@ -64,6 +64,9 @@ describe("dashboard browser webview bridge", () => {
 			'if (key === "L") return "BROWSER_GO_FORWARD"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (key === "O") return "BROWSER_OPEN_EXTERNAL"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "h") return "BROWSER_PREVIOUS_TAB"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
