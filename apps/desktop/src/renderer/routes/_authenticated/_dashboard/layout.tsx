@@ -19,7 +19,10 @@ import { DashboardMruSwitcherOverlay } from "renderer/routes/_authenticated/_das
 import { DashboardSidebar } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar";
 import { DashboardSidebarDeleteDialog } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/components/DashboardSidebarDeleteDialog";
 import { DashboardVimModeIndicator } from "renderer/routes/_authenticated/_dashboard/components/DashboardVimModeIndicator";
-import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import {
+	handleDashboardGlobalKeyboardAction,
+	shouldFocusDashboardShellFromEscapeKey,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	shouldOpenDashboardKeyboardHelpFromQuestionKey,
@@ -259,6 +262,12 @@ function DashboardLayout() {
 			event.stopPropagation();
 			setKeyboardHelpOpen(true);
 		};
+		const handleEscapeFocusDashboardShell = (event: KeyboardEvent) => {
+			if (!shouldFocusDashboardShellFromEscapeKey(event)) return;
+			event.preventDefault();
+			event.stopPropagation();
+			handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+		};
 
 		window.addEventListener(
 			DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
@@ -268,6 +277,7 @@ function DashboardLayout() {
 			TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
 			handleTerminalFocusDashboardShell,
 		);
+		window.addEventListener("keydown", handleEscapeFocusDashboardShell, true);
 		window.addEventListener("keydown", handleQuestionKeyKeyboardHelp, true);
 		return () => {
 			window.removeEventListener(
@@ -277,6 +287,11 @@ function DashboardLayout() {
 			window.removeEventListener(
 				TERMINAL_FOCUS_DASHBOARD_SHELL_EVENT,
 				handleTerminalFocusDashboardShell,
+			);
+			window.removeEventListener(
+				"keydown",
+				handleEscapeFocusDashboardShell,
+				true,
 			);
 			window.removeEventListener(
 				"keydown",

@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	type DashboardGlobalKeyboardAction,
 	handleDashboardGlobalKeyboardAction,
+	shouldFocusDashboardShellFromEscapeKey,
 } from "./dashboard-global-keyboard-action";
 
 function handlers(
@@ -32,6 +33,21 @@ function handlers(
 		switchMruView: overrides.onSwitchMruView ?? (() => true),
 		toggleVimMode: overrides.onToggleVimMode ?? (() => true),
 	};
+}
+
+function keyEvent(
+	overrides: Partial<KeyboardEvent> & { target?: EventTarget | null } = {},
+): KeyboardEvent {
+	return {
+		altKey: false,
+		ctrlKey: false,
+		defaultPrevented: false,
+		isComposing: false,
+		key: "Escape",
+		metaKey: false,
+		target: null,
+		...overrides,
+	} as KeyboardEvent;
 }
 
 describe("handleDashboardGlobalKeyboardAction", () => {
@@ -198,5 +214,81 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 			),
 		).toBe(true);
 		expect(directions).toEqual(["next", "previous"]);
+	});
+});
+
+describe("shouldFocusDashboardShellFromEscapeKey", () => {
+	it("allows plain Escape from app and sidebar focus scopes", () => {
+		if (typeof document === "undefined") return;
+
+		const appButton = document.createElement("button");
+		const sidebarButton = document.createElement("button");
+		const sidebar = document.createElement("div");
+		sidebar.dataset.dashboardSidebarRoot = "true";
+		sidebar.append(sidebarButton);
+
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ target: appButton })),
+		).toBe(true);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(
+				keyEvent({ target: sidebarButton }),
+			),
+		).toBe(true);
+	});
+
+	it("does not steal Escape from editable and focus-trapping dashboard surfaces", () => {
+		if (typeof document === "undefined") return;
+
+		const input = document.createElement("input");
+		const command = document.createElement("button");
+		command.dataset.commandPaletteCommandId = "open";
+		const keyboardHelp = document.createElement("button");
+		keyboardHelp.dataset.dashboardKeyboardHelp = "true";
+		const browser = document.createElement("button");
+		browser.dataset.dashboardBrowserView = "true";
+		const nativeAgent = document.createElement("button");
+		nativeAgent.dataset.nativeAgentViewRoot = "true";
+		const terminal = document.createElement("button");
+		terminal.dataset.terminalRoot = "true";
+		const editor = document.createElement("button");
+		editor.dataset.monacoEditor = "true";
+
+		for (const target of [
+			input,
+			command,
+			keyboardHelp,
+			browser,
+			nativeAgent,
+			terminal,
+			editor,
+		]) {
+			expect(shouldFocusDashboardShellFromEscapeKey(keyEvent({ target }))).toBe(
+				false,
+			);
+		}
+	});
+
+	it("ignores modified, prevented, composing, and non-Escape keys", () => {
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ key: "Enter" })),
+		).toBe(false);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(
+				keyEvent({ defaultPrevented: true }),
+			),
+		).toBe(false);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ isComposing: true })),
+		).toBe(false);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ altKey: true })),
+		).toBe(false);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ ctrlKey: true })),
+		).toBe(false);
+		expect(
+			shouldFocusDashboardShellFromEscapeKey(keyEvent({ metaKey: true })),
+		).toBe(false);
 	});
 });
