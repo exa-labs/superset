@@ -74,6 +74,7 @@ const CONTROL_PLANE_PRIORITY = {
 
 function dispatchNativeAgentAction(
 	action:
+		| "archive"
 		| "close-split"
 		| "equalize-split"
 		| "focus-composer"
@@ -989,13 +990,13 @@ export const webProvider: CommandProvider = {
 				title:
 					currentNativeVisibilityAction === "show"
 						? `Show current ${currentNativeLabel} in sidebar`
-						: `Archive current ${currentNativeLabel}`,
+						: `Move current ${currentNativeLabel} to overview`,
 				section: "web",
 				iconUrl: currentNativeIconUrl,
 				description:
 					currentNativeVisibilityAction === "show"
 						? "Move the current Capy/Devin conversation back to the sidebar"
-						: "Hide the current Capy/Devin conversation from the sidebar",
+						: "Hide the current Capy/Devin conversation from the sidebar without archiving it",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: [
 					"capy",
@@ -1013,6 +1014,33 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						currentNativeVisibilityAction,
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.archive",
+				title: `Archive current ${currentNativeLabel}`,
+				section: "web",
+				iconUrl: currentNativeIconUrl,
+				description:
+					"Archive the current Capy/Devin conversation, not just hide it from the sidebar",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
+				keywords: [
+					"capy",
+					"devin",
+					"archive",
+					"done",
+					"finish",
+					"complete",
+					"native",
+					"session",
+					"thread",
+				],
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"archive",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

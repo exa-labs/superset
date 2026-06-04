@@ -177,6 +177,7 @@ type NativeViewMode = "browser" | "native" | "split";
 type NativeAgentSplitPlacement = "native-left" | "native-right";
 
 type NativeAgentCurrentAction =
+	| "archive"
 	| "close-split"
 	| "equalize-split"
 	| "focus-composer"
@@ -1661,7 +1662,7 @@ export function NativeAgentChatView({
 		}
 	};
 
-	const handleArchive = async () => {
+	const handleArchive = useCallback(async () => {
 		if (!selectedId) return;
 		try {
 			if (provider === "devin") {
@@ -1678,7 +1679,13 @@ export function NativeAgentChatView({
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : String(error));
 		}
-	};
+	}, [
+		archiveDevinSession,
+		archiveMetadata,
+		invalidateProvider,
+		provider,
+		selectedId,
+	]);
 
 	const handleSelectViewMode = useCallback(
 		(mode: NativeViewMode) => {
@@ -2141,6 +2148,10 @@ export function NativeAgentChatView({
 				openRenameDialog(selectedItem);
 				return;
 			}
+			if (detail?.action === "archive") {
+				void handleArchive();
+				return;
+			}
 			if (detail?.action === "hide") {
 				void handleSetSidebarVisible(selectedItem, false);
 				return;
@@ -2213,6 +2224,7 @@ export function NativeAgentChatView({
 		viewMode,
 		handleSetPinned,
 		handleSetSidebarVisible,
+		handleArchive,
 		openRenameDialog,
 		openExternal,
 	]);

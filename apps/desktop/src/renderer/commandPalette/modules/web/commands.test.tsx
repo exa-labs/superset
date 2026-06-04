@@ -827,6 +827,7 @@ describe("web command provider", () => {
 			"native.current.pin",
 			"native.current.rename",
 			"native.current.hide",
+			"native.current.archive",
 			"native.current.toggleBrowser",
 			"native.current.toggleSplit",
 			"native.current.narrowSplit",
@@ -856,6 +857,13 @@ describe("web command provider", () => {
 		expect(
 			commands.find((command) => command.id === "native.current.pin")?.title,
 		).toBe("Pin current Devin session");
+		expect(
+			commands.find((command) => command.id === "native.current.hide")?.title,
+		).toBe("Move current Devin session to overview");
+		expect(
+			commands.find((command) => command.id === "native.current.archive")
+				?.title,
+		).toBe("Archive current Devin session");
 		expect(
 			commands.find((command) => command.id === "native.folder.moveCurrent")
 				?.title,
@@ -893,6 +901,9 @@ describe("web command provider", () => {
 				.find((command) => command.id === "native.current.rename")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "native.current.archive")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "native.current.reply")
 				?.run?.(context);
 			commands
@@ -927,6 +938,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "rename", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "archive", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 			expect(events).toContainEqual({
