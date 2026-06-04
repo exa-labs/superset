@@ -41,6 +41,12 @@ export function dashboardQuickTerminalCommand(
 	return "kr9";
 }
 
+export function dashboardQuickTerminalShortcutLabel(
+	target: DashboardQuickTerminalId,
+): string {
+	return `⌥K ${target}`;
+}
+
 export function dashboardQuickTerminalTitle(
 	target: DashboardQuickTerminalId,
 ): string {

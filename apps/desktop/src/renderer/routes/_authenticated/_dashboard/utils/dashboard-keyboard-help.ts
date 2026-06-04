@@ -4,6 +4,10 @@ import { getEffectiveLayoutMap } from "renderer/hotkeys/stores/keyboardPreferenc
 import { bindingToDispatchChord } from "renderer/hotkeys/utils/binding";
 import { dashboardBrowserShortcutDescriptors } from "./dashboard-browser-shortcuts";
 import {
+	DASHBOARD_QUICK_TERMINALS,
+	dashboardQuickTerminalShortcutLabel,
+} from "./dashboard-quick-terminals";
+import {
 	isDashboardVimEditableTarget,
 	isDashboardVimModeEnabled,
 } from "./dashboard-vim-mode";
@@ -791,6 +795,11 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description:
 						"Open the Option+K control plane, type kr9, stag, prod, or heph, then choose a root terminal",
 				},
+				...DASHBOARD_QUICK_TERMINALS.map((terminal) => ({
+					keys: ["⌥K", `type ${terminal.id}`],
+					label: `Open ${terminal.label} root kr9`,
+					description: `Open ${terminal.label} directly from the control plane with ${dashboardQuickTerminalShortcutLabel(terminal.id)}`,
+				})),
 			],
 		},
 	];

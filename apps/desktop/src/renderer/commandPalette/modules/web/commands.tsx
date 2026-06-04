@@ -24,6 +24,7 @@ import {
 import {
 	DASHBOARD_QUICK_TERMINALS,
 	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalShortcutLabel,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-quick-terminals";
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import { getDashboardWebPageFavicon } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-page-favicons";
@@ -333,7 +334,7 @@ export const webProvider: CommandProvider = {
 				icon: TerminalIcon,
 				description: `Run ${dashboardQuickTerminalCommand(terminal.id)} in repo root`,
 				priority: CONTROL_PLANE_PRIORITY.quickTerminal,
-				shortcutLabel: "⌥K kr9",
+				shortcutLabel: dashboardQuickTerminalShortcutLabel(terminal.id),
 				keywords: [
 					terminal.id,
 					terminal.label,

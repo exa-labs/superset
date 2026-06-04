@@ -3,6 +3,7 @@ import {
 	consumePendingDashboardQuickTerminalLaunch,
 	DASHBOARD_QUICK_TERMINALS,
 	dashboardQuickTerminalCommand,
+	dashboardQuickTerminalShortcutLabel,
 	dashboardQuickTerminalTitle,
 	writePendingDashboardQuickTerminalLaunch,
 } from "./dashboard-quick-terminals";
@@ -38,6 +39,12 @@ describe("dashboard quick terminals", () => {
 
 	it("uses the short target as the terminal title", () => {
 		expect(dashboardQuickTerminalTitle("stag")).toBe("stag");
+	});
+
+	it("builds command-palette shortcut labels for each root terminal", () => {
+		expect(dashboardQuickTerminalShortcutLabel("stag")).toBe("⌥K stag");
+		expect(dashboardQuickTerminalShortcutLabel("prod")).toBe("⌥K prod");
+		expect(dashboardQuickTerminalShortcutLabel("heph")).toBe("⌥K heph");
 	});
 
 	it("persists and consumes a pending quick launch for the target workspace", () => {

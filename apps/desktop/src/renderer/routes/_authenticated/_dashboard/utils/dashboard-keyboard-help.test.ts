@@ -296,6 +296,15 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Open root kr9 terminal")).toEqual(
 			expect.objectContaining({ keys: ["⌥K", "type kr9"] }),
 		);
+		expect(entryByLabel.get("Open stag root kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type stag"] }),
+		);
+		expect(entryByLabel.get("Open prod root kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type prod"] }),
+		);
+		expect(entryByLabel.get("Open heph root kr9")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type heph"] }),
+		);
 		expect(entryByLabel.get("Show this overlay from dashboard shell")).toEqual(
 			expect.objectContaining({ keys: ["?"] }),
 		);
@@ -482,13 +491,13 @@ describe("dashboard keyboard help", () => {
 			expect.arrayContaining(["Open root kr9 terminal"]),
 		);
 		expect(labelsForQuery("heph")).toEqual(
-			expect.arrayContaining(["Open root kr9 terminal"]),
+			expect.arrayContaining(["Open root kr9 terminal", "Open heph root kr9"]),
 		);
 		expect(labelsForQuery("stag")).toEqual(
-			expect.arrayContaining(["Open root kr9 terminal"]),
+			expect.arrayContaining(["Open root kr9 terminal", "Open stag root kr9"]),
 		);
 		expect(labelsForQuery("prod")).toEqual(
-			expect.arrayContaining(["Open root kr9 terminal"]),
+			expect.arrayContaining(["Open root kr9 terminal", "Open prod root kr9"]),
 		);
 		expect(labelsForQuery("alt tab")).toEqual(
 			expect.arrayContaining(["Switch recent view"]),
