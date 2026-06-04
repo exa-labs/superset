@@ -217,7 +217,7 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["U"] }),
 		);
 		expect(entryByLabel.get("Open browser version")).toEqual(
-			expect.objectContaining({ keys: ["o"] }),
+			expect.objectContaining({ keys: ["o", "b"] }),
 		);
 		expect(entryByLabel.get("Open externally")).toEqual(
 			expect.objectContaining({ keys: ["O"] }),

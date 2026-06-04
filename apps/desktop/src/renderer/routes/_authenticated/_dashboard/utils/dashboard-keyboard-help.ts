@@ -687,9 +687,10 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Acknowledge the current session's reply; from overview, acknowledge the latest unread Capy or Devin response",
 				},
 				{
-					keys: ["o"],
+					keys: ["o", "b"],
 					label: "Open browser version",
-					description: "Open the current agent session in the embedded browser",
+					description:
+						"Open the current agent session or focused overview card in the embedded browser",
 				},
 				{
 					keys: ["O"],
