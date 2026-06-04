@@ -1097,7 +1097,7 @@ export const webProvider: CommandProvider = {
 								"sidebar",
 							]
 						: ["capy", "devin", "hide", "move", "overview", "sidebar"],
-				shortcutLabel: currentNativeVisibilityAction === "show" ? "p" : "a/x",
+				shortcutLabel: currentNativeVisibilityAction === "show" ? "p" : "a",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>
@@ -1125,7 +1125,7 @@ export const webProvider: CommandProvider = {
 					"session",
 					"thread",
 				],
-				shortcutLabel: "X",
+				shortcutLabel: "x/X",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
 				run: (context) =>

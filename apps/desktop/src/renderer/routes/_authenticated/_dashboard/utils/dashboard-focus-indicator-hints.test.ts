@@ -41,7 +41,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"Esc",
 			"⌥K/Tab",
 			"⌥N/⌥⇧N",
-			"r/o/b/p/m/F/e/u/U/x/X/f/?",
+			"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
 		]);
 	});
 
@@ -116,11 +116,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
-				hints: ["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/x/X/f/?"],
+				hints: ["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Native agent focus. Keys: Esc, Option+K/Option+Tab, Option+N/Option+Shift+N, r, o, b, p, m, F, e, u, U, x, X, f, ?. Press ? for full keyboard shortcuts.",
+			"Native agent focus. Keys: Esc, Option+K/Option+Tab, Option+N/Option+Shift+N, r, o, b, p, m, F, e, u, U, a, x, X, f, ?. Press ? for full keyboard shortcuts.",
 		);
 	});
 
@@ -158,7 +158,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/x/X/f/?"],
+				["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
 				{
 					vimModeEnabled: true,
 				},
@@ -167,7 +167,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥K Commands · ⌥Tab MRU",
 			"Esc Sidebar",
 			"⌥N Unread, ⌥⇧N Read",
-			"r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, x Hide, X Archive, f Hints, ? Map",
+			"r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, a Hide, x/X Archive, f Hints, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K/Tab", "⌥N/⌥⇧N"], {

@@ -111,11 +111,11 @@ describe("dashboard browser webview bridge", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_ARCHIVE"',
 		);
-		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "X")');
-		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "U")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
-			'if (key === "a" || key === "x")',
+			'if (key === "x" || key === "X")',
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "U")');
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "a")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_RENAME"',
 		);

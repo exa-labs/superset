@@ -678,10 +678,10 @@ function SessionRow({
 				<button
 					type="button"
 					data-dashboard-sidebar-action="archive"
-					aria-keyshortcuts="a x"
+					aria-keyshortcuts="a"
 					aria-label={`Move ${item.title} to overview`}
 					onClick={() => onSidebarVisible(item, false)}
-					title="Move to overview (a or x)"
+					title="Move to overview (a)"
 					className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-60 transition hover:bg-accent hover:text-foreground group-hover:opacity-100 group-focus-within:opacity-100"
 				>
 					<LuArchive className="size-3" />
@@ -775,9 +775,9 @@ function SessionRow({
 				type="button"
 				data-dashboard-sidebar-action="hard-archive"
 				tabIndex={-1}
-				aria-keyshortcuts="X"
+				aria-keyshortcuts="x X"
 				aria-label={`Archive ${item.title}`}
-				title="Archive session (X)"
+				title="Archive session (x or X)"
 				onClick={() => onSessionAction(item, "archive")}
 				className="sr-only"
 			/>

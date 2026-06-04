@@ -112,8 +112,8 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
 	if (key === "U") return "mark-read";
-	if (key === "X") return "archive";
-	if (key === "a" || key === "x") return "hide";
+	if (key === "x" || key === "X") return "archive";
+	if (key === "a") return "hide";
 	return "none";
 }
 
@@ -231,8 +231,8 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
 	if (key === "U") return "mark-read";
-	if (key === "X") return "archive";
-	if (key === "a" || key === "x") return "hide";
+	if (key === "x" || key === "X") return "archive";
+	if (key === "a") return "hide";
 	return "none";
 }
 
@@ -271,8 +271,8 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";
 	if (key === "F") return "remove-from-folder";
-	if (key === "X") return "archive";
-	if (key === "a" || key === "x") return "hide";
+	if (key === "x" || key === "X") return "archive";
+	if (key === "a") return "hide";
 	return "none";
 }
 

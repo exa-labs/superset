@@ -351,11 +351,11 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_MARK_READ";
 		}
-		if (key === "X") {
+		if (key === "x" || key === "X") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_HARD_ARCHIVE";
 		}
-		if (key === "a" || key === "x") {
+		if (key === "a") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_ARCHIVE";
 		}

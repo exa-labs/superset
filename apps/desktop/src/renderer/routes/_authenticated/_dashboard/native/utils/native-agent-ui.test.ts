@@ -78,8 +78,8 @@ describe("native agent UI terminology", () => {
 			{ key: "m", title: "Move to folder" },
 			{ key: "F", title: "Remove from folder" },
 			{ key: "e", title: "Rename" },
-			{ key: "a or x", title: "Hide from sidebar" },
-			{ key: "X", title: "Archive" },
+			{ key: "a", title: "Hide from sidebar" },
+			{ key: "x or X", title: "Archive" },
 		]);
 	});
 });

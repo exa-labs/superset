@@ -3174,7 +3174,7 @@ export function NativeAgentChatView({
 													<LuKeyRound className="size-3 shrink-0" />
 													<span className="truncate">
 														Enter opens, r replies, o/b browser, p pins, m/F
-														folders, a/x hides, X archives
+														folders, a hides, x/X archives
 													</span>
 												</div>
 											</button>
