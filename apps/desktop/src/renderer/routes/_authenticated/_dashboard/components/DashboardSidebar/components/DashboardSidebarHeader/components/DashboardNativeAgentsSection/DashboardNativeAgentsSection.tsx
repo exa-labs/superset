@@ -2044,8 +2044,9 @@ export function DashboardNativeAgentsSection({
 									<button
 										type="button"
 										aria-expanded={!isCollapsed}
+										aria-keyshortcuts="Space"
 										aria-label={`${isCollapsed ? "Show" : "Hide"} ${providerConfig.title} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
-										title={`${displayedItemCount} shown in sidebar, ${items.length} total`}
+										title={`${displayedItemCount} shown in sidebar, ${items.length} total. Toggle with Space.`}
 										onClick={() =>
 											setProviderCollapsed(providerConfig.id, !isCollapsed)
 										}
@@ -2061,8 +2062,8 @@ export function DashboardNativeAgentsSection({
 								</TooltipTrigger>
 								<TooltipContent side="right">
 									{isCollapsed
-										? `Show ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`
-										: `Hide ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })}`}
+										? `Show ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })} (Space)`
+										: `Hide ${displayedItemCount} sidebar ${nativeAgentConversationLabel(providerConfig.id, { plural: true })} (Space)`}
 								</TooltipContent>
 							</Tooltip>
 							<Tooltip delayDuration={300}>
@@ -2176,6 +2177,9 @@ export function DashboardNativeAgentsSection({
 														folder.provider
 													}
 													aria-expanded={!folder.isCollapsed}
+													aria-keyshortcuts="Space"
+													aria-label={`${folder.isCollapsed ? "Expand" : "Collapse"} ${folder.title}`}
+													title="Toggle folder (Space). Double-click to rename."
 													onClick={() => toggleFolder(folder.id)}
 													onDoubleClick={(event) => {
 														event.preventDefault();

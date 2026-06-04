@@ -217,7 +217,9 @@ export function DashboardWebTabAppGroup({
 						<button
 							type="button"
 							aria-expanded={!isCollapsed}
+							aria-keyshortcuts="Space"
 							aria-label={`${isCollapsed ? "Show" : "Hide"} ${app.label} sidebar sessions`}
+							title={`${isCollapsed ? "Show" : "Hide"} ${app.label} sidebar sessions (Space)`}
 							onClick={() => onCollapsedChange(app.id, !isCollapsed)}
 							onKeyDown={(event) => {
 								if (!isDashboardSidebarSpaceKey(event.key)) return;
@@ -234,8 +236,8 @@ export function DashboardWebTabAppGroup({
 					</TooltipTrigger>
 					<TooltipContent side="right">
 						{isCollapsed
-							? `Show ${app.label} sidebar sessions`
-							: `Hide ${app.label} sidebar sessions`}
+							? `Show ${app.label} sidebar sessions (Space)`
+							: `Hide ${app.label} sidebar sessions (Space)`}
 					</TooltipContent>
 				</Tooltip>
 				<DropdownMenu>
@@ -359,6 +361,9 @@ export function DashboardWebTabAppGroup({
 											type="button"
 											data-dashboard-sidebar-roving-item="true"
 											aria-expanded={!folder.isCollapsed}
+											aria-keyshortcuts="Space"
+											aria-label={`${folder.isCollapsed ? "Expand" : "Collapse"} ${folder.title}`}
+											title="Toggle folder (Space). Double-click to rename."
 											onClick={() =>
 												onFolderCollapsedChange(folder.id, !folder.isCollapsed)
 											}

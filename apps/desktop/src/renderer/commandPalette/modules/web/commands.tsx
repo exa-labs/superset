@@ -7,12 +7,16 @@ import {
 	readNativeAgentFoldersFromLocalStorage,
 	readNativeAgentRecentFolderColorsFromLocalStorage,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-folders";
+import { nativeAgentOverviewFilterShortcutKey } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-keyboard";
 import {
 	isNativeAgentReplyNotificationRead,
 	markNativeAgentReplyNotificationRead,
 	readLatestNativeAgentReplyNotification,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
-import { nativeAgentOverviewFilterLabel } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-overview";
+import {
+	type NativeAgentOverviewFilter,
+	nativeAgentOverviewFilterLabel,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-overview";
 import {
 	type DashboardBrowserShortcutAction,
 	dashboardBrowserShortcutDescriptors,
@@ -50,13 +54,7 @@ type NativeFolderAction =
 	| "move-active"
 	| "remove-active"
 	| "rename";
-type NativeOverviewFilter =
-	| "active"
-	| "all"
-	| "finished"
-	| "hidden"
-	| "pinned"
-	| "unread";
+type NativeOverviewFilter = NativeAgentOverviewFilter;
 
 const CONTROL_PLANE_PRIORITY = {
 	browserCurrent: 270,
@@ -217,7 +215,6 @@ const NATIVE_FILTER_COMMANDS: Array<{
 	{
 		filter: "unread",
 		keywords: ["unread", "reply", "notification"],
-		shortcutLabel: "u",
 		title: "Open unread",
 	},
 	{
@@ -760,7 +757,9 @@ export const webProvider: CommandProvider = {
 						"native",
 						noun,
 					],
-					shortcutLabel: filterCommand.shortcutLabel,
+					shortcutLabel:
+						filterCommand.shortcutLabel ??
+						nativeAgentOverviewFilterShortcutKey(filterCommand.filter),
 					run: (context) =>
 						openNativeOverviewFilter(context, provider, filterCommand.filter),
 				});
