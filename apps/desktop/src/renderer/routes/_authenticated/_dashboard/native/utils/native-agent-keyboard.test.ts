@@ -299,6 +299,10 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentUnreadVimActionFromKey("j")).toBe("none");
 	});
 
+	it("maps focused native sidebar mark-read key", () => {
+		expect(nativeAgentSidebarVimActionFromKey("U")).toBe("mark-read");
+	});
+
 	it("maps native view shell recovery keys", () => {
 		expect(nativeAgentViewShellActionFromKey("escape")).toBe(
 			"focus-navigation-shell",

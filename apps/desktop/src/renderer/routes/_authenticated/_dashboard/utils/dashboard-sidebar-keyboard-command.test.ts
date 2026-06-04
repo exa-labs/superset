@@ -15,6 +15,7 @@ describe("dashboard sidebar keyboard command", () => {
 		expect(isDashboardSidebarKeyboardCommand("action-pin")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("action-reply")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("action-open-browser")).toBe(true);
+		expect(isDashboardSidebarKeyboardCommand("action-mark-read")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("action-hard-archive")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("open-chrome")).toBe(false);
 		expect(isDashboardSidebarKeyboardCommand(null)).toBe(false);
@@ -31,6 +32,9 @@ describe("dashboard sidebar keyboard command", () => {
 		expect(
 			dashboardSidebarKeyboardActionFromCommand("action-hard-archive"),
 		).toBe("hard-archive");
+		expect(dashboardSidebarKeyboardActionFromCommand("action-mark-read")).toBe(
+			"mark-read",
+		);
 		expect(dashboardSidebarKeyboardActionFromCommand("focus-next")).toBeNull();
 	});
 

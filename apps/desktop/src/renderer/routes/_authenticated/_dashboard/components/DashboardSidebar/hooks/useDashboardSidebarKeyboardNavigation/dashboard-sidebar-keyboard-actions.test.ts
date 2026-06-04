@@ -57,6 +57,7 @@ describe("dashboardSidebarKeyboardActionFromKey", () => {
 		["b", "toggle-browser"],
 		["m", "move"],
 		["F", "remove-from-folder"],
+		["U", "mark-read"],
 		["X", "hard-archive"],
 		["a", "archive"],
 		["x", "archive"],
@@ -1195,11 +1196,16 @@ describe("findDashboardSidebarActionButton", () => {
 
 		const rename = document.createElement("button");
 		rename.dataset.dashboardSidebarAction = "rename";
+		const markRead = document.createElement("button");
+		markRead.dataset.dashboardSidebarAction = "mark-read";
 
-		rowScope.append(session, reply, rename);
+		rowScope.append(session, reply, rename, markRead);
 
 		expect(findDashboardSidebarActionButton(session, "reply")).toBe(reply);
 		expect(findDashboardSidebarActionButton(session, "rename")).toBe(rename);
+		expect(findDashboardSidebarActionButton(session, "mark-read")).toBe(
+			markRead,
+		);
 	});
 
 	test("resolves Chrome tab row action buttons from the focused tab row", () => {

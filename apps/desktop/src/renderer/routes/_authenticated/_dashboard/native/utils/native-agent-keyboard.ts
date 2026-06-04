@@ -19,6 +19,7 @@ export type NativeAgentSidebarVimAction =
 	| "archive"
 	| "focus-composer"
 	| "hide"
+	| "mark-read"
 	| "move-to-folder"
 	| "none"
 	| "open"
@@ -107,6 +108,7 @@ export function nativeAgentSidebarVimActionFromKey(
 	if (key === "m") return "move-to-folder";
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
+	if (key === "U") return "mark-read";
 	if (key === "X") return "archive";
 	if (key === "a" || key === "x") return "hide";
 	return "none";

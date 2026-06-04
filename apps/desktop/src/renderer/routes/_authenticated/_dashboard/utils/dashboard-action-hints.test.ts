@@ -162,7 +162,11 @@ describe("dashboard action hints", () => {
 		hardArchive.setAttribute("data-dashboard-sidebar-action", "hard-archive");
 		hardArchive.setAttribute("aria-label", "Archive session");
 		setRect(hardArchive, visibleRect({ top: 160 }));
-		root.append(row, menu, pin, createFolder, archive, hardArchive);
+		const markRead = document.createElement("button");
+		markRead.setAttribute("data-dashboard-sidebar-action", "mark-read");
+		markRead.setAttribute("aria-label", "Mark reply read");
+		setRect(markRead, visibleRect({ top: 190 }));
+		root.append(row, menu, pin, createFolder, archive, hardArchive, markRead);
 
 		const targets = collectDashboardActionHintTargets(root);
 
@@ -173,6 +177,7 @@ describe("dashboard action hints", () => {
 			"N",
 			"a",
 			"X",
+			"U",
 		]);
 		expect(targets.map((target) => target.displayLabel)).toEqual([
 			"↵",
@@ -181,6 +186,7 @@ describe("dashboard action hints", () => {
 			"N",
 			"a/x",
 			"X",
+			"U",
 		]);
 		const archiveTarget = targets.find((target) => target.label === "a");
 		expect(archiveTarget?.labels).toEqual(["a", "x"]);
@@ -206,6 +212,7 @@ describe("dashboard action hints", () => {
 			"New folder",
 			"Move to overview",
 			"Archive session",
+			"Mark reply read",
 		]);
 	});
 

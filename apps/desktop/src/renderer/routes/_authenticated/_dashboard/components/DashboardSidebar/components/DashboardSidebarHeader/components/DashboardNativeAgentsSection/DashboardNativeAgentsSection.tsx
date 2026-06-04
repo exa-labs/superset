@@ -431,6 +431,7 @@ function SessionRow({
 	createShortcutTitleSuffix,
 	item,
 	onCreate,
+	onMarkRead,
 	onMoveToFolder,
 	onOpen,
 	onPin,
@@ -445,6 +446,7 @@ function SessionRow({
 	createShortcutTitleSuffix: string;
 	item: NativeAgentItem;
 	onCreate: (provider: NativeAgentProvider) => void;
+	onMarkRead: (item: NativeAgentItem) => void;
 	onMoveToFolder: (item: NativeAgentItem, folderId: string | null) => void;
 	onOpen: (item: NativeAgentItem) => void;
 	onPin: (item: NativeAgentItem, pinned: boolean) => void;
@@ -461,6 +463,7 @@ function SessionRow({
 	if (variant === "collapsed") return null;
 	const isActive = activeId === item.id;
 	const hasFreshAgentResponse = isFreshNativeAgentResponse(item, item.provider);
+	const hasUnreadReply = hasUnreadAgentResponse(item, readState);
 	const isProviderActive =
 		item.isProviderActive || isNativeAgentLiveStatus(item.status);
 	const statusLabel = nativeAgentStatusBadgeLabel(item.status);
@@ -615,6 +618,13 @@ function SessionRow({
 							Remove from folder
 							<DropdownMenuShortcut>F</DropdownMenuShortcut>
 						</DropdownMenuItem>
+						<DropdownMenuItem
+							disabled={!hasUnreadReply}
+							onSelect={() => onMarkRead(item)}
+						>
+							Mark reply read
+							<DropdownMenuShortcut>U</DropdownMenuShortcut>
+						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onSelect={() => onPin(item, item.sidebarPinned !== true)}
@@ -748,6 +758,17 @@ function SessionRow({
 				aria-label={`Move ${item.title} out of folder`}
 				title="Remove from folder (F)"
 				onClick={() => onMoveToFolder(item, null)}
+				className="sr-only"
+			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="mark-read"
+				tabIndex={-1}
+				aria-keyshortcuts="U"
+				aria-label={`Mark ${item.title} reply read`}
+				title="Mark reply read (U)"
+				disabled={!hasUnreadReply}
+				onClick={() => onMarkRead(item)}
 				className="sr-only"
 			/>
 			<button
@@ -1242,6 +1263,32 @@ export function DashboardNativeAgentsSection({
 			}
 		},
 		[handleOpen],
+	);
+
+	const handleMarkRead = useCallback(
+		(item: NativeAgentItem) => {
+			const latestMessage = item.latestMessage;
+			const latestTime = latestAgentMessageTime(item);
+			if (
+				!latestMessage ||
+				normalizeNativeAgentRole(latestMessage.role, item.provider).isUser ||
+				latestTime == null ||
+				!hasUnreadAgentResponse(item, readState)
+			) {
+				toast.message("No unread reply for this session");
+				return;
+			}
+
+			markNativeAgentReplyNotificationRead({
+				key: nativeAgentNotificationKey(item.provider, item.id),
+				latestTime,
+			});
+			toast.message(
+				`Marked ${nativeAgentProviderConfig(item.provider).title} reply read`,
+				{ description: item.title },
+			);
+		},
+		[readState],
 	);
 
 	const handlePin = useCallback(
@@ -1887,6 +1934,10 @@ export function DashboardNativeAgentsSection({
 					handleSessionAction(rowItem, "toggle-browser");
 					return;
 				}
+				if (sidebarAction === "mark-read") {
+					handleMarkRead(rowItem);
+					return;
+				}
 				if (sidebarAction === "rename") {
 					handleSessionAction(rowItem, "rename");
 					return;
@@ -1930,6 +1981,7 @@ export function DashboardNativeAgentsSection({
 		createFolder,
 		folders,
 		handlePin,
+		handleMarkRead,
 		handleSessionAction,
 		handleSidebarVisible,
 		itemsByProvider,
@@ -2355,6 +2407,7 @@ export function DashboardNativeAgentsSection({
 																}
 																item={item}
 																onCreate={setCreateProvider}
+																onMarkRead={handleMarkRead}
 																onMoveToFolder={moveToFolder}
 																onOpen={handleOpen}
 																onPin={handlePin}
@@ -2380,6 +2433,7 @@ export function DashboardNativeAgentsSection({
 										}
 										item={item}
 										onCreate={setCreateProvider}
+										onMarkRead={handleMarkRead}
 										onMoveToFolder={moveToFolder}
 										onOpen={handleOpen}
 										onPin={handlePin}

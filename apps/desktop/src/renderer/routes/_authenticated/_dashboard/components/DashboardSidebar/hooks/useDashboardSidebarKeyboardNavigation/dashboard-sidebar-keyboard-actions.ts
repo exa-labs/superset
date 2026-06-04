@@ -7,6 +7,7 @@ export type DashboardSidebarKeyboardAction =
 	| "create-folder"
 	| "delete"
 	| "hard-archive"
+	| "mark-read"
 	| "menu"
 	| "move"
 	| "none"
@@ -64,6 +65,7 @@ export function dashboardSidebarKeyboardActionFromKey(
 	if (key === "b") return "toggle-browser";
 	if (key === "m") return "move";
 	if (key === "F") return "remove-from-folder";
+	if (key === "U") return "mark-read";
 	if (key === "X") return "hard-archive";
 	if (key === "a" || key === "x") return "archive";
 	if (key === "e") return "rename";

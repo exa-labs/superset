@@ -300,6 +300,25 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		title: "Archive focused native agent session",
 	},
 	{
+		command: "action-mark-read",
+		description: "Mark the focused Capy or Devin session reply read",
+		icon: BellOffIcon,
+		id: "markRead",
+		keywords: [
+			"read",
+			"mark",
+			"unread",
+			"reply",
+			"notification",
+			"capy",
+			"devin",
+			"agent",
+			"focused",
+		],
+		shortcutLabel: "U",
+		title: "Mark focused native reply read",
+	},
+	{
 		command: "action-archive",
 		description:
 			"Hide the focused sidebar item or move it away from the active list",
