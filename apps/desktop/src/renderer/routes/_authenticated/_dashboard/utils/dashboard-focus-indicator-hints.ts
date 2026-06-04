@@ -12,7 +12,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", "⌥K", "⌥N/⌥⇧N", "r/o/b/m/F/e/u/U/x/X/f/?"],
-	sidebar: ["⌥K", "↑↓", "↵/Space", "n/N/p/m/e/a/x/?"],
+	sidebar: ["⌥K", "↑↓", "↵/Space", "n/N/p/m/F/e/U/a/x/?"],
 	terminal: ["Esc", "⌥K"],
 };
 
@@ -61,6 +61,9 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "n/p/x/?") return "n New, p Pin, x Hide, ? Map";
 	if (hint === "n/N/p/m/e/a/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, a/x Away, ? Map";
+	}
+	if (hint === "n/N/p/m/F/e/U/a/x/?") {
+		return "n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a/x Away, ? Map";
 	}
 	if (hint === "n/N/p/m/e/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, x Hide, ? Map";
@@ -134,6 +137,9 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "h/l") return "h/l";
 	if (hint === "n/p/x/?") return "n, p, x, ?";
 	if (hint === "n/N/p/m/e/a/x/?") return "n, N, p, m, e, a/x, ?";
+	if (hint === "n/N/p/m/F/e/U/a/x/?") {
+		return "n, N, p, m, F, e, U, a/x, ?";
+	}
 	if (hint === "n/N/p/m/e/x/?") return "n, N, p, m, e, x, ?";
 	if (hint === "p/x") return "p, x";
 	if (hint === "f/?") return "f, ?";
