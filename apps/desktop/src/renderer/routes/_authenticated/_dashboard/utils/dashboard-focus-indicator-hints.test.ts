@@ -30,7 +30,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["Esc", "⌥K"]);
 		expect(
 			dashboardFocusIndicatorHints("native-agent", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K"]);
+		).toEqual(["Esc", "⌥K", "⌥N/⌥⇧N"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
 		).toEqual(["⌥K", "↑↓", "↵/Space", "n/N/p/m/e/x/?"]);
@@ -40,8 +40,8 @@ describe("dashboardFocusIndicatorHints", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"Esc",
 			"⌥K",
-			"r/o/b/m/e",
-			"u/U/x/X/f/?",
+			"⌥N/⌥⇧N",
+			"r/o/b/m/e/u/U/x/X/f/?",
 		]);
 	});
 
@@ -116,11 +116,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
-				hints: ["Esc", "⌥K", "r/o/b/m/e", "u/U/x/X/f/?"],
+				hints: ["Esc", "⌥K", "⌥N/⌥⇧N", "r/o/b/m/e/u/U/x/X/f/?"],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Native agent focus. Keys: Esc, Option+K, r, o, b, m, e, u, U, x, X, f, ?. Press ? for full keyboard shortcuts.",
+			"Native agent focus. Keys: Esc, Option+K, Option+N/Option+Shift+N, r, o, b, m, e, u, U, x, X, f, ?. Press ? for full keyboard shortcuts.",
 		);
 	});
 
@@ -155,7 +155,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K", "r/o/b/m/e", "u/U/x/X/f/?"],
+				["Esc", "⌥K", "⌥N/⌥⇧N", "r/o/b/m/e/u/U/x/X/f/?"],
 				{
 					vimModeEnabled: true,
 				},
@@ -163,8 +163,18 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual([
 			"⌥K Commands",
 			"Esc Sidebar",
-			"r Reply, o Browser, b View, m Move, e Rename",
-			"u Unread, U Read, x Hide, X Archive, f Hints, ? Map",
+			"⌥N Unread, ⌥⇧N Read",
+			"r Reply, o Browser, b View, m Move, e Rename, u Unread, U Read, x Hide, X Archive, f Hints, ? Map",
+		]);
+		expect(
+			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "⌥N/⌥⇧N"], {
+				vimModeEnabled: false,
+			}),
+		).toEqual([
+			"⌥K Commands",
+			"Esc Sidebar",
+			"⌥N Unread, ⌥⇧N Read",
+			"⌥/ Shortcuts",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["type", "↑↓", "↵", "Esc"], {
