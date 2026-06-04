@@ -76,6 +76,7 @@ import {
 	nativeAgentSelectedSessionVimActionFromKey,
 	nativeAgentSplitPaneActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
+	nativeAgentViewShellActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
 } from "../../utils/native-agent-keyboard";
@@ -1819,6 +1820,13 @@ export function NativeAgentChatView({
 				return;
 			}
 
+			const shellAction = nativeAgentViewShellActionFromKey(key);
+			if (shellAction === "focus-navigation-shell") {
+				consumeNativeAgentKeyboardEvent(event);
+				handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+				return;
+			}
+
 			if (key === "/") {
 				consumeNativeAgentKeyboardEvent(event);
 				if (selectedItem) {
@@ -2018,17 +2026,6 @@ export function NativeAgentChatView({
 			if (key === "l" || key === "h") {
 				consumeNativeAgentKeyboardEvent(event);
 				moveOverviewFocusByKey(key);
-				return;
-			}
-			if (key === "escape") {
-				const active = document.activeElement;
-				if (
-					active instanceof HTMLElement &&
-					active.matches("[data-native-agent-overview-card-id]")
-				) {
-					consumeNativeAgentKeyboardEvent(event);
-					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
-				}
 				return;
 			}
 			if (key === "enter" || key === "o") {

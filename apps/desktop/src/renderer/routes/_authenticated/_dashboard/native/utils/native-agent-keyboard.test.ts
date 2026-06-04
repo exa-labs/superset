@@ -18,6 +18,7 @@ import {
 	nativeAgentSidebarVimActionFromKey,
 	nativeAgentSplitPaneActionFromKey,
 	nativeAgentUnreadVimActionFromKey,
+	nativeAgentViewShellActionFromKey,
 	nextNativeAgentKeyboardViewMode,
 	nextNativeAgentOverviewFocusIndex,
 } from "./native-agent-keyboard";
@@ -293,6 +294,14 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentUnreadVimActionFromKey("u")).toBe("open-unread");
 		expect(nativeAgentUnreadVimActionFromKey("U")).toBe("mark-latest-read");
 		expect(nativeAgentUnreadVimActionFromKey("j")).toBe("none");
+	});
+
+	it("maps native view shell recovery keys", () => {
+		expect(nativeAgentViewShellActionFromKey("escape")).toBe(
+			"focus-navigation-shell",
+		);
+		expect(nativeAgentViewShellActionFromKey("j")).toBe("none");
+		expect(nativeAgentViewShellActionFromKey(null)).toBe("none");
 	});
 
 	it("maps chat vim scroll keys to predictable deltas", () => {

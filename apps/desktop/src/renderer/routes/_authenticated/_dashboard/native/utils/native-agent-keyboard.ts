@@ -49,6 +49,7 @@ export type NativeAgentUnreadVimAction =
 	| "mark-latest-read"
 	| "none"
 	| "open-unread";
+export type NativeAgentViewShellAction = "focus-navigation-shell" | "none";
 export type NativeAgentSplitPaneAction =
 	| "close"
 	| "equalize"
@@ -171,6 +172,13 @@ export function nativeAgentUnreadVimActionFromKey(
 ): NativeAgentUnreadVimAction {
 	if (key === "u") return "open-unread";
 	if (key === "U") return "mark-latest-read";
+	return "none";
+}
+
+export function nativeAgentViewShellActionFromKey(
+	key: string | null,
+): NativeAgentViewShellAction {
+	if (key === "escape") return "focus-navigation-shell";
 	return "none";
 }
 
