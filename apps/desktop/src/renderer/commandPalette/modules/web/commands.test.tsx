@@ -9,6 +9,7 @@ import {
 	NATIVE_AGENT_LATEST_REPLY_STORAGE_KEY,
 	NATIVE_AGENT_READ_STATE_STORAGE_KEY,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
+import { DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import { dashboardBrowserShortcutDescriptors } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-shortcuts";
 import {
 	createDashboardWebTab,
@@ -249,6 +250,71 @@ describe("web command provider", () => {
 
 		expect(hotkeyById.get("native.capy.create")).toBe("CREATE_CAPY");
 		expect(hotkeyById.get("native.devin.create")).toBe("CREATE_DEVIN");
+	});
+
+	it("exposes visible native sidebar slot shortcuts in the control plane", () => {
+		const commands = webProvider.provide(commandContext("/native/capy"));
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+		const commandById = new Map(
+			commands.map((command) => [command.id, command] as const),
+		);
+
+		expect(shortcutById.get("native.capy.slot.1")).toBe("⌥C 1");
+		expect(shortcutById.get("native.capy.slot.9")).toBe("⌥C 9");
+		expect(shortcutById.get("native.devin.slot.1")).toBe("⌥D 1");
+		expect(shortcutById.get("native.devin.slot.9")).toBe("⌥D 9");
+		expect(commandById.get("native.capy.slot.1")?.description).toContain(
+			"visible Capy thread labelled 1",
+		);
+		expect(commandById.get("native.devin.slot.1")?.description).toContain(
+			"visible Devin session labelled 1",
+		);
+		expect(commandById.get("native.capy.slot.1")?.keywords).toContain(
+			"sidebar",
+		);
+		expect(commandById.get("native.devin.slot.9")?.keywords).toContain("9");
+	});
+
+	it("opens native sidebar slots through the same cancelable shortcut event", () => {
+		withWindowEvents((events) => {
+			const navigations: string[] = [];
+			const context = commandContextWithNavigate("/v2-workspaces", (path) =>
+				navigations.push(path),
+			);
+			const command = webProvider
+				.provide(context)
+				.find((command) => command.id === "native.capy.slot.2");
+
+			command?.run?.(context);
+
+			expect(events).toContainEqual({
+				detail: { index: 1, provider: "capy" },
+				type: DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
+			});
+			expect(navigations).toEqual(["/native/capy"]);
+		});
+	});
+
+	it("does not fall back to the provider overview when sidebar handles a native slot", () => {
+		withWindowEvents(() => {
+			const navigations: string[] = [];
+			window.addEventListener(
+				DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
+				(event) => event.preventDefault(),
+			);
+			const context = commandContextWithNavigate("/v2-workspaces", (path) =>
+				navigations.push(path),
+			);
+			const command = webProvider
+				.provide(context)
+				.find((command) => command.id === "native.devin.slot.3");
+
+			command?.run?.(context);
+
+			expect(navigations).toEqual([]);
+		});
 	});
 
 	it("exposes native browser/split keybindings in the control plane", () => {

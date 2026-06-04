@@ -17,6 +17,7 @@ import {
 	type NativeAgentOverviewFilter,
 	nativeAgentOverviewFilterLabel,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-overview";
+import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import {
 	type DashboardBrowserShortcutAction,
 	dashboardBrowserShortcutDescriptors,
@@ -65,6 +66,7 @@ const CONTROL_PLANE_PRIORITY = {
 	nativeCurrentSecondary: 240,
 	nativeFilter: 120,
 	nativeFolder: 180,
+	nativeIndexedSlot: 210,
 	nativeOpen: 220,
 	pinnedWebPage: 150,
 	quickTerminal: 160,
@@ -268,6 +270,33 @@ function nativeCurrentConversationLabel(
 	const noun = nativeCurrentConversationNoun(provider);
 	if (!provider) return `native ${noun}`;
 	return `${nativeProviderTitle(provider)} ${noun}`;
+}
+
+function nativeProviderPath(provider: NativeAgentProvider): string {
+	return provider === "capy" ? "/native/capy" : "/native/devin";
+}
+
+function nativeIndexedShortcutLabel(
+	provider: NativeAgentProvider,
+	index: number,
+): string {
+	return `${provider === "capy" ? "⌥C" : "⌥D"} ${index + 1}`;
+}
+
+function openNativeProviderAtIndex(
+	context: CommandContext,
+	provider: NativeAgentProvider,
+	index: number,
+) {
+	const handled = dispatchDashboardNativeAgentOpenIndex({
+		index,
+		provider,
+	});
+	if (handled) {
+		scheduleDashboardNavigationShellFocus();
+		return;
+	}
+	navigateDashboardCommand(context, nativeProviderPath(provider));
 }
 
 function nativeFolderCommandColors(): string[] {
@@ -736,6 +765,36 @@ export const webProvider: CommandProvider = {
 				},
 			},
 		);
+
+		for (const provider of ["capy", "devin"] as const) {
+			const providerTitle = nativeProviderTitle(provider);
+			const noun = provider === "capy" ? "thread" : "session";
+			for (let index = 0; index < 9; index += 1) {
+				const slot = index + 1;
+				commands.push({
+					id: `native.${provider}.slot.${slot}`,
+					title: `Open ${providerTitle} sidebar slot ${slot}`,
+					section: "web",
+					iconUrl: nativeProviderIconUrl(provider),
+					description: `Open the visible ${providerTitle} ${noun} labelled ${slot} in the sidebar`,
+					priority: CONTROL_PLANE_PRIORITY.nativeIndexedSlot,
+					keywords: [
+						provider,
+						providerTitle,
+						noun,
+						"native",
+						"sidebar",
+						"slot",
+						"visible",
+						"indexed",
+						"numbered",
+						String(slot),
+					],
+					shortcutLabel: nativeIndexedShortcutLabel(provider, index),
+					run: (context) => openNativeProviderAtIndex(context, provider, index),
+				});
+			}
+		}
 
 		for (const provider of ["capy", "devin"] as const) {
 			for (const filterCommand of NATIVE_FILTER_COMMANDS) {
