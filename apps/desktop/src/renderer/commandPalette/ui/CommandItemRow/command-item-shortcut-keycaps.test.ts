@@ -39,6 +39,35 @@ describe("commandItemShortcutKeycapGroups", () => {
 			),
 		).toEqual([{ id: "local", keys: ["⌥", "C", "n"], label: "⌥C n" }]);
 	});
+
+	it("renders slash alternatives as distinct local keycap groups", () => {
+		expect(
+			commandItemShortcutKeycapGroups({
+				hotkeyKeys: [],
+				hotkeyLabel: null,
+				shortcutLabel: "a/x",
+			}),
+		).toEqual([
+			{ id: "local", keys: ["a"], label: "a" },
+			{ id: "local-1", keys: ["x"], label: "x" },
+		]);
+	});
+
+	it("does not split slash labels that contain full chords", () => {
+		expect(
+			commandItemShortcutKeycapGroups({
+				hotkeyKeys: [],
+				hotkeyLabel: null,
+				shortcutLabel: "⌥K search/sidebar",
+			}),
+		).toEqual([
+			{
+				id: "local",
+				keys: ["⌥", "K", "search/sidebar"],
+				label: "⌥K search/sidebar",
+			},
+		]);
+	});
 });
 
 describe("commandItemShortcutSearchText", () => {

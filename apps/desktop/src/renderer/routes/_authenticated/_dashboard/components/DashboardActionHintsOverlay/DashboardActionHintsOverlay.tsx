@@ -8,6 +8,8 @@ import {
 	dashboardActionHintKeyFromInput,
 	dashboardActionHintRootForElement,
 	dashboardActionHintSidebarScopeForTargets,
+	dashboardActionHintTargetHasPrefix,
+	dashboardActionHintTargetMatchesInput,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
@@ -66,7 +68,9 @@ function sidebarPanelPosition(scope: HTMLElement): {
 function ActionHintsPanel({ activeHints, title }: ActionHintsPanelProps) {
 	const matchedLabels = new Set(
 		activeHints.targets
-			.filter((target) => target.label.startsWith(activeHints.prefix))
+			.filter((target) =>
+				dashboardActionHintTargetHasPrefix(target, activeHints.prefix),
+			)
 			.map((target) => target.label),
 	);
 
@@ -152,8 +156,8 @@ export function DashboardActionHintsOverlay() {
 				}
 
 				const nextPrefix = `${currentHints.prefix}${key}`;
-				const exactTarget = currentHints.targets.find(
-					(target) => target.label === nextPrefix,
+				const exactTarget = currentHints.targets.find((target) =>
+					dashboardActionHintTargetMatchesInput(target, nextPrefix),
 				);
 				if (exactTarget) {
 					setActiveHints(null);
@@ -162,7 +166,7 @@ export function DashboardActionHintsOverlay() {
 				}
 
 				const hasPartialMatch = currentHints.targets.some((target) =>
-					target.label.startsWith(nextPrefix),
+					dashboardActionHintTargetHasPrefix(target, nextPrefix),
 				);
 				setActiveHints(
 					hasPartialMatch ? { ...currentHints, prefix: nextPrefix } : null,

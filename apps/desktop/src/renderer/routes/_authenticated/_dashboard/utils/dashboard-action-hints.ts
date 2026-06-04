@@ -33,6 +33,7 @@ export interface DashboardActionHintTarget {
 	displayLabel: string;
 	element: HTMLElement;
 	label: string;
+	labels: string[];
 	rect: {
 		height: number;
 		left: number;
@@ -143,9 +144,9 @@ function targetTitle(element: HTMLElement): string {
 
 const SIDEBAR_ACTION_HINT_LABELS: Record<
 	string,
-	{ displayLabel: string; label: string }
+	{ displayLabel: string; label: string; labels?: string[] }
 > = {
-	archive: { displayLabel: "a/x", label: "a" },
+	archive: { displayLabel: "a/x", label: "a", labels: ["a", "x"] },
 	color: { displayLabel: "c", label: "c" },
 	create: { displayLabel: "n", label: "n" },
 	"create-folder": { displayLabel: "N", label: "N" },
@@ -221,9 +222,23 @@ export function dashboardActionHintDisplayTitle(
 	return target.title;
 }
 
+export function dashboardActionHintTargetMatchesInput(
+	target: DashboardActionHintTarget,
+	input: string,
+): boolean {
+	return target.labels.includes(input);
+}
+
+export function dashboardActionHintTargetHasPrefix(
+	target: DashboardActionHintTarget,
+	prefix: string,
+): boolean {
+	return target.labels.some((label) => label.startsWith(prefix));
+}
+
 function semanticActionHintLabel(
 	element: HTMLElement,
-): { displayLabel: string; label: string } | null {
+): { displayLabel: string; label: string; labels: string[] } | null {
 	const explicitLabel = element
 		.getAttribute("data-dashboard-action-hint-label")
 		?.trim();
@@ -232,12 +247,18 @@ function semanticActionHintLabel(
 			element
 				.getAttribute("data-dashboard-action-hint-display-label")
 				?.trim() || explicitLabel;
-		return { displayLabel: explicitDisplayLabel, label: explicitLabel };
+		return {
+			displayLabel: explicitDisplayLabel,
+			label: explicitLabel,
+			labels: [explicitLabel],
+		};
 	}
 
 	const sidebarAction = element.getAttribute("data-dashboard-sidebar-action");
 	if (sidebarAction && sidebarAction in SIDEBAR_ACTION_HINT_LABELS) {
-		return SIDEBAR_ACTION_HINT_LABELS[sidebarAction];
+		const hint = SIDEBAR_ACTION_HINT_LABELS[sidebarAction];
+		if (!hint) return null;
+		return { ...hint, labels: hint.labels ?? [hint.label] };
 	}
 	if (
 		element.matches(
@@ -253,7 +274,7 @@ function semanticActionHintLabel(
 			].join(","),
 		)
 	) {
-		return { displayLabel: "↵", label: "enter" };
+		return { displayLabel: "↵", label: "enter", labels: ["enter"] };
 	}
 	return null;
 }
@@ -291,23 +312,28 @@ export function collectDashboardActionHintTargets(
 		if (!isVisibleTarget(candidate)) continue;
 		seen.add(candidate);
 		const semanticLabel = semanticActionHintLabel(candidate);
-		const resolvedLabel =
-			semanticLabel && !usedLabels.has(semanticLabel.label)
-				? semanticLabel
-				: null;
+		const resolvedLabel = semanticLabel?.labels.every(
+			(label) => !usedLabels.has(label),
+		)
+			? semanticLabel
+			: null;
 		const genericLabel = resolvedLabel
 			? null
 			: nextGenericActionHintLabel(usedLabels, genericIndex);
 		if (genericLabel) genericIndex = genericLabel.genericIndex;
 		const label = resolvedLabel?.label ?? genericLabel?.label ?? "";
 		const displayLabel = resolvedLabel?.displayLabel ?? label;
+		const labels = resolvedLabel?.labels ?? (label ? [label] : []);
 		if (!label) break;
-		usedLabels.add(label);
+		for (const usedLabel of labels) {
+			usedLabels.add(usedLabel);
+		}
 		const rect = candidate.getBoundingClientRect();
 		targets.push({
 			displayLabel,
 			element: candidate,
 			label,
+			labels,
 			rect: {
 				height: rect.height,
 				left: rect.left,

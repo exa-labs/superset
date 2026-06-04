@@ -104,6 +104,14 @@ function sameCommandItemShortcutKeySequence(
 	return left.every((key, index) => key === right[index]);
 }
 
+function commandItemShortcutAlternativeLabels(label: string): string[] {
+	const parts = label.split("/").map((part) => part.trim());
+	const meaningfulParts = parts.filter(Boolean);
+	if (meaningfulParts.length <= 1) return [label];
+	if (meaningfulParts.some((part) => /\s/.test(part))) return [label];
+	return meaningfulParts;
+}
+
 function commandItemShortcutKeycapsFromLabelWithFallback(
 	label: string,
 	utils: OptionalCommandShortcutKeycapUtils,
@@ -140,21 +148,25 @@ export function commandItemShortcutKeycapGroups(
 		return groups;
 	}
 
-	const shortcutKeys = commandItemShortcutKeycapsFromLabelWithFallback(
+	for (const [index, shortcutLabel] of commandItemShortcutAlternativeLabels(
 		trimmedShortcutLabel,
-		utils,
-	);
-	if (shortcutKeys.length === 0) return groups;
-	const duplicateHotkey =
-		trimmedShortcutLabel === trimmedHotkeyLabel ||
-		sameCommandItemShortcutKeySequence(shortcutKeys, input.hotkeyKeys);
-	if (duplicateHotkey) return groups;
+	).entries()) {
+		const shortcutKeys = commandItemShortcutKeycapsFromLabelWithFallback(
+			shortcutLabel,
+			utils,
+		);
+		if (shortcutKeys.length === 0) continue;
+		const duplicateHotkey =
+			shortcutLabel === trimmedHotkeyLabel ||
+			sameCommandItemShortcutKeySequence(shortcutKeys, input.hotkeyKeys);
+		if (duplicateHotkey) continue;
 
-	groups.push({
-		id: "local",
-		keys: shortcutKeys,
-		label: trimmedShortcutLabel,
-	});
+		groups.push({
+			id: index === 0 ? "local" : `local-${index}`,
+			keys: shortcutKeys,
+			label: shortcutLabel,
+		});
+	}
 	return groups;
 }
 

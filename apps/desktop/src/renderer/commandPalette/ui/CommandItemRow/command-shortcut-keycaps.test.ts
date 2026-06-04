@@ -63,7 +63,10 @@ describe("commandShortcutKeycapGroups", () => {
 				hotkeyLabel: null,
 				shortcutLabel: "a/x",
 			}),
-		).toEqual([{ id: "local", keys: ["a/x"], label: "a/x" }]);
+		).toEqual([
+			{ id: "local", keys: ["a"], label: "a" },
+			{ id: "local-1", keys: ["x"], label: "x" },
+		]);
 	});
 });
 
@@ -131,6 +134,26 @@ describe("commandShortcutSearchText", () => {
 		expect(searchText).toContain("option");
 		expect(searchText).toContain("alt");
 		expect(searchText).toContain("b");
+	});
+
+	it("indexes slash alternatives as separate command shortcuts", () => {
+		const groups = commandShortcutKeycapGroups({
+			hotkeyKeys: [],
+			hotkeyLabel: null,
+			shortcutLabel: "r/i",
+		});
+		const searchText = commandShortcutSearchText({
+			keys: groups.flatMap((group) => group.keys),
+			label: groups.map((group) => group.label).join(" / "),
+		});
+
+		expect(groups).toEqual([
+			{ id: "local", keys: ["r"], label: "r" },
+			{ id: "local-1", keys: ["i"], label: "i" },
+		]);
+		expect(searchText).toContain("r / i");
+		expect(searchText).toContain("ri");
+		expect(searchText).toContain("r i");
 	});
 
 	it("returns an empty search suffix when no shortcut exists", () => {

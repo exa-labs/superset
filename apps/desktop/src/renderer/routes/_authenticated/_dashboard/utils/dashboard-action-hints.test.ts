@@ -8,6 +8,8 @@ import {
 	dashboardActionHintLabelForIndex,
 	dashboardActionHintRootForElement,
 	dashboardActionHintSidebarScopeForTargets,
+	dashboardActionHintTargetHasPrefix,
+	dashboardActionHintTargetMatchesInput,
 	openDashboardActionHints,
 } from "./dashboard-action-hints";
 
@@ -174,6 +176,23 @@ describe("dashboard action hints", () => {
 			"N",
 			"a/x",
 		]);
+		const archiveTarget = targets.find((target) => target.label === "a");
+		expect(archiveTarget?.labels).toEqual(["a", "x"]);
+		expect(
+			archiveTarget
+				? dashboardActionHintTargetMatchesInput(archiveTarget, "a")
+				: false,
+		).toBe(true);
+		expect(
+			archiveTarget
+				? dashboardActionHintTargetMatchesInput(archiveTarget, "x")
+				: false,
+		).toBe(true);
+		expect(
+			archiveTarget
+				? dashboardActionHintTargetHasPrefix(archiveTarget, "x")
+				: false,
+		).toBe(true);
 		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
 			"Open",
 			"Actions",
