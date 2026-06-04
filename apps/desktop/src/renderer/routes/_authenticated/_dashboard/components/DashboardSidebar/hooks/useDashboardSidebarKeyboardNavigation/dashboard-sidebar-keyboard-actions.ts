@@ -1,3 +1,5 @@
+import type { DashboardFocusScopeId } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
+
 export type DashboardSidebarKeyboardAction =
 	| "archive"
 	| "color"
@@ -96,6 +98,17 @@ export function dashboardSidebarRovingNavigationBoundaryFromKey(
 	if (key === "Home") return "first";
 	if (key === "End") return "last";
 	return null;
+}
+
+export function dashboardSidebarRovingNavigationAllowedFromKey(input: {
+	focusInsideSidebar: boolean;
+	focusScopeId: DashboardFocusScopeId;
+	key: string;
+	vimModeEnabled: boolean;
+}): boolean {
+	if (input.focusInsideSidebar || input.vimModeEnabled) return true;
+	if (input.focusScopeId !== "app") return false;
+	return ["ArrowDown", "ArrowUp", "Home", "End"].includes(input.key);
 }
 
 export function dashboardSidebarExpansionIntentFromKey(

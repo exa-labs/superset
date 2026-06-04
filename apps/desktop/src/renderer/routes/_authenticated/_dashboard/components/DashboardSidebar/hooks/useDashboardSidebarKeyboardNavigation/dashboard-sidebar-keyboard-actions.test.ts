@@ -8,6 +8,7 @@ import {
 	dashboardSidebarLocalCommandFromKey,
 	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarNextRovingIndex,
+	dashboardSidebarRovingNavigationAllowedFromKey,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -161,6 +162,73 @@ describe("dashboardSidebarRovingNavigationBoundaryFromKey", () => {
 		expect(dashboardSidebarRovingNavigationBoundaryFromKey("ArrowDown")).toBe(
 			null,
 		);
+	});
+});
+
+describe("dashboardSidebarRovingNavigationAllowedFromKey", () => {
+	test("allows app-shell arrow navigation to enter the sidebar", () => {
+		for (const key of ["ArrowDown", "ArrowUp", "Home", "End"]) {
+			expect(
+				dashboardSidebarRovingNavigationAllowedFromKey({
+					focusInsideSidebar: false,
+					focusScopeId: "app",
+					key,
+					vimModeEnabled: false,
+				}),
+			).toBe(true);
+		}
+	});
+
+	test("does not steal app-shell printable movement keys outside Vim mode", () => {
+		for (const key of ["j", "k"]) {
+			expect(
+				dashboardSidebarRovingNavigationAllowedFromKey({
+					focusInsideSidebar: false,
+					focusScopeId: "app",
+					key,
+					vimModeEnabled: false,
+				}),
+			).toBe(false);
+		}
+	});
+
+	test("keeps guarded content scopes in control of arrow keys", () => {
+		for (const focusScopeId of [
+			"browser",
+			"command-palette",
+			"editor",
+			"keyboard-help",
+			"native-agent",
+			"terminal",
+		] as const) {
+			expect(
+				dashboardSidebarRovingNavigationAllowedFromKey({
+					focusInsideSidebar: false,
+					focusScopeId,
+					key: "ArrowDown",
+					vimModeEnabled: false,
+				}),
+			).toBe(false);
+		}
+	});
+
+	test("allows Vim and focused-sidebar movement keys", () => {
+		expect(
+			dashboardSidebarRovingNavigationAllowedFromKey({
+				focusInsideSidebar: false,
+				focusScopeId: "native-agent",
+				key: "j",
+				vimModeEnabled: true,
+			}),
+		).toBe(true);
+		expect(
+			dashboardSidebarRovingNavigationAllowedFromKey({
+				focusInsideSidebar: true,
+				focusScopeId: "sidebar",
+				key: "k",
+				vimModeEnabled: false,
+			}),
+		).toBe(true);
 	});
 });
 

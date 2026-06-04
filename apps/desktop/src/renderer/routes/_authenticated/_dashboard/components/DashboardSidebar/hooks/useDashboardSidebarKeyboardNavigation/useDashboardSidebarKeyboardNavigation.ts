@@ -18,6 +18,7 @@ import {
 	dashboardSidebarLocalCommandFromKey,
 	dashboardSidebarLocalKeyAllowsModifiers,
 	dashboardSidebarNextRovingIndex,
+	dashboardSidebarRovingNavigationAllowedFromKey,
 	dashboardSidebarRovingNavigationBoundaryFromKey,
 	dashboardSidebarRovingNavigationDeltaFromKey,
 	dashboardSidebarTypeaheadQueryFromSeed,
@@ -390,15 +391,21 @@ export function useDashboardSidebarKeyboardNavigation(
 				ctrlKey: event.ctrlKey,
 				metaKey: event.metaKey,
 			});
-			const rovingNavigationDelta =
-				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
-					? dashboardSidebarRovingNavigationDeltaFromKey(event.key)
-					: 0;
+			const rovingNavigationAllowed =
+				localSidebarKey &&
+				dashboardSidebarRovingNavigationAllowedFromKey({
+					focusInsideSidebar,
+					focusScopeId: focusScope.id,
+					key: event.key,
+					vimModeEnabled,
+				});
+			const rovingNavigationDelta = rovingNavigationAllowed
+				? dashboardSidebarRovingNavigationDeltaFromKey(event.key)
+				: 0;
 			const rovingNavigation = rovingNavigationDelta !== 0;
-			const rovingBoundary =
-				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
-					? dashboardSidebarRovingNavigationBoundaryFromKey(event.key)
-					: null;
+			const rovingBoundary = rovingNavigationAllowed
+				? dashboardSidebarRovingNavigationBoundaryFromKey(event.key)
+				: null;
 			const expansionIntent =
 				localSidebarKey && (focusInsideSidebar || vimModeEnabled)
 					? dashboardSidebarExpansionIntentFromKey(event.key)
@@ -456,7 +463,9 @@ export function useDashboardSidebarKeyboardNavigation(
 			) {
 				return;
 			}
-			if (!vimModeEnabled && !focusInsideSidebar) return;
+			if (!vimModeEnabled && !focusInsideSidebar && focusScope.id !== "app") {
+				return;
+			}
 
 			if (localCommand === "focus-search") {
 				event.preventDefault();
