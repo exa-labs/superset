@@ -648,6 +648,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Focus the composer using a Vim-style insert key",
 				},
 				{
+					keys: ["f"],
+					label: "Show native action hints",
+					description:
+						"Label visible native-agent session controls with action keys",
+				},
+				{
 					keys: ["g", "g", "G", "Home", "End"],
 					label: "Jump native overview",
 					description:

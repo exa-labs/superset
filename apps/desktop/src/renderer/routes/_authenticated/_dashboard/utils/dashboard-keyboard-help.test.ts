@@ -58,6 +58,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Show action hints in Vim mode")).toEqual(
 			expect.objectContaining({ keys: ["f"] }),
 		);
+		expect(entryByLabel.get("Show native action hints")).toEqual(
+			expect.objectContaining({ keys: ["f"] }),
+		);
 		expect(entryByLabel.get("Toggle sidebar in Vim mode")).toEqual(
 			expect.objectContaining({
 				description: expect.stringContaining("embedded Chrome keeps H/L"),
