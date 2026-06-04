@@ -6,14 +6,14 @@ interface DashboardFocusIndicatorHintOptions {
 }
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Esc", "⌥K", "?"],
-	browser: ["Esc", "⌥K", "j/k /", "h/l/r/s/p/x/f/?"],
+	app: ["Esc", "⌥K/Tab", "?"],
+	browser: ["Esc", "⌥K/Tab", "j/k /", "h/l/r/s/p/x/f/?"],
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
-	editor: ["Esc", "⌥K"],
+	editor: ["Esc", "⌥K/Tab"],
 	"keyboard-help": ["type", "Esc"],
-	"native-agent": ["Esc", "⌥K", "⌥N/⌥⇧N", "r/o/b/m/F/e/u/U/x/X/f/?"],
-	sidebar: ["⌥K", "↑↓", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
-	terminal: ["Esc", "⌥K"],
+	"native-agent": ["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/m/F/e/u/U/x/X/f/?"],
+	sidebar: ["⌥K/Tab", "↑↓", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+	terminal: ["Esc", "⌥K/Tab"],
 };
 
 const VIM_ONLY_HINTS = new Set([
@@ -107,7 +107,12 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	hints: string[],
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string[] {
-	const showCommandsHint = hints.includes("⌥K");
+	const showCommandsHint = hints.some(
+		(hint) => hint === "⌥K" || hint === "⌥K/Tab",
+	);
+	const showMruHint = hints.some(
+		(hint) => hint === "⌥Tab" || hint === "⌥K/Tab",
+	);
 	const showVimShortcutsHint = hints.includes("?");
 	const hasLocalKeyboardMapHint = hints.some(
 		dashboardFocusHintIncludesKeyboardMap,
@@ -121,7 +126,11 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 		.filter((hint): hint is string => hint !== null);
 
 	return [
-		showCommandsHint ? "⌥K Commands" : null,
+		showCommandsHint
+			? showMruHint
+				? "⌥K Commands · ⌥Tab MRU"
+				: "⌥K Commands"
+			: null,
 		...localHintLabels,
 		showVimShortcutsHint ? "? Shortcuts" : null,
 		!showVimShortcutsHint && showOptionShortcutsHint ? "⌥/ Shortcuts" : null,
@@ -130,6 +139,7 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 
 function readableDashboardFocusHint(hint: string): string {
 	if (hint === "⌥K") return "Option+K";
+	if (hint === "⌥K/Tab") return "Option+K/Option+Tab";
 	if (hint === "⌥/") return "Option+/";
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↵") return "Enter";
