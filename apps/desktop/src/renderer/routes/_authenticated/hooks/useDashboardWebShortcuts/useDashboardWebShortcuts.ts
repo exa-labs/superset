@@ -13,6 +13,7 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { addDashboardKeyboardChainResetListener } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-chain-reset";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
 import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	type DashboardSidebarKeyboardCommand,
@@ -33,7 +34,6 @@ import {
 	createDashboardWebTab,
 	getDashboardWebTabs,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
-import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 
 type DashboardBrowserCurrentAction =
 	| "close-current-tab"
@@ -403,7 +403,7 @@ export function useDashboardWebShortcuts() {
 			}
 			if (shortcut === "TOGGLE_DASHBOARD_SIDEBAR") {
 				clearPendingKeyboardChains();
-				useWorkspaceSidebarStore.getState().toggleOpen();
+				toggleDashboardNavigationSidebar();
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {
@@ -553,7 +553,7 @@ export function useDashboardWebShortcuts() {
 					event.preventDefault();
 					event.stopPropagation();
 					event.stopImmediatePropagation();
-					useWorkspaceSidebarStore.getState().toggleOpen();
+					toggleDashboardNavigationSidebar();
 					return;
 				}
 

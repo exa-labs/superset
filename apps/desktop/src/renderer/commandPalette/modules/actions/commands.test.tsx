@@ -44,7 +44,11 @@ mock.module("renderer/stores/theme/store", () => ({
 
 mock.module("renderer/stores/workspace-sidebar-state", () => ({
 	useWorkspaceSidebarStore: {
-		getState: () => ({ toggleOpen: () => undefined }),
+		getState: () => ({
+			isOpen: true,
+			setOpen: () => undefined,
+			toggleCollapsed: () => undefined,
+		}),
 	},
 }));
 

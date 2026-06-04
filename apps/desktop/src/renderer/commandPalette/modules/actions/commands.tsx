@@ -14,6 +14,7 @@ import {
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
+import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import {
 	isDashboardVimModeEnabled,
@@ -22,7 +23,6 @@ import {
 import { useNewWorkspaceModalStore } from "renderer/stores/new-workspace-modal";
 import { useRightSidebarToggleIntent } from "renderer/stores/right-sidebar-toggle-intent";
 import { SYSTEM_THEME_ID, useThemeStore } from "renderer/stores/theme/store";
-import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 import { openCommandPaletteKeyboardHelp } from "../../core/keyboard-help";
 import type { Command, CommandProvider } from "../../core/types";
 import { ThemeFrame } from "../../ui/ThemeFrame/ThemeFrame";
@@ -199,7 +199,7 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: PanelLeftIcon,
 				hotkeyId: "TOGGLE_WORKSPACE_SIDEBAR",
-				run: () => useWorkspaceSidebarStore.getState().toggleOpen(),
+				run: toggleDashboardNavigationSidebar,
 			},
 			{
 				id: "actions.focusNavigationShell",

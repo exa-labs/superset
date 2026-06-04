@@ -27,6 +27,7 @@ import {
 	DASHBOARD_KEYBOARD_HELP_OPEN_EVENT,
 	shouldOpenDashboardKeyboardHelpFromQuestionKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
 import {
 	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
 	type DashboardViewMruDirection,
@@ -222,8 +223,6 @@ function DashboardLayout() {
 
 	const {
 		isOpen: isWorkspaceSidebarOpen,
-		toggleCollapsed: toggleWorkspaceSidebarCollapsed,
-		setOpen: setWorkspaceSidebarOpen,
 		width: workspaceSidebarWidth,
 		setWidth: setWorkspaceSidebarWidth,
 		isResizing: isWorkspaceSidebarResizing,
@@ -234,13 +233,7 @@ function DashboardLayout() {
 	// Global hotkeys for dashboard
 	useHotkey("OPEN_SETTINGS", () => navigate({ to: "/settings/account" }));
 	useHotkey("SHOW_HOTKEYS", () => setKeyboardHelpOpen(true));
-	useHotkey("TOGGLE_WORKSPACE_SIDEBAR", () => {
-		if (!isWorkspaceSidebarOpen) {
-			setWorkspaceSidebarOpen(true);
-		} else {
-			toggleWorkspaceSidebarCollapsed();
-		}
-	});
+	useHotkey("TOGGLE_WORKSPACE_SIDEBAR", toggleDashboardNavigationSidebar);
 	useHotkey("NEW_WORKSPACE", () =>
 		openNewWorkspaceModal(currentWorkspace?.projectId),
 	);
