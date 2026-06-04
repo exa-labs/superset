@@ -121,7 +121,9 @@ export function globalKeyboardActionFromInput(
 }
 
 export function shouldPreventDefaultForGlobalKeyboardAction(
-	action: GlobalKeyboardAction,
+	_action: GlobalKeyboardAction,
 ): boolean {
-	return action !== "FOCUS_DASHBOARD_SHELL";
+	// Once the main-process bridge classifies a key as a dashboard global
+	// action, the focused browser, terminal, or editor should not also consume it.
+	return true;
 }

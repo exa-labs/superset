@@ -256,7 +256,7 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("SHOW_DASHBOARD_KEYBOARD_HELP");
 	});
 
-	it("emits a non-preventing dashboard shell focus action for bare Escape", () => {
+	it("captures bare Escape as a shell-owned dashboard focus action", () => {
 		expect(
 			globalKeyboardActionFromInput({
 				...baseInput,
@@ -267,7 +267,7 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("FOCUS_DASHBOARD_SHELL");
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
-		).toBe(false);
+		).toBe(true);
 	});
 
 	it("ignores repeats and non-option chords", () => {
@@ -307,7 +307,10 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBeNull();
 	});
 
-	it("prevents defaults for switching and Vim toggle actions", () => {
+	it("prevents defaults for global dashboard-owned actions", () => {
+		expect(
+			shouldPreventDefaultForGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL"),
+		).toBe(true);
 		expect(
 			shouldPreventDefaultForGlobalKeyboardAction("SWITCH_DASHBOARD_VIEW_NEXT"),
 		).toBe(true);

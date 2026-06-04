@@ -320,7 +320,7 @@ describe("control plane shortcut bridge resolver", () => {
 		}
 	});
 
-	it("does not prevent default for bare Escape focus-shell action", () => {
+	it("prevents default for bare Escape focus-shell action", () => {
 		const { resolver } = createResolverHarness();
 
 		expect(
@@ -333,7 +333,7 @@ describe("control plane shortcut bridge resolver", () => {
 			),
 		).toEqual({
 			action: "FOCUS_DASHBOARD_SHELL",
-			preventDefault: false,
+			preventDefault: true,
 			type: "global-keyboard-action",
 		});
 	});
