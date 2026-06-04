@@ -2336,6 +2336,12 @@ export function NativeAgentChatView({
 					section: "session",
 				},
 				{
+					key: "U",
+					label: "Mark reply read",
+					onSelect: () => markSelectedReplyRead(selectedItem),
+					section: "session",
+				},
+				{
 					key: "R",
 					label: "Refresh",
 					onSelect: () => void invalidateProvider(),
