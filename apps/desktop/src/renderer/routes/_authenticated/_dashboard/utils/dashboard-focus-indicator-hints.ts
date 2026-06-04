@@ -11,7 +11,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
 	editor: ["Esc", "⌥K"],
 	"keyboard-help": ["type", "Esc"],
-	"native-agent": ["Esc", "⌥K", "r/u/U", "x/X"],
+	"native-agent": ["Esc", "⌥K", "r/u/U", "x/X/f/?"],
 	sidebar: ["⌥K", "↑↓", "↵/Space", "n/p/x/?"],
 	terminal: ["Esc", "⌥K"],
 };
@@ -34,6 +34,7 @@ const VIM_ONLY_HINTS = new Set([
 	"s/w/[/]/=",
 	"u/U",
 	"x/X",
+	"x/X/f/?",
 ]);
 
 export function dashboardFocusIndicatorHints(
@@ -60,6 +61,7 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "b/p/x") return "b View, p Pin, x Hide";
 	if (hint === "u/U") return "u Open unread, U Mark read";
 	if (hint === "x/X") return "x Hide, X Archive";
+	if (hint === "x/X/f/?") return "x Hide, X Archive, f Hints, ? Map";
 	if (hint === "f") return "f Hints";
 	if (hint === "f/?") return "f Hints, ? Map";
 	if (hint === "j/k /") return "j/k Move, / Search";
@@ -110,6 +112,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "r/u/U") return "r, u, U";
 	if (hint === "u/U") return "u, U";
 	if (hint === "x/X") return "x, X";
+	if (hint === "x/X/f/?") return "x, X, f, ?";
 	return hint;
 }
 

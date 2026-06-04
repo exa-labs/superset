@@ -41,7 +41,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"Esc",
 			"⌥K",
 			"r/u/U",
-			"x/X",
+			"x/X/f/?",
 		]);
 	});
 
@@ -114,6 +114,14 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toBe(
 			"Sidebar focus. Keys: Option+K, Up/Down, Enter/Space, n, p, x, ?. Press ? for full keyboard shortcuts.",
 		);
+		expect(
+			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
+				hints: ["Esc", "⌥K", "r/u/U", "x/X/f/?"],
+				vimModeEnabled: true,
+			}),
+		).toBe(
+			"Native agent focus. Keys: Esc, Option+K, r, u, U, x, X, f, ?. Press ? for full keyboard shortcuts.",
+		);
 	});
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {
@@ -146,14 +154,17 @@ describe("dashboardFocusIndicatorHints", () => {
 			"n New, p Pin, x Hide, ? Map",
 		]);
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K", "r/u/U", "x/X"], {
-				vimModeEnabled: true,
-			}),
+			dashboardFocusIndicatorVisibleHintLabels(
+				["Esc", "⌥K", "r/u/U", "x/X/f/?"],
+				{
+					vimModeEnabled: true,
+				},
+			),
 		).toEqual([
 			"⌥K Commands",
 			"Esc Sidebar",
 			"r Reply, u Unread, U Read",
-			"x Hide, X Archive",
+			"x Hide, X Archive, f Hints, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(["type", "↑↓", "↵", "Esc"], {
