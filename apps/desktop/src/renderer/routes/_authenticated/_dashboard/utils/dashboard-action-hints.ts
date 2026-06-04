@@ -181,6 +181,14 @@ const SIDEBAR_ACTION_HINT_TITLES: Record<string, string> = {
 	"toggle-browser": "Native/browser",
 };
 
+function isNativeAgentSidebarAction(element: HTMLElement): boolean {
+	return (
+		element
+			.closest("[data-dashboard-sidebar-action-scope]")
+			?.querySelector("[data-native-agent-session-row-id]") != null
+	);
+}
+
 function closestDashboardActionHintScope(
 	element: Element | null,
 ): HTMLElement | null {
@@ -259,6 +267,12 @@ function semanticActionHintLabel(
 	}
 
 	const sidebarAction = element.getAttribute("data-dashboard-sidebar-action");
+	if (sidebarAction === "archive" && isNativeAgentSidebarAction(element)) {
+		return { displayLabel: "a", label: "a", labels: ["a"] };
+	}
+	if (sidebarAction === "hard-archive" && isNativeAgentSidebarAction(element)) {
+		return { displayLabel: "x/X", label: "x", labels: ["x", "X"] };
+	}
 	if (sidebarAction && sidebarAction in SIDEBAR_ACTION_HINT_LABELS) {
 		const hint = SIDEBAR_ACTION_HINT_LABELS[sidebarAction];
 		if (!hint) return null;

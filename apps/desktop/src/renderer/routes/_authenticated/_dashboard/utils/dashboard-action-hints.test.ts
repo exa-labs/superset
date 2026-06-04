@@ -176,7 +176,7 @@ describe("dashboard action hints", () => {
 			"p",
 			"N",
 			"a",
-			"X",
+			"x",
 			"U",
 		]);
 		expect(targets.map((target) => target.displayLabel)).toEqual([
@@ -184,12 +184,12 @@ describe("dashboard action hints", () => {
 			".",
 			"p",
 			"N",
-			"a/x",
-			"X",
+			"a",
+			"x/X",
 			"U",
 		]);
 		const archiveTarget = targets.find((target) => target.label === "a");
-		expect(archiveTarget?.labels).toEqual(["a", "x"]);
+		expect(archiveTarget?.labels).toEqual(["a"]);
 		expect(
 			archiveTarget
 				? dashboardActionHintTargetMatchesInput(archiveTarget, "a")
@@ -199,10 +199,22 @@ describe("dashboard action hints", () => {
 			archiveTarget
 				? dashboardActionHintTargetMatchesInput(archiveTarget, "x")
 				: false,
-		).toBe(true);
+		).toBe(false);
 		expect(
 			archiveTarget
 				? dashboardActionHintTargetHasPrefix(archiveTarget, "x")
+				: false,
+		).toBe(false);
+		const hardArchiveTarget = targets.find((target) => target.label === "x");
+		expect(hardArchiveTarget?.labels).toEqual(["x", "X"]);
+		expect(
+			hardArchiveTarget
+				? dashboardActionHintTargetMatchesInput(hardArchiveTarget, "x")
+				: false,
+		).toBe(true);
+		expect(
+			hardArchiveTarget
+				? dashboardActionHintTargetMatchesInput(hardArchiveTarget, "X")
 				: false,
 		).toBe(true);
 		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
@@ -214,6 +226,34 @@ describe("dashboard action hints", () => {
 			"Archive session",
 			"Mark reply read",
 		]);
+	});
+
+	it("keeps generic sidebar archive hints on a/x outside native agent rows", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const scope = document.createElement("div");
+		scope.setAttribute("data-dashboard-sidebar-action-scope", "");
+		const row = document.createElement("button");
+		row.setAttribute("data-dashboard-sidebar-roving-item", "true");
+		row.textContent = "Chrome";
+		setRect(row, visibleRect());
+		const archive = document.createElement("button");
+		archive.setAttribute("data-dashboard-sidebar-action", "archive");
+		archive.setAttribute("aria-label", "Close");
+		setRect(archive, visibleRect({ top: 40 }));
+		scope.append(row, archive);
+		root.append(scope);
+
+		const targets = collectDashboardActionHintTargets(root);
+		const archiveTarget = targets.find((target) => target.label === "a");
+
+		expect(targets.map((target) => target.displayLabel)).toEqual(["↵", "a/x"]);
+		expect(archiveTarget?.labels).toEqual(["a", "x"]);
+		expect(
+			archiveTarget
+				? dashboardActionHintTargetMatchesInput(archiveTarget, "x")
+				: false,
+		).toBe(true);
 	});
 
 	it("uses explicit action hint labels and titles for custom controls", () => {
