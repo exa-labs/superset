@@ -68,12 +68,15 @@ export function DashboardQuickTerminalsGrid({
 							title={terminalTitle(terminal)}
 							onClick={() => onOpenTerminal(terminal.id)}
 							className={cn(
-								"flex h-7 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent px-1.5 text-xs font-medium transition-colors",
+								"flex h-7 min-w-0 items-center justify-between gap-1 rounded-md border border-transparent px-1.5 text-xs font-medium transition-colors",
 								"text-muted-foreground hover:bg-accent/50 hover:text-foreground",
 							)}
 						>
 							<LuTerminal className="size-3.5 shrink-0" />
 							<span className="min-w-0 truncate">{terminal.label}</span>
+							<span className="shrink-0 rounded border border-border/70 px-1 font-mono text-[9px] leading-3 text-muted-foreground/60">
+								{dashboardQuickTerminalDirectShortcutLabel(terminal.id)}
+							</span>
 						</button>
 					</TooltipTrigger>
 					<TooltipContent side="right">
