@@ -17,6 +17,7 @@ import {
 	isDashboardSidebarSpaceKey,
 } from "./dashboard-sidebar-keyboard-actions";
 import {
+	clickDashboardSidebarActionButton,
 	DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE,
 	dashboardSidebarExpansionValue,
 	dashboardSidebarKeyboardFocusIndex,
@@ -1163,6 +1164,42 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 			root.remove();
 		}
 	});
+
+	test("falls hard archive commands back to generic archive actions", () => {
+		if (typeof document === "undefined") return;
+
+		let archiveClicks = 0;
+		const root = document.createElement("div");
+		root.dataset.dashboardSidebarRoot = "true";
+		const scope = document.createElement("div");
+		scope.dataset.dashboardSidebarActionScope = "";
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		session.setAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE, "true");
+		makeVisible(session);
+		const archive = document.createElement("button");
+		archive.dataset.dashboardSidebarAction = "archive";
+		archive.onclick = () => {
+			archiveClicks += 1;
+		};
+		makeVisible(archive);
+		scope.append(session, archive);
+		root.append(scope);
+		document.body.append(root);
+
+		try {
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.body,
+					command: "action-hard-archive",
+					root,
+				}),
+			).toBe(true);
+			expect(archiveClicks).toBe(1);
+		} finally {
+			root.remove();
+		}
+	});
 });
 
 describe("dashboardSidebarKeyboardFocusIndex", () => {
@@ -1462,6 +1499,60 @@ describe("findDashboardSidebarActionButton", () => {
 		expect(findDashboardSidebarActionButton(secondFolder, "delete")).toBe(
 			secondDelete,
 		);
+	});
+});
+
+describe("clickDashboardSidebarActionButton", () => {
+	test("uses the hard archive action before falling back", () => {
+		if (typeof document === "undefined") return;
+
+		let hardArchiveClicks = 0;
+		let archiveClicks = 0;
+		const rowScope = document.createElement("div");
+		rowScope.dataset.dashboardSidebarActionScope = "";
+		const session = document.createElement("button");
+		session.dataset.nativeAgentSessionRowId = "devin-1";
+		makeVisible(session);
+		const hardArchive = document.createElement("button");
+		hardArchive.dataset.dashboardSidebarAction = "hard-archive";
+		hardArchive.onclick = () => {
+			hardArchiveClicks += 1;
+		};
+		makeVisible(hardArchive);
+		const archive = document.createElement("button");
+		archive.dataset.dashboardSidebarAction = "archive";
+		archive.onclick = () => {
+			archiveClicks += 1;
+		};
+		makeVisible(archive);
+		rowScope.append(session, hardArchive, archive);
+
+		expect(clickDashboardSidebarActionButton(session, "hard-archive")).toBe(
+			true,
+		);
+		expect(hardArchiveClicks).toBe(1);
+		expect(archiveClicks).toBe(0);
+	});
+
+	test("falls hard archive back to archive for generic sidebar rows", () => {
+		if (typeof document === "undefined") return;
+
+		let archiveClicks = 0;
+		const rowScope = document.createElement("div");
+		rowScope.dataset.dashboardSidebarActionScope = "";
+		const tab = document.createElement("button");
+		tab.dataset.dashboardWebTabRowButton = "chrome-1";
+		makeVisible(tab);
+		const archive = document.createElement("button");
+		archive.dataset.dashboardSidebarAction = "archive";
+		archive.onclick = () => {
+			archiveClicks += 1;
+		};
+		makeVisible(archive);
+		rowScope.append(tab, archive);
+
+		expect(clickDashboardSidebarActionButton(tab, "hard-archive")).toBe(true);
+		expect(archiveClicks).toBe(1);
 	});
 });
 

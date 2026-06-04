@@ -6,6 +6,7 @@ import {
 	type DashboardSidebarKeyboardCommand,
 	type DashboardSidebarKeyboardCommandDetail,
 	dashboardSidebarKeyboardActionFromCommand,
+	dashboardSidebarKeyboardFallbackCommands,
 	isDashboardSidebarKeyboardCommand,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { scrollDashboardSidebarItemIntoView } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-scroll";
@@ -222,6 +223,38 @@ export function findDashboardSidebarActionButton(
 	return null;
 }
 
+function dashboardSidebarKeyboardActionFallbacks(
+	action: Exclude<DashboardSidebarKeyboardAction, "none">,
+): Array<Exclude<DashboardSidebarKeyboardAction, "none">> {
+	return dashboardSidebarKeyboardFallbackCommands(
+		`action-${action}` as DashboardSidebarKeyboardCommand,
+	)
+		.map(dashboardSidebarKeyboardActionFromCommand)
+		.filter(
+			(fallback): fallback is Exclude<DashboardSidebarKeyboardAction, "none"> =>
+				fallback !== null,
+		);
+}
+
+export function clickDashboardSidebarActionButton(
+	activeItem: HTMLElement,
+	action: Exclude<DashboardSidebarKeyboardAction, "none">,
+): boolean {
+	for (const candidate of [
+		action,
+		...dashboardSidebarKeyboardActionFallbacks(action),
+	]) {
+		const actionButton = findDashboardSidebarActionButton(
+			activeItem,
+			candidate,
+		);
+		if (!actionButton || actionButton.disabled) continue;
+		actionButton.click();
+		return true;
+	}
+	return false;
+}
+
 export function findDashboardSidebarExpansionTarget(
 	activeItem: HTMLElement,
 ): HTMLElement | null {
@@ -311,13 +344,7 @@ export function runDashboardSidebarKeyboardCommand(input: {
 		input.command,
 	);
 	if (sidebarAction) {
-		const actionButton = findDashboardSidebarActionButton(
-			activeItem,
-			sidebarAction,
-		);
-		if (!actionButton || actionButton.disabled) return false;
-		actionButton.click();
-		return true;
+		return clickDashboardSidebarActionButton(activeItem, sidebarAction);
 	}
 
 	if (input.command === "activate") {
@@ -582,12 +609,7 @@ export function useDashboardSidebarKeyboardNavigation(
 				}
 
 				const activeItem = items[activeIndex];
-				const actionButton = findDashboardSidebarActionButton(
-					activeItem,
-					sidebarAction,
-				);
-				if (actionButton && !actionButton.disabled) {
-					actionButton.click();
+				if (clickDashboardSidebarActionButton(activeItem, sidebarAction)) {
 					return;
 				}
 				if (sidebarAction === "create") {
