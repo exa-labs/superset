@@ -174,6 +174,14 @@ describe("actions command provider", () => {
 				?.hotkeyId,
 		).toBe("TOGGLE_WORKSPACE_SIDEBAR");
 		expect(
+			commands.find((command) => command.id === "actions.toggleLeftSidebar")
+				?.shortcutLabel,
+		).toBe("H");
+		expect(
+			commands.find((command) => command.id === "actions.toggleLeftSidebar")
+				?.keywords,
+		).toContain("vim");
+		expect(
 			commands.find((command) => command.id === "actions.focusNavigationShell")
 				?.shortcutLabel,
 		).toBe("Esc");

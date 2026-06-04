@@ -469,6 +469,8 @@ export const actionsProvider: CommandProvider = {
 				section: "actions",
 				icon: PanelLeftIcon,
 				hotkeyId: "TOGGLE_WORKSPACE_SIDEBAR",
+				keywords: ["dashboard", "left", "navigation", "sidebar", "vim", "h"],
+				shortcutLabel: "H",
 				run: toggleDashboardNavigationSidebar,
 			},
 			{
