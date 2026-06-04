@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	dashboardVimGlobalActionFromKey,
+	dashboardVimKey,
 	dashboardVimNavigationActionFromSequence,
 	isDashboardLocalVimSequenceScopeActive,
 	nextDashboardVimSequence,
@@ -113,6 +114,14 @@ describe("dashboard vim mode", () => {
 			pendingPrefix: null,
 			sequence: null,
 		});
+	});
+
+	it("normalizes arrow keys into Vim movement keys", () => {
+		expect(dashboardVimKey(keyEvent({ key: "ArrowDown" }))).toBe("j");
+		expect(dashboardVimKey(keyEvent({ key: "ArrowUp" }))).toBe("k");
+		expect(dashboardVimKey(keyEvent({ key: "ArrowLeft" }))).toBe("h");
+		expect(dashboardVimKey(keyEvent({ key: "ArrowRight" }))).toBe("l");
+		expect(dashboardVimKey(keyEvent({ key: "Enter" }))).toBe("enter");
 	});
 
 	it("lets local Vim scopes own g-prefixed navigation", () => {

@@ -4,6 +4,7 @@ import {
 	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
 	dashboardRootTerminalTargetFromShortcut,
+	dashboardSidebarKeyboardCommandFromVimKey,
 } from "./useDashboardWebShortcuts";
 
 describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
@@ -49,6 +50,21 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			dashboardRootTerminalTargetFromShortcut("OPEN_ROOT_TERMINAL_HEPH"),
 		).toBe("heph");
 		expect(dashboardRootTerminalTargetFromShortcut("OPEN_CHROME")).toBeNull();
+	});
+
+	it("maps global Vim keys to sidebar commands outside local sidebar focus", () => {
+		expect(dashboardSidebarKeyboardCommandFromVimKey("j")).toBe("focus-next");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("k")).toBe(
+			"focus-previous",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("h")).toBe("collapse");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("l")).toBe("expand");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("G")).toBe("focus-last");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("enter")).toBe("activate");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("space")).toBe(
+			"toggle-expansion",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("x")).toBeNull();
 	});
 });
 

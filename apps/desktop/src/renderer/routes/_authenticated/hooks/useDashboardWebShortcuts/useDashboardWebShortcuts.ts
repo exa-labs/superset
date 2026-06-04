@@ -180,11 +180,13 @@ function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
 	);
 }
 
-function dashboardSidebarKeyboardCommandFromVimKey(
+export function dashboardSidebarKeyboardCommandFromVimKey(
 	key: string,
 ): DashboardSidebarKeyboardCommand | null {
 	if (key === "j") return "focus-next";
 	if (key === "k") return "focus-previous";
+	if (key === "h") return "collapse";
+	if (key === "l") return "expand";
 	if (key === "G") return "focus-last";
 	if (key === "enter") return "activate";
 	if (key === " " || key === "space" || key === "spacebar") {
