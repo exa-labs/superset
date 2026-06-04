@@ -350,6 +350,30 @@ describe("control plane shortcut bridge resolver", () => {
 		}
 	});
 
+	it("clears pending dashboard web chains when Escape returns focus to the shell", () => {
+		const { resolver } = createResolverHarness();
+
+		expect(resolver.resolve(input({ code: "KeyC", key: "c" })).type).toBe(
+			"dashboard-web-shortcut",
+		);
+		expect(
+			resolver.resolve(
+				input({
+					alt: false,
+					code: "Escape",
+					key: "Escape",
+				}),
+			),
+		).toEqual({
+			action: "FOCUS_DASHBOARD_SHELL",
+			preventDefault: true,
+			type: "global-keyboard-action",
+		});
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit1", key: "1" })),
+		).toEqual({ preventDefault: false, type: "none" });
+	});
+
 	it("prevents default for bare Escape focus-shell action", () => {
 		const { resolver } = createResolverHarness();
 
