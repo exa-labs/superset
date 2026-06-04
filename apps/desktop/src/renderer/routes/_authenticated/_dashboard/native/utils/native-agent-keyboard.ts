@@ -1,4 +1,5 @@
 import { isDashboardVimEditableTarget } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import type { NativeAgentOverviewFilter } from "./native-agent-overview";
 
 export interface NativeAgentSearchEscapeResult {
 	shouldBlur: boolean;
@@ -62,6 +63,18 @@ export type NativeAgentOverviewCardVimAction =
 	| "pin"
 	| "remove-from-folder"
 	| "rename";
+
+export const NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS = [
+	{ filter: "all", key: "1" },
+	{ filter: "active", key: "2" },
+	{ filter: "unread", key: "3" },
+	{ filter: "pinned", key: "4" },
+	{ filter: "hidden", key: "5" },
+	{ filter: "finished", key: "6" },
+] as const satisfies readonly {
+	filter: NativeAgentOverviewFilter;
+	key: string;
+}[];
 
 export type NativeAgentSelectedSessionVimAction =
 	| "archive"
@@ -241,6 +254,26 @@ export function nativeAgentOverviewCardVimActionFromKey(
 	return "none";
 }
 
+export function nativeAgentOverviewFilterFromKey(
+	key: string | null,
+): NativeAgentOverviewFilter | null {
+	return (
+		NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS.find(
+			(shortcut) => shortcut.key === key,
+		)?.filter ?? null
+	);
+}
+
+export function nativeAgentOverviewFilterShortcutKey(
+	filter: NativeAgentOverviewFilter,
+): string {
+	return (
+		NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS.find(
+			(shortcut) => shortcut.filter === filter,
+		)?.key ?? ""
+	);
+}
+
 export function nativeAgentPlainNavigationKey(
 	event: KeyboardEvent,
 ): string | null {
@@ -271,6 +304,7 @@ export function nativeAgentPlainNavigationKey(
 	if (event.key === "Enter") return "enter";
 	if (event.key === "Home") return "home";
 	if (event.key === "End") return "end";
+	if (nativeAgentOverviewFilterFromKey(event.key)) return event.key;
 	return null;
 }
 

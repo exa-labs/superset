@@ -180,6 +180,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Jump native overview")).toEqual(
 			expect.objectContaining({ keys: ["g", "g", "G", "Home", "End"] }),
 		);
+		expect(entryByLabel.get("Filter native overview")).toEqual(
+			expect.objectContaining({ keys: ["1", "2", "3", "4", "5", "6"] }),
+		);
 		expect(entryByLabel.get("Open unread reply")).toEqual(
 			expect.objectContaining({ keys: ["u"] }),
 		);
@@ -462,6 +465,9 @@ describe("dashboard keyboard help", () => {
 				"Open unread native reply",
 				"Mark latest native reply read",
 			]),
+		);
+		expect(labelsForQuery("archived filter native")).toEqual(
+			expect.arrayContaining(["Filter native overview"]),
 		);
 		expect(labelsForQuery("option c")).toEqual(
 			expect.arrayContaining(["Open Capy thread 1", "Create Capy thread"]),

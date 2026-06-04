@@ -68,6 +68,8 @@ import { publishDashboardNativeAgentCurrentSessionState } from "../../utils/nati
 import {
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
+	nativeAgentOverviewFilterFromKey,
+	nativeAgentOverviewFilterShortcutKey,
 	nativeAgentOverviewJumpFromKey,
 	nativeAgentPlainNavigationKey,
 	nativeAgentSearchEscapeResult,
@@ -1860,6 +1862,15 @@ export function NativeAgentChatView({
 				return;
 			}
 
+			if (!selectedItem) {
+				const nextOverviewFilter = nativeAgentOverviewFilterFromKey(key);
+				if (nextOverviewFilter) {
+					consumeNativeAgentKeyboardEvent(event);
+					setOverviewFilter(nextOverviewFilter);
+					return;
+				}
+			}
+
 			const unreadAction = nativeAgentUnreadVimActionFromKey(key);
 			if (unreadAction === "mark-latest-read") {
 				const latestReply = readLatestNativeAgentReplyNotification();
@@ -2883,21 +2894,31 @@ export function NativeAgentChatView({
 									"hidden",
 									"finished",
 								] as const
-							).map((filter) => (
-								<button
-									key={filter}
-									type="button"
-									onClick={() => setOverviewFilter(filter)}
-									className={cn(
-										"rounded-md border px-2 py-1 text-xs capitalize transition-colors",
-										overviewFilter === filter
-											? "border-foreground/40 bg-accent text-foreground"
-											: "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",
-									)}
-								>
-									{nativeAgentOverviewFilterLabel(filter)}
-								</button>
-							))}
+							).map((filter) => {
+								const filterLabel = nativeAgentOverviewFilterLabel(filter);
+								const shortcutKey =
+									nativeAgentOverviewFilterShortcutKey(filter);
+								return (
+									<button
+										key={filter}
+										type="button"
+										aria-keyshortcuts={shortcutKey}
+										title={`${filterLabel} conversations (${shortcutKey})`}
+										onClick={() => setOverviewFilter(filter)}
+										className={cn(
+											"inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs capitalize transition-colors",
+											overviewFilter === filter
+												? "border-foreground/40 bg-accent text-foreground"
+												: "border-border text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+										)}
+									>
+										<span>{filterLabel}</span>
+										<kbd className="rounded-sm border border-border/70 bg-background/50 px-1 font-mono text-[10px] leading-3 text-muted-foreground/70">
+											{shortcutKey}
+										</kbd>
+									</button>
+								);
+							})}
 						</div>
 						{activeWorkspaceItems.length > 0 && (
 							<div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">

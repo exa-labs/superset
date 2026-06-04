@@ -621,6 +621,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Jump to the first or last visible Capy/Devin overview card",
 				},
 				{
+					keys: ["1", "2", "3", "4", "5", "6"],
+					label: "Filter native overview",
+					description:
+						"Switch Capy or Devin overview between all, active, unread, pinned, archived, and finished",
+				},
+				{
 					keys: ["u"],
 					label: "Open unread reply",
 					description: "Jump to the next unread Capy or Devin response",

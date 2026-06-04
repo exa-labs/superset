@@ -1,9 +1,12 @@
 import { describe, expect, it } from "bun:test";
 import {
+	NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS,
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
+	nativeAgentOverviewFilterFromKey,
+	nativeAgentOverviewFilterShortcutKey,
 	nativeAgentOverviewFocusDeltaFromKey,
 	nativeAgentOverviewJumpFromKey,
 	nativeAgentPlainNavigationKey,
@@ -266,6 +269,26 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentOverviewCardVimActionFromKey("j")).toBe("none");
 	});
 
+	it("maps native overview filter shortcuts", () => {
+		expect(NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS).toEqual([
+			{ filter: "all", key: "1" },
+			{ filter: "active", key: "2" },
+			{ filter: "unread", key: "3" },
+			{ filter: "pinned", key: "4" },
+			{ filter: "hidden", key: "5" },
+			{ filter: "finished", key: "6" },
+		]);
+		expect(nativeAgentOverviewFilterFromKey("1")).toBe("all");
+		expect(nativeAgentOverviewFilterFromKey("2")).toBe("active");
+		expect(nativeAgentOverviewFilterFromKey("3")).toBe("unread");
+		expect(nativeAgentOverviewFilterFromKey("4")).toBe("pinned");
+		expect(nativeAgentOverviewFilterFromKey("5")).toBe("hidden");
+		expect(nativeAgentOverviewFilterFromKey("6")).toBe("finished");
+		expect(nativeAgentOverviewFilterFromKey("7")).toBeNull();
+		expect(nativeAgentOverviewFilterShortcutKey("hidden")).toBe("5");
+		expect(nativeAgentOverviewFilterShortcutKey("finished")).toBe("6");
+	});
+
 	it("maps unread vim action keys", () => {
 		expect(nativeAgentUnreadVimActionFromKey("u")).toBe("open-unread");
 		expect(nativeAgentUnreadVimActionFromKey("U")).toBe("mark-latest-read");
@@ -355,6 +378,8 @@ describe("native agent keyboard helpers", () => {
 			"home",
 		);
 		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "End" }))).toBe("end");
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "1" }))).toBe("1");
+		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "6" }))).toBe("6");
 		expect(nativeAgentPlainNavigationKey(keyEvent({ key: "x" }))).toBeNull();
 		expect(
 			nativeAgentPlainNavigationKey(
