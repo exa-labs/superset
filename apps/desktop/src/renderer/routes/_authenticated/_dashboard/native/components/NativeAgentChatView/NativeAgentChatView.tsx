@@ -898,6 +898,7 @@ export function NativeAgentChatView({
 	const messageEndRef = useRef<HTMLDivElement | null>(null);
 	const messageScrollRef = useRef<HTMLDivElement | null>(null);
 	const composerRef = useRef<HTMLTextAreaElement | null>(null);
+	const pendingComposerFocusKeyRef = useRef<string | null>(null);
 	const overviewSearchRef = useRef<HTMLInputElement | null>(null);
 	const renameInputRef = useRef<HTMLInputElement | null>(null);
 	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
@@ -1797,6 +1798,22 @@ export function NativeAgentChatView({
 	}, [splitPlacements]);
 
 	useEffect(() => {
+		if (
+			pendingComposerFocusKeyRef.current !== selectedViewKey ||
+			!selectedItem
+		) {
+			return;
+		}
+		const frame = window.requestAnimationFrame(() => {
+			const composer = composerRef.current;
+			if (!composer) return;
+			composer.focus();
+			pendingComposerFocusKeyRef.current = null;
+		});
+		return () => window.cancelAnimationFrame(frame);
+	}, [selectedItem, selectedViewKey]);
+
+	useEffect(() => {
 		const openItem = (item: NativeItem) => {
 			if (provider === "capy") {
 				navigate({
@@ -1809,6 +1826,32 @@ export function NativeAgentChatView({
 				to: "/native/devin/$sessionId",
 				params: { sessionId: item.id },
 			});
+		};
+		const openItemForReply = (item: NativeItem) => {
+			pendingComposerFocusKeyRef.current = `${provider}:${item.id}`;
+			openItem(item);
+		};
+		const openItemInBrowser = (item: NativeItem) => {
+			if (!item.url) return;
+			const targetKey = `${provider}:${item.id}`;
+			setViewState({ key: targetKey, mode: "browser" });
+			const nextTarget: NativeBrowserTarget = {
+				id: item.id,
+				key: targetKey,
+				provider,
+				title: item.title,
+				url: item.url,
+			};
+			setOpenedBrowserTargets((current) => {
+				const existingIndex = current.findIndex(
+					(target) => target.key === targetKey,
+				);
+				if (existingIndex === -1) return [...current, nextTarget];
+				const next = [...current];
+				next[existingIndex] = nextTarget;
+				return next;
+			});
+			openItem(item);
 		};
 
 		const currentOverviewItem = () => {
@@ -2094,7 +2137,7 @@ export function NativeAgentChatView({
 				moveOverviewFocusByKey(key);
 				return;
 			}
-			if (key === "enter" || key === "o") {
+			if (key === "enter") {
 				const active = document.activeElement;
 				if (!(active instanceof HTMLButtonElement)) return;
 				const item = workspaceItems.find(
@@ -2118,6 +2161,14 @@ export function NativeAgentChatView({
 				consumeNativeAgentKeyboardEvent(event);
 				if (overviewCardAction === "pin") {
 					void handleSetPinned(item, item.sidebarPinned !== true);
+					return;
+				}
+				if (overviewCardAction === "focus-composer") {
+					openItemForReply(item);
+					return;
+				}
+				if (overviewCardAction === "open-browser") {
+					openItemInBrowser(item);
 					return;
 				}
 				if (overviewCardAction === "rename") {

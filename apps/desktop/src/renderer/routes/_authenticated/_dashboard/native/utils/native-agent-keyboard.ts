@@ -61,9 +61,11 @@ export type NativeAgentSplitPaneAction =
 	| "widen-native";
 export type NativeAgentOverviewCardVimAction =
 	| "archive"
+	| "focus-composer"
 	| "hide"
 	| "move-to-folder"
 	| "none"
+	| "open-browser"
 	| "pin"
 	| "remove-from-folder"
 	| "rename";
@@ -263,6 +265,8 @@ export function nativeAgentSplitPaneActionFromKey(
 export function nativeAgentOverviewCardVimActionFromKey(
 	key: string | null,
 ): NativeAgentOverviewCardVimAction {
+	if (key === "i" || key === "r") return "focus-composer";
+	if (key === "o") return "open-browser";
 	if (key === "p") return "pin";
 	if (key === "e") return "rename";
 	if (key === "m") return "move-to-folder";

@@ -262,6 +262,9 @@ describe("native agent keyboard helpers", () => {
 	});
 
 	it("maps overview card vim actions for inbox management", () => {
+		expect(nativeAgentOverviewCardVimActionFromKey("r")).toBe("focus-composer");
+		expect(nativeAgentOverviewCardVimActionFromKey("i")).toBe("focus-composer");
+		expect(nativeAgentOverviewCardVimActionFromKey("o")).toBe("open-browser");
 		expect(nativeAgentOverviewCardVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentOverviewCardVimActionFromKey("e")).toBe("rename");
 		expect(nativeAgentOverviewCardVimActionFromKey("m")).toBe("move-to-folder");
