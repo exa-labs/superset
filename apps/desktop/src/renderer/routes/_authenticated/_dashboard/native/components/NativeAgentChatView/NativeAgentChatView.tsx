@@ -109,6 +109,7 @@ import {
 	compactNativeAgentReplyPreview,
 	markNativeAgentReplyNotificationRead,
 	NATIVE_AGENT_READ_STATE_CHANGE_EVENT,
+	nativeAgentNotificationKey,
 	readLatestNativeAgentReplyNotification,
 	readNativeAgentReadState,
 	writeNativeAgentReadState,
@@ -182,6 +183,7 @@ type NativeAgentCurrentAction =
 	| "equalize-split"
 	| "focus-composer"
 	| "hide"
+	| "mark-read"
 	| "narrow-native-split"
 	| "new"
 	| "open-browser"
@@ -569,6 +571,23 @@ function hasUnreadNativeAgentReply(
 	return (
 		latestTime > (readState[nativeAgentReadStateKey(provider, item.id)] ?? 0)
 	);
+}
+
+function currentNativeAgentReplyNotification(
+	item: NativeItem,
+	provider: NativeAgentProvider,
+): { key: string; latestTime: number } | null {
+	const latestMessage = item.latestMessage;
+	if (!latestMessage) return null;
+	if (normalizeNativeAgentRole(latestMessage.role, provider).isUser) {
+		return null;
+	}
+	const latestTime = latestAgentMessageTime(item);
+	if (latestTime == null) return null;
+	return {
+		key: nativeAgentNotificationKey(provider, item.id),
+		latestTime,
+	};
 }
 
 function consumeNativeAgentKeyboardEvent(
@@ -1259,6 +1278,23 @@ export function NativeAgentChatView({
 			provider === "capy" ? "mineOnly: api-filtered" : "mineOnly: user-email",
 		];
 	}, [provider, readState, selectedId, selectedItem]);
+	const markSelectedReplyRead = useCallback(
+		(item: NativeItem) => {
+			const notification = currentNativeAgentReplyNotification(item, provider);
+			if (
+				!notification ||
+				!hasUnreadNativeAgentReply(item, readState, provider)
+			) {
+				toast.message("No unread reply for this session");
+				return;
+			}
+			markNativeAgentReplyNotificationRead(notification);
+			toast.message(`Marked ${nativeAgentProviderTitle(provider)} reply read`, {
+				description: item.title,
+			});
+		},
+		[provider, readState],
+	);
 	const diagnosticsQueries = useMemo(
 		() =>
 			provider === "capy"
@@ -1887,6 +1923,15 @@ export function NativeAgentChatView({
 				}
 			}
 
+			if (
+				selectedItem &&
+				nativeAgentSelectedSessionVimActionFromKey(key) === "mark-read"
+			) {
+				consumeNativeAgentKeyboardEvent(event);
+				markSelectedReplyRead(selectedItem);
+				return;
+			}
+
 			const unreadAction = nativeAgentUnreadVimActionFromKey(key);
 			if (unreadAction === "mark-latest-read") {
 				const latestReply = readLatestNativeAgentReplyNotification();
@@ -1939,6 +1984,10 @@ export function NativeAgentChatView({
 					}
 					if (selectedSessionAction === "show-action-hints") {
 						handleDashboardGlobalKeyboardAction("SHOW_DASHBOARD_ACTION_HINTS");
+						return;
+					}
+					if (selectedSessionAction === "mark-read") {
+						markSelectedReplyRead(selectedItem);
 						return;
 					}
 					if (selectedSessionAction === "open-browser") {
@@ -2113,6 +2162,7 @@ export function NativeAgentChatView({
 		handleSetPinned,
 		handleSetSidebarVisible,
 		handleArchiveItem,
+		markSelectedReplyRead,
 		openRenameDialog,
 	]);
 
@@ -2172,6 +2222,10 @@ export function NativeAgentChatView({
 			}
 			if (detail?.action === "focus-composer") {
 				composerRef.current?.focus();
+				return;
+			}
+			if (detail?.action === "mark-read") {
+				markSelectedReplyRead(selectedItem);
 				return;
 			}
 			if (detail?.action === "open-browser" && selectedItem.url) {
@@ -2235,6 +2289,7 @@ export function NativeAgentChatView({
 		handleSetPinned,
 		handleSetSidebarVisible,
 		handleArchive,
+		markSelectedReplyRead,
 		openRenameDialog,
 		openExternal,
 	]);

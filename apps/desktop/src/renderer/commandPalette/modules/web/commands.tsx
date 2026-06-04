@@ -79,6 +79,7 @@ function dispatchNativeAgentAction(
 		| "equalize-split"
 		| "focus-composer"
 		| "hide"
+		| "mark-read"
 		| "narrow-native-split"
 		| "new"
 		| "open-browser"
@@ -881,6 +882,33 @@ export const webProvider: CommandProvider = {
 				run: (context) =>
 					dispatchNativeAgentAction(
 						"focus-composer",
+						nativeProviderFromPathname(context.route.pathname),
+					),
+			},
+			{
+				id: "native.current.markRead",
+				title: `Mark current ${currentNativeLabel} reply read`,
+				section: "web",
+				iconUrl: currentNativeIconUrl,
+				description:
+					"Acknowledge the current Capy/Devin session's latest reply",
+				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
+				keywords: [
+					"capy",
+					"devin",
+					"reply",
+					"read",
+					"unread",
+					"acknowledge",
+					"notification",
+					"native",
+				],
+				shortcutLabel: "U",
+				when: (context) =>
+					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
+				run: (context) =>
+					dispatchNativeAgentAction(
+						"mark-read",
 						nativeProviderFromPathname(context.route.pathname),
 					),
 			},

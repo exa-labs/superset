@@ -85,6 +85,7 @@ export type NativeAgentSelectedSessionVimAction =
 	| "focus-composer"
 	| "focus-navigation-shell"
 	| "hide"
+	| "mark-read"
 	| "move-to-folder"
 	| "none"
 	| "open-browser"
@@ -227,6 +228,7 @@ export function nativeAgentSelectedSessionVimActionFromKey(
 	if (key === "m") return "move-to-folder";
 	if (key === "f") return "show-action-hints";
 	if (key === "F") return "remove-from-folder";
+	if (key === "U") return "mark-read";
 	if (key === "X") return "archive";
 	if (key === "a" || key === "x") return "hide";
 	return "none";

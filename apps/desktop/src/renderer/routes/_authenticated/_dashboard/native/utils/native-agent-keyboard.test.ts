@@ -254,6 +254,7 @@ describe("native agent keyboard helpers", () => {
 		expect(nativeAgentSelectedSessionVimActionFromKey("F")).toBe(
 			"remove-from-folder",
 		);
+		expect(nativeAgentSelectedSessionVimActionFromKey("U")).toBe("mark-read");
 		expect(nativeAgentSelectedSessionVimActionFromKey("p")).toBe("pin");
 		expect(nativeAgentSelectedSessionVimActionFromKey("X")).toBe("archive");
 		expect(nativeAgentSelectedSessionVimActionFromKey("x")).toBe("hide");

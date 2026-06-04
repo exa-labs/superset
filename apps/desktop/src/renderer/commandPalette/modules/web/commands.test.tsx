@@ -304,6 +304,7 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.current.new")).toBe("n");
 		expect(shortcutById.get("native.current.refresh")).toBe("R");
 		expect(shortcutById.get("native.current.reply")).toBe("r/i");
+		expect(shortcutById.get("native.current.markRead")).toBe("U");
 		expect(shortcutById.get("native.current.pin")).toBe("p");
 		expect(shortcutById.get("native.current.unpin")).toBeUndefined();
 		expect(shortcutById.get("native.current.rename")).toBe("e");
@@ -403,11 +404,11 @@ describe("web command provider", () => {
 
 			expect(commandIds.slice(0, 6)).toEqual([
 				"native.current.reply",
+				"native.current.markRead",
 				"native.current.openBrowser",
 				"native.current.openExternal",
 				"native.folder.moveCurrent",
 				"native.current.pin",
-				"native.current.rename",
 			]);
 			expect(commandIds.indexOf("native.current.reply")).toBeLessThan(
 				commandIds.indexOf("native.current.new"),
@@ -886,6 +887,10 @@ describe("web command provider", () => {
 				?.title,
 		).toBe("Reply to current Capy thread");
 		expect(
+			capyCommands.find((command) => command.id === "native.current.markRead")
+				?.title,
+		).toBe("Mark current Capy thread reply read");
+		expect(
 			capyCommands.find((command) => command.id === "native.current.reply")
 				?.iconUrl,
 		).toBe("https://capy.ai/_marketing/favicon/favicon-96x96.png");
@@ -910,6 +915,9 @@ describe("web command provider", () => {
 				?.run?.(context);
 			commands
 				.find((command) => command.id === "native.current.reply")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.current.markRead")
 				?.run?.(context);
 			commands
 				.find((command) => command.id === "native.current.openBrowser")
@@ -951,6 +959,10 @@ describe("web command provider", () => {
 			});
 			expect(events).toContainEqual({
 				detail: { action: "focus-composer", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+			expect(events).toContainEqual({
+				detail: { action: "mark-read", provider: "devin" },
 				type: "dashboard-native-agent-current-action",
 			});
 			expect(events).toContainEqual({
