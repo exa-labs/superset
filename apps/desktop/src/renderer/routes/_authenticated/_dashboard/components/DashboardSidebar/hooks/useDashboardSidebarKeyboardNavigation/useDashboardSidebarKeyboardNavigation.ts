@@ -1,4 +1,5 @@
 import { type RefObject, useEffect, useRef } from "react";
+import { dashboardFocusScopeForElement } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import {
 	DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
@@ -379,6 +380,11 @@ export function useDashboardSidebarKeyboardNavigation(
 			const activeElement = document.activeElement;
 			const focusInsideSidebar =
 				isHTMLElement(activeElement) && root.contains(activeElement);
+			const eventElement =
+				typeof Element !== "undefined" && event.target instanceof Element
+					? event.target
+					: null;
+			const focusScope = dashboardFocusScopeForElement(eventElement);
 			const localSidebarKey = dashboardSidebarLocalKeyAllowsModifiers({
 				altKey: event.altKey,
 				ctrlKey: event.ctrlKey,
@@ -412,6 +418,7 @@ export function useDashboardSidebarKeyboardNavigation(
 					: "none";
 			const typeaheadSeed = dashboardSidebarTypeaheadSeedFromKey({
 				altKey: event.altKey,
+				allowFromAppShell: focusScope.id === "app",
 				ctrlKey: event.ctrlKey,
 				focusInsideSidebar,
 				key: event.key,

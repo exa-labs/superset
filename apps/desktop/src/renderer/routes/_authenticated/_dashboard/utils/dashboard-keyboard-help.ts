@@ -515,7 +515,7 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					keys: ["type"],
 					label: "Typeahead jump",
 					description:
-						"Type while the sidebar is focused to jump through matching visible rows",
+						"Type from the app shell or sidebar focus to jump through matching visible rows",
 				},
 				{
 					keys: ["g", "g", "Home"],

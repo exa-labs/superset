@@ -158,13 +158,16 @@ export function dashboardSidebarVimJumpFromKey(input: {
 
 export function dashboardSidebarTypeaheadSeedFromKey(input: {
 	altKey: boolean;
+	allowFromAppShell?: boolean;
 	ctrlKey: boolean;
 	focusInsideSidebar: boolean;
 	key: string;
 	metaKey: boolean;
 	vimModeEnabled: boolean;
 }): string | null {
-	if (!input.focusInsideSidebar) return null;
+	if (!input.focusInsideSidebar && input.allowFromAppShell !== true) {
+		return null;
+	}
 	if (input.vimModeEnabled) return null;
 	if (input.altKey || input.ctrlKey || input.metaKey) return null;
 	if (input.key.length !== 1) return null;

@@ -397,6 +397,31 @@ describe("dashboardSidebarTypeaheadSeedFromKey", () => {
 			}),
 		).toBeNull();
 	});
+
+	test("allows app-shell typeahead without stealing guarded dashboard scopes", () => {
+		expect(
+			dashboardSidebarTypeaheadSeedFromKey({
+				altKey: false,
+				allowFromAppShell: true,
+				ctrlKey: false,
+				focusInsideSidebar: false,
+				key: "q",
+				metaKey: false,
+				vimModeEnabled: false,
+			}),
+		).toBe("q");
+		expect(
+			dashboardSidebarTypeaheadSeedFromKey({
+				altKey: false,
+				allowFromAppShell: true,
+				ctrlKey: false,
+				focusInsideSidebar: false,
+				key: "p",
+				metaKey: false,
+				vimModeEnabled: false,
+			}),
+		).toBeNull();
+	});
 });
 
 describe("dashboardSidebarTypeaheadQueryFromSeed", () => {
