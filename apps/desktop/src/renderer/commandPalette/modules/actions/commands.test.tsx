@@ -65,6 +65,9 @@ const { DASHBOARD_ACTION_HINTS_OPEN_EVENT } = await import(
 const { DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT } = await import(
 	"renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus"
 );
+const { DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT } = await import(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command"
+);
 const { actionsProvider } = await import("./commands");
 
 function commandContext(pathname = "/native/capy"): CommandContext {
@@ -103,6 +106,14 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.toggleLeftSidebar")).toBe(true);
 		expect(commandIds.has("actions.focusNavigationShell")).toBe(true);
 		expect(commandIds.has("actions.searchSidebar")).toBe(true);
+		expect(commandIds.has("actions.sidebar.activate")).toBe(true);
+		expect(commandIds.has("actions.sidebar.toggleExpansion")).toBe(true);
+		expect(commandIds.has("actions.sidebar.create")).toBe(true);
+		expect(commandIds.has("actions.sidebar.pin")).toBe(true);
+		expect(commandIds.has("actions.sidebar.reply")).toBe(true);
+		expect(commandIds.has("actions.sidebar.move")).toBe(true);
+		expect(commandIds.has("actions.sidebar.rename")).toBe(true);
+		expect(commandIds.has("actions.sidebar.archive")).toBe(true);
 		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
 		expect(commandIds.has("actions.showDashboardKeyboardGuide")).toBe(true);
 		expect(commandIds.has("actions.showShortcuts")).toBe(true);
@@ -155,6 +166,19 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.searchSidebar")
 				?.shortcutLabel,
 		).toBe("/");
+		const shortcutById = new Map(
+			commands
+				.filter((command) => command.id.startsWith("actions.sidebar."))
+				.map((command) => [command.id, command.shortcutLabel] as const),
+		);
+		expect(shortcutById.get("actions.sidebar.activate")).toBe("Enter");
+		expect(shortcutById.get("actions.sidebar.toggleExpansion")).toBe("Space");
+		expect(shortcutById.get("actions.sidebar.create")).toBe("n");
+		expect(shortcutById.get("actions.sidebar.pin")).toBe("p");
+		expect(shortcutById.get("actions.sidebar.reply")).toBe("r");
+		expect(shortcutById.get("actions.sidebar.move")).toBe("m");
+		expect(shortcutById.get("actions.sidebar.rename")).toBe("e");
+		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
 		expect(
 			commands.find(
 				(command) => command.id === "actions.showDashboardActionHints",
@@ -301,6 +325,44 @@ describe("actions command provider", () => {
 		window.removeEventListener(DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT, listener);
 
 		expect(openEventCount).toBe(1);
+	});
+
+	it("routes focused sidebar row commands through the shared sidebar command event", () => {
+		if (typeof window === "undefined") return;
+		const commands: string[] = [];
+		const listener = (event: Event) => {
+			commands.push(
+				(event as CustomEvent<{ command?: string }>).detail?.command ?? "",
+			);
+		};
+		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
+		try {
+			const providedCommands = actionsProvider.provide(commandContext());
+			for (const id of [
+				"actions.sidebar.activate",
+				"actions.sidebar.toggleExpansion",
+				"actions.sidebar.pin",
+				"actions.sidebar.move",
+				"actions.sidebar.archive",
+			]) {
+				providedCommands
+					.find((candidate) => candidate.id === id)
+					?.run?.(commandContext());
+			}
+		} finally {
+			window.removeEventListener(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+				listener,
+			);
+		}
+
+		expect(commands).toEqual([
+			"activate",
+			"toggle-expansion",
+			"action-pin",
+			"action-move",
+			"action-archive",
+		]);
 	});
 
 	it("opens dashboard action hints from the command palette", () => {

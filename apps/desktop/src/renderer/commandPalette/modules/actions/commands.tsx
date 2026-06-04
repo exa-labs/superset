@@ -1,20 +1,30 @@
 import { toast } from "@superset/ui/sonner";
 import {
+	ArchiveIcon,
 	BellIcon,
 	BellOffIcon,
+	FolderInputIcon,
 	KeyboardIcon,
+	MessageSquareIcon,
 	PaletteIcon,
 	PanelLeftIcon,
 	PanelRightIcon,
+	PencilIcon,
+	PinIcon,
 	PlusIcon,
 	RefreshCwIcon,
 	SearchIcon,
 	SettingsIcon,
+	SquareMousePointerIcon,
 } from "lucide-react";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
 import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
+import {
+	type DashboardSidebarKeyboardCommand,
+	dispatchDashboardSidebarKeyboardCommand,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command";
 import { focusDashboardSidebarSearch } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus";
 import {
 	isDashboardVimModeEnabled,
@@ -32,6 +42,7 @@ const ACTION_COMMAND_PRIORITY = {
 	keyboardHelp: 170,
 	markUnreadNativeReply: 188,
 	newWorkspace: 160,
+	sidebarFocusedRow: 182,
 	sidebarSearch: 178,
 	unreadNativeReply: 190,
 	vimMode: 150,
@@ -59,6 +70,89 @@ async function toggleNotificationSoundsMuted(
 		queryKey: [["settings", "getNotificationSoundsMuted"]],
 	});
 }
+
+const FOCUSED_SIDEBAR_COMMANDS: Array<{
+	command: DashboardSidebarKeyboardCommand;
+	description: string;
+	icon: Command["icon"];
+	id: string;
+	keywords: string[];
+	shortcutLabel: string;
+	title: string;
+}> = [
+	{
+		command: "activate",
+		description: "Open the row currently focused in the left sidebar",
+		icon: SquareMousePointerIcon,
+		id: "activate",
+		keywords: ["open", "enter", "sidebar", "row", "focused", "navigation"],
+		shortcutLabel: "Enter",
+		title: "Open focused sidebar item",
+	},
+	{
+		command: "toggle-expansion",
+		description: "Collapse or expand the currently focused sidebar row",
+		icon: PanelLeftIcon,
+		id: "toggleExpansion",
+		keywords: ["toggle", "collapse", "expand", "folder", "sidebar", "space"],
+		shortcutLabel: "Space",
+		title: "Toggle focused sidebar item",
+	},
+	{
+		command: "action-create",
+		description: "Create a new item from the focused sidebar group",
+		icon: PlusIcon,
+		id: "create",
+		keywords: ["new", "create", "sidebar", "workspace", "thread", "session"],
+		shortcutLabel: "n",
+		title: "Create from focused sidebar group",
+	},
+	{
+		command: "action-pin",
+		description: "Pin or unpin the currently focused sidebar item",
+		icon: PinIcon,
+		id: "pin",
+		keywords: ["pin", "unpin", "sidebar", "keep", "focused"],
+		shortcutLabel: "p",
+		title: "Pin or unpin focused sidebar item",
+	},
+	{
+		command: "action-reply",
+		description: "Reply to the focused Capy or Devin sidebar session",
+		icon: MessageSquareIcon,
+		id: "reply",
+		keywords: ["reply", "message", "capy", "devin", "agent", "focused"],
+		shortcutLabel: "r",
+		title: "Reply to focused agent session",
+	},
+	{
+		command: "action-move",
+		description: "Move the focused sidebar item into a folder",
+		icon: FolderInputIcon,
+		id: "move",
+		keywords: ["move", "folder", "organize", "sidebar", "focused"],
+		shortcutLabel: "m",
+		title: "Move focused sidebar item to folder",
+	},
+	{
+		command: "action-rename",
+		description: "Rename the focused sidebar item or folder",
+		icon: PencilIcon,
+		id: "rename",
+		keywords: ["rename", "edit", "title", "folder", "sidebar", "focused"],
+		shortcutLabel: "e",
+		title: "Rename focused sidebar item",
+	},
+	{
+		command: "action-archive",
+		description: "Archive or hide the currently focused sidebar item",
+		icon: ArchiveIcon,
+		id: "archive",
+		keywords: ["archive", "hide", "remove", "sidebar", "focused"],
+		shortcutLabel: "a/x",
+		title: "Archive focused sidebar item",
+	},
+];
 
 export const actionsProvider: CommandProvider = {
 	id: "actions",
@@ -270,6 +364,28 @@ export const actionsProvider: CommandProvider = {
 				},
 			},
 		];
+
+		for (const sidebarCommand of FOCUSED_SIDEBAR_COMMANDS) {
+			commands.push({
+				id: `actions.sidebar.${sidebarCommand.id}`,
+				title: sidebarCommand.title,
+				section: "actions",
+				description: sidebarCommand.description,
+				icon: sidebarCommand.icon,
+				keywords: [
+					...sidebarCommand.keywords,
+					"keyboard",
+					"vim",
+					"command",
+					"control plane",
+				],
+				priority: ACTION_COMMAND_PRIORITY.sidebarFocusedRow,
+				shortcutLabel: sidebarCommand.shortcutLabel,
+				run: () => {
+					dispatchDashboardSidebarKeyboardCommand(sidebarCommand.command);
+				},
+			});
+		}
 
 		if (context.workspace) {
 			commands.push({
