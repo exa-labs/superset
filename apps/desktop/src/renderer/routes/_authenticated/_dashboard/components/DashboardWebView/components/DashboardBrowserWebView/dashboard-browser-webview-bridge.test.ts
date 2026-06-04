@@ -107,7 +107,7 @@ describe("dashboard browser webview bridge", () => {
 			'return "OPEN_UNREAD_NATIVE_REPLY"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
-			'return "SIDEBAR_ACTION_MARK_READ"',
+			'return "MARK_LATEST_NATIVE_REPLY_READ"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'return "SIDEBAR_ACTION_HARD_ARCHIVE"',

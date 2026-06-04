@@ -353,7 +353,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		}
 		if (key === "U") {
 			clearDashboardVimPrefix();
-			return "SIDEBAR_ACTION_MARK_READ";
+			return "MARK_LATEST_NATIVE_REPLY_READ";
 		}
 		if (key === "x" || key === "X") {
 			clearDashboardVimPrefix();
