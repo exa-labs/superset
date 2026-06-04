@@ -57,6 +57,7 @@ describe("dashboardSidebarKeyboardActionFromKey", () => {
 		["b", "toggle-browser"],
 		["m", "move"],
 		["F", "remove-from-folder"],
+		["X", "hard-archive"],
 		["a", "archive"],
 		["x", "archive"],
 		["e", "rename"],
@@ -81,6 +82,9 @@ describe("dashboardSidebarKeyboardActionSelector", () => {
 		);
 		expect(dashboardSidebarKeyboardActionSelector("delete")).toBe(
 			'[data-dashboard-sidebar-action="delete"]',
+		);
+		expect(dashboardSidebarKeyboardActionSelector("hard-archive")).toBe(
+			'[data-dashboard-sidebar-action="hard-archive"]',
 		);
 		expect(dashboardSidebarKeyboardActionSelector("create-folder")).toBe(
 			'[data-dashboard-sidebar-action="create-folder"]',
@@ -671,6 +675,11 @@ describe("getDashboardSidebarFocusableItems", () => {
 			),
 		).toBe(deleteButton);
 		expect(
+			folderScope.querySelector(
+				dashboardSidebarKeyboardActionSelector("hard-archive"),
+			),
+		).toBeNull();
+		expect(
 			folderScope.querySelector(dashboardSidebarKeyboardActionSelector("menu")),
 		).toBe(menu);
 	});
@@ -1014,6 +1023,7 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 	test("runs row-scoped action commands from the preserved sidebar row", () => {
 		if (typeof document === "undefined") return;
 
+		let hardArchiveClicks = 0;
 		let replyClicks = 0;
 		let moveClicks = 0;
 		const root = document.createElement("div");
@@ -1036,7 +1046,13 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 			moveClicks += 1;
 		};
 		makeVisible(move);
-		scope.append(session, reply, move);
+		const hardArchive = document.createElement("button");
+		hardArchive.dataset.dashboardSidebarAction = "hard-archive";
+		hardArchive.onclick = () => {
+			hardArchiveClicks += 1;
+		};
+		makeVisible(hardArchive);
+		scope.append(session, reply, move, hardArchive);
 		root.append(scope);
 		document.body.append(root);
 
@@ -1059,6 +1075,17 @@ describe("runDashboardSidebarKeyboardCommand", () => {
 			).toBe(true);
 			expect(replyClicks).toBe(1);
 			expect(moveClicks).toBe(1);
+			expect(hardArchiveClicks).toBe(0);
+			expect(
+				runDashboardSidebarKeyboardCommand({
+					activeElement: document.body,
+					command: "action-hard-archive",
+					root,
+				}),
+			).toBe(true);
+			expect(replyClicks).toBe(1);
+			expect(moveClicks).toBe(1);
+			expect(hardArchiveClicks).toBe(1);
 		} finally {
 			root.remove();
 		}

@@ -340,6 +340,10 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER";
 		}
+		if (key === "X") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_ACTION_HARD_ARCHIVE";
+		}
 		if (key === "a" || key === "x") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_ARCHIVE";

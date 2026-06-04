@@ -750,6 +750,16 @@ function SessionRow({
 				onClick={() => onMoveToFolder(item, null)}
 				className="sr-only"
 			/>
+			<button
+				type="button"
+				data-dashboard-sidebar-action="hard-archive"
+				tabIndex={-1}
+				aria-keyshortcuts="X"
+				aria-label={`Archive ${item.title}`}
+				title="Archive session (X)"
+				onClick={() => onSessionAction(item, "archive")}
+				className="sr-only"
+			/>
 		</li>
 	);
 }

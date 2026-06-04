@@ -7,6 +7,7 @@ export type DashboardSidebarKeyboardCommand =
 	| "action-create"
 	| "action-create-folder"
 	| "action-delete"
+	| "action-hard-archive"
 	| "action-menu"
 	| "action-move"
 	| "action-open-browser"
@@ -31,6 +32,7 @@ const DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS: readonly DashboardSidebarKeyboardComm
 		"action-create",
 		"action-create-folder",
 		"action-delete",
+		"action-hard-archive",
 		"action-menu",
 		"action-move",
 		"action-open-browser",
@@ -63,6 +65,7 @@ export type DashboardSidebarKeyboardCommandAction =
 	| "create"
 	| "create-folder"
 	| "delete"
+	| "hard-archive"
 	| "menu"
 	| "move"
 	| "open-browser"
@@ -78,6 +81,7 @@ const DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_ACTION_SET = new Set<string>([
 	"create",
 	"create-folder",
 	"delete",
+	"hard-archive",
 	"menu",
 	"move",
 	"open-browser",

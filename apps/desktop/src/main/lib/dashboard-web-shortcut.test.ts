@@ -236,6 +236,7 @@ describe("dashboardWebShortcutFromInput", () => {
 				"SIDEBAR_ACTION_CREATE",
 				"SIDEBAR_ACTION_CREATE_FOLDER",
 				"SIDEBAR_ACTION_DELETE",
+				"SIDEBAR_ACTION_HARD_ARCHIVE",
 				"SIDEBAR_ACTION_MENU",
 				"SIDEBAR_ACTION_MOVE",
 				"SIDEBAR_ACTION_OPEN_BROWSER",
@@ -249,6 +250,7 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(isDashboardWebShortcut("BROWSER_GO_BACK")).toBe(true);
 		expect(isDashboardWebShortcut("BROWSER_GO_FORWARD")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_FOCUS_NEXT")).toBe(true);
+		expect(isDashboardWebShortcut("SIDEBAR_ACTION_HARD_ARCHIVE")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_ACTION_MOVE")).toBe(true);
 		expect(isDashboardWebShortcut("NOT_A_SHORTCUT")).toBe(false);
 		expect(isDashboardWebShortcut(null)).toBe(false);

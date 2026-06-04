@@ -283,6 +283,23 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		title: "Delete focused sidebar item",
 	},
 	{
+		command: "action-hard-archive",
+		description: "Archive the focused native Capy or Devin session",
+		icon: ArchiveIcon,
+		id: "hardArchive",
+		keywords: [
+			"archive",
+			"hard",
+			"session",
+			"capy",
+			"devin",
+			"agent",
+			"focused",
+		],
+		shortcutLabel: "X",
+		title: "Archive focused native agent session",
+	},
+	{
 		command: "action-archive",
 		description:
 			"Hide the focused sidebar item or move it away from the active list",

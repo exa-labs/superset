@@ -126,6 +126,7 @@ describe("actions command provider", () => {
 		expect(commandIds.has("actions.sidebar.rename")).toBe(true);
 		expect(commandIds.has("actions.sidebar.color")).toBe(true);
 		expect(commandIds.has("actions.sidebar.delete")).toBe(true);
+		expect(commandIds.has("actions.sidebar.hardArchive")).toBe(true);
 		expect(commandIds.has("actions.sidebar.archive")).toBe(true);
 		expect(commandIds.has("actions.showDashboardActionHints")).toBe(true);
 		expect(commandIds.has("actions.showDashboardKeyboardGuide")).toBe(true);
@@ -204,7 +205,12 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.rename")).toBe("e");
 		expect(shortcutById.get("actions.sidebar.color")).toBe("c");
 		expect(shortcutById.get("actions.sidebar.delete")).toBe("d");
+		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("X");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
+		expect(
+			commands.find((command) => command.id === "actions.sidebar.hardArchive")
+				?.title,
+		).toBe("Archive focused native agent session");
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.archive")
 				?.title,
@@ -389,6 +395,7 @@ describe("actions command provider", () => {
 				"actions.sidebar.rename",
 				"actions.sidebar.color",
 				"actions.sidebar.delete",
+				"actions.sidebar.hardArchive",
 				"actions.sidebar.archive",
 			]) {
 				providedCommands
@@ -423,6 +430,7 @@ describe("actions command provider", () => {
 			"action-rename",
 			"action-color",
 			"action-delete",
+			"action-hard-archive",
 			"action-archive",
 		]);
 	});

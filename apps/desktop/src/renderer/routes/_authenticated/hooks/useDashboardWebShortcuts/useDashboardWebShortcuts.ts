@@ -117,6 +117,7 @@ const SIDEBAR_SHORTCUT_COMMANDS: Partial<
 	SIDEBAR_ACTION_CREATE: "action-create",
 	SIDEBAR_ACTION_CREATE_FOLDER: "action-create-folder",
 	SIDEBAR_ACTION_DELETE: "action-delete",
+	SIDEBAR_ACTION_HARD_ARCHIVE: "action-hard-archive",
 	SIDEBAR_ACTION_MENU: "action-menu",
 	SIDEBAR_ACTION_MOVE: "action-move",
 	SIDEBAR_ACTION_OPEN_BROWSER: "action-open-browser",

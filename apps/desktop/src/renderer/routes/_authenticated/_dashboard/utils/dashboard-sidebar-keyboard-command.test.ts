@@ -15,6 +15,7 @@ describe("dashboard sidebar keyboard command", () => {
 		expect(isDashboardSidebarKeyboardCommand("action-pin")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("action-reply")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("action-open-browser")).toBe(true);
+		expect(isDashboardSidebarKeyboardCommand("action-hard-archive")).toBe(true);
 		expect(isDashboardSidebarKeyboardCommand("open-chrome")).toBe(false);
 		expect(isDashboardSidebarKeyboardCommand(null)).toBe(false);
 	});
@@ -27,6 +28,9 @@ describe("dashboard sidebar keyboard command", () => {
 		expect(
 			dashboardSidebarKeyboardActionFromCommand("action-remove-from-folder"),
 		).toBe("remove-from-folder");
+		expect(
+			dashboardSidebarKeyboardActionFromCommand("action-hard-archive"),
+		).toBe("hard-archive");
 		expect(dashboardSidebarKeyboardActionFromCommand("focus-next")).toBeNull();
 	});
 
