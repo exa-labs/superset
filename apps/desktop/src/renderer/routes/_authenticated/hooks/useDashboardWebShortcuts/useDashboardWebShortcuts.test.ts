@@ -70,6 +70,12 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 
 	it("maps embedded-browser sidebar action shortcuts to shared sidebar commands", () => {
 		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_COLLAPSE"),
+		).toBe("collapse");
+		expect(dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_EXPAND")).toBe(
+			"expand",
+		);
+		expect(
 			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_MARK_READ"),
 		).toBe("action-mark-read");
 		expect(

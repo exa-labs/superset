@@ -260,6 +260,8 @@ describe("dashboardWebShortcutFromInput", () => {
 				"SIDEBAR_FOCUS_LAST",
 				"SIDEBAR_ACTIVATE",
 				"SIDEBAR_TOGGLE_EXPANSION",
+				"SIDEBAR_COLLAPSE",
+				"SIDEBAR_EXPAND",
 				"SIDEBAR_FOCUS_SEARCH",
 				"SIDEBAR_ACTION_ARCHIVE",
 				"SIDEBAR_ACTION_COLOR",
@@ -281,6 +283,8 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(isDashboardWebShortcut("BROWSER_GO_BACK")).toBe(true);
 		expect(isDashboardWebShortcut("BROWSER_GO_FORWARD")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_FOCUS_NEXT")).toBe(true);
+		expect(isDashboardWebShortcut("SIDEBAR_COLLAPSE")).toBe(true);
+		expect(isDashboardWebShortcut("SIDEBAR_EXPAND")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_ACTION_HARD_ARCHIVE")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_ACTION_MARK_READ")).toBe(true);
 		expect(isDashboardWebShortcut("SIDEBAR_ACTION_MOVE")).toBe(true);
