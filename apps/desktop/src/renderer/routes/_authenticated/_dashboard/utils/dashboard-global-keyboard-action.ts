@@ -3,10 +3,7 @@ import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashbo
 import { dashboardFocusScopeForElement } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-focus-scope";
 import { openDashboardKeyboardHelp } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { focusDashboardNavigationShell } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
-import {
-	isDashboardVimEditableTarget,
-	toggleDashboardVimMode,
-} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
+import { toggleDashboardVimMode } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { useWorkspaceSidebarStore } from "renderer/stores/workspace-sidebar-state";
 
 export type DashboardGlobalKeyboardAction =
@@ -93,6 +90,25 @@ const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {
 	},
 };
 
+const ESCAPE_RECOVERY_BLOCKED_TARGET_SELECTOR = [
+	"input",
+	"textarea",
+	"select",
+	"[contenteditable='true']",
+	"[contenteditable='']",
+	"[role='textbox']",
+	"[data-command-palette-input]",
+	"[data-command-palette-command-id]",
+	"[data-dashboard-keyboard-help]",
+].join(",");
+
+function isEscapeRecoveryBlockedTarget(target: EventTarget | null): boolean {
+	if (typeof HTMLElement === "undefined") return false;
+	if (!(target instanceof HTMLElement)) return false;
+	if (target.isContentEditable) return true;
+	return target.closest(ESCAPE_RECOVERY_BLOCKED_TARGET_SELECTOR) != null;
+}
+
 export function shouldFocusDashboardShellFromEscapeKey(
 	event: KeyboardEvent,
 ): boolean {
@@ -100,7 +116,7 @@ export function shouldFocusDashboardShellFromEscapeKey(
 	if (event.isComposing) return false;
 	if (event.altKey || event.ctrlKey || event.metaKey) return false;
 	if (event.key !== "Escape") return false;
-	if (isDashboardVimEditableTarget(event.target)) return false;
+	if (isEscapeRecoveryBlockedTarget(event.target)) return false;
 
 	const eventTarget =
 		typeof Element !== "undefined" && event.target instanceof Element
@@ -113,7 +129,14 @@ export function shouldFocusDashboardShellFromEscapeKey(
 			? document.activeElement
 			: null;
 	const scope = dashboardFocusScopeForElement(eventTarget ?? activeElement);
-	return scope.id === "app" || scope.id === "sidebar";
+	return (
+		scope.id === "app" ||
+		scope.id === "browser" ||
+		scope.id === "editor" ||
+		scope.id === "native-agent" ||
+		scope.id === "sidebar" ||
+		scope.id === "terminal"
+	);
 }
 
 export function handleDashboardGlobalKeyboardAction(

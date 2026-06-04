@@ -218,7 +218,7 @@ describe("handleDashboardGlobalKeyboardAction", () => {
 });
 
 describe("shouldFocusDashboardShellFromEscapeKey", () => {
-	it("allows plain Escape from app and sidebar focus scopes", () => {
+	it("allows plain Escape from dashboard navigation-recovery scopes", () => {
 		if (typeof document === "undefined") return;
 
 		const appButton = document.createElement("button");
@@ -226,25 +226,6 @@ describe("shouldFocusDashboardShellFromEscapeKey", () => {
 		const sidebar = document.createElement("div");
 		sidebar.dataset.dashboardSidebarRoot = "true";
 		sidebar.append(sidebarButton);
-
-		expect(
-			shouldFocusDashboardShellFromEscapeKey(keyEvent({ target: appButton })),
-		).toBe(true);
-		expect(
-			shouldFocusDashboardShellFromEscapeKey(
-				keyEvent({ target: sidebarButton }),
-			),
-		).toBe(true);
-	});
-
-	it("does not steal Escape from editable and focus-trapping dashboard surfaces", () => {
-		if (typeof document === "undefined") return;
-
-		const input = document.createElement("input");
-		const command = document.createElement("button");
-		command.dataset.commandPaletteCommandId = "open";
-		const keyboardHelp = document.createElement("button");
-		keyboardHelp.dataset.dashboardKeyboardHelp = "true";
 		const browser = document.createElement("button");
 		browser.dataset.dashboardBrowserView = "true";
 		const nativeAgent = document.createElement("button");
@@ -255,14 +236,33 @@ describe("shouldFocusDashboardShellFromEscapeKey", () => {
 		editor.dataset.monacoEditor = "true";
 
 		for (const target of [
-			input,
-			command,
-			keyboardHelp,
+			appButton,
+			sidebarButton,
 			browser,
 			nativeAgent,
 			terminal,
 			editor,
 		]) {
+			expect(shouldFocusDashboardShellFromEscapeKey(keyEvent({ target }))).toBe(
+				true,
+			);
+		}
+	});
+
+	it("does not steal Escape from editable and overlay dashboard surfaces", () => {
+		if (typeof document === "undefined") return;
+
+		const input = document.createElement("input");
+		const textbox = document.createElement("button");
+		textbox.setAttribute("role", "textbox");
+		const editable = document.createElement("div");
+		editable.contentEditable = "true";
+		const command = document.createElement("button");
+		command.dataset.commandPaletteCommandId = "open";
+		const keyboardHelp = document.createElement("button");
+		keyboardHelp.dataset.dashboardKeyboardHelp = "true";
+
+		for (const target of [input, textbox, editable, command, keyboardHelp]) {
 			expect(shouldFocusDashboardShellFromEscapeKey(keyEvent({ target }))).toBe(
 				false,
 			);
