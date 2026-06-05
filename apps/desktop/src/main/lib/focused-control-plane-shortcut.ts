@@ -1,5 +1,6 @@
 import { app, BrowserWindow, globalShortcut } from "electron";
 import { openControlPlaneAccelerator } from "./control-plane-shortcut";
+import type { DashboardWebShortcut } from "./dashboard-web-shortcut";
 import type { GlobalKeyboardAction } from "./global-keyboard-shortcut";
 
 type FocusedControlPlaneShortcutEvent =
@@ -43,6 +44,11 @@ interface FocusedDashboardShortcutRegistration {
 export interface FocusedDashboardGlobalActionShortcut {
 	accelerator: string;
 	action: GlobalKeyboardAction;
+}
+
+export interface FocusedDashboardWebShortcut {
+	accelerator: string;
+	shortcut: DashboardWebShortcut;
 }
 
 const defaultScheduleFocusCheck = (callback: () => void) => {
@@ -188,23 +194,65 @@ export function focusedDashboardGlobalActionShortcuts(
 	];
 }
 
+export function focusedDashboardWebShortcuts(
+	platform: NodeJS.Platform = process.platform,
+): FocusedDashboardWebShortcut[] {
+	const prefix = dashboardGlobalAcceleratorPrefix(platform);
+	return [
+		{ accelerator: `${prefix}+1`, shortcut: "OPEN_WEB_PAGE_1" },
+		{ accelerator: `${prefix}+2`, shortcut: "OPEN_WEB_PAGE_2" },
+		{ accelerator: `${prefix}+3`, shortcut: "OPEN_WEB_PAGE_3" },
+		{ accelerator: `${prefix}+4`, shortcut: "OPEN_WEB_PAGE_4" },
+		{ accelerator: `${prefix}+5`, shortcut: "OPEN_WEB_PAGE_5" },
+		{ accelerator: `${prefix}+6`, shortcut: "OPEN_WEB_PAGE_6" },
+		{ accelerator: `${prefix}+C`, shortcut: "OPEN_CAPY" },
+		{ accelerator: `${prefix}+Shift+C`, shortcut: "CREATE_CAPY" },
+		{ accelerator: `${prefix}+D`, shortcut: "OPEN_DEVIN" },
+		{ accelerator: `${prefix}+Shift+D`, shortcut: "CREATE_DEVIN" },
+		{ accelerator: `${prefix}+G`, shortcut: "OPEN_CHROME" },
+		{ accelerator: `${prefix}+W`, shortcut: "OPEN_WORKSPACES" },
+		{
+			accelerator: `${prefix}+Shift+S`,
+			shortcut: "OPEN_ROOT_TERMINAL_STAG",
+		},
+		{
+			accelerator: `${prefix}+Shift+P`,
+			shortcut: "OPEN_ROOT_TERMINAL_PROD",
+		},
+		{
+			accelerator: `${prefix}+Shift+H`,
+			shortcut: "OPEN_ROOT_TERMINAL_HEPH",
+		},
+		{ accelerator: `${prefix}+B`, shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
+		{ accelerator: `${prefix}+S`, shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
+	];
+}
+
 let focusedControlPlaneShortcutController: FocusedControlPlaneShortcutController | null =
 	null;
 
 export function installFocusedControlPlaneShortcut(
 	onOpenControlPlane: () => void,
 	onGlobalKeyboardAction?: (action: GlobalKeyboardAction) => void,
+	onDashboardWebShortcut?: (shortcut: DashboardWebShortcut) => void,
 ): void {
 	if (focusedControlPlaneShortcutController) return;
+	const globalActionShortcuts = onGlobalKeyboardAction
+		? focusedDashboardGlobalActionShortcuts().map((shortcut) => ({
+				accelerator: shortcut.accelerator,
+				callback: () => onGlobalKeyboardAction(shortcut.action),
+			}))
+		: [];
+	const dashboardWebShortcuts = onDashboardWebShortcut
+		? focusedDashboardWebShortcuts().map((shortcut) => ({
+				accelerator: shortcut.accelerator,
+				callback: () => onDashboardWebShortcut(shortcut.shortcut),
+			}))
+		: [];
 	focusedControlPlaneShortcutController =
 		createFocusedControlPlaneShortcutController({
 			accelerator: openControlPlaneAccelerator(),
-			additionalShortcuts: onGlobalKeyboardAction
-				? focusedDashboardGlobalActionShortcuts().map((shortcut) => ({
-						accelerator: shortcut.accelerator,
-						callback: () => onGlobalKeyboardAction(shortcut.action),
-					}))
-				: [],
+			additionalShortcuts: [...globalActionShortcuts, ...dashboardWebShortcuts],
 			backend: {
 				getFocusedWindow: () => BrowserWindow.getFocusedWindow(),
 				off: offAppShortcutEvent,

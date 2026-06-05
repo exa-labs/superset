@@ -152,6 +152,9 @@ export async function MainWindow() {
 		(action) => {
 			browserManager.dispatchGlobalKeyboardAction(action);
 		},
+		(shortcut) => {
+			browserManager.openDashboardWebShortcut(shortcut);
+		},
 	);
 	installControlPlaneShortcutBridge(
 		() => {

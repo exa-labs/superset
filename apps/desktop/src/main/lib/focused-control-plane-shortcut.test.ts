@@ -28,6 +28,7 @@ mock.module("electron", () => ({
 const {
 	createFocusedControlPlaneShortcutController,
 	focusedDashboardGlobalActionShortcuts,
+	focusedDashboardWebShortcuts,
 } = await import("./focused-control-plane-shortcut");
 
 type ShortcutCallback = () => void;
@@ -104,6 +105,7 @@ describe("focused control plane shortcut", () => {
 	it("registers focused dashboard global actions alongside Option+K", () => {
 		const backend = new FakeShortcutBackend();
 		const actions: string[] = [];
+		const shortcuts: string[] = [];
 		let openCount = 0;
 		const controller = createFocusedControlPlaneShortcutController({
 			accelerator: "Alt+K",
@@ -115,6 +117,10 @@ describe("focused control plane shortcut", () => {
 				{
 					accelerator: "Alt+Tab",
 					callback: () => actions.push("SWITCH_DASHBOARD_VIEW_NEXT"),
+				},
+				{
+					accelerator: "Alt+C",
+					callback: () => shortcuts.push("OPEN_CAPY"),
 				},
 			],
 			backend,
@@ -131,21 +137,29 @@ describe("focused control plane shortcut", () => {
 			"Alt+K",
 			"Alt+V",
 			"Alt+Tab",
+			"Alt+C",
 		]);
 		expect(controller.isRegistered()).toBe(true);
 
 		backend.registered.get("Alt+K")?.();
 		backend.registered.get("Alt+V")?.();
 		backend.registered.get("Alt+Tab")?.();
+		backend.registered.get("Alt+C")?.();
 
 		expect(openCount).toBe(1);
 		expect(actions).toEqual(["TOGGLE_VIM_MODE", "SWITCH_DASHBOARD_VIEW_NEXT"]);
+		expect(shortcuts).toEqual(["OPEN_CAPY"]);
 
 		backend.focusedWindow = null;
 		backend.emit("browser-window-blur");
 
 		expect(controller.isRegistered()).toBe(false);
-		expect(backend.unregistered).toEqual(["Alt+K", "Alt+V", "Alt+Tab"]);
+		expect(backend.unregistered).toEqual([
+			"Alt+K",
+			"Alt+V",
+			"Alt+Tab",
+			"Alt+C",
+		]);
 	});
 
 	it("keeps repeated focus events idempotent while preserving the callback", () => {
@@ -222,6 +236,50 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 		expect(focusedDashboardGlobalActionShortcuts("win32").at(-1)).toEqual({
 			accelerator: "Ctrl+Alt+Shift+Tab",
 			action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+		});
+	});
+});
+
+describe("focusedDashboardWebShortcuts", () => {
+	it("maps macOS Option shortcuts to high-impact dashboard web shortcuts", () => {
+		expect(focusedDashboardWebShortcuts("darwin")).toEqual([
+			{ accelerator: "Alt+1", shortcut: "OPEN_WEB_PAGE_1" },
+			{ accelerator: "Alt+2", shortcut: "OPEN_WEB_PAGE_2" },
+			{ accelerator: "Alt+3", shortcut: "OPEN_WEB_PAGE_3" },
+			{ accelerator: "Alt+4", shortcut: "OPEN_WEB_PAGE_4" },
+			{ accelerator: "Alt+5", shortcut: "OPEN_WEB_PAGE_5" },
+			{ accelerator: "Alt+6", shortcut: "OPEN_WEB_PAGE_6" },
+			{ accelerator: "Alt+C", shortcut: "OPEN_CAPY" },
+			{ accelerator: "Alt+Shift+C", shortcut: "CREATE_CAPY" },
+			{ accelerator: "Alt+D", shortcut: "OPEN_DEVIN" },
+			{ accelerator: "Alt+Shift+D", shortcut: "CREATE_DEVIN" },
+			{ accelerator: "Alt+G", shortcut: "OPEN_CHROME" },
+			{ accelerator: "Alt+W", shortcut: "OPEN_WORKSPACES" },
+			{
+				accelerator: "Alt+Shift+S",
+				shortcut: "OPEN_ROOT_TERMINAL_STAG",
+			},
+			{
+				accelerator: "Alt+Shift+P",
+				shortcut: "OPEN_ROOT_TERMINAL_PROD",
+			},
+			{
+				accelerator: "Alt+Shift+H",
+				shortcut: "OPEN_ROOT_TERMINAL_HEPH",
+			},
+			{ accelerator: "Alt+B", shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
+			{ accelerator: "Alt+S", shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
+		]);
+	});
+
+	it("uses Ctrl+Alt variants on non-macOS platforms", () => {
+		expect(focusedDashboardWebShortcuts("linux")[0]).toEqual({
+			accelerator: "Ctrl+Alt+1",
+			shortcut: "OPEN_WEB_PAGE_1",
+		});
+		expect(focusedDashboardWebShortcuts("win32").at(-1)).toEqual({
+			accelerator: "Ctrl+Alt+S",
+			shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
 		});
 	});
 });
