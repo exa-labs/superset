@@ -6,14 +6,14 @@ interface DashboardFocusIndicatorHintOptions {
 }
 
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Esc", "⌥K/Tab", "?"],
-	browser: ["Esc", "⌥K/Tab", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
+	app: ["Esc", "⌥K/Tab/V", "?"],
+	browser: ["Esc", "⌥K/Tab/V", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
-	editor: ["Esc", "⌥K/Tab"],
+	editor: ["Esc", "⌥K/Tab/V"],
 	"keyboard-help": ["type", "Esc"],
-	"native-agent": ["Esc", "⌥K/Tab", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
-	sidebar: ["⌥K/Tab", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
-	terminal: ["Esc", "⌥K/Tab"],
+	"native-agent": ["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
+	sidebar: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+	terminal: ["Esc", "⌥K/Tab/V"],
 };
 
 const VIM_ONLY_HINTS = new Set([
@@ -113,11 +113,12 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string[] {
 	const showCommandsHint = hints.some(
-		(hint) => hint === "⌥K" || hint === "⌥K/Tab",
+		(hint) => hint === "⌥K" || hint === "⌥K/Tab" || hint === "⌥K/Tab/V",
 	);
 	const showMruHint = hints.some(
-		(hint) => hint === "⌥Tab" || hint === "⌥K/Tab",
+		(hint) => hint === "⌥Tab" || hint === "⌥K/Tab" || hint === "⌥K/Tab/V",
 	);
+	const showVimToggleHint = hints.includes("⌥K/Tab/V");
 	const showVimShortcutsHint = hints.includes("?");
 	const hasLocalKeyboardMapHint = hints.some(
 		dashboardFocusHintIncludesKeyboardMap,
@@ -133,7 +134,9 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	return [
 		showCommandsHint
 			? showMruHint
-				? "⌥K Commands · ⌥Tab MRU"
+				? showVimToggleHint
+					? "⌥K Commands · ⌥Tab MRU · ⌥V Vim"
+					: "⌥K Commands · ⌥Tab MRU"
 				: "⌥K Commands"
 			: null,
 		...localHintLabels,
@@ -145,6 +148,7 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 function readableDashboardFocusHint(hint: string): string {
 	if (hint === "⌥K") return "Option+K";
 	if (hint === "⌥K/Tab") return "Option+K/Option+Tab";
+	if (hint === "⌥K/Tab/V") return "Option+K/Option+Tab/Option+V";
 	if (hint === "⌥/") return "Option+/";
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↑↓ /") return "Up/Down, /";
