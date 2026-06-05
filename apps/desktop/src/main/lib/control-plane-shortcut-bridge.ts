@@ -11,6 +11,12 @@ const attachedWebContentsIds = new Set<number>();
 let installed = false;
 let inputResolver: ControlPlaneShortcutBridgeInputResolver | null = null;
 
+export function armControlPlaneShortcutBridgeDashboardWebShortcut(
+	shortcut: DashboardWebShortcut,
+): boolean {
+	return inputResolver?.armPendingDashboardWebShortcut(shortcut) ?? false;
+}
+
 export function installControlPlaneShortcutBridge(
 	onOpenControlPlane: () => void,
 	onDashboardWebShortcut?: (shortcut: DashboardWebShortcut) => void,

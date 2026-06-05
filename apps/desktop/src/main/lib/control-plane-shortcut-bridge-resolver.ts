@@ -58,6 +58,7 @@ interface PendingDashboardWebAppShortcut {
 }
 
 export interface ControlPlaneShortcutBridgeInputResolver {
+	armPendingDashboardWebShortcut: (shortcut: DashboardWebShortcut) => boolean;
 	clearPending: () => void;
 	resolve: (
 		input: ControlPlaneShortcutBridgeInput,
@@ -98,6 +99,12 @@ export function createControlPlaneShortcutBridgeInputResolver(
 		};
 	};
 
+	const armPendingDashboardWebShortcut = (shortcut: DashboardWebShortcut) => {
+		if (shortcut !== "OPEN_CAPY" && shortcut !== "OPEN_DEVIN") return false;
+		armPending(shortcut);
+		return true;
+	};
+
 	const resolveDashboardWebShortcut = (
 		input: ControlPlaneShortcutBridgeInput,
 	): DashboardWebShortcut | null => {
@@ -130,6 +137,7 @@ export function createControlPlaneShortcutBridgeInputResolver(
 	};
 
 	return {
+		armPendingDashboardWebShortcut,
 		clearPending,
 		resolve: (input) => {
 			if (isOpenControlPlaneShortcutInput(input)) {

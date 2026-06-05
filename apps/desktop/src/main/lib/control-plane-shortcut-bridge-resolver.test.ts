@@ -166,6 +166,40 @@ describe("control plane shortcut bridge resolver", () => {
 		);
 	});
 
+	it("lets focused global shortcuts arm Capy and Devin follow-up chains", () => {
+		const { resolver } = createResolverHarness();
+
+		expect(resolver.armPendingDashboardWebShortcut("OPEN_CAPY")).toBe(true);
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit2", key: "2" })),
+		).toEqual({
+			preventDefault: true,
+			shortcut: "OPEN_CAPY_2",
+			type: "dashboard-web-shortcut",
+		});
+
+		expect(resolver.armPendingDashboardWebShortcut("OPEN_DEVIN")).toBe(true);
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit3", key: "3" })),
+		).toEqual({
+			preventDefault: true,
+			shortcut: "OPEN_DEVIN_3",
+			type: "dashboard-web-shortcut",
+		});
+	});
+
+	it("does not arm follow-up chains for one-shot dashboard shortcuts", () => {
+		const { resolver } = createResolverHarness();
+
+		expect(resolver.armPendingDashboardWebShortcut("OPEN_CHROME")).toBe(false);
+		expect(
+			resolver.resolve(input({ alt: false, code: "Digit2", key: "2" })),
+		).toEqual({
+			preventDefault: false,
+			type: "none",
+		});
+	});
+
 	it("routes high-impact dashboard Option shortcuts through the main bridge", () => {
 		const cases: Array<{
 			input: Partial<ResolverInput>;
