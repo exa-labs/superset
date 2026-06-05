@@ -1261,6 +1261,9 @@ describe("dashboardSidebarKeyboardFocusIndex", () => {
 				root,
 			}),
 		).toBe(-1);
+		expect(
+			stale.getAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE),
+		).toBeNull();
 	});
 });
 

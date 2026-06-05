@@ -204,7 +204,11 @@ export function dashboardSidebarKeyboardFocusIndex(input: {
 	const preservedItem = input.root.querySelector<HTMLElement>(
 		`[${DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE}="true"]`,
 	);
-	return preservedItem ? input.items.indexOf(preservedItem) : -1;
+	if (!preservedItem) return -1;
+	const preservedIndex = input.items.indexOf(preservedItem);
+	if (preservedIndex >= 0) return preservedIndex;
+	preservedItem.removeAttribute(DASHBOARD_SIDEBAR_KEYBOARD_FOCUS_ATTRIBUTE);
+	return -1;
 }
 
 export function findDashboardSidebarActionButton(
