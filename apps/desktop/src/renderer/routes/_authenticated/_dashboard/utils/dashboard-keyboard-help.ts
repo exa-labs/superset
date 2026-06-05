@@ -82,6 +82,86 @@ export function dashboardKeyboardHelpBrowserChromeEntries(): DashboardKeyboardHe
 	}));
 }
 
+export function dashboardKeyboardHelpBrowserHotkeyEntries(): DashboardKeyboardHelpEntry[] {
+	return [
+		{
+			hotkeyId: "BROWSER_NEW_TAB",
+			label: "Chrome: New tab",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["new-current-url-tab"],
+		},
+		{
+			hotkeyId: "BROWSER_RELOAD",
+			label: "Chrome: Reload",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS.reload,
+		},
+		{
+			hotkeyId: "BROWSER_GO_BACK",
+			label: "Chrome: Back",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["go-back"],
+		},
+		{
+			hotkeyId: "BROWSER_GO_FORWARD",
+			label: "Chrome: Forward",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["go-forward"],
+		},
+		{
+			hotkeyId: "BROWSER_PREVIOUS_TAB",
+			label: "Chrome: Previous tab",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["previous-tab"],
+		},
+		{
+			hotkeyId: "BROWSER_NEXT_TAB",
+			label: "Chrome: Next tab",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["next-tab"],
+		},
+		{
+			hotkeyId: "BROWSER_CLOSE_TAB",
+			label: "Chrome: Close tab",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["close-current-tab"],
+		},
+		{
+			hotkeyId: "BROWSER_TOGGLE_PIN",
+			label: "Chrome: Pin tab",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["toggle-tab-pin"],
+		},
+		{
+			hotkeyId: "BROWSER_OPEN_EXTERNAL",
+			label: "Chrome: Open externally",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["open-external"],
+		},
+		{
+			hotkeyId: "BROWSER_TOGGLE_SPLIT",
+			label: "Chrome: Toggle split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["toggle-split"],
+		},
+		{
+			hotkeyId: "BROWSER_CLOSE_SPLIT",
+			label: "Chrome: Close split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["close-split"],
+		},
+		{
+			hotkeyId: "BROWSER_SWAP_SPLIT",
+			label: "Chrome: Swap split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["swap-split"],
+		},
+		{
+			hotkeyId: "BROWSER_NARROW_SPLIT",
+			label: "Chrome: Narrow split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["narrow-active-split"],
+		},
+		{
+			hotkeyId: "BROWSER_WIDEN_SPLIT",
+			label: "Chrome: Widen split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["widen-active-split"],
+		},
+		{
+			hotkeyId: "BROWSER_EQUALIZE_SPLIT",
+			label: "Chrome: Equalize split",
+			description: BROWSER_SHORTCUT_DESCRIPTIONS["equalize-split"],
+		},
+	];
+}
+
 export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardHelpEntry[] {
 	return [
 		{
@@ -140,6 +220,7 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 
 export function dashboardKeyboardHelpBrowserEntries(): DashboardKeyboardHelpEntry[] {
 	return [
+		...dashboardKeyboardHelpBrowserHotkeyEntries(),
 		...dashboardKeyboardHelpBrowserChromeEntries(),
 		...dashboardKeyboardHelpBrowserSidebarEntries(),
 	];

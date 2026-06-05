@@ -195,6 +195,53 @@ function dashboardWebDirectCreateShortcutFromInput(
 	return null;
 }
 
+function dashboardWebBrowserShortcutFromInput(
+	input: DashboardWebShortcutInput,
+): DashboardWebShortcut | null {
+	if (!isShortcutKeyDownType(input.type)) return null;
+	if (input.isAutoRepeat) return null;
+	if (!input.alt || input.control || input.meta) return null;
+
+	const code = input.code.toLowerCase();
+	const key = input.key.toLowerCase();
+
+	if (!input.shift) {
+		if (code === "keyt" || key === "t") return "BROWSER_NEW_TAB";
+		if (code === "keyr" || key === "r") return "BROWSER_RELOAD";
+		if (code === "arrowleft" || key === "arrowleft") {
+			return "BROWSER_GO_BACK";
+		}
+		if (code === "arrowright" || key === "arrowright") {
+			return "BROWSER_GO_FORWARD";
+		}
+		return null;
+	}
+
+	if (code === "keyb" || key === "b") return "BROWSER_TOGGLE_SPLIT";
+	if (code === "keyx" || key === "x") return "BROWSER_CLOSE_SPLIT";
+	if (code === "keyf" || key === "f") return "BROWSER_SWAP_SPLIT";
+	if (code === "comma" || key === "," || key === "<") {
+		return "BROWSER_NARROW_SPLIT";
+	}
+	if (code === "period" || key === "." || key === ">") {
+		return "BROWSER_WIDEN_SPLIT";
+	}
+	if (code === "digit0" || code === "numpad0" || key === "0") {
+		return "BROWSER_EQUALIZE_SPLIT";
+	}
+	if (code === "keyw" || key === "w") return "BROWSER_CLOSE_TAB";
+	if (code === "keyi" || key === "i") return "BROWSER_TOGGLE_PIN";
+	if (code === "keyo" || key === "o") return "BROWSER_OPEN_EXTERNAL";
+	if (code === "arrowleft" || key === "arrowleft") {
+		return "BROWSER_PREVIOUS_TAB";
+	}
+	if (code === "arrowright" || key === "arrowright") {
+		return "BROWSER_NEXT_TAB";
+	}
+
+	return null;
+}
+
 function isPendingShortcutInput(input: DashboardWebShortcutInput): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
@@ -245,6 +292,9 @@ export function dashboardWebShortcutFromInput(
 ): DashboardWebShortcut | null {
 	const directCreateShortcut = dashboardWebDirectCreateShortcutFromInput(input);
 	if (directCreateShortcut) return directCreateShortcut;
+
+	const browserShortcut = dashboardWebBrowserShortcutFromInput(input);
+	if (browserShortcut) return browserShortcut;
 
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;

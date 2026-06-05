@@ -153,6 +153,21 @@ export const DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS = [
 	"OPEN_ROOT_TERMINAL_HEPH",
 	"TOGGLE_NATIVE_BROWSER_VIEW",
 	"TOGGLE_NATIVE_SPLIT_VIEW",
+	"BROWSER_NEW_TAB",
+	"BROWSER_RELOAD",
+	"BROWSER_GO_BACK",
+	"BROWSER_GO_FORWARD",
+	"BROWSER_PREVIOUS_TAB",
+	"BROWSER_NEXT_TAB",
+	"BROWSER_CLOSE_TAB",
+	"BROWSER_TOGGLE_PIN",
+	"BROWSER_OPEN_EXTERNAL",
+	"BROWSER_TOGGLE_SPLIT",
+	"BROWSER_CLOSE_SPLIT",
+	"BROWSER_SWAP_SPLIT",
+	"BROWSER_NARROW_SPLIT",
+	"BROWSER_WIDEN_SPLIT",
+	"BROWSER_EQUALIZE_SPLIT",
 ] as const satisfies readonly DashboardWebShortcut[];
 
 export const DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS = {
@@ -539,6 +554,25 @@ export function useDashboardWebShortcuts() {
 	);
 	useHotkey("TOGGLE_NATIVE_SPLIT_VIEW", () =>
 		runShortcut("TOGGLE_NATIVE_SPLIT_VIEW"),
+	);
+	useHotkey("BROWSER_NEW_TAB", () => runShortcut("BROWSER_NEW_TAB"));
+	useHotkey("BROWSER_RELOAD", () => runShortcut("BROWSER_RELOAD"));
+	useHotkey("BROWSER_GO_BACK", () => runShortcut("BROWSER_GO_BACK"));
+	useHotkey("BROWSER_GO_FORWARD", () => runShortcut("BROWSER_GO_FORWARD"));
+	useHotkey("BROWSER_PREVIOUS_TAB", () => runShortcut("BROWSER_PREVIOUS_TAB"));
+	useHotkey("BROWSER_NEXT_TAB", () => runShortcut("BROWSER_NEXT_TAB"));
+	useHotkey("BROWSER_CLOSE_TAB", () => runShortcut("BROWSER_CLOSE_TAB"));
+	useHotkey("BROWSER_TOGGLE_PIN", () => runShortcut("BROWSER_TOGGLE_PIN"));
+	useHotkey("BROWSER_OPEN_EXTERNAL", () =>
+		runShortcut("BROWSER_OPEN_EXTERNAL"),
+	);
+	useHotkey("BROWSER_TOGGLE_SPLIT", () => runShortcut("BROWSER_TOGGLE_SPLIT"));
+	useHotkey("BROWSER_CLOSE_SPLIT", () => runShortcut("BROWSER_CLOSE_SPLIT"));
+	useHotkey("BROWSER_SWAP_SPLIT", () => runShortcut("BROWSER_SWAP_SPLIT"));
+	useHotkey("BROWSER_NARROW_SPLIT", () => runShortcut("BROWSER_NARROW_SPLIT"));
+	useHotkey("BROWSER_WIDEN_SPLIT", () => runShortcut("BROWSER_WIDEN_SPLIT"));
+	useHotkey("BROWSER_EQUALIZE_SPLIT", () =>
+		runShortcut("BROWSER_EQUALIZE_SPLIT"),
 	);
 	useHotkey("SHOW_DASHBOARD_KEYBOARD_HELP", () =>
 		runGlobalKeyboardAction(

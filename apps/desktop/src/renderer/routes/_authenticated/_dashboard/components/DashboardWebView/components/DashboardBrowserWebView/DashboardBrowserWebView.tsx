@@ -207,6 +207,19 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			if (shiftedCode === "keyp") return "OPEN_ROOT_TERMINAL_PROD";
 			if (shiftedCode === "keyh") return "OPEN_ROOT_TERMINAL_HEPH";
 			if (shiftedCode === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
+			if (shiftedCode === "keyb") return "BROWSER_TOGGLE_SPLIT";
+			if (shiftedCode === "keyx") return "BROWSER_CLOSE_SPLIT";
+			if (shiftedCode === "keyf") return "BROWSER_SWAP_SPLIT";
+			if (shiftedCode === "comma") return "BROWSER_NARROW_SPLIT";
+			if (shiftedCode === "period") return "BROWSER_WIDEN_SPLIT";
+			if (shiftedCode === "digit0" || shiftedCode === "numpad0") {
+				return "BROWSER_EQUALIZE_SPLIT";
+			}
+			if (shiftedCode === "keyw") return "BROWSER_CLOSE_TAB";
+			if (shiftedCode === "keyi") return "BROWSER_TOGGLE_PIN";
+			if (shiftedCode === "keyo") return "BROWSER_OPEN_EXTERNAL";
+			if (shiftedCode === "arrowleft") return "BROWSER_PREVIOUS_TAB";
+			if (shiftedCode === "arrowright") return "BROWSER_NEXT_TAB";
 			return null;
 		}
 		const digit =
@@ -222,10 +235,14 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 		if (code === "keyf") return "SHOW_DASHBOARD_ACTION_HINTS";
 		if (code === "keyg") return "OPEN_CHROME";
 		if (code === "keyn") return "OPEN_UNREAD_NATIVE_REPLY";
+		if (code === "keyr") return "BROWSER_RELOAD";
+		if (code === "keyt") return "BROWSER_NEW_TAB";
 		if (code === "keyv") return "TOGGLE_VIM_MODE";
 		if (code === "keyw") return "OPEN_WORKSPACES";
 		if (code === "keyb") return "TOGGLE_NATIVE_BROWSER_VIEW";
 		if (code === "keys") return "TOGGLE_NATIVE_SPLIT_VIEW";
+		if (code === "arrowleft") return "BROWSER_GO_BACK";
+		if (code === "arrowright") return "BROWSER_GO_FORWARD";
 		return null;
 	};
 	const browserVimShortcutFromEvent = (event) => {

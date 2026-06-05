@@ -9,6 +9,7 @@ import {
 	DASHBOARD_KEYBOARD_HELP_SECTIONS,
 	dashboardKeyboardHelpBrowserChromeEntries,
 	dashboardKeyboardHelpBrowserEntries,
+	dashboardKeyboardHelpBrowserHotkeyEntries,
 	dashboardKeyboardHelpBrowserSidebarEntries,
 	dashboardKeyboardHelpPinnedWebPageEntries,
 	filterDashboardKeyboardHelpSections,
@@ -383,10 +384,32 @@ describe("dashboard keyboard help", () => {
 
 		expect(browserSection).toBeDefined();
 		expect(browserEntries).toEqual([
+			...dashboardKeyboardHelpBrowserHotkeyEntries(),
 			...dashboardKeyboardHelpBrowserChromeEntries(),
 			...dashboardKeyboardHelpBrowserSidebarEntries(),
 		]);
 		expect(dashboardKeyboardHelpBrowserEntries()).toEqual(browserEntries);
+		expect(
+			dashboardKeyboardHelpBrowserHotkeyEntries().map(
+				(entry) => entry.hotkeyId,
+			),
+		).toEqual([
+			"BROWSER_NEW_TAB",
+			"BROWSER_RELOAD",
+			"BROWSER_GO_BACK",
+			"BROWSER_GO_FORWARD",
+			"BROWSER_PREVIOUS_TAB",
+			"BROWSER_NEXT_TAB",
+			"BROWSER_CLOSE_TAB",
+			"BROWSER_TOGGLE_PIN",
+			"BROWSER_OPEN_EXTERNAL",
+			"BROWSER_TOGGLE_SPLIT",
+			"BROWSER_CLOSE_SPLIT",
+			"BROWSER_SWAP_SPLIT",
+			"BROWSER_NARROW_SPLIT",
+			"BROWSER_WIDEN_SPLIT",
+			"BROWSER_EQUALIZE_SPLIT",
+		]);
 		expect(
 			dashboardKeyboardHelpBrowserChromeEntries().map(
 				(entry) => entry.keys?.[0],

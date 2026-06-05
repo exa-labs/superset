@@ -131,6 +131,18 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+s",
 		});
+		expect(HOTKEYS_REGISTRY.BROWSER_RELOAD.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+r",
+		});
+		expect(HOTKEYS_REGISTRY.BROWSER_TOGGLE_SPLIT.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+b",
+		});
+		expect(HOTKEYS_REGISTRY.BROWSER_EQUALIZE_SPLIT.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+0",
+		});
 		expect(HOTKEYS_REGISTRY.NARROW_PANE_SPLIT.key.mac).toMatchObject({
 			mode: "logical",
 			chord: "meta+alt+bracketleft",

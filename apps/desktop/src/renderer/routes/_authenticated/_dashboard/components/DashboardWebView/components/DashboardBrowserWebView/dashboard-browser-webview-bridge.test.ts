@@ -154,6 +154,18 @@ describe("dashboard browser webview bridge", () => {
 			'if (shiftedCode === "keyh") return "OPEN_ROOT_TERMINAL_HEPH"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "keyb") return "BROWSER_TOGGLE_SPLIT"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (shiftedCode === "comma") return "BROWSER_NARROW_SPLIT"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (code === "keyr") return "BROWSER_RELOAD"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'if (code === "arrowleft") return "BROWSER_GO_BACK"',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"browserVimShortcutFromEvent",
 		);
 		expect(

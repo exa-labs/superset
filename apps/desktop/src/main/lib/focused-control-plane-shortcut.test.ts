@@ -269,6 +269,21 @@ describe("focusedDashboardWebShortcuts", () => {
 			},
 			{ accelerator: "Alt+B", shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
 			{ accelerator: "Alt+S", shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
+			{ accelerator: "Alt+T", shortcut: "BROWSER_NEW_TAB" },
+			{ accelerator: "Alt+R", shortcut: "BROWSER_RELOAD" },
+			{ accelerator: "Alt+Left", shortcut: "BROWSER_GO_BACK" },
+			{ accelerator: "Alt+Right", shortcut: "BROWSER_GO_FORWARD" },
+			{ accelerator: "Alt+Shift+Left", shortcut: "BROWSER_PREVIOUS_TAB" },
+			{ accelerator: "Alt+Shift+Right", shortcut: "BROWSER_NEXT_TAB" },
+			{ accelerator: "Alt+Shift+W", shortcut: "BROWSER_CLOSE_TAB" },
+			{ accelerator: "Alt+Shift+I", shortcut: "BROWSER_TOGGLE_PIN" },
+			{ accelerator: "Alt+Shift+O", shortcut: "BROWSER_OPEN_EXTERNAL" },
+			{ accelerator: "Alt+Shift+B", shortcut: "BROWSER_TOGGLE_SPLIT" },
+			{ accelerator: "Alt+Shift+X", shortcut: "BROWSER_CLOSE_SPLIT" },
+			{ accelerator: "Alt+Shift+F", shortcut: "BROWSER_SWAP_SPLIT" },
+			{ accelerator: "Alt+Shift+Comma", shortcut: "BROWSER_NARROW_SPLIT" },
+			{ accelerator: "Alt+Shift+Period", shortcut: "BROWSER_WIDEN_SPLIT" },
+			{ accelerator: "Alt+Shift+0", shortcut: "BROWSER_EQUALIZE_SPLIT" },
 		]);
 	});
 
@@ -278,8 +293,8 @@ describe("focusedDashboardWebShortcuts", () => {
 			shortcut: "OPEN_WEB_PAGE_1",
 		});
 		expect(focusedDashboardWebShortcuts("win32").at(-1)).toEqual({
-			accelerator: "Ctrl+Alt+S",
-			shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
+			accelerator: "Ctrl+Alt+Shift+0",
+			shortcut: "BROWSER_EQUALIZE_SPLIT",
 		});
 	});
 });

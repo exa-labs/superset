@@ -267,6 +267,156 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Show or hide the side-by-side native chat/browser view",
 	},
+	BROWSER_NEW_TAB: {
+		key: {
+			mac: L("alt+t"),
+			windows: L("ctrl+alt+t"),
+			linux: L("ctrl+alt+t"),
+		},
+		label: "Chrome New Tab",
+		category: "Web Pages",
+		description: "Open a new embedded Chrome tab from the current page",
+	},
+	BROWSER_RELOAD: {
+		key: {
+			mac: L("alt+r"),
+			windows: L("ctrl+alt+r"),
+			linux: L("ctrl+alt+r"),
+		},
+		label: "Chrome Reload",
+		category: "Web Pages",
+		description: "Reload the active embedded Chrome tab",
+	},
+	BROWSER_GO_BACK: {
+		key: {
+			mac: "alt+left",
+			windows: "ctrl+alt+left",
+			linux: "ctrl+alt+left",
+		},
+		label: "Chrome Back",
+		category: "Web Pages",
+		description: "Go back in the active embedded Chrome tab",
+	},
+	BROWSER_GO_FORWARD: {
+		key: {
+			mac: "alt+right",
+			windows: "ctrl+alt+right",
+			linux: "ctrl+alt+right",
+		},
+		label: "Chrome Forward",
+		category: "Web Pages",
+		description: "Go forward in the active embedded Chrome tab",
+	},
+	BROWSER_PREVIOUS_TAB: {
+		key: {
+			mac: "alt+shift+left",
+			windows: "ctrl+alt+shift+left",
+			linux: "ctrl+alt+shift+left",
+		},
+		label: "Chrome Previous Tab",
+		category: "Web Pages",
+		description: "Move left through embedded Chrome tabs",
+	},
+	BROWSER_NEXT_TAB: {
+		key: {
+			mac: "alt+shift+right",
+			windows: "ctrl+alt+shift+right",
+			linux: "ctrl+alt+shift+right",
+		},
+		label: "Chrome Next Tab",
+		category: "Web Pages",
+		description: "Move right through embedded Chrome tabs",
+	},
+	BROWSER_CLOSE_TAB: {
+		key: {
+			mac: L("alt+shift+w"),
+			windows: L("ctrl+alt+shift+w"),
+			linux: L("ctrl+alt+shift+w"),
+		},
+		label: "Chrome Close Tab",
+		category: "Web Pages",
+		description: "Close the active embedded Chrome tab",
+	},
+	BROWSER_TOGGLE_PIN: {
+		key: {
+			mac: L("alt+shift+i"),
+			windows: L("ctrl+alt+shift+i"),
+			linux: L("ctrl+alt+shift+i"),
+		},
+		label: "Chrome Pin Tab",
+		category: "Web Pages",
+		description: "Pin or unpin the active embedded Chrome tab in the sidebar",
+	},
+	BROWSER_OPEN_EXTERNAL: {
+		key: {
+			mac: L("alt+shift+o"),
+			windows: L("ctrl+alt+shift+o"),
+			linux: L("ctrl+alt+shift+o"),
+		},
+		label: "Chrome Open External",
+		category: "Web Pages",
+		description: "Open the active embedded Chrome page in the system browser",
+	},
+	BROWSER_TOGGLE_SPLIT: {
+		key: {
+			mac: L("alt+shift+b"),
+			windows: L("ctrl+alt+shift+b"),
+			linux: L("ctrl+alt+shift+b"),
+		},
+		label: "Chrome Toggle Split",
+		category: "Web Pages",
+		description: "Open or close side-by-side embedded Chrome tabs",
+	},
+	BROWSER_CLOSE_SPLIT: {
+		key: {
+			mac: L("alt+shift+x"),
+			windows: L("ctrl+alt+shift+x"),
+			linux: L("ctrl+alt+shift+x"),
+		},
+		label: "Chrome Close Split",
+		category: "Web Pages",
+		description: "Return embedded Chrome to one visible pane",
+	},
+	BROWSER_SWAP_SPLIT: {
+		key: {
+			mac: L("alt+shift+f"),
+			windows: L("ctrl+alt+shift+f"),
+			linux: L("ctrl+alt+shift+f"),
+		},
+		label: "Chrome Swap Split",
+		category: "Web Pages",
+		description: "Move focus between embedded Chrome split panes",
+	},
+	BROWSER_NARROW_SPLIT: {
+		key: {
+			mac: L("alt+shift+comma"),
+			windows: L("ctrl+alt+shift+comma"),
+			linux: L("ctrl+alt+shift+comma"),
+		},
+		label: "Chrome Narrow Split",
+		category: "Web Pages",
+		description: "Narrow the active embedded Chrome split pane",
+	},
+	BROWSER_WIDEN_SPLIT: {
+		key: {
+			mac: L("alt+shift+period"),
+			windows: L("ctrl+alt+shift+period"),
+			linux: L("ctrl+alt+shift+period"),
+		},
+		label: "Chrome Widen Split",
+		category: "Web Pages",
+		description: "Widen the active embedded Chrome split pane",
+	},
+	BROWSER_EQUALIZE_SPLIT: {
+		key: {
+			mac: L("alt+shift+0"),
+			windows: L("ctrl+alt+shift+0"),
+			linux: L("ctrl+alt+shift+0"),
+		},
+		label: "Chrome Equalize Split",
+		category: "Web Pages",
+		description: "Reset embedded Chrome split panes to equal widths",
+	},
 
 	// Workspace switching
 	JUMP_TO_WORKSPACE_1: {

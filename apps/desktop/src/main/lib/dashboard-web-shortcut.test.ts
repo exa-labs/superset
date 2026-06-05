@@ -62,6 +62,39 @@ function inputFromMacChord(
 		});
 	}
 
+	if (token === "0") {
+		return input({
+			alt: parts.includes("alt"),
+			code: "Digit0",
+			control: parts.includes("ctrl") || parts.includes("control"),
+			key: token,
+			meta: parts.includes("meta") || parts.includes("cmd"),
+			shift: parts.includes("shift"),
+		});
+	}
+
+	if (token === "left" || token === "right") {
+		return input({
+			alt: parts.includes("alt"),
+			code: token === "left" ? "ArrowLeft" : "ArrowRight",
+			control: parts.includes("ctrl") || parts.includes("control"),
+			key: token === "left" ? "ArrowLeft" : "ArrowRight",
+			meta: parts.includes("meta") || parts.includes("cmd"),
+			shift: parts.includes("shift"),
+		});
+	}
+
+	if (token === "comma" || token === "period") {
+		return input({
+			alt: parts.includes("alt"),
+			code: token === "comma" ? "Comma" : "Period",
+			control: parts.includes("ctrl") || parts.includes("control"),
+			key: token === "comma" ? "," : ".",
+			meta: parts.includes("meta") || parts.includes("cmd"),
+			shift: parts.includes("shift"),
+		});
+	}
+
 	throw new Error(
 		`Unsupported dashboard web shortcut terminal token: ${token}`,
 	);
@@ -104,6 +137,24 @@ describe("dashboardWebShortcutFromInput", () => {
 			{
 				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 				shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
+			},
+			{ hotkeyId: "BROWSER_NEW_TAB", shortcut: "BROWSER_NEW_TAB" },
+			{ hotkeyId: "BROWSER_RELOAD", shortcut: "BROWSER_RELOAD" },
+			{ hotkeyId: "BROWSER_GO_BACK", shortcut: "BROWSER_GO_BACK" },
+			{ hotkeyId: "BROWSER_GO_FORWARD", shortcut: "BROWSER_GO_FORWARD" },
+			{ hotkeyId: "BROWSER_PREVIOUS_TAB", shortcut: "BROWSER_PREVIOUS_TAB" },
+			{ hotkeyId: "BROWSER_NEXT_TAB", shortcut: "BROWSER_NEXT_TAB" },
+			{ hotkeyId: "BROWSER_CLOSE_TAB", shortcut: "BROWSER_CLOSE_TAB" },
+			{ hotkeyId: "BROWSER_TOGGLE_PIN", shortcut: "BROWSER_TOGGLE_PIN" },
+			{ hotkeyId: "BROWSER_OPEN_EXTERNAL", shortcut: "BROWSER_OPEN_EXTERNAL" },
+			{ hotkeyId: "BROWSER_TOGGLE_SPLIT", shortcut: "BROWSER_TOGGLE_SPLIT" },
+			{ hotkeyId: "BROWSER_CLOSE_SPLIT", shortcut: "BROWSER_CLOSE_SPLIT" },
+			{ hotkeyId: "BROWSER_SWAP_SPLIT", shortcut: "BROWSER_SWAP_SPLIT" },
+			{ hotkeyId: "BROWSER_NARROW_SPLIT", shortcut: "BROWSER_NARROW_SPLIT" },
+			{ hotkeyId: "BROWSER_WIDEN_SPLIT", shortcut: "BROWSER_WIDEN_SPLIT" },
+			{
+				hotkeyId: "BROWSER_EQUALIZE_SPLIT",
+				shortcut: "BROWSER_EQUALIZE_SPLIT",
 			},
 		];
 
