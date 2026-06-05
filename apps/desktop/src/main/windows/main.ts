@@ -145,9 +145,14 @@ export async function MainWindow() {
 
 	createApplicationMenu();
 	installControlPlaneMenuBridge();
-	installFocusedControlPlaneShortcut(() => {
-		browserManager.openControlPlane();
-	});
+	installFocusedControlPlaneShortcut(
+		() => {
+			browserManager.openControlPlane();
+		},
+		(action) => {
+			browserManager.dispatchGlobalKeyboardAction(action);
+		},
+	);
 	installControlPlaneShortcutBridge(
 		() => {
 			browserManager.openControlPlane();

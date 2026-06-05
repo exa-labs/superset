@@ -1,5 +1,6 @@
 import { app, BrowserWindow, globalShortcut } from "electron";
 import { openControlPlaneAccelerator } from "./control-plane-shortcut";
+import type { GlobalKeyboardAction } from "./global-keyboard-shortcut";
 
 type FocusedControlPlaneShortcutEvent =
 	| "browser-window-blur"
@@ -22,6 +23,7 @@ interface FocusedControlPlaneShortcutBackend {
 
 interface FocusedControlPlaneShortcutControllerOptions {
 	accelerator: string;
+	additionalShortcuts?: FocusedDashboardShortcutRegistration[];
 	backend: FocusedControlPlaneShortcutBackend;
 	onOpenControlPlane: () => void;
 	scheduleFocusCheck?: (callback: () => void) => void;
@@ -31,6 +33,16 @@ interface FocusedControlPlaneShortcutController {
 	dispose: () => void;
 	install: () => void;
 	isRegistered: () => boolean;
+}
+
+interface FocusedDashboardShortcutRegistration {
+	accelerator: string;
+	callback: () => void;
+}
+
+export interface FocusedDashboardGlobalActionShortcut {
+	accelerator: string;
+	action: GlobalKeyboardAction;
 }
 
 const defaultScheduleFocusCheck = (callback: () => void) => {
@@ -69,28 +81,38 @@ function offAppShortcutEvent(
 
 export function createFocusedControlPlaneShortcutController({
 	accelerator,
+	additionalShortcuts = [],
 	backend,
 	onOpenControlPlane,
 	scheduleFocusCheck = defaultScheduleFocusCheck,
 }: FocusedControlPlaneShortcutControllerOptions): FocusedControlPlaneShortcutController {
 	let installed = false;
-	let registered = false;
+	const registeredAccelerators = new Set<string>();
 	let disposed = false;
+	const shortcuts: FocusedDashboardShortcutRegistration[] = [
+		{ accelerator, callback: onOpenControlPlane },
+		...additionalShortcuts,
+	];
 
 	const register = () => {
-		if (disposed || registered) return;
-		registered = backend.register(accelerator, onOpenControlPlane);
-		if (!registered) {
+		if (disposed) return;
+		for (const shortcut of shortcuts) {
+			if (registeredAccelerators.has(shortcut.accelerator)) continue;
+			if (backend.register(shortcut.accelerator, shortcut.callback)) {
+				registeredAccelerators.add(shortcut.accelerator);
+				continue;
+			}
 			console.warn(
-				`[keyboard] Failed to register focused control-plane shortcut: ${accelerator}`,
+				`[keyboard] Failed to register focused dashboard shortcut: ${shortcut.accelerator}`,
 			);
 		}
 	};
 
 	const unregister = () => {
-		if (!registered) return;
-		backend.unregister(accelerator);
-		registered = false;
+		for (const registeredAccelerator of [...registeredAccelerators]) {
+			backend.unregister(registeredAccelerator);
+			registeredAccelerators.delete(registeredAccelerator);
+		}
 	};
 
 	const syncRegistrationToFocus = () => {
@@ -129,8 +151,41 @@ export function createFocusedControlPlaneShortcutController({
 			backend.on("will-quit", handleWillQuit);
 			syncRegistrationToFocus();
 		},
-		isRegistered: () => registered,
+		isRegistered: () =>
+			shortcuts.every((shortcut) =>
+				registeredAccelerators.has(shortcut.accelerator),
+			),
 	};
+}
+
+function dashboardGlobalAcceleratorPrefix(
+	platform: NodeJS.Platform = process.platform,
+): string {
+	return platform === "darwin" ? "Alt" : "Ctrl+Alt";
+}
+
+export function focusedDashboardGlobalActionShortcuts(
+	platform: NodeJS.Platform = process.platform,
+): FocusedDashboardGlobalActionShortcut[] {
+	const prefix = dashboardGlobalAcceleratorPrefix(platform);
+	return [
+		{ accelerator: `${prefix}+V`, action: "TOGGLE_VIM_MODE" },
+		{
+			accelerator: `${prefix}+Slash`,
+			action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+		},
+		{ accelerator: `${prefix}+F`, action: "SHOW_DASHBOARD_ACTION_HINTS" },
+		{ accelerator: `${prefix}+N`, action: "OPEN_UNREAD_NATIVE_REPLY" },
+		{
+			accelerator: `${prefix}+Shift+N`,
+			action: "MARK_LATEST_NATIVE_REPLY_READ",
+		},
+		{ accelerator: `${prefix}+Tab`, action: "SWITCH_DASHBOARD_VIEW_NEXT" },
+		{
+			accelerator: `${prefix}+Shift+Tab`,
+			action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+		},
+	];
 }
 
 let focusedControlPlaneShortcutController: FocusedControlPlaneShortcutController | null =
@@ -138,11 +193,18 @@ let focusedControlPlaneShortcutController: FocusedControlPlaneShortcutController
 
 export function installFocusedControlPlaneShortcut(
 	onOpenControlPlane: () => void,
+	onGlobalKeyboardAction?: (action: GlobalKeyboardAction) => void,
 ): void {
 	if (focusedControlPlaneShortcutController) return;
 	focusedControlPlaneShortcutController =
 		createFocusedControlPlaneShortcutController({
 			accelerator: openControlPlaneAccelerator(),
+			additionalShortcuts: onGlobalKeyboardAction
+				? focusedDashboardGlobalActionShortcuts().map((shortcut) => ({
+						accelerator: shortcut.accelerator,
+						callback: () => onGlobalKeyboardAction(shortcut.action),
+					}))
+				: [],
 			backend: {
 				getFocusedWindow: () => BrowserWindow.getFocusedWindow(),
 				off: offAppShortcutEvent,

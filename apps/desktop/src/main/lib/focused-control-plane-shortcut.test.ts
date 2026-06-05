@@ -25,9 +25,10 @@ mock.module("electron", () => ({
 	},
 }));
 
-const { createFocusedControlPlaneShortcutController } = await import(
-	"./focused-control-plane-shortcut"
-);
+const {
+	createFocusedControlPlaneShortcutController,
+	focusedDashboardGlobalActionShortcuts,
+} = await import("./focused-control-plane-shortcut");
 
 type ShortcutCallback = () => void;
 
@@ -100,6 +101,53 @@ describe("focused control plane shortcut", () => {
 		expect(harness.openCount).toBe(1);
 	});
 
+	it("registers focused dashboard global actions alongside Option+K", () => {
+		const backend = new FakeShortcutBackend();
+		const actions: string[] = [];
+		let openCount = 0;
+		const controller = createFocusedControlPlaneShortcutController({
+			accelerator: "Alt+K",
+			additionalShortcuts: [
+				{
+					accelerator: "Alt+V",
+					callback: () => actions.push("TOGGLE_VIM_MODE"),
+				},
+				{
+					accelerator: "Alt+Tab",
+					callback: () => actions.push("SWITCH_DASHBOARD_VIEW_NEXT"),
+				},
+			],
+			backend,
+			onOpenControlPlane: () => {
+				openCount += 1;
+			},
+			scheduleFocusCheck: (callback) => callback(),
+		});
+		backend.focusedWindow = {};
+
+		controller.install();
+
+		expect([...backend.registered.keys()]).toEqual([
+			"Alt+K",
+			"Alt+V",
+			"Alt+Tab",
+		]);
+		expect(controller.isRegistered()).toBe(true);
+
+		backend.registered.get("Alt+K")?.();
+		backend.registered.get("Alt+V")?.();
+		backend.registered.get("Alt+Tab")?.();
+
+		expect(openCount).toBe(1);
+		expect(actions).toEqual(["TOGGLE_VIM_MODE", "SWITCH_DASHBOARD_VIEW_NEXT"]);
+
+		backend.focusedWindow = null;
+		backend.emit("browser-window-blur");
+
+		expect(controller.isRegistered()).toBe(false);
+		expect(backend.unregistered).toEqual(["Alt+K", "Alt+V", "Alt+Tab"]);
+	});
+
 	it("keeps repeated focus events idempotent while preserving the callback", () => {
 		const harness = createHarness();
 		harness.backend.focusedWindow = {};
@@ -141,5 +189,39 @@ describe("focused control plane shortcut", () => {
 		controller.dispose();
 		expect(controller.isRegistered()).toBe(false);
 		expect(backend.unregistered).toEqual(["Alt+K", "Alt+K"]);
+	});
+});
+
+describe("focusedDashboardGlobalActionShortcuts", () => {
+	it("maps macOS Option shortcuts to dashboard global actions", () => {
+		expect(focusedDashboardGlobalActionShortcuts("darwin")).toEqual([
+			{ accelerator: "Alt+V", action: "TOGGLE_VIM_MODE" },
+			{
+				accelerator: "Alt+Slash",
+				action: "SHOW_DASHBOARD_KEYBOARD_HELP",
+			},
+			{ accelerator: "Alt+F", action: "SHOW_DASHBOARD_ACTION_HINTS" },
+			{ accelerator: "Alt+N", action: "OPEN_UNREAD_NATIVE_REPLY" },
+			{
+				accelerator: "Alt+Shift+N",
+				action: "MARK_LATEST_NATIVE_REPLY_READ",
+			},
+			{ accelerator: "Alt+Tab", action: "SWITCH_DASHBOARD_VIEW_NEXT" },
+			{
+				accelerator: "Alt+Shift+Tab",
+				action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+			},
+		]);
+	});
+
+	it("uses Ctrl+Alt variants on non-macOS platforms", () => {
+		expect(focusedDashboardGlobalActionShortcuts("linux")[0]).toEqual({
+			accelerator: "Ctrl+Alt+V",
+			action: "TOGGLE_VIM_MODE",
+		});
+		expect(focusedDashboardGlobalActionShortcuts("win32").at(-1)).toEqual({
+			accelerator: "Ctrl+Alt+Shift+Tab",
+			action: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+		});
 	});
 });
