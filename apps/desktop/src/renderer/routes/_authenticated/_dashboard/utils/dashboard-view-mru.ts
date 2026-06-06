@@ -92,6 +92,12 @@ export function dashboardViewMruRouteScope(
 	return segmentAt(path, 0) === "settings" ? "settings" : "dashboard";
 }
 
+export function shouldRecordDashboardViewMruPathInAuthenticatedShell(
+	pathname: string,
+): boolean {
+	return dashboardViewMruRouteScope(pathname) === "settings";
+}
+
 export function resolveDashboardViewMruPathname(input: {
 	hashPathname: string | null;
 	locationPathname: string;

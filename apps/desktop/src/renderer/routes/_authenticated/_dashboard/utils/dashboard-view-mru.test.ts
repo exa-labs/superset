@@ -10,6 +10,7 @@ import {
 	readDashboardViewMruEntries,
 	recordDashboardViewMruPath,
 	resolveDashboardViewMruPathname,
+	shouldRecordDashboardViewMruPathInAuthenticatedShell,
 } from "./dashboard-view-mru";
 
 function memoryStorage(initial: Record<string, string> = {}) {
@@ -53,6 +54,27 @@ describe("dashboard view MRU", () => {
 		);
 		expect(dashboardViewMruRouteScope("/root-terminal/stag")).toBe("dashboard");
 		expect(dashboardViewMruRouteScope("/login")).toBeNull();
+	});
+
+	it("records only settings paths in the authenticated shell", () => {
+		expect(
+			shouldRecordDashboardViewMruPathInAuthenticatedShell(
+				"/settings/keyboard",
+			),
+		).toBe(true);
+		expect(
+			shouldRecordDashboardViewMruPathInAuthenticatedShell(
+				"/native/devin/session-1",
+			),
+		).toBe(false);
+		expect(
+			shouldRecordDashboardViewMruPathInAuthenticatedShell(
+				"/web-tabs/chrome-default",
+			),
+		).toBe(false);
+		expect(shouldRecordDashboardViewMruPathInAuthenticatedShell("/login")).toBe(
+			false,
+		);
 	});
 
 	it("resolves hash-backed dashboard paths for MRU tracking", () => {

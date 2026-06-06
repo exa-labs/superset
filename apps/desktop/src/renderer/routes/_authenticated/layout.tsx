@@ -42,6 +42,7 @@ import {
 	readDashboardViewMruEntries,
 	recordDashboardViewMruPath,
 	resolveDashboardViewMruPathname,
+	shouldRecordDashboardViewMruPathInAuthenticatedShell,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru";
 import { dashboardViewMruRegistryLabelResolver } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-view-mru-labels";
 import { DaemonAutoUpdateFailureDialog } from "renderer/routes/_authenticated/components/DaemonAutoUpdateFailureDialog";
@@ -141,6 +142,13 @@ function AuthenticatedLayout() {
 	useUpdateListener();
 
 	useEffect(() => {
+		if (
+			!shouldRecordDashboardViewMruPathInAuthenticatedShell(
+				dashboardViewMruPathname,
+			)
+		) {
+			return;
+		}
 		recordDashboardViewMruPath(dashboardViewMruPathname);
 	}, [dashboardViewMruPathname]);
 
