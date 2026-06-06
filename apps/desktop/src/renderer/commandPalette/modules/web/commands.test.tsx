@@ -175,6 +175,57 @@ describe("web command provider", () => {
 		}
 	}
 
+	function withWindowEventMetadata(
+		run: (
+			events: Array<{
+				cancelable: boolean;
+				detail: unknown;
+				type: string;
+			}>,
+		) => void,
+	) {
+		const previousWindow = Object.getOwnPropertyDescriptor(
+			globalThis,
+			"window",
+		);
+		const target = new EventTarget();
+		const events: Array<{
+			cancelable: boolean;
+			detail: unknown;
+			type: string;
+		}> = [];
+		const windowLike = {
+			addEventListener: target.addEventListener.bind(target),
+			dispatchEvent: (event: Event) => {
+				events.push({
+					cancelable: event.cancelable,
+					detail: event instanceof CustomEvent ? event.detail : null,
+					type: event.type,
+				});
+				return target.dispatchEvent(event);
+			},
+			removeEventListener: target.removeEventListener.bind(target),
+			setTimeout: (callback: () => void) => {
+				callback();
+				return 0;
+			},
+		};
+
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: windowLike,
+		});
+		try {
+			run(events);
+		} finally {
+			if (previousWindow) {
+				Object.defineProperty(globalThis, "window", previousWindow);
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+	}
+
 	it("does not register duplicate command ids", () => {
 		const commands = webProvider.provide(
 			commandContext("/web-tabs/chrome-default"),
@@ -182,6 +233,33 @@ describe("web command provider", () => {
 		const commandIds = commands.map((command) => command.id);
 
 		expect(new Set(commandIds).size).toBe(commandIds.length);
+	});
+
+	it("dispatches browser and native current actions through cancelable events", () => {
+		withWindowEventMetadata((events) => {
+			const browserContext = commandContext("/web-tabs/chrome-default");
+			webProvider
+				.provide(browserContext)
+				.find((command) => command.id === "web.current.reload")
+				?.run?.(browserContext);
+
+			const nativeContext = commandContext("/native/devin/session-1");
+			webProvider
+				.provide(nativeContext)
+				.find((command) => command.id === "native.current.rename")
+				?.run?.(nativeContext);
+
+			expect(events).toContainEqual({
+				cancelable: true,
+				detail: { action: "reload" },
+				type: "dashboard-browser-current-action",
+			});
+			expect(events).toContainEqual({
+				cancelable: true,
+				detail: { action: "rename", provider: "devin" },
+				type: "dashboard-native-agent-current-action",
+			});
+		});
 	});
 
 	it("registers native control-plane commands for active and unread runs", () => {

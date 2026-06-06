@@ -1,5 +1,9 @@
 import { PlusIcon, TerminalIcon } from "lucide-react";
 import type { HotkeyId } from "renderer/hotkeys/registry";
+import {
+	dispatchNativeAgentCurrentAction,
+	type NativeAgentCurrentAction,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-actions";
 import { readDashboardNativeAgentCurrentSessionState } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-session-state";
 import {
 	NATIVE_AGENT_FOLDER_COLORS,
@@ -18,6 +22,10 @@ import {
 	nativeAgentOverviewFilterLabel,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-overview";
 import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
+import {
+	type DashboardBrowserCurrentAction,
+	dispatchDashboardBrowserCurrentAction,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-current-actions";
 import {
 	type DashboardBrowserShortcutAction,
 	dashboardBrowserShortcutDescriptors,
@@ -75,35 +83,13 @@ const CONTROL_PLANE_PRIORITY = {
 } as const;
 
 function dispatchNativeAgentAction(
-	action:
-		| "archive"
-		| "close-split"
-		| "equalize-split"
-		| "focus-composer"
-		| "hide"
-		| "mark-read"
-		| "narrow-native-split"
-		| "new"
-		| "open-browser"
-		| "open-external"
-		| "pin"
-		| "refresh"
-		| "rename"
-		| "show"
-		| "sync-capy"
-		| "swap-split"
-		| "toggle-browser"
-		| "toggle-diagnostics"
-		| "toggle-split"
-		| "unpin"
-		| "widen-native-split",
+	action: NativeAgentCurrentAction,
 	provider?: NativeAgentProvider | null,
 ) {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-native-agent-current-action", {
-			detail: { action, provider },
-		}),
-	);
+	dispatchNativeAgentCurrentAction({
+		action,
+		provider: provider ?? undefined,
+	});
 }
 
 function dispatchNativeAgentCreate(provider: NativeAgentProvider) {
@@ -138,18 +124,8 @@ function dispatchNativeFolderAction(
 	);
 }
 
-function dispatchBrowserAction(
-	action:
-		| DashboardBrowserShortcutAction
-		| "new-chatgpt-tab"
-		| "new-claude-tab"
-		| "new-google-tab",
-) {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-browser-current-action", {
-			detail: { action },
-		}),
-	);
+function dispatchBrowserAction(action: DashboardBrowserCurrentAction) {
+	dispatchDashboardBrowserCurrentAction({ action });
 }
 
 const BROWSER_CURRENT_SHORTCUT_BY_ACTION = new Map(
@@ -802,12 +778,7 @@ export const webProvider: CommandProvider = {
 				run: (context) => {
 					navigateDashboardCommand(context, "/native/capy");
 					window.setTimeout(
-						() =>
-							window.dispatchEvent(
-								new CustomEvent("dashboard-native-agent-current-action", {
-									detail: { action: "sync-capy", provider: "capy" },
-								}),
-							),
+						() => dispatchNativeAgentAction("sync-capy", "capy"),
 						0,
 					);
 					window.setTimeout(
