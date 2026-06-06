@@ -751,10 +751,22 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Change the focused native or Chrome folder color",
 				},
 				{
+					keys: ["⌥K", "type color"],
+					label: "Color selected folder from anywhere",
+					description:
+						"Open the control plane and run the focused folder color action when focus is trapped in a terminal, editor, or native view",
+				},
+				{
 					keys: ["d"],
 					label: "Delete selected folder",
 					description:
 						"Open confirmation for the focused native or Chrome folder",
+				},
+				{
+					keys: ["⌥K", "type delete folder"],
+					label: "Delete selected folder from anywhere",
+					description:
+						"Open the control plane and run the focused folder delete action when focus is trapped in a terminal, editor, or native view",
 				},
 			],
 		},

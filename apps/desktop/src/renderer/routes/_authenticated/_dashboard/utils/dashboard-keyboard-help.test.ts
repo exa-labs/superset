@@ -205,8 +205,14 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Color selected folder")).toEqual(
 			expect.objectContaining({ keys: ["c"] }),
 		);
+		expect(entryByLabel.get("Color selected folder from anywhere")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type color"] }),
+		);
 		expect(entryByLabel.get("Delete selected folder")).toEqual(
 			expect.objectContaining({ keys: ["d"] }),
+		);
+		expect(entryByLabel.get("Delete selected folder from anywhere")).toEqual(
+			expect.objectContaining({ keys: ["⌥K", "type delete folder"] }),
 		);
 		expect(entryByLabel.get("Reply")).toEqual(
 			expect.objectContaining({ keys: ["r"] }),
@@ -607,7 +613,9 @@ describe("dashboard keyboard help", () => {
 			expect.arrayContaining([
 				"Create folder or group",
 				"Move selected to folder",
+				"Color selected folder from anywhere",
 				"Delete folder",
+				"Delete selected folder from anywhere",
 			]),
 		);
 		expect(labelsForQuery("native reply")).toEqual(
