@@ -790,14 +790,43 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Narrow or widen the native chat side of split view",
 				},
 				{
+					hotkeyId: "BROWSER_NARROW_SPLIT",
+					label: "Narrow native split from anywhere",
+					description:
+						"Narrow the native chat pane while focus is in the embedded browser or another dashboard surface",
+				},
+				{
+					hotkeyId: "BROWSER_WIDEN_SPLIT",
+					label: "Widen native split from anywhere",
+					description:
+						"Widen the native chat pane while focus is in the embedded browser or another dashboard surface",
+				},
+				{
 					keys: ["="],
 					label: "Equalize native split",
 					description: "Reset native chat and browser panes to equal widths",
 				},
 				{
+					hotkeyId: "BROWSER_EQUALIZE_SPLIT",
+					label: "Equalize native split from anywhere",
+					description: "Reset native chat and browser panes from trapped focus",
+				},
+				{
+					hotkeyId: "BROWSER_SWAP_SPLIT",
+					label: "Swap native split from anywhere",
+					description:
+						"Move focus between native split panes from trapped focus",
+				},
+				{
 					keys: ["q"],
 					label: "Close native split",
 					description: "Return a split native session to chat-only view",
+				},
+				{
+					hotkeyId: "BROWSER_CLOSE_SPLIT",
+					label: "Close native split from anywhere",
+					description:
+						"Return a split native session to chat-only view from trapped focus",
 				},
 				{
 					keys: ["r"],

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import type { DashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
 import { useCallback, useEffect, useRef } from "react";
 import { useFrameStackStore } from "renderer/commandPalette/core/frames";
@@ -54,6 +54,13 @@ type DashboardBrowserCurrentAction =
 	| "toggle-tab-pin"
 	| "toggle-split"
 	| "widen-active-split";
+type DashboardNativeSplitCurrentAction =
+	| "close-split"
+	| "equalize-split"
+	| "narrow-native-split"
+	| "swap-split"
+	| "toggle-split"
+	| "widen-native-split";
 
 const WEB_PAGE_SHORTCUTS: DashboardWebShortcut[] = [
 	"OPEN_WEB_PAGE_1",
@@ -103,6 +110,16 @@ const BROWSER_SHORTCUT_ACTIONS: Partial<
 	BROWSER_TOGGLE_PIN: "toggle-tab-pin",
 	BROWSER_PREVIOUS_TAB: "previous-tab",
 	BROWSER_NEXT_TAB: "next-tab",
+};
+const NATIVE_SPLIT_SHORTCUT_ACTIONS: Partial<
+	Record<DashboardWebShortcut, DashboardNativeSplitCurrentAction>
+> = {
+	BROWSER_TOGGLE_SPLIT: "toggle-split",
+	BROWSER_CLOSE_SPLIT: "close-split",
+	BROWSER_SWAP_SPLIT: "swap-split",
+	BROWSER_NARROW_SPLIT: "narrow-native-split",
+	BROWSER_WIDEN_SPLIT: "widen-native-split",
+	BROWSER_EQUALIZE_SPLIT: "equalize-split",
 };
 const SIDEBAR_SHORTCUT_COMMANDS: Partial<
 	Record<DashboardWebShortcut, DashboardSidebarKeyboardCommand>
@@ -208,6 +225,31 @@ function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
 	);
 }
 
+function dispatchNativeAgentCurrentAction(
+	action: DashboardNativeSplitCurrentAction | "toggle-browser",
+) {
+	window.dispatchEvent(
+		new CustomEvent("dashboard-native-agent-current-action", {
+			detail: { action },
+		}),
+	);
+}
+
+function isNativeAgentPathname(pathname: string): boolean {
+	return /^\/native\/(?:capy|devin)(?:\/|$)/.test(pathname);
+}
+
+export function dashboardNativeSplitActionFromShortcut({
+	pathname,
+	shortcut,
+}: {
+	pathname: string;
+	shortcut: DashboardWebShortcut;
+}): DashboardNativeSplitCurrentAction | null {
+	if (!isNativeAgentPathname(pathname)) return null;
+	return NATIVE_SPLIT_SHORTCUT_ACTIONS[shortcut] ?? null;
+}
+
 function dispatchDashboardSidebarKeyboardCommandWithShellFallback(
 	command: DashboardSidebarKeyboardCommand,
 ) {
@@ -253,6 +295,9 @@ export function dashboardRootTerminalTargetFromShortcut(
 
 export function useDashboardWebShortcuts() {
 	const navigate = useNavigate();
+	const currentPathname = useLocation({
+		select: (location) => location.pathname,
+	});
 	const pendingNativeProviderRef = useRef<{
 		provider: NativeAgentProvider;
 		timeoutId: number;
@@ -416,6 +461,15 @@ export function useDashboardWebShortcuts() {
 
 	const runShortcut = useCallback(
 		(shortcut: DashboardWebShortcut) => {
+			const nativeSplitAction = dashboardNativeSplitActionFromShortcut({
+				pathname: currentPathname,
+				shortcut,
+			});
+			if (nativeSplitAction) {
+				dispatchNativeAgentCurrentAction(nativeSplitAction);
+				return;
+			}
+
 			const browserAction = BROWSER_SHORTCUT_ACTIONS[shortcut];
 			if (browserAction) {
 				dispatchBrowserCurrentAction(browserAction);
@@ -492,19 +546,11 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {
-				window.dispatchEvent(
-					new CustomEvent("dashboard-native-agent-current-action", {
-						detail: { action: "toggle-browser" },
-					}),
-				);
+				dispatchNativeAgentCurrentAction("toggle-browser");
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_SPLIT_VIEW") {
-				window.dispatchEvent(
-					new CustomEvent("dashboard-native-agent-current-action", {
-						detail: { action: "toggle-split" },
-					}),
-				);
+				dispatchNativeAgentCurrentAction("toggle-split");
 				return;
 			}
 
@@ -528,6 +574,7 @@ export function useDashboardWebShortcuts() {
 		[
 			clearPendingKeyboardChains,
 			createNativeProviderSession,
+			currentPathname,
 			openIndexedTarget,
 			openChrome,
 			openNativeProviderAtIndex,

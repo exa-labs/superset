@@ -1234,6 +1234,7 @@ export const webProvider: CommandProvider = {
 				description: "Give the native chat side less width in split view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentSecondary,
 				keywords: ["capy", "devin", "native", "split", "narrow", "resize"],
+				hotkeyId: "BROWSER_NARROW_SPLIT",
 				shortcutLabel: "[",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1251,6 +1252,7 @@ export const webProvider: CommandProvider = {
 				description: "Move the native chat pane to the opposite side",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "swap", "side"],
+				hotkeyId: "BROWSER_SWAP_SPLIT",
 				shortcutLabel: "w",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1268,6 +1270,7 @@ export const webProvider: CommandProvider = {
 				description: "Return the current native session to chat-only view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "close", "browser"],
+				hotkeyId: "BROWSER_CLOSE_SPLIT",
 				shortcutLabel: "q",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1285,6 +1288,7 @@ export const webProvider: CommandProvider = {
 				description: "Give the native chat side more width in split view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "widen", "resize"],
+				hotkeyId: "BROWSER_WIDEN_SPLIT",
 				shortcutLabel: "]",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1303,6 +1307,7 @@ export const webProvider: CommandProvider = {
 					"Reset native chat and browser split panes to equal widths",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrent,
 				keywords: ["capy", "devin", "native", "split", "equal", "resize"],
+				hotkeyId: "BROWSER_EQUALIZE_SPLIT",
 				shortcutLabel: "=",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),

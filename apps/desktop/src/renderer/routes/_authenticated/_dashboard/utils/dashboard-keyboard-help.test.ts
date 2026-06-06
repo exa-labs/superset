@@ -135,6 +135,21 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["h", "l"] }),
 		);
 		expect(labels.has("Split native/browser")).toBe(true);
+		expect(entryByLabel.get("Narrow native split from anywhere")).toEqual(
+			expect.objectContaining({ hotkeyId: "BROWSER_NARROW_SPLIT" }),
+		);
+		expect(entryByLabel.get("Widen native split from anywhere")).toEqual(
+			expect.objectContaining({ hotkeyId: "BROWSER_WIDEN_SPLIT" }),
+		);
+		expect(entryByLabel.get("Equalize native split from anywhere")).toEqual(
+			expect.objectContaining({ hotkeyId: "BROWSER_EQUALIZE_SPLIT" }),
+		);
+		expect(entryByLabel.get("Swap native split from anywhere")).toEqual(
+			expect.objectContaining({ hotkeyId: "BROWSER_SWAP_SPLIT" }),
+		);
+		expect(entryByLabel.get("Close native split from anywhere")).toEqual(
+			expect.objectContaining({ hotkeyId: "BROWSER_CLOSE_SPLIT" }),
+		);
 		expect(hotkeyIds.has("SPLIT_RIGHT")).toBe(true);
 		expect(hotkeyIds.has("SPLIT_DOWN")).toBe(true);
 		expect(hotkeyIds.has("NARROW_PANE_SPLIT")).toBe(true);

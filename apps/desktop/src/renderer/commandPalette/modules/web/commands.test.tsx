@@ -333,6 +333,21 @@ describe("web command provider", () => {
 		const toggleSplit = commands.find(
 			(command) => command.id === "native.current.toggleSplit",
 		);
+		const closeSplit = commands.find(
+			(command) => command.id === "native.current.closeSplit",
+		);
+		const swapSplit = commands.find(
+			(command) => command.id === "native.current.swapSplit",
+		);
+		const narrowSplit = commands.find(
+			(command) => command.id === "native.current.narrowSplit",
+		);
+		const widenSplit = commands.find(
+			(command) => command.id === "native.current.widenSplit",
+		);
+		const equalizeSplit = commands.find(
+			(command) => command.id === "native.current.equalizeSplit",
+		);
 
 		expect(openCapy?.hotkeyId).toBe("OPEN_CAPY");
 		expect(openDevin?.hotkeyId).toBe("OPEN_DEVIN");
@@ -341,6 +356,11 @@ describe("web command provider", () => {
 		).toBe("CREATE_DEVIN");
 		expect(toggleBrowser?.hotkeyId).toBe("TOGGLE_NATIVE_BROWSER_VIEW");
 		expect(toggleSplit?.hotkeyId).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
+		expect(closeSplit?.hotkeyId).toBe("BROWSER_CLOSE_SPLIT");
+		expect(swapSplit?.hotkeyId).toBe("BROWSER_SWAP_SPLIT");
+		expect(narrowSplit?.hotkeyId).toBe("BROWSER_NARROW_SPLIT");
+		expect(widenSplit?.hotkeyId).toBe("BROWSER_WIDEN_SPLIT");
+		expect(equalizeSplit?.hotkeyId).toBe("BROWSER_EQUALIZE_SPLIT");
 	});
 
 	it("uses provider-specific global create shortcuts for current native commands", () => {

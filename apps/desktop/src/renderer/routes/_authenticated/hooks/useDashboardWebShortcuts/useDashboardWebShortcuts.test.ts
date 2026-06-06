@@ -3,6 +3,7 @@ import { HOTKEYS_REGISTRY } from "renderer/hotkeys/registry";
 import {
 	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+	dashboardNativeSplitActionFromShortcut,
 	dashboardRootTerminalTargetFromShortcut,
 	dashboardSidebarKeyboardCommandFromShortcut,
 	dashboardSidebarKeyboardCommandFromVimKey,
@@ -76,6 +77,57 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			dashboardRootTerminalTargetFromShortcut("OPEN_ROOT_TERMINAL_HEPH"),
 		).toBe("heph");
 		expect(dashboardRootTerminalTargetFromShortcut("OPEN_CHROME")).toBeNull();
+	});
+
+	it("routes split-pane shortcuts to native sessions only on native routes", () => {
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_TOGGLE_SPLIT",
+			}),
+		).toBe("toggle-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/capy/thread-1",
+				shortcut: "BROWSER_CLOSE_SPLIT",
+			}),
+		).toBe("close-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_SWAP_SPLIT",
+			}),
+		).toBe("swap-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_NARROW_SPLIT",
+			}),
+		).toBe("narrow-native-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_WIDEN_SPLIT",
+			}),
+		).toBe("widen-native-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_EQUALIZE_SPLIT",
+			}),
+		).toBe("equalize-split");
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/web-tabs/chrome-default",
+				shortcut: "BROWSER_CLOSE_SPLIT",
+			}),
+		).toBeNull();
+		expect(
+			dashboardNativeSplitActionFromShortcut({
+				pathname: "/native/devin/session-1",
+				shortcut: "BROWSER_RELOAD",
+			}),
+		).toBeNull();
 	});
 
 	it("maps global Vim keys to sidebar commands outside local sidebar focus", () => {
