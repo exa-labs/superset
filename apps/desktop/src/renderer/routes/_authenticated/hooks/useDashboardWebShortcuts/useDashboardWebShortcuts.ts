@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useFrameStackStore } from "renderer/commandPalette/core/frames";
 import { useHotkey } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { dispatchNativeAgentCurrentAction } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-actions";
 import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
@@ -221,16 +222,6 @@ function isModifierOnlyEvent(event: KeyboardEvent): boolean {
 function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
 	window.dispatchEvent(
 		new CustomEvent("dashboard-browser-current-action", {
-			detail: { action },
-		}),
-	);
-}
-
-function dispatchNativeAgentCurrentAction(
-	action: DashboardNativeSplitCurrentAction | "toggle-browser",
-) {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-native-agent-current-action", {
 			detail: { action },
 		}),
 	);
@@ -491,7 +482,7 @@ export function useDashboardWebShortcuts() {
 				shortcut,
 			});
 			if (nativeSplitAction) {
-				dispatchNativeAgentCurrentAction(nativeSplitAction);
+				dispatchNativeAgentCurrentAction({ action: nativeSplitAction });
 				return;
 			}
 
@@ -571,11 +562,11 @@ export function useDashboardWebShortcuts() {
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_BROWSER_VIEW") {
-				dispatchNativeAgentCurrentAction("toggle-browser");
+				dispatchNativeAgentCurrentAction({ action: "toggle-browser" });
 				return;
 			}
 			if (shortcut === "TOGGLE_NATIVE_SPLIT_VIEW") {
-				dispatchNativeAgentCurrentAction("toggle-split");
+				dispatchNativeAgentCurrentAction({ action: "toggle-split" });
 				return;
 			}
 

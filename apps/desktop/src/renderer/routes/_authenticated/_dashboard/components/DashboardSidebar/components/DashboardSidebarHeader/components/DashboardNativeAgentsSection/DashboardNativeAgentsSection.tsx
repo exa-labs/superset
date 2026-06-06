@@ -50,6 +50,7 @@ import { useHotkeyDisplay } from "renderer/hotkeys";
 import { authClient } from "renderer/lib/auth-client";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { isDashboardSidebarSpaceKey } from "renderer/routes/_authenticated/_dashboard/components/DashboardSidebar/hooks/useDashboardSidebarKeyboardNavigation/dashboard-sidebar-keyboard-actions";
+import { dispatchNativeAgentCurrentAction as dispatchNativeAgentCurrentActionEvent } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-actions";
 import {
 	createNativeAgentFolder,
 	createNativeAgentSessionDragPayload,
@@ -326,11 +327,7 @@ function dispatchNativeAgentCurrentAction(
 	action: NativeAgentSidebarSessionAction,
 	provider: NativeAgentProvider,
 ): void {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-native-agent-current-action", {
-			detail: { action, provider },
-		}),
-	);
+	dispatchNativeAgentCurrentActionEvent({ action, provider });
 }
 
 function NativeCreateDialog({

@@ -47,6 +47,10 @@ import { useHotkeyDisplay } from "renderer/hotkeys";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import { DashboardWebView } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebView";
 import {
+	DASHBOARD_NATIVE_AGENT_CURRENT_ACTION_EVENT,
+	nativeAgentCurrentActionEventDetail,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-actions";
+import {
 	formatNativeAgentDiagnosticsQuery,
 	formatNativeAgentDiagnosticsQueryGroup,
 	nativeAgentMineEvidenceSummary,
@@ -176,29 +180,6 @@ type NativeItem = {
 
 type NativeViewMode = "browser" | "native" | "split";
 type NativeAgentSplitPlacement = "native-left" | "native-right";
-
-type NativeAgentCurrentAction =
-	| "archive"
-	| "close-split"
-	| "equalize-split"
-	| "focus-composer"
-	| "hide"
-	| "mark-read"
-	| "narrow-native-split"
-	| "new"
-	| "open-browser"
-	| "open-external"
-	| "pin"
-	| "refresh"
-	| "rename"
-	| "show"
-	| "sync-capy"
-	| "swap-split"
-	| "toggle-browser"
-	| "toggle-diagnostics"
-	| "toggle-split"
-	| "unpin"
-	| "widen-native-split";
 
 interface NativeAgentHeaderShortcut {
 	key: string;
@@ -2232,14 +2213,14 @@ export function NativeAgentChatView({
 
 	useEffect(() => {
 		const handleAction = (event: Event) => {
-			const detail = (
-				event as CustomEvent<{
-					action?: NativeAgentCurrentAction;
-					provider?: NativeAgentProvider;
-				}>
-			).detail;
+			const detail = nativeAgentCurrentActionEventDetail(event);
+			if (!detail) return;
 			if (detail?.provider && detail.provider !== provider) return;
+			const accept = () => {
+				event.preventDefault();
+			};
 			if (detail?.action === "new") {
+				accept();
 				window.dispatchEvent(
 					new CustomEvent("dashboard-native-agent-create", {
 						detail: { provider },
@@ -2248,95 +2229,117 @@ export function NativeAgentChatView({
 				return;
 			}
 			if (detail?.action === "refresh") {
+				accept();
 				void invalidateProvider();
 				return;
 			}
 			if (detail?.action === "sync-capy") {
+				accept();
 				void syncCapyThreads();
 				return;
 			}
 			if (detail?.action === "toggle-diagnostics") {
+				accept();
 				setShowDiagnostics((current) => !current);
 				return;
 			}
 			if (!selectedItem) return;
 			if (detail?.action === "pin") {
+				accept();
 				void handleSetPinned(selectedItem, true);
 				return;
 			}
 			if (detail?.action === "unpin") {
+				accept();
 				void handleSetPinned(selectedItem, false);
 				return;
 			}
 			if (detail?.action === "rename") {
+				accept();
 				openRenameDialog(selectedItem);
 				return;
 			}
 			if (detail?.action === "archive") {
+				accept();
 				void handleArchive();
 				return;
 			}
 			if (detail?.action === "hide") {
+				accept();
 				void handleSetSidebarVisible(selectedItem, false);
 				return;
 			}
 			if (detail?.action === "show") {
+				accept();
 				void handleSetSidebarVisible(selectedItem, true);
 				return;
 			}
 			if (detail?.action === "focus-composer") {
+				accept();
 				composerRef.current?.focus();
 				return;
 			}
 			if (detail?.action === "mark-read") {
+				accept();
 				markSelectedReplyRead(selectedItem);
 				return;
 			}
 			if (detail?.action === "open-browser" && selectedItem.url) {
+				accept();
 				handleSelectViewMode("browser");
 				return;
 			}
 			if (detail?.action === "open-external" && selectedItem.url) {
+				accept();
 				openExternal.mutate(selectedItem.url);
 				return;
 			}
 			if (detail?.action === "toggle-browser" && selectedItem.url) {
+				accept();
 				handleSelectViewMode(viewMode === "native" ? "browser" : "native");
 				return;
 			}
 			if (detail?.action === "toggle-split" && selectedItem.url) {
+				accept();
 				handleSelectViewMode(viewMode === "split" ? "native" : "split");
 				return;
 			}
 			if (detail?.action === "swap-split" && selectedItem.url) {
+				accept();
 				swapNativeSplitPanes();
 				return;
 			}
 			if (detail?.action === "close-split" && selectedItem.url) {
-				if (viewMode === "split") handleSelectViewMode("native");
+				if (viewMode === "split") {
+					accept();
+					handleSelectViewMode("native");
+				}
 				return;
 			}
 			if (detail?.action === "narrow-native-split" && selectedItem.url) {
+				accept();
 				resizeNativeSplitPane(-NATIVE_AGENT_SPLIT_RATIO_STEP);
 				return;
 			}
 			if (detail?.action === "widen-native-split" && selectedItem.url) {
+				accept();
 				resizeNativeSplitPane(NATIVE_AGENT_SPLIT_RATIO_STEP);
 				return;
 			}
 			if (detail?.action === "equalize-split" && selectedItem.url) {
+				accept();
 				equalizeNativeSplitPanes();
 				return;
 			}
 		};
 
 		window.addEventListener(
-			"dashboard-native-agent-current-action",
+			DASHBOARD_NATIVE_AGENT_CURRENT_ACTION_EVENT,
 			handleAction,
 		);
 		return () => {
 			window.removeEventListener(
-				"dashboard-native-agent-current-action",
+				DASHBOARD_NATIVE_AGENT_CURRENT_ACTION_EVENT,
 				handleAction,
 			);
 		};
