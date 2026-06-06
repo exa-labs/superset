@@ -183,6 +183,20 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 
 	it("maps embedded-browser sidebar action shortcuts to shared sidebar commands", () => {
 		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_CREATE"),
+		).toBe("action-create");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut(
+				"SIDEBAR_ACTION_CREATE_FOLDER",
+			),
+		).toBe("action-create-folder");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_COLOR"),
+		).toBe("action-color");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_DELETE"),
+		).toBe("action-delete");
+		expect(
 			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_COLLAPSE"),
 		).toBe("collapse");
 		expect(dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_EXPAND")).toBe(
