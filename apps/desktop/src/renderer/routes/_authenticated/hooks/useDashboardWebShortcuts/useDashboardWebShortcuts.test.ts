@@ -7,6 +7,7 @@ import {
 	dashboardRootTerminalTargetFromShortcut,
 	dashboardSidebarKeyboardCommandFromShortcut,
 	dashboardSidebarKeyboardCommandFromVimKey,
+	dashboardWebShortcutKeepsNativeProviderPrefix,
 } from "./useDashboardWebShortcuts";
 
 describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
@@ -177,6 +178,28 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		expect(
 			dashboardSidebarKeyboardCommandFromShortcut("BROWSER_GO_BACK"),
 		).toBeNull();
+	});
+
+	it("clears stale Capy/Devin prefixes for unrelated delivered shortcuts", () => {
+		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_CAPY")).toBe(
+			true,
+		);
+		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_DEVIN")).toBe(
+			true,
+		);
+		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_CAPY_1")).toBe(
+			false,
+		);
+		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_DEVIN_1")).toBe(
+			false,
+		);
+		for (const shortcut of DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS) {
+			if (shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN") continue;
+			expect(
+				dashboardWebShortcutKeepsNativeProviderPrefix(shortcut),
+				`${shortcut} should clear a pending Capy/Devin prefix before it runs`,
+			).toBe(false);
+		}
 	});
 });
 

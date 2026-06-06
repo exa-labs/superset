@@ -293,6 +293,12 @@ export function dashboardRootTerminalTargetFromShortcut(
 	return null;
 }
 
+export function dashboardWebShortcutKeepsNativeProviderPrefix(
+	shortcut: DashboardWebShortcut,
+): boolean {
+	return shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN";
+}
+
 export function useDashboardWebShortcuts() {
 	const navigate = useNavigate();
 	const currentPathname = useLocation({
@@ -461,6 +467,10 @@ export function useDashboardWebShortcuts() {
 
 	const runShortcut = useCallback(
 		(shortcut: DashboardWebShortcut) => {
+			if (!dashboardWebShortcutKeepsNativeProviderPrefix(shortcut)) {
+				clearPendingNativeProvider();
+			}
+
 			const nativeSplitAction = dashboardNativeSplitActionFromShortcut({
 				pathname: currentPathname,
 				shortcut,
@@ -573,6 +583,7 @@ export function useDashboardWebShortcuts() {
 		},
 		[
 			clearPendingKeyboardChains,
+			clearPendingNativeProvider,
 			createNativeProviderSession,
 			currentPathname,
 			openIndexedTarget,
