@@ -211,6 +211,23 @@
 		-ms-overflow-style: none; /* IE/Edge */
 	}
 
+	/* Preserved sidebar keyboard focus after focus moves into browsers, terminals, or overlays */
+	[data-dashboard-sidebar-root="true"]
+		[data-dashboard-sidebar-keyboard-focus="true"] {
+		position: relative;
+		outline: 1px solid color-mix(in srgb, var(--sidebar-ring) 80%, transparent);
+		outline-offset: -1px;
+		box-shadow:
+			inset 3px 0 0 var(--sidebar-primary),
+			0 0 0 1px color-mix(in srgb, var(--sidebar-primary) 26%, transparent);
+		background-color: color-mix(
+			in srgb,
+			var(--sidebar-accent) 72%,
+			transparent
+		);
+		color: var(--sidebar-accent-foreground);
+	}
+
 	.hide-scrollbar::-webkit-scrollbar {
 		display: none; /* Chrome/Safari/Electron */
 	}
