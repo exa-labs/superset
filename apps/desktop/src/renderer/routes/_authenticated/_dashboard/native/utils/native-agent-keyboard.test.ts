@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	NATIVE_AGENT_OVERVIEW_FILTER_SHORTCUTS,
+	nativeAgentChatJumpFromKey,
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentCreateVimActionFromKey,
 	nativeAgentFolderVimActionFromKey,
@@ -164,6 +165,64 @@ describe("native agent keyboard helpers", () => {
 			action: "bottom",
 			handled: true,
 			nextLastGAt: 0,
+		});
+	});
+
+	it("maps selected native chat top and bottom jump keys", () => {
+		expect(
+			nativeAgentChatJumpFromKey({
+				key: "home",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "top",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentChatJumpFromKey({
+				key: "end",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "bottom",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentChatJumpFromKey({
+				key: "g",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "top",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentChatJumpFromKey({
+				key: "G",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "bottom",
+			handled: true,
+			nextLastGAt: 0,
+		});
+		expect(
+			nativeAgentChatJumpFromKey({
+				key: "j",
+				lastGAt: 1000,
+				now: 1200,
+			}),
+		).toEqual({
+			action: "none",
+			handled: false,
+			nextLastGAt: 1000,
 		});
 	});
 

@@ -70,6 +70,7 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-vim-mode";
 import { publishDashboardNativeAgentCurrentSessionState } from "../../utils/native-agent-current-session-state";
 import {
+	nativeAgentChatJumpFromKey,
 	nativeAgentChatScrollDeltaFromKey,
 	nativeAgentOverviewCardVimActionFromKey,
 	nativeAgentOverviewFilterFromKey,
@@ -884,6 +885,7 @@ export function NativeAgentChatView({
 	const renameInputRef = useRef<HTMLInputElement | null>(null);
 	const nativeAgentViewRootRef = useRef<HTMLDivElement | null>(null);
 	const overviewLastGAtRef = useRef(0);
+	const selectedSessionLastGAtRef = useRef(0);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -1978,6 +1980,25 @@ export function NativeAgentChatView({
 			}
 
 			if (selectedItem) {
+				if (viewMode === "native" || viewMode === "split") {
+					const chatJump = nativeAgentChatJumpFromKey({
+						key,
+						lastGAt: selectedSessionLastGAtRef.current,
+						now: Date.now(),
+					});
+					if (chatJump.handled) {
+						consumeNativeAgentKeyboardEvent(event);
+						selectedSessionLastGAtRef.current = chatJump.nextLastGAt;
+						const scrollNode = messageScrollRef.current;
+						if (scrollNode && chatJump.action !== "none") {
+							scrollNode.scrollTo({
+								behavior: "auto",
+								top: chatJump.action === "top" ? 0 : scrollNode.scrollHeight,
+							});
+						}
+						return;
+					}
+				}
 				if (
 					(key === "j" || key === "k" || key === "J" || key === "K") &&
 					(viewMode === "native" || viewMode === "split")
