@@ -194,6 +194,11 @@ describe("actions command provider", () => {
 				.filter((command) => command.id.startsWith("actions.sidebar."))
 				.map((command) => [command.id, command.shortcutLabel] as const),
 		);
+		const hotkeyById = new Map(
+			commands
+				.filter((command) => command.id.startsWith("actions.sidebar."))
+				.map((command) => [command.id, command.hotkeyId] as const),
+		);
 		expect(shortcutById.get("actions.sidebar.focusNext")).toBe("↓/j");
 		expect(shortcutById.get("actions.sidebar.focusPrevious")).toBe("↑/k");
 		expect(shortcutById.get("actions.sidebar.focusFirst")).toBe("Home/gg");
@@ -217,6 +222,30 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.markRead")).toBe("U");
 		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("x/X");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
+		expect(hotkeyById.get("actions.sidebar.menu")).toBe("SIDEBAR_ACTION_MENU");
+		expect(hotkeyById.get("actions.sidebar.pin")).toBe("SIDEBAR_ACTION_PIN");
+		expect(hotkeyById.get("actions.sidebar.reply")).toBe(
+			"SIDEBAR_ACTION_REPLY",
+		);
+		expect(hotkeyById.get("actions.sidebar.openBrowser")).toBe(
+			"SIDEBAR_ACTION_OPEN_BROWSER",
+		);
+		expect(hotkeyById.get("actions.sidebar.move")).toBe("SIDEBAR_ACTION_MOVE");
+		expect(hotkeyById.get("actions.sidebar.removeFromFolder")).toBe(
+			"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+		);
+		expect(hotkeyById.get("actions.sidebar.rename")).toBe(
+			"SIDEBAR_ACTION_RENAME",
+		);
+		expect(hotkeyById.get("actions.sidebar.markRead")).toBe(
+			"SIDEBAR_ACTION_MARK_READ",
+		);
+		expect(hotkeyById.get("actions.sidebar.hardArchive")).toBe(
+			"SIDEBAR_ACTION_HARD_ARCHIVE",
+		);
+		expect(hotkeyById.get("actions.sidebar.archive")).toBe(
+			"SIDEBAR_ACTION_ARCHIVE",
+		);
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.hardArchive")
 				?.title,

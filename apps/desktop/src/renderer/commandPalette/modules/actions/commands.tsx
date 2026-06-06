@@ -23,6 +23,7 @@ import {
 	SquareMousePointerIcon,
 	Trash2Icon,
 } from "lucide-react";
+import type { HotkeyId } from "renderer/hotkeys";
 import { electronTrpcClient } from "renderer/lib/trpc-client";
 import { electronQueryClient } from "renderer/providers/ElectronTRPCProvider";
 import { handleDashboardGlobalKeyboardAction } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
@@ -95,6 +96,7 @@ function dispatchSidebarCommandFromControlPlane(
 const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	command: DashboardSidebarKeyboardCommand;
 	description: string;
+	hotkeyId?: HotkeyId;
 	icon: Command["icon"];
 	id: string;
 	keywords: string[];
@@ -195,6 +197,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-menu",
 		description: "Open the action menu for the currently focused sidebar item",
+		hotkeyId: "SIDEBAR_ACTION_MENU",
 		icon: EllipsisIcon,
 		id: "menu",
 		keywords: ["menu", "actions", "more", "sidebar", "focused", "dot"],
@@ -204,6 +207,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-pin",
 		description: "Pin or unpin the currently focused sidebar item",
+		hotkeyId: "SIDEBAR_ACTION_PIN",
 		icon: PinIcon,
 		id: "pin",
 		keywords: ["pin", "unpin", "sidebar", "keep", "focused"],
@@ -213,6 +217,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-reply",
 		description: "Reply to the focused Capy or Devin sidebar session",
+		hotkeyId: "SIDEBAR_ACTION_REPLY",
 		icon: MessageSquareIcon,
 		id: "reply",
 		keywords: ["reply", "message", "capy", "devin", "agent", "focused"],
@@ -222,6 +227,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-open-browser",
 		description: "Open the browser version for the focused agent session",
+		hotkeyId: "SIDEBAR_ACTION_OPEN_BROWSER",
 		icon: SquareMousePointerIcon,
 		id: "openBrowser",
 		keywords: ["browser", "open", "capy", "devin", "agent", "focused", "web"],
@@ -248,6 +254,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-move",
 		description: "Move the focused sidebar item into a folder",
+		hotkeyId: "SIDEBAR_ACTION_MOVE",
 		icon: FolderInputIcon,
 		id: "move",
 		keywords: ["move", "folder", "organize", "sidebar", "focused"],
@@ -257,6 +264,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-remove-from-folder",
 		description: "Remove the focused sidebar item from its folder",
+		hotkeyId: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
 		icon: FolderInputIcon,
 		id: "removeFromFolder",
 		keywords: [
@@ -273,6 +281,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-rename",
 		description: "Rename the focused sidebar item or folder",
+		hotkeyId: "SIDEBAR_ACTION_RENAME",
 		icon: PencilIcon,
 		id: "rename",
 		keywords: ["rename", "edit", "title", "folder", "sidebar", "focused"],
@@ -300,6 +309,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-hard-archive",
 		description: "Archive the focused native Capy or Devin session",
+		hotkeyId: "SIDEBAR_ACTION_HARD_ARCHIVE",
 		icon: ArchiveIcon,
 		id: "hardArchive",
 		keywords: [
@@ -318,6 +328,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-mark-read",
 		description: "Mark the focused Capy or Devin session reply read",
+		hotkeyId: "SIDEBAR_ACTION_MARK_READ",
 		icon: BellOffIcon,
 		id: "markRead",
 		keywords: [
@@ -338,6 +349,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		command: "action-archive",
 		description:
 			"Move the focused Chrome tab or workspace away; native sessions use a to hide and x/X to archive",
+		hotkeyId: "SIDEBAR_ACTION_ARCHIVE",
 		icon: ArchiveIcon,
 		id: "archive",
 		keywords: ["away", "hide", "overview", "remove", "sidebar", "focused"],
@@ -565,6 +577,7 @@ export const actionsProvider: CommandProvider = {
 				title: sidebarCommand.title,
 				section: "actions",
 				description: sidebarCommand.description,
+				hotkeyId: sidebarCommand.hotkeyId,
 				icon: sidebarCommand.icon,
 				keywords: [
 					...sidebarCommand.keywords,
