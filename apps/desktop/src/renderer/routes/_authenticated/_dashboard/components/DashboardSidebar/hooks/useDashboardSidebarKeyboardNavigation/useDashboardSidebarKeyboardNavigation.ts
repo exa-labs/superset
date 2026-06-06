@@ -297,8 +297,12 @@ export function shouldToggleDashboardSidebarExpansion(input: {
 	expanded: string | null;
 	key: string;
 }): boolean {
-	if (input.key === "h") return input.expanded === "true";
-	if (input.key === "l") return input.expanded === "false";
+	if (input.key === "h" || input.key === "ArrowLeft") {
+		return input.expanded === "true";
+	}
+	if (input.key === "l" || input.key === "ArrowRight") {
+		return input.expanded === "false";
+	}
 	return false;
 }
 

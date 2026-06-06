@@ -239,11 +239,14 @@ describe("dashboardSidebarRovingNavigationAllowedFromKey", () => {
 });
 
 describe("dashboardSidebarExpansionIntentFromKey", () => {
-	test("maps h/l to sidebar collapse and expand intents", () => {
+	test("maps h/l and left/right arrows to sidebar collapse and expand intents", () => {
 		expect(dashboardSidebarExpansionIntentFromKey("h")).toBe("collapse");
 		expect(dashboardSidebarExpansionIntentFromKey("l")).toBe("expand");
+		expect(dashboardSidebarExpansionIntentFromKey("ArrowLeft")).toBe(
+			"collapse",
+		);
+		expect(dashboardSidebarExpansionIntentFromKey("ArrowRight")).toBe("expand");
 		expect(dashboardSidebarExpansionIntentFromKey("H")).toBe("none");
-		expect(dashboardSidebarExpansionIntentFromKey("ArrowLeft")).toBe("none");
 	});
 });
 
@@ -1674,7 +1677,7 @@ describe("findDashboardSidebarExpansionTarget", () => {
 });
 
 describe("shouldToggleDashboardSidebarExpansion", () => {
-	test("maps h to collapse and l to expand", () => {
+	test("maps h/left to collapse and l/right to expand", () => {
 		expect(
 			shouldToggleDashboardSidebarExpansion({
 				expanded: "true",
@@ -1685,6 +1688,18 @@ describe("shouldToggleDashboardSidebarExpansion", () => {
 			shouldToggleDashboardSidebarExpansion({
 				expanded: "false",
 				key: "l",
+			}),
+		).toBe(true);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "true",
+				key: "ArrowLeft",
+			}),
+		).toBe(true);
+		expect(
+			shouldToggleDashboardSidebarExpansion({
+				expanded: "false",
+				key: "ArrowRight",
 			}),
 		).toBe(true);
 		expect(

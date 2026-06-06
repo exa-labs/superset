@@ -118,8 +118,8 @@ export function dashboardSidebarRovingNavigationAllowedFromKey(input: {
 export function dashboardSidebarExpansionIntentFromKey(
 	key: string,
 ): DashboardSidebarExpansionIntent {
-	if (key === "h") return "collapse";
-	if (key === "l") return "expand";
+	if (key === "h" || key === "ArrowLeft") return "collapse";
+	if (key === "l" || key === "ArrowRight") return "expand";
 	return "none";
 }
 
