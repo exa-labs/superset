@@ -57,22 +57,20 @@ export function dispatchDashboardViewMruSwitch(
 
 export function dispatchDashboardOpenUnreadNativeReply(): boolean {
 	if (typeof window === "undefined") return false;
-	window.dispatchEvent(
-		new CustomEvent(DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT, {
-			cancelable: true,
-		}),
-	);
-	return true;
+	const event = new CustomEvent(DASHBOARD_OPEN_UNREAD_NATIVE_REPLY_EVENT, {
+		cancelable: true,
+	});
+	window.dispatchEvent(event);
+	return event.defaultPrevented;
 }
 
 export function dispatchDashboardMarkLatestNativeReplyRead(): boolean {
 	if (typeof window === "undefined") return false;
-	window.dispatchEvent(
-		new CustomEvent(DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT, {
-			cancelable: true,
-		}),
-	);
-	return true;
+	const event = new CustomEvent(DASHBOARD_MARK_LATEST_NATIVE_REPLY_READ_EVENT, {
+		cancelable: true,
+	});
+	window.dispatchEvent(event);
+	return event.defaultPrevented;
 }
 
 const defaultHandlers: DashboardGlobalKeyboardActionHandlers = {

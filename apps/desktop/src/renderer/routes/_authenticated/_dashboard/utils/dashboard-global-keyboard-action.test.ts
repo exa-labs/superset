@@ -1,6 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import {
 	type DashboardGlobalKeyboardAction,
+	dispatchDashboardMarkLatestNativeReplyRead,
+	dispatchDashboardOpenUnreadNativeReply,
 	dispatchDashboardViewMruSwitch,
 	handleDashboardGlobalKeyboardAction,
 	shouldFocusDashboardShellFromEscapeKey,
@@ -52,6 +54,76 @@ function keyEvent(
 }
 
 describe("handleDashboardGlobalKeyboardAction", () => {
+	it("reports native reply notification dispatch as unhandled when no listener accepts it", () => {
+		const originalWindow = globalThis.window;
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: new EventTarget(),
+		});
+
+		try {
+			expect(dispatchDashboardOpenUnreadNativeReply()).toBe(false);
+			expect(dispatchDashboardMarkLatestNativeReplyRead()).toBe(false);
+		} finally {
+			if (originalWindow) {
+				Object.defineProperty(globalThis, "window", {
+					configurable: true,
+					value: originalWindow,
+				});
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+	});
+
+	it("reports native reply notification dispatch as handled only when accepted", () => {
+		const originalWindow = globalThis.window;
+		const testWindow = new EventTarget();
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: testWindow,
+		});
+		const eventNames: string[] = [];
+		const listener = (event: Event) => {
+			eventNames.push(event.type);
+			event.preventDefault();
+		};
+		window.addEventListener(
+			"dashboard-native-agent-open-unread-reply",
+			listener,
+		);
+		window.addEventListener(
+			"dashboard-native-agent-mark-latest-reply-read",
+			listener,
+		);
+
+		try {
+			expect(dispatchDashboardOpenUnreadNativeReply()).toBe(true);
+			expect(dispatchDashboardMarkLatestNativeReplyRead()).toBe(true);
+			expect(eventNames).toEqual([
+				"dashboard-native-agent-open-unread-reply",
+				"dashboard-native-agent-mark-latest-reply-read",
+			]);
+		} finally {
+			window.removeEventListener(
+				"dashboard-native-agent-open-unread-reply",
+				listener,
+			);
+			window.removeEventListener(
+				"dashboard-native-agent-mark-latest-reply-read",
+				listener,
+			);
+			if (originalWindow) {
+				Object.defineProperty(globalThis, "window", {
+					configurable: true,
+					value: originalWindow,
+				});
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+	});
+
 	it("reports MRU switch dispatch as unhandled when no switch target accepts it", () => {
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
