@@ -175,6 +175,7 @@ export function focusedDashboardGlobalActionShortcuts(
 ): FocusedDashboardGlobalActionShortcut[] {
 	const prefix = dashboardGlobalAcceleratorPrefix(platform);
 	return [
+		{ accelerator: "Escape", action: "FOCUS_DASHBOARD_SHELL" },
 		{ accelerator: `${prefix}+V`, action: "TOGGLE_VIM_MODE" },
 		{
 			accelerator: `${prefix}+Slash`,

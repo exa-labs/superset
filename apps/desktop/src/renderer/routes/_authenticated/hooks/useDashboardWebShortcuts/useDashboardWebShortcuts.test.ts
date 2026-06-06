@@ -241,6 +241,7 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 describe("DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS", () => {
 	it("keeps normal renderer views wired to the same global dashboard actions as webviews", () => {
 		expect(DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS).toEqual({
+			FOCUS_DASHBOARD_SHELL: "FOCUS_DASHBOARD_SHELL",
 			MARK_LATEST_NATIVE_REPLY_READ: "MARK_LATEST_NATIVE_REPLY_READ",
 			OPEN_UNREAD_NATIVE_REPLY: "OPEN_UNREAD_NATIVE_REPLY",
 			SHOW_DASHBOARD_ACTION_HINTS: "SHOW_DASHBOARD_ACTION_HINTS",
@@ -255,6 +256,7 @@ describe("DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS", () => {
 		for (const hotkeyId of Object.keys(
 			DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 		) as Array<keyof typeof DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS>) {
+			if (hotkeyId === "FOCUS_DASHBOARD_SHELL") continue;
 			expect(
 				HOTKEYS_REGISTRY[hotkeyId],
 				`${hotkeyId} should remain a visible, customizable hotkey`,

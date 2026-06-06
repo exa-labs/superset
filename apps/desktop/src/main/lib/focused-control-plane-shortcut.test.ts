@@ -145,6 +145,31 @@ const GLOBAL_ACTION_HOTKEY_IDS: Partial<
 	TOGGLE_VIM_MODE: "TOGGLE_VIM_MODE",
 };
 
+const GLOBAL_ACTION_VISIBLE_KEYS: Partial<
+	Record<
+		FocusedDashboardGlobalActionShortcut["action"],
+		{ accelerator: string; keys: string[] }
+	>
+> = {
+	FOCUS_DASHBOARD_SHELL: { accelerator: "Escape", keys: ["Esc"] },
+};
+
+function documentedDashboardKeyboardHelpKeyActions(): Set<string> {
+	return new Set(
+		DASHBOARD_KEYBOARD_HELP_SECTIONS.flatMap((section) =>
+			section.entries.flatMap((entry) => {
+				if (!entry.keys) return [];
+				const expectedActions = Object.entries(GLOBAL_ACTION_VISIBLE_KEYS)
+					.filter(([, visibleShortcut]) =>
+						visibleShortcut.keys.every((key) => entry.keys.includes(key)),
+					)
+					.map(([action]) => action);
+				return expectedActions;
+			}),
+		),
+	);
+}
+
 describe("focused control plane shortcut", () => {
 	it("registers Option+K only while an app window is focused", () => {
 		const { backend, controller } = createHarness();
@@ -296,7 +321,17 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 		for (const shortcut of focusedDashboardGlobalActionShortcuts("darwin")) {
 			const hotkeyId = GLOBAL_ACTION_HOTKEY_IDS[shortcut.action];
 			if (!hotkeyId) {
-				throw new Error(`${shortcut.action} should have a visible hotkey`);
+				const visibleShortcut = GLOBAL_ACTION_VISIBLE_KEYS[shortcut.action];
+				if (!visibleShortcut) {
+					throw new Error(
+						`${shortcut.action} should have a visible keyboard-help key`,
+					);
+				}
+				expect(
+					shortcut.accelerator,
+					`${shortcut.action} should use its visible keyboard-help key in the Electron globalShortcut bridge`,
+				).toBe(visibleShortcut.accelerator);
+				continue;
 			}
 			expect(
 				shortcut.accelerator,
@@ -307,6 +342,7 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 
 	it("maps macOS Option shortcuts to dashboard global actions", () => {
 		expect(focusedDashboardGlobalActionShortcuts("darwin")).toEqual([
+			{ accelerator: "Escape", action: "FOCUS_DASHBOARD_SHELL" },
 			{ accelerator: "Alt+V", action: "TOGGLE_VIM_MODE" },
 			{
 				accelerator: "Alt+Slash",
@@ -328,6 +364,10 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 
 	it("uses Ctrl+Alt variants on non-macOS platforms", () => {
 		expect(focusedDashboardGlobalActionShortcuts("linux")[0]).toEqual({
+			accelerator: "Escape",
+			action: "FOCUS_DASHBOARD_SHELL",
+		});
+		expect(focusedDashboardGlobalActionShortcuts("linux")[1]).toEqual({
 			accelerator: "Ctrl+Alt+V",
 			action: "TOGGLE_VIM_MODE",
 		});
@@ -354,24 +394,29 @@ describe("focusedDashboardWebShortcuts", () => {
 
 	it("keeps focused main-process shortcuts discoverable in keyboard help", () => {
 		const documentedHotkeyIds = documentedDashboardKeyboardHelpHotkeyIds();
+		const documentedKeyActions = documentedDashboardKeyboardHelpKeyActions();
 		const focusedHotkeyIds = [
 			"OPEN_CONTROL_PLANE",
-			...focusedDashboardGlobalActionShortcuts("darwin").map((shortcut) => {
+			...focusedDashboardGlobalActionShortcuts("darwin").flatMap((shortcut) => {
 				const hotkeyId = GLOBAL_ACTION_HOTKEY_IDS[shortcut.action];
-				if (!hotkeyId) {
-					throw new Error(`${shortcut.action} should have a visible hotkey`);
-				}
-				return hotkeyId;
+				return hotkeyId ? [hotkeyId] : [];
 			}),
 			...focusedDashboardWebShortcuts("darwin").map(
 				(shortcut) => shortcut.shortcut,
 			),
 		];
+		const focusedKeyActions = focusedDashboardGlobalActionShortcuts("darwin")
+			.map((shortcut) => shortcut.action)
+			.filter((action) => !GLOBAL_ACTION_HOTKEY_IDS[action]);
 		const missingHotkeyIds = focusedHotkeyIds.filter(
 			(hotkeyId) => !documentedHotkeyIds.has(hotkeyId),
 		);
+		const missingKeyActions = focusedKeyActions.filter(
+			(action) => !documentedKeyActions.has(action),
+		);
 
 		expect(missingHotkeyIds).toEqual([]);
+		expect(missingKeyActions).toEqual([]);
 	});
 
 	it("keeps focused web accelerators aligned with visible renderer hotkeys", () => {

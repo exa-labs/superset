@@ -469,9 +469,16 @@ describe("dashboard keyboard help", () => {
 				),
 			),
 		);
+		const documentedExplicitKeyLabels = new Set<string>(
+			DASHBOARD_KEYBOARD_HELP_SECTIONS.flatMap((section) =>
+				section.entries.flatMap((entry) => entry.keys ?? []),
+			),
+		);
 		const rendererHotkeyIds = [
 			...DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
-			...Object.keys(DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS),
+			...Object.keys(DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS).filter(
+				(hotkeyId) => hotkeyId !== "FOCUS_DASHBOARD_SHELL",
+			),
 		].sort();
 
 		expect(rendererHotkeyIds).toEqual(
@@ -483,6 +490,7 @@ describe("dashboard keyboard help", () => {
 				`${hotkeyId} should be visible in the dashboard keyboard guide`,
 			).toBe(true);
 		}
+		expect(documentedExplicitKeyLabels.has("Esc")).toBe(true);
 	});
 
 	it("dispatches a cancelable dashboard help event", () => {
