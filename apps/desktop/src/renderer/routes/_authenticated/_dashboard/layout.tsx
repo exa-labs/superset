@@ -28,6 +28,7 @@ import {
 	shouldOpenDashboardKeyboardHelpFromQuestionKey,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import { toggleDashboardNavigationSidebar } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-navigation-sidebar-toggle";
+import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
 	type DashboardViewMruDirection,
@@ -197,6 +198,7 @@ function DashboardLayout() {
 				entries,
 			});
 			void navigate({ to: target.path });
+			scheduleDashboardNavigationShellFocus();
 		};
 
 		window.addEventListener("dashboard-view-mru-switch", handleMruSwitch);

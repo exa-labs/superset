@@ -32,6 +32,7 @@ import { showWorkspaceAutoNameWarningToast } from "renderer/lib/workspaces/showW
 import { InitGitDialog } from "renderer/react-query/projects/InitGitDialog";
 import { DashboardMruSwitcherOverlay } from "renderer/routes/_authenticated/_dashboard/components/DashboardMruSwitcherOverlay";
 import { DashboardWebViewDeck } from "renderer/routes/_authenticated/_dashboard/components/DashboardWebViewDeck";
+import { scheduleDashboardNavigationShellFocus } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-shell-focus";
 import {
 	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
 	type DashboardViewMruDirection,
@@ -211,6 +212,7 @@ function AuthenticatedLayout() {
 				entries,
 			});
 			void navigate({ to: target.path });
+			scheduleDashboardNavigationShellFocus();
 			return true;
 		},
 		[dashboardViewMruPathname, navigate, showDashboardViewMruOverlay],
