@@ -1,7 +1,27 @@
 import { describe, expect, it } from "bun:test";
+import { isDashboardWebShortcut } from "main/lib/dashboard-web-shortcut";
+import { isGlobalKeyboardAction } from "main/lib/global-keyboard-shortcut";
 import { DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT } from "./DashboardBrowserWebView";
 
 describe("dashboard browser webview bridge", () => {
+	it("only emits shortcuts handled by the main-process dashboard bridge", () => {
+		const emittedShortcuts = new Set(
+			[...DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT.matchAll(/return "([A-Z_]+)"/g)]
+				.map((match) => match[1])
+				.filter((shortcut) => shortcut !== "__PENDING__"),
+		);
+
+		expect(emittedShortcuts.size).toBeGreaterThan(0);
+		for (const shortcut of emittedShortcuts) {
+			expect(
+				shortcut === "OPEN_CONTROL_PLANE" ||
+					isGlobalKeyboardAction(shortcut) ||
+					isDashboardWebShortcut(shortcut),
+				`${shortcut} must be registered with the Electron dashboard shortcut bridge`,
+			).toBe(true);
+		}
+	});
+
 	it("includes in-page vim action hints behind a renderer-controlled flag", () => {
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			"__clankeeSetDashboardVimModeEnabled",
