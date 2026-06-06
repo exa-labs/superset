@@ -256,7 +256,7 @@ describe("selectNativeAgentSidebarItems", () => {
 		).toEqual(["ready-0"]);
 	});
 
-	it("orders pinned, unread, and live rows before the recent fallback", () => {
+	it("orders unread, pinned, and live rows before the recent fallback", () => {
 		const items: TestSidebarRow[] = [
 			{ id: "recent", status: "ready", updatedAt: 40 },
 			{ id: "live", status: "running", updatedAt: 10 },
@@ -269,7 +269,36 @@ describe("selectNativeAgentSidebarItems", () => {
 			selectNativeAgentSidebarItems(items, { isLiveStatus, isUnread }).map(
 				(item) => item.id,
 			),
-		).toEqual(["pinned", "unread", "live", "recent"]);
+		).toEqual(["unread", "pinned", "live", "recent"]);
+	});
+
+	it("keeps unread replies ahead of pinned and active rows until acknowledged", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "pinned", status: "ready", sidebarPinned: true, updatedAt: 30 },
+			{ id: "active", status: "running", updatedAt: 40 },
+			{ id: "reply", status: "ready", unread: true, updatedAt: 10 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, { isLiveStatus, isUnread }).map(
+				(item) => item.id,
+			),
+		).toEqual(["reply", "pinned", "active"]);
+	});
+
+	it("keeps unread replies ahead of a stale active route kept for visibility", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "stale-active", status: "ready", updatedAt: 1 },
+			{ id: "reply", status: "ready", unread: true, updatedAt: 2 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				activeId: "stale-active",
+				isLiveStatus,
+				isUnread,
+			}).map((item) => item.id),
+		).toEqual(["reply", "stale-active"]);
 	});
 
 	it("keeps the active route visible even when it would not be selected", () => {
@@ -395,14 +424,14 @@ describe("selectNativeAgentSidebarItems", () => {
 				isLiveStatus,
 				isUnread,
 			})?.id,
-		).toBe("pinned");
+		).toBe("unread");
 		expect(
 			selectNativeAgentIndexedShortcutItem(items, {
 				index: 1,
 				isLiveStatus,
 				isUnread,
 			})?.id,
-		).toBe("unread");
+		).toBe("pinned");
 		expect(
 			selectNativeAgentIndexedShortcutItem(items, {
 				index: 3,

@@ -31,7 +31,7 @@ describe("selectNativeAgentOverviewItems", () => {
 			search: input.search,
 		}).map((item) => item.id);
 
-	it("sorts active, unread, pinned, and recent rows before stale rows", () => {
+	it("sorts unread, active, pinned, and recent rows before stale rows", () => {
 		expect(
 			select([
 				{ id: "old", status: "ready", title: "Old", updatedAt: 1 },
@@ -57,7 +57,27 @@ describe("selectNativeAgentOverviewItems", () => {
 				},
 				{ id: "recent", status: "ready", title: "Recent", updatedAt: 10 },
 			]),
-		).toEqual(["active", "unread", "pinned", "recent", "old"]);
+		).toEqual(["unread", "active", "pinned", "recent", "old"]);
+	});
+
+	it("keeps unread replies ahead of active sessions until acknowledged", () => {
+		expect(
+			select([
+				{
+					id: "active",
+					status: "running",
+					title: "Still running",
+					updatedAt: 100,
+				},
+				{
+					id: "reply",
+					status: "ready",
+					title: "Needs attention",
+					unread: true,
+					updatedAt: 1,
+				},
+			]),
+		).toEqual(["reply", "active"]);
 	});
 
 	it("filters by active, unread, pinned, hidden, finished, and all", () => {
@@ -75,8 +95,8 @@ describe("selectNativeAgentOverviewItems", () => {
 		expect(select(items, { filter: "hidden" })).toEqual(["hidden"]);
 		expect(select(items, { filter: "finished" })).toEqual(["finished"]);
 		expect(select(items, { filter: "all" })).toEqual([
-			"active",
 			"unread",
+			"active",
 			"pinned",
 			"finished",
 			"hidden",

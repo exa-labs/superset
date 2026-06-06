@@ -241,12 +241,12 @@ export function selectNativeAgentSidebarItems<
 	const visibleItems = items
 		.filter((item) => item.sidebarHidden !== true)
 		.toSorted((a, b) => {
-			const aPinned = a.sidebarPinned === true;
-			const bPinned = b.sidebarPinned === true;
-			if (aPinned !== bPinned) return aPinned ? -1 : 1;
 			const aUnread = input.isUnread(a);
 			const bUnread = input.isUnread(b);
 			if (aUnread !== bUnread) return aUnread ? -1 : 1;
+			const aPinned = a.sidebarPinned === true;
+			const bPinned = b.sidebarPinned === true;
+			if (aPinned !== bPinned) return aPinned ? -1 : 1;
 			const aLive = a.isProviderActive || input.isLiveStatus(a.status ?? null);
 			const bLive = b.isProviderActive || input.isLiveStatus(b.status ?? null);
 			if (aLive !== bLive) return aLive ? -1 : 1;
@@ -267,12 +267,15 @@ export function selectNativeAgentSidebarItems<
 	const liveItems = visibleItems.filter(
 		(item) => item.isProviderActive || input.isLiveStatus(item.status ?? null),
 	);
-	const selectedItems = [...pinnedItems];
-	for (const item of [...unreadItems, ...liveItems]) {
+	const selectedItems: T[] = [];
+	for (const item of [...unreadItems, ...pinnedItems, ...liveItems]) {
 		if (selectedItems.length >= maxPriorityItems) break;
 		if (!selectedItems.some((candidate) => candidate.id === item.id)) {
 			selectedItems.push(item);
 		}
+	}
+	if (activeItem && !selectedItems.some((item) => item.id === activeItem.id)) {
+		selectedItems.push(activeItem);
 	}
 
 	const recentFallbackLimit =
@@ -288,9 +291,6 @@ export function selectNativeAgentSidebarItems<
 		}
 	}
 
-	if (activeItem && !selectedItems.some((item) => item.id === activeItem.id)) {
-		return [activeItem, ...selectedItems].slice(0, maxPriorityItems + 1);
-	}
 	return selectedItems;
 }
 

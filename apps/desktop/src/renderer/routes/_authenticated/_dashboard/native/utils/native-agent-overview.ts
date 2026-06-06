@@ -74,12 +74,12 @@ export function selectNativeAgentOverviewItems<
 	});
 
 	return filtered.toSorted((a, b) => {
-		const aActive = a.isProviderActive || input.isLiveStatus(a.status ?? null);
-		const bActive = b.isProviderActive || input.isLiveStatus(b.status ?? null);
-		if (aActive !== bActive) return aActive ? -1 : 1;
 		const aUnread = input.isUnread(a);
 		const bUnread = input.isUnread(b);
 		if (aUnread !== bUnread) return aUnread ? -1 : 1;
+		const aActive = a.isProviderActive || input.isLiveStatus(a.status ?? null);
+		const bActive = b.isProviderActive || input.isLiveStatus(b.status ?? null);
+		if (aActive !== bActive) return aActive ? -1 : 1;
 		if (a.sidebarPinned !== b.sidebarPinned) return a.sidebarPinned ? -1 : 1;
 		const timeDelta = timestampMs(b.updatedAt) - timestampMs(a.updatedAt);
 		if (timeDelta !== 0) return timeDelta;
