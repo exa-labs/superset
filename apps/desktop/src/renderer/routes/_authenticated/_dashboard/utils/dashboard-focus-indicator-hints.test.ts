@@ -7,6 +7,8 @@ import {
 
 describe("dashboardFocusIndicatorHints", () => {
 	const GLOBAL_NAV_HINT = "⌥K/Tab/1-6/C/D/G/V";
+	const GLOBAL_NAV_TITLE =
+		"Option+K, Option+Tab, Option+Shift+Tab, Option+1-6, Option+C/D/G, Option+Shift+C/D create agents, Option+Shift+S/P/H root terminals, Option+V";
 
 	it("surfaces sidebar movement, activation, create/search, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
@@ -109,7 +111,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, j/k, /, h/l, r, s, p, x, u, U, f, ?. Press ? for full keyboard shortcuts.",
+			`Browser focus. Keys: Esc, ${GLOBAL_NAV_TITLE}, j/k, /, h/l, r, s, p, x, u, U, f, ?. Press ? for full keyboard shortcuts.`,
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
@@ -117,7 +119,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+period actions menu and Option+P/A/M/E row actions. Press Option+/ for full keyboard shortcuts.",
+			`Browser focus. Keys: Esc, ${GLOBAL_NAV_TITLE}, Option+period actions menu and Option+P/A/M/E row actions. Press Option+/ for full keyboard shortcuts.`,
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
@@ -130,7 +132,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Sidebar focus. Keys: Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, c, d, ?. Press ? for full keyboard shortcuts.",
+			`Sidebar focus. Keys: ${GLOBAL_NAV_TITLE}, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, c, d, ?. Press ? for full keyboard shortcuts.`,
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
@@ -138,7 +140,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Native agent focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+N/Option+Shift+N, j/k, gg/G, action keys, ?. Press ? for full keyboard shortcuts.",
+			`Native agent focus. Keys: Esc, ${GLOBAL_NAV_TITLE}, Option+N/Option+Shift+N, j/k, gg/G, action keys, ?. Press ? for full keyboard shortcuts.`,
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Terminal focus", {
@@ -146,7 +148,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Terminal focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V. Press Option+/ for full keyboard shortcuts.",
+			`Terminal focus. Keys: Esc, ${GLOBAL_NAV_TITLE}. Press Option+/ for full keyboard shortcuts.`,
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("App focus", {
@@ -154,7 +156,7 @@ describe("dashboardFocusIndicatorHints", () => {
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"App focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, ?. Press ? for full keyboard shortcuts.",
+			`App focus. Keys: Esc, ${GLOBAL_NAV_TITLE}, ?. Press ? for full keyboard shortcuts.`,
 		);
 	});
 

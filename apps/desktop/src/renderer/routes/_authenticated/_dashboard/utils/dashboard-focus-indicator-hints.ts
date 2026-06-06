@@ -187,7 +187,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "⌥K/Tab") return "Option+K/Option+Tab";
 	if (hint === "⌥K/Tab/V") return "Option+K/Option+Tab/Option+V";
 	if (hint === GLOBAL_NAV_HINT) {
-		return "Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V";
+		return "Option+K, Option+Tab, Option+Shift+Tab, Option+1-6, Option+C/D/G, Option+Shift+C/D create agents, Option+Shift+S/P/H root terminals, Option+V";
 	}
 	if (hint === "⌥/") return "Option+/";
 	if (hint === "↑↓") return "Up/Down";
