@@ -1,25 +1,11 @@
-export type DashboardBrowserVimAction =
-	| "close-split"
-	| "close-tab"
-	| "equalize-split"
-	| "go-back"
-	| "go-forward"
-	| "new-tab"
-	| "narrow-active-split"
-	| "next-tab"
-	| "none"
-	| "open-external"
-	| "previous-tab"
-	| "reload"
-	| "swap-split"
-	| "toggle-tab-pin"
-	| "toggle-split"
-	| "widen-active-split";
+import type { DashboardBrowserShortcutAction } from "./dashboard-browser-shortcuts";
+
+export type DashboardBrowserVimAction = DashboardBrowserShortcutAction | "none";
 
 export function dashboardBrowserVimActionFromKey(
 	key: string,
 ): DashboardBrowserVimAction {
-	if (key === "n") return "new-tab";
+	if (key === "n") return "new-current-url-tab";
 	if (key === "r") return "reload";
 	if (key === "s") return "toggle-split";
 	if (key === "w") return "swap-split";
@@ -27,7 +13,7 @@ export function dashboardBrowserVimActionFromKey(
 	if (key === "]") return "widen-active-split";
 	if (key === "=") return "equalize-split";
 	if (key === "q") return "close-split";
-	if (key === "x") return "close-tab";
+	if (key === "x") return "close-current-tab";
 	if (key === "p") return "toggle-tab-pin";
 	if (key === "H") return "go-back";
 	if (key === "L") return "go-forward";

@@ -1033,103 +1033,14 @@ export function DashboardWebView({
 			event.preventDefault();
 			event.stopPropagation();
 
-			if (action === "new-tab") {
-				createTabFromCurrentUrl();
-				return;
-			}
-
-			if (action === "reload") {
-				reload();
-				return;
-			}
-
-			if (action === "go-back") {
-				goBack();
-				return;
-			}
-
-			if (action === "go-forward") {
-				goForward();
-				return;
-			}
-
-			if (action === "open-external") {
-				openExternal.mutate(currentUrl);
-				return;
-			}
-
-			if (action === "toggle-split") {
-				toggleSplitView();
-				return;
-			}
-
-			if (action === "close-split") {
-				setSplitBrowserTabId(null);
-				return;
-			}
-
-			if (action === "swap-split") {
-				swapSplitFocus();
-				return;
-			}
-
-			if (action === "narrow-active-split") {
-				resizeActiveSplitPane(-SPLIT_BROWSER_RATIO_STEP);
-				return;
-			}
-
-			if (action === "widen-active-split") {
-				resizeActiveSplitPane(SPLIT_BROWSER_RATIO_STEP);
-				return;
-			}
-
-			if (action === "equalize-split") {
-				equalizeSplitPanes();
-				return;
-			}
-
-			if (action === "close-tab") {
-				closeBrowserTab(activeBrowserTabId);
-				return;
-			}
-
-			if (action === "toggle-tab-pin") {
-				toggleDashboardWebTabPinned();
-				return;
-			}
-
-			const nextTabId = nextDashboardBrowserTabId(
-				browserTabIds,
-				activeBrowserTabId,
-				action === "next-tab" ? 1 : -1,
-			);
-			if (nextTabId && nextTabId !== activeBrowserTabId) {
-				activateBrowserTab(nextTabId);
-			}
+			runBrowserCurrentAction(action);
 		};
 
 		window.addEventListener("keydown", handleKeyDown, { capture: true });
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown, { capture: true });
 		};
-	}, [
-		activateBrowserTab,
-		activeBrowserTabId,
-		browserTabIds,
-		closeBrowserTab,
-		createTabFromCurrentUrl,
-		currentUrl,
-		equalizeSplitPanes,
-		goBack,
-		goForward,
-		isActive,
-		openExternal,
-		reload,
-		resizeActiveSplitPane,
-		swapSplitFocus,
-		toggleDashboardWebTabPinned,
-		toggleSplitView,
-	]);
+	}, [isActive, runBrowserCurrentAction]);
 
 	useEffect(() => {
 		const node = browserTabStripRef.current;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { isDashboardBrowserCurrentAction } from "./dashboard-browser-current-actions";
 import {
 	dashboardBrowserVimActionFromKey,
 	nextDashboardBrowserTabId,
@@ -6,7 +7,7 @@ import {
 
 describe("dashboard browser vim", () => {
 	it("maps scoped browser keys to browser actions", () => {
-		expect(dashboardBrowserVimActionFromKey("n")).toBe("new-tab");
+		expect(dashboardBrowserVimActionFromKey("n")).toBe("new-current-url-tab");
 		expect(dashboardBrowserVimActionFromKey("r")).toBe("reload");
 		expect(dashboardBrowserVimActionFromKey("s")).toBe("toggle-split");
 		expect(dashboardBrowserVimActionFromKey("w")).toBe("swap-split");
@@ -14,7 +15,7 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("]")).toBe("widen-active-split");
 		expect(dashboardBrowserVimActionFromKey("=")).toBe("equalize-split");
 		expect(dashboardBrowserVimActionFromKey("q")).toBe("close-split");
-		expect(dashboardBrowserVimActionFromKey("x")).toBe("close-tab");
+		expect(dashboardBrowserVimActionFromKey("x")).toBe("close-current-tab");
 		expect(dashboardBrowserVimActionFromKey("p")).toBe("toggle-tab-pin");
 		expect(dashboardBrowserVimActionFromKey("H")).toBe("go-back");
 		expect(dashboardBrowserVimActionFromKey("L")).toBe("go-forward");
@@ -22,6 +23,32 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("h")).toBe("previous-tab");
 		expect(dashboardBrowserVimActionFromKey("l")).toBe("next-tab");
 		expect(dashboardBrowserVimActionFromKey("j")).toBe("none");
+	});
+
+	it("keeps every browser Vim action dispatchable through the shared current-action path", () => {
+		const vimKeys = [
+			"n",
+			"r",
+			"s",
+			"w",
+			"[",
+			"]",
+			"=",
+			"q",
+			"x",
+			"p",
+			"H",
+			"L",
+			"O",
+			"h",
+			"l",
+		];
+
+		for (const key of vimKeys) {
+			const action = dashboardBrowserVimActionFromKey(key);
+			expect(action).not.toBe("none");
+			expect(isDashboardBrowserCurrentAction(action)).toBe(true);
+		}
 	});
 
 	it("wraps across browser tabs without changing the tab list", () => {
