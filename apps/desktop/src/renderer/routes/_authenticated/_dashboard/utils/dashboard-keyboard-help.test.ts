@@ -132,7 +132,7 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["G", "End"] }),
 		);
 		expect(entryByLabel.get("Collapse or expand")).toEqual(
-			expect.objectContaining({ keys: ["h", "l"] }),
+			expect.objectContaining({ keys: ["←", "→", "h", "l"] }),
 		);
 		expect(labels.has("Split native/browser")).toBe(true);
 		expect(entryByLabel.get("Narrow native split from anywhere")).toEqual(

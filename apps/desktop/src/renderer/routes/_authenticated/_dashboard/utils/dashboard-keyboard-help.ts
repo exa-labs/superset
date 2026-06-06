@@ -640,9 +640,10 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Use Shift+G in Vim mode, or End from sidebar focus",
 				},
 				{
-					keys: ["h", "l"],
+					keys: ["←", "→", "h", "l"],
 					label: "Collapse or expand",
-					description: "Collapse or expand focused folders and sidebar groups",
+					description:
+						"Collapse or expand focused folders and sidebar groups with arrows or Vim keys",
 				},
 				{
 					keys: ["n"],
