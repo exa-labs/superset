@@ -247,9 +247,14 @@ describe("web command provider", () => {
 		const hotkeyById = new Map(
 			commands.map((command) => [command.id, command.hotkeyId] as const),
 		);
+		const shortcutById = new Map(
+			commands.map((command) => [command.id, command.shortcutLabel] as const),
+		);
 
 		expect(hotkeyById.get("native.capy.create")).toBe("CREATE_CAPY");
 		expect(hotkeyById.get("native.devin.create")).toBe("CREATE_DEVIN");
+		expect(shortcutById.get("native.capy.create")).toBe("⌥C n");
+		expect(shortcutById.get("native.devin.create")).toBe("⌥D n");
 	});
 
 	it("exposes visible native sidebar slot shortcuts in the control plane", () => {

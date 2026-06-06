@@ -312,6 +312,10 @@ function nativeIndexedShortcutLabel(
 	return `${provider === "capy" ? "⌥C" : "⌥D"} ${index + 1}`;
 }
 
+function nativeCreateChainShortcutLabel(provider: NativeAgentProvider): string {
+	return `${provider === "capy" ? "⌥C" : "⌥D"} n`;
+}
+
 function openNativeProviderAtIndex(
 	context: CommandContext,
 	provider: NativeAgentProvider,
@@ -747,6 +751,7 @@ export const webProvider: CommandProvider = {
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("capy"),
 				hotkeyId: "CREATE_CAPY",
+				shortcutLabel: nativeCreateChainShortcutLabel("capy"),
 				description: "Open Capy Native and start a thread",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["capy", "capi", "native", "new", "thread", "agent"],
@@ -764,6 +769,7 @@ export const webProvider: CommandProvider = {
 				icon: PlusIcon,
 				iconUrl: nativeProviderIconUrl("devin"),
 				hotkeyId: "CREATE_DEVIN",
+				shortcutLabel: nativeCreateChainShortcutLabel("devin"),
 				description: "Open Devin Native and start a session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["devin", "native", "new", "session", "agent"],
