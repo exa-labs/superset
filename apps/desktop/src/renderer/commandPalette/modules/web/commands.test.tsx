@@ -185,6 +185,39 @@ function withWindowTimerCalls(run: (timerCalls: number[]) => void): void {
 	}
 }
 
+function withWindowPromptConfirm(
+	{
+		confirm,
+		prompt,
+	}: {
+		confirm?: () => boolean;
+		prompt?: () => string | null;
+	},
+	run: () => void,
+): void {
+	const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+	const target = new EventTarget();
+	const windowLike = {
+		confirm: confirm ?? (() => false),
+		dispatchEvent: (event: Event) => target.dispatchEvent(event),
+		prompt: prompt ?? (() => null),
+	};
+
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: windowLike,
+	});
+	try {
+		run();
+	} finally {
+		if (previousWindow) {
+			Object.defineProperty(globalThis, "window", previousWindow);
+		} else {
+			delete (globalThis as { window?: unknown }).window;
+		}
+	}
+}
+
 function activeOrderedCommandIds(context: CommandContext): string[] {
 	return orderCommandsByPriority(
 		webProvider
@@ -897,6 +930,76 @@ describe("web command provider", () => {
 			} finally {
 				resetDashboardWebTabsForTests();
 			}
+		});
+	});
+
+	it("renames, deletes, and directly recolors Chrome folders from the command palette", () => {
+		withLocalStorage({}, () => {
+			withWindowPromptConfirm(
+				{
+					confirm: () => true,
+					prompt: () => " Dashboards ",
+				},
+				() => {
+					resetDashboardWebTabsForTests();
+					try {
+						const folder = createDashboardWebTabFolder("chrome", "Research");
+						const tab = createDashboardWebTab("chrome", {
+							folderId: folder.id,
+							title: "Latency dashboard",
+							url: "https://grafana.example.test/d/latency",
+						});
+						const commands = webProvider.provide(
+							commandContext(`/web-tabs/${tab.id}`),
+						);
+						const shortcutById = new Map(
+							commands.map(
+								(command) => [command.id, command.shortcutLabel] as const,
+							),
+						);
+
+						expect(shortcutById.get(`web.folder.${folder.id}.rename`)).toBe(
+							"e",
+						);
+						expect(shortcutById.get(`web.folder.${folder.id}.delete`)).toBe(
+							"d",
+						);
+						expect(shortcutById.get(`web.folder.${folder.id}.cycleColor`)).toBe(
+							"c",
+						);
+
+						commands
+							.find(
+								(command) =>
+									command.id ===
+									`web.folder.${folder.id}.color.${DASHBOARD_WEB_TAB_FOLDER_COLORS[2].slice(1)}`,
+							)
+							?.run?.(commandContext(`/web-tabs/${tab.id}`));
+						expect(getDashboardWebTabFolder(folder.id)?.color).toBe(
+							DASHBOARD_WEB_TAB_FOLDER_COLORS[2],
+						);
+
+						commands
+							.find(
+								(command) => command.id === `web.folder.${folder.id}.rename`,
+							)
+							?.run?.(commandContext(`/web-tabs/${tab.id}`));
+						expect(getDashboardWebTabFolder(folder.id)?.title).toBe(
+							"Dashboards",
+						);
+
+						commands
+							.find(
+								(command) => command.id === `web.folder.${folder.id}.delete`,
+							)
+							?.run?.(commandContext(`/web-tabs/${tab.id}`));
+						expect(getDashboardWebTabFolder(folder.id)).toBeNull();
+						expect(getDashboardWebTab(tab.id)?.folderId).toBeNull();
+					} finally {
+						resetDashboardWebTabsForTests();
+					}
+				},
+			);
 		});
 	});
 

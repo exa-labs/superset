@@ -49,6 +49,8 @@ import {
 	createDashboardWebTabFolder,
 	cycleDashboardWebTabFolderColor,
 	DASHBOARD_WEB_TAB_APPS,
+	DASHBOARD_WEB_TAB_FOLDER_COLORS,
+	deleteDashboardWebTabFolder,
 	getDashboardWebTab,
 	getDashboardWebTabApp,
 	getDashboardWebTabFavicon,
@@ -56,6 +58,8 @@ import {
 	getDashboardWebTabs,
 	getFirstDashboardWebTabForApp,
 	moveDashboardWebTabToFolder,
+	renameDashboardWebTabFolder,
+	setDashboardWebTabFolderColor,
 	setDashboardWebTabPinned,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type {
@@ -175,6 +179,35 @@ function browserCurrentHotkey(
 	const hotkeyId = BROWSER_CURRENT_HOTKEY_BY_ACTION.get(action);
 	if (!hotkeyId) throw new Error(`Missing Chrome hotkey for ${action}`);
 	return hotkeyId;
+}
+
+function promptDashboardWebTabFolderRename({
+	folderTitle,
+}: {
+	folderTitle: string;
+}): string | null {
+	if (typeof window === "undefined" || typeof window.prompt !== "function") {
+		return null;
+	}
+	const nextTitle = window.prompt(
+		`Rename Chrome folder "${folderTitle}"`,
+		folderTitle,
+	);
+	const trimmedTitle = nextTitle?.trim() ?? "";
+	return trimmedTitle || null;
+}
+
+function confirmDashboardWebTabFolderDelete({
+	folderTitle,
+}: {
+	folderTitle: string;
+}): boolean {
+	if (typeof window === "undefined" || typeof window.confirm !== "function") {
+		return false;
+	}
+	return window.confirm(
+		`Delete Chrome folder "${folderTitle}"? Tabs in this folder will move back to the main Chrome list.`,
+	);
 }
 
 function nativeProviderFromPathname(
@@ -1643,30 +1676,80 @@ export const webProvider: CommandProvider = {
 
 		for (const folder of webFolders) {
 			const app = getDashboardWebTabApp(folder.appId);
-			commands.push({
-				id: `web.folder.${folder.id}.cycleColor`,
-				title: `Cycle ${folder.title} color`,
-				section: "web",
-				icon: PaletteIcon,
-				iconUrl: app.fallbackFaviconUrl,
-				description: `${app.label} folder`,
-				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
-				keywords: [
-					app.label,
-					app.id,
-					folder.title,
-					folder.color,
-					"browser",
-					"chrome",
-					"folder",
-					"color",
-					"palette",
-					"sidebar",
-					"web",
-				],
-				shortcutLabel: "c",
-				run: () => cycleDashboardWebTabFolderColor(folder.id),
-			});
+			const folderKeywords = [
+				app.label,
+				app.id,
+				folder.title,
+				folder.color,
+				"browser",
+				"chrome",
+				"folder",
+				"sidebar",
+				"web",
+			];
+			commands.push(
+				{
+					id: `web.folder.${folder.id}.cycleColor`,
+					title: `Cycle ${folder.title} color`,
+					section: "web",
+					icon: PaletteIcon,
+					iconUrl: app.fallbackFaviconUrl,
+					description: `${app.label} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
+					keywords: [...folderKeywords, "color", "palette"],
+					shortcutLabel: "c",
+					run: () => cycleDashboardWebTabFolderColor(folder.id),
+				},
+				{
+					id: `web.folder.${folder.id}.rename`,
+					title: `Rename ${folder.title}`,
+					section: "web",
+					iconUrl: app.fallbackFaviconUrl,
+					description: `${app.label} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
+					keywords: [...folderKeywords, "rename", "edit", "title"],
+					shortcutLabel: "e",
+					run: () => {
+						const nextTitle = promptDashboardWebTabFolderRename({
+							folderTitle: folder.title,
+						});
+						if (nextTitle) renameDashboardWebTabFolder(folder.id, nextTitle);
+					},
+				},
+				{
+					id: `web.folder.${folder.id}.delete`,
+					title: `Delete ${folder.title}`,
+					section: "web",
+					iconUrl: app.fallbackFaviconUrl,
+					description: `${app.label} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder,
+					keywords: [...folderKeywords, "delete", "remove", "trash"],
+					shortcutLabel: "d",
+					run: () => {
+						if (
+							confirmDashboardWebTabFolderDelete({
+								folderTitle: folder.title,
+							})
+						) {
+							deleteDashboardWebTabFolder(folder.id);
+						}
+					},
+				},
+			);
+
+			for (const color of DASHBOARD_WEB_TAB_FOLDER_COLORS) {
+				commands.push({
+					id: `web.folder.${folder.id}.color.${color.slice(1)}`,
+					title: `Set ${folder.title} color to ${color}`,
+					section: "web",
+					icon: PaletteIcon,
+					iconUrl: app.fallbackFaviconUrl,
+					description: `${app.label} folder`,
+					priority: CONTROL_PLANE_PRIORITY.nativeFolder - 1,
+					keywords: [...folderKeywords, color, "color", "palette"],
+					run: () => setDashboardWebTabFolderColor(folder.id, color),
+				});
+			}
 		}
 
 		return commands;
