@@ -1,4 +1,9 @@
-import { PlusIcon, TerminalIcon } from "lucide-react";
+import {
+	FolderPlusIcon,
+	PaletteIcon,
+	PlusIcon,
+	TerminalIcon,
+} from "lucide-react";
 import type { HotkeyId } from "renderer/hotkeys/registry";
 import {
 	dispatchNativeAgentCurrentAction,
@@ -41,6 +46,8 @@ import { DASHBOARD_WEB_PAGES } from "renderer/routes/_authenticated/_dashboard/u
 import {
 	closeDashboardWebTab,
 	createDashboardWebTab,
+	createDashboardWebTabFolder,
+	cycleDashboardWebTabFolderColor,
 	DASHBOARD_WEB_TAB_APPS,
 	getDashboardWebTab,
 	getDashboardWebTabApp,
@@ -382,6 +389,36 @@ export const webProvider: CommandProvider = {
 				],
 				shortcutLabel: isChrome ? "g b" : undefined,
 				run: (context) => {
+					const tab =
+						getFirstDashboardWebTabForApp(app.id) ??
+						createDashboardWebTab(app.id);
+					navigateDashboardCommand(context, `/web-tabs/${tab.id}`);
+				},
+			});
+			commands.push({
+				id: `web.${app.id}.folder.create`,
+				title: `Create ${app.label} folder`,
+				section: "web",
+				icon: FolderPlusIcon,
+				iconUrl: app.fallbackFaviconUrl,
+				description: `Create a sidebar folder for ${app.label} tabs`,
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
+				keywords: [
+					app.label,
+					app.id,
+					"browser",
+					"chrome",
+					"folder",
+					"group",
+					"organize",
+					"create",
+					"new",
+					"sidebar",
+					"web",
+				],
+				shortcutLabel: "N",
+				run: (context) => {
+					createDashboardWebTabFolder(app.id);
 					const tab =
 						getFirstDashboardWebTabForApp(app.id) ??
 						createDashboardWebTab(app.id);
@@ -1602,6 +1639,34 @@ export const webProvider: CommandProvider = {
 					run: () => moveDashboardWebTabToFolder(tab.id, folder.id),
 				});
 			}
+		}
+
+		for (const folder of webFolders) {
+			const app = getDashboardWebTabApp(folder.appId);
+			commands.push({
+				id: `web.folder.${folder.id}.cycleColor`,
+				title: `Cycle ${folder.title} color`,
+				section: "web",
+				icon: PaletteIcon,
+				iconUrl: app.fallbackFaviconUrl,
+				description: `${app.label} folder`,
+				priority: CONTROL_PLANE_PRIORITY.nativeFolder,
+				keywords: [
+					app.label,
+					app.id,
+					folder.title,
+					folder.color,
+					"browser",
+					"chrome",
+					"folder",
+					"color",
+					"palette",
+					"sidebar",
+					"web",
+				],
+				shortcutLabel: "c",
+				run: () => cycleDashboardWebTabFolderColor(folder.id),
+			});
 		}
 
 		return commands;

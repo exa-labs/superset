@@ -14,7 +14,9 @@ import { dashboardBrowserShortcutDescriptors } from "renderer/routes/_authentica
 import {
 	createDashboardWebTab,
 	createDashboardWebTabFolder,
+	DASHBOARD_WEB_TAB_FOLDER_COLORS,
 	getDashboardWebTab,
+	getDashboardWebTabFolder,
 	resetDashboardWebTabsForTests,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type { CommandContext } from "../../core/types";
@@ -848,12 +850,54 @@ describe("web command provider", () => {
 		);
 
 		expect(commandIds.has("web.chrome.new")).toBe(true);
+		expect(commandIds.has("web.chrome.folder.create")).toBe(true);
 		expect(commandIds.has("web.tab.chrome-default")).toBe(true);
 		expect(
 			webProvider
 				.provide(commandContext("/web-tabs/chrome-default"))
 				.find((command) => command.id === "web.chrome.new")?.hotkeyId,
 		).toBe("OPEN_CHROME");
+	});
+
+	it("creates and recolors Chrome folders from the command palette", () => {
+		withLocalStorage({}, () => {
+			resetDashboardWebTabsForTests();
+			try {
+				const navigations: string[] = [];
+				const context = commandContextWithNavigate("/native/capy", (path) => {
+					navigations.push(path);
+				});
+
+				webProvider
+					.provide(context)
+					.find((command) => command.id === "web.chrome.folder.create")
+					?.run?.(context);
+
+				const folder = webProvider
+					.provide(commandContext("/web-tabs/chrome-default"))
+					.find((command) => command.id.startsWith("web.folder."));
+
+				expect(navigations).toEqual(["/web-tabs/chrome-default"]);
+				expect(folder?.id).toMatch(/^web\.folder\..+\.cycleColor$/);
+				expect(folder?.shortcutLabel).toBe("c");
+				expect(folder?.keywords).toContain("color");
+
+				const folderId = folder?.id
+					.replace(/^web\.folder\./, "")
+					.replace(/\.cycleColor$/, "");
+				expect(folderId).toBeTruthy();
+				expect(getDashboardWebTabFolder(folderId)?.color).toBe(
+					DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+				);
+
+				folder?.run?.(commandContext("/web-tabs/chrome-default"));
+				expect(getDashboardWebTabFolder(folderId)?.color).toBe(
+					DASHBOARD_WEB_TAB_FOLDER_COLORS[1],
+				);
+			} finally {
+				resetDashboardWebTabsForTests();
+			}
+		});
 	});
 
 	it("opens the existing Chrome tab before creating a new one", () => {
