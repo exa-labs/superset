@@ -1063,7 +1063,7 @@ describe("web command provider", () => {
 				"/native/capy",
 				"/root-terminal/heph",
 			]);
-			expect(timerCalls).toEqual([0, 120, 0, 120, 0, 120, 0, 150]);
+			expect(timerCalls).toEqual([0, 120, 0, 120, 0, 120, 0, 150, 0, 120]);
 		});
 	});
 

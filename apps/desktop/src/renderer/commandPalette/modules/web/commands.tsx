@@ -409,7 +409,8 @@ export const webProvider: CommandProvider = {
 					"repo",
 					"root",
 				],
-				run: (context) => context.navigate(`/root-terminal/${terminal.id}`),
+				run: (context) =>
+					navigateDashboardCommand(context, `/root-terminal/${terminal.id}`),
 			});
 		}
 
