@@ -50,6 +50,7 @@ export const navigationProvider: CommandProvider = {
 				icon: LuLayers,
 				hotkeyId: "OPEN_WORKSPACES",
 				keywords: ["workspace", "project", "repo", "repository", "overview"],
+				shortcutLabel: "g w",
 				run: (ctx) =>
 					navigateDashboardShellCommand(ctx.navigate, "/v2-workspaces"),
 			},

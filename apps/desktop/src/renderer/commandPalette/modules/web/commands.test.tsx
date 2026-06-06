@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 import { publishDashboardNativeAgentCurrentSessionState } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-current-session-state";
 import {
 	NATIVE_AGENT_FOLDER_COLORS,
@@ -19,7 +19,64 @@ import {
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 import type { CommandContext } from "../../core/types";
 import { orderCommandsByPriority } from "../../core/useActiveCommands";
-import { webProvider } from "./commands";
+
+mock.module(
+	"renderer/routes/_authenticated/_dashboard/utils/dashboard-web-pages",
+	() => ({
+		DASHBOARD_WEB_PAGES: [
+			{
+				fallbackFaviconUrl: "https://example.test/overseer.png",
+				hotkeyId: "OPEN_WEB_PAGE_1",
+				id: "overseer",
+				label: "Overseer",
+				shortLabel: "Overseer",
+				url: "https://overseer.example.test/",
+			},
+			{
+				fallbackFaviconUrl: "https://example.test/sulis.png",
+				hotkeyId: "OPEN_WEB_PAGE_2",
+				id: "sulis",
+				label: "Sulis",
+				shortLabel: "Sulis",
+				url: "https://sulis.example.test/",
+			},
+			{
+				fallbackFaviconUrl: "https://example.test/grafana.png",
+				hotkeyId: "OPEN_WEB_PAGE_3",
+				id: "inference-overview",
+				label: "Inference Overview",
+				shortLabel: "Inference",
+				url: "https://grafana.example.test/inference",
+			},
+			{
+				fallbackFaviconUrl: "https://example.test/grafana.png",
+				hotkeyId: "OPEN_WEB_PAGE_4",
+				id: "canonical",
+				label: "Canonical",
+				shortLabel: "Canonical",
+				url: "https://grafana.example.test/canonical",
+			},
+			{
+				fallbackFaviconUrl: "https://example.test/github.svg",
+				hotkeyId: "OPEN_WEB_PAGE_5",
+				id: "github-prs",
+				label: "PR",
+				shortLabel: "PR",
+				url: "https://github.example.test/pulls",
+			},
+			{
+				fallbackFaviconUrl: "https://example.test/linear.svg",
+				hotkeyId: "OPEN_WEB_PAGE_6",
+				id: "linear-horizons",
+				label: "Linear",
+				shortLabel: "Linear",
+				url: "https://linear.example.test/",
+			},
+		],
+	}),
+);
+
+const { webProvider } = await import("./commands");
 
 function commandContext(pathname = "/native/capy"): CommandContext {
 	return {
@@ -492,6 +549,7 @@ describe("web command provider", () => {
 
 		expect(commandById.get("native.capy.open")).toMatchObject({
 			hotkeyId: "OPEN_CAPY",
+			shortcutLabel: "g c",
 			title: "Open Capy",
 		});
 		expect(commandById.get("native.capy.create")).toMatchObject({
@@ -501,6 +559,7 @@ describe("web command provider", () => {
 		});
 		expect(commandById.get("native.devin.open")).toMatchObject({
 			hotkeyId: "OPEN_DEVIN",
+			shortcutLabel: "g d",
 			title: "Open Devin",
 		});
 		expect(commandById.get("native.devin.create")).toMatchObject({
@@ -510,7 +569,8 @@ describe("web command provider", () => {
 		});
 		expect(commandById.get("web.chrome.new")).toMatchObject({
 			hotkeyId: "OPEN_CHROME",
-			title: "Create new Chrome tab",
+			shortcutLabel: "g b",
+			title: "Open Chrome",
 		});
 		expect(commandById.get("terminal.root.stag")).toMatchObject({
 			hotkeyId: "OPEN_ROOT_TERMINAL_STAG",
@@ -780,7 +840,7 @@ describe("web command provider", () => {
 		);
 	});
 
-	it("registers Chrome creation and tab jump commands", () => {
+	it("registers Chrome open and tab jump commands", () => {
 		const commandIds = new Set(
 			webProvider
 				.provide(commandContext("/web-tabs/chrome-default"))
@@ -794,6 +854,32 @@ describe("web command provider", () => {
 				.provide(commandContext("/web-tabs/chrome-default"))
 				.find((command) => command.id === "web.chrome.new")?.hotkeyId,
 		).toBe("OPEN_CHROME");
+	});
+
+	it("opens the existing Chrome tab before creating a new one", () => {
+		withLocalStorage({}, () => {
+			resetDashboardWebTabsForTests();
+			try {
+				const navigations: string[] = [];
+				const context = commandContextWithNavigate("/native/capy", (path) => {
+					navigations.push(path);
+				});
+
+				webProvider
+					.provide(context)
+					.find((command) => command.id === "web.chrome.new")
+					?.run?.(context);
+
+				expect(navigations).toEqual(["/web-tabs/chrome-default"]);
+				expect(
+					webProvider
+						.provide(commandContext("/native/capy"))
+						.filter((command) => /^web\.tab\.[^.]+$/.test(command.id)),
+				).toHaveLength(1);
+			} finally {
+				resetDashboardWebTabsForTests();
+			}
+		});
 	});
 
 	it("registers Chrome tab action commands with keyboard hints", () => {

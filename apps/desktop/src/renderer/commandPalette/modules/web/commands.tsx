@@ -47,6 +47,7 @@ import {
 	getDashboardWebTabFavicon,
 	getDashboardWebTabFolders,
 	getDashboardWebTabs,
+	getFirstDashboardWebTabForApp,
 	moveDashboardWebTabToFolder,
 	setDashboardWebTabPinned,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
@@ -356,21 +357,34 @@ export const webProvider: CommandProvider = {
 			: null;
 
 		for (const app of DASHBOARD_WEB_TAB_APPS) {
+			const isChrome = app.id === "chrome";
 			commands.push({
 				id: `web.${app.id}.new`,
-				title: `Create new ${app.label} tab`,
+				title: isChrome ? `Open ${app.label}` : `Create new ${app.label} tab`,
 				section: "web",
 				icon: PlusIcon,
 				iconUrl: app.fallbackFaviconUrl,
-				hotkeyId: app.id === "chrome" ? "OPEN_CHROME" : undefined,
+				hotkeyId: isChrome ? "OPEN_CHROME" : undefined,
 				description: app.url,
-				priority:
-					app.id === "chrome"
-						? CONTROL_PLANE_PRIORITY.nativeOpen
-						: CONTROL_PLANE_PRIORITY.pinnedWebPage,
-				keywords: [app.label, app.id, "google", "new", "browser", "tab", "web"],
+				priority: isChrome
+					? CONTROL_PLANE_PRIORITY.nativeOpen
+					: CONTROL_PLANE_PRIORITY.pinnedWebPage,
+				keywords: [
+					app.label,
+					app.id,
+					"google",
+					"go",
+					"open",
+					"new",
+					"browser",
+					"tab",
+					"web",
+				],
+				shortcutLabel: isChrome ? "g b" : undefined,
 				run: (context) => {
-					const tab = createDashboardWebTab(app.id);
+					const tab =
+						getFirstDashboardWebTabForApp(app.id) ??
+						createDashboardWebTab(app.id);
 					navigateDashboardCommand(context, `/web-tabs/${tab.id}`);
 				},
 			});
@@ -714,6 +728,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				iconUrl: nativeProviderIconUrl("capy"),
 				hotkeyId: "OPEN_CAPY",
+				shortcutLabel: "g c",
 				description: "Use the Capy API in a native chat interface",
 				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["capy", "capi", "native", "thread", "agent"],
@@ -725,6 +740,7 @@ export const webProvider: CommandProvider = {
 				section: "web",
 				iconUrl: nativeProviderIconUrl("devin"),
 				hotkeyId: "OPEN_DEVIN",
+				shortcutLabel: "g d",
 				description: "Use the Devin API in a native chat interface",
 				priority: CONTROL_PLANE_PRIORITY.nativeOpen,
 				keywords: ["devin", "native", "session", "agent"],

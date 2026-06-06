@@ -62,6 +62,7 @@ describe("navigation command provider", () => {
 
 		expect(commandIds.has("nav.workspaces")).toBe(true);
 		expect(overview?.hotkeyId).toBe("OPEN_WORKSPACES");
+		expect(overview?.shortcutLabel).toBe("g w");
 		expect(overview?.title).toBe("Open workspace overview");
 	});
 
