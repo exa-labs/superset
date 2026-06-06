@@ -164,6 +164,35 @@ function browserCurrentShortcut(
 	return BROWSER_CURRENT_SHORTCUT_BY_ACTION.get(action) ?? "";
 }
 
+const BROWSER_CURRENT_HOTKEY_BY_ACTION = new Map<
+	DashboardBrowserShortcutAction,
+	HotkeyId
+>([
+	["close-current-tab", "BROWSER_CLOSE_TAB"],
+	["close-split", "BROWSER_CLOSE_SPLIT"],
+	["equalize-split", "BROWSER_EQUALIZE_SPLIT"],
+	["go-back", "BROWSER_GO_BACK"],
+	["go-forward", "BROWSER_GO_FORWARD"],
+	["narrow-active-split", "BROWSER_NARROW_SPLIT"],
+	["new-current-url-tab", "BROWSER_NEW_TAB"],
+	["next-tab", "BROWSER_NEXT_TAB"],
+	["open-external", "BROWSER_OPEN_EXTERNAL"],
+	["previous-tab", "BROWSER_PREVIOUS_TAB"],
+	["reload", "BROWSER_RELOAD"],
+	["swap-split", "BROWSER_SWAP_SPLIT"],
+	["toggle-tab-pin", "BROWSER_TOGGLE_PIN"],
+	["toggle-split", "BROWSER_TOGGLE_SPLIT"],
+	["widen-active-split", "BROWSER_WIDEN_SPLIT"],
+]);
+
+function browserCurrentHotkey(
+	action: DashboardBrowserShortcutAction,
+): HotkeyId {
+	const hotkeyId = BROWSER_CURRENT_HOTKEY_BY_ACTION.get(action);
+	if (!hotkeyId) throw new Error(`Missing Chrome hotkey for ${action}`);
+	return hotkeyId;
+}
+
 function nativeProviderFromPathname(
 	pathname: string,
 ): NativeAgentProvider | null {
@@ -388,6 +417,7 @@ export const webProvider: CommandProvider = {
 				description: "Reload the active embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "reload", "refresh", "tab"],
+				hotkeyId: browserCurrentHotkey("reload"),
 				shortcutLabel: browserCurrentShortcut("reload"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("reload"),
@@ -399,6 +429,7 @@ export const webProvider: CommandProvider = {
 				description: "Navigate back in the active embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "back", "history", "previous", "tab"],
+				hotkeyId: browserCurrentHotkey("go-back"),
 				shortcutLabel: browserCurrentShortcut("go-back"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("go-back"),
@@ -410,6 +441,7 @@ export const webProvider: CommandProvider = {
 				description: "Navigate forward in the active embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "forward", "history", "next", "tab"],
+				hotkeyId: browserCurrentHotkey("go-forward"),
 				shortcutLabel: browserCurrentShortcut("go-forward"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("go-forward"),
@@ -422,6 +454,7 @@ export const webProvider: CommandProvider = {
 					"Open the active embedded Chrome tab in the system browser",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "external", "system", "open", "tab"],
+				hotkeyId: browserCurrentHotkey("open-external"),
 				shortcutLabel: browserCurrentShortcut("open-external"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("open-external"),
@@ -433,6 +466,7 @@ export const webProvider: CommandProvider = {
 				description: "Switch left to the previous embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "previous", "left", "switch", "tab"],
+				hotkeyId: browserCurrentHotkey("previous-tab"),
 				shortcutLabel: browserCurrentShortcut("previous-tab"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("previous-tab"),
@@ -444,6 +478,7 @@ export const webProvider: CommandProvider = {
 				description: "Switch right to the next embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "next", "right", "switch", "tab"],
+				hotkeyId: browserCurrentHotkey("next-tab"),
 				shortcutLabel: browserCurrentShortcut("next-tab"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("next-tab"),
@@ -455,6 +490,7 @@ export const webProvider: CommandProvider = {
 				description: "Duplicate the active embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "duplicate", "same", "url", "tab"],
+				hotkeyId: browserCurrentHotkey("new-current-url-tab"),
 				shortcutLabel: browserCurrentShortcut("new-current-url-tab"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("new-current-url-tab"),
@@ -497,6 +533,7 @@ export const webProvider: CommandProvider = {
 				description: "Show two embedded Chrome tabs side by side",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "side by side", "tab"],
+				hotkeyId: browserCurrentHotkey("toggle-split"),
 				shortcutLabel: browserCurrentShortcut("toggle-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("toggle-split"),
@@ -508,6 +545,7 @@ export const webProvider: CommandProvider = {
 				description: "Move focus between the two embedded Chrome split panes",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "swap", "focus", "pane"],
+				hotkeyId: browserCurrentHotkey("swap-split"),
 				shortcutLabel: browserCurrentShortcut("swap-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("swap-split"),
@@ -519,6 +557,7 @@ export const webProvider: CommandProvider = {
 				description: "Return embedded Chrome to a single active tab pane",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "close", "pane"],
+				hotkeyId: browserCurrentHotkey("close-split"),
 				shortcutLabel: browserCurrentShortcut("close-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("close-split"),
@@ -530,6 +569,7 @@ export const webProvider: CommandProvider = {
 				description: "Give the active embedded Chrome split pane less width",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "narrow", "resize", "pane"],
+				hotkeyId: browserCurrentHotkey("narrow-active-split"),
 				shortcutLabel: browserCurrentShortcut("narrow-active-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("narrow-active-split"),
@@ -541,6 +581,7 @@ export const webProvider: CommandProvider = {
 				description: "Give the active embedded Chrome split pane more width",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "widen", "resize", "pane"],
+				hotkeyId: browserCurrentHotkey("widen-active-split"),
 				shortcutLabel: browserCurrentShortcut("widen-active-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("widen-active-split"),
@@ -552,6 +593,7 @@ export const webProvider: CommandProvider = {
 				description: "Reset embedded Chrome split panes to equal widths",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "split", "equal", "resize", "pane"],
+				hotkeyId: browserCurrentHotkey("equalize-split"),
 				shortcutLabel: browserCurrentShortcut("equalize-split"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("equalize-split"),
@@ -563,6 +605,7 @@ export const webProvider: CommandProvider = {
 				description: "Close the active embedded Chrome tab",
 				priority: CONTROL_PLANE_PRIORITY.browserCurrent,
 				keywords: ["chrome", "browser", "close", "remove", "tab"],
+				hotkeyId: browserCurrentHotkey("close-current-tab"),
 				shortcutLabel: browserCurrentShortcut("close-current-tab"),
 				when: (context) => context.route.pathname.startsWith("/web"),
 				run: () => dispatchBrowserAction("close-current-tab"),
@@ -605,6 +648,7 @@ export const webProvider: CommandProvider = {
 					"sidebar",
 					"tab",
 				],
+				hotkeyId: browserCurrentHotkey("toggle-tab-pin"),
 				shortcutLabel: "p",
 				when: (context) => webTabIdFromPathname(context.route.pathname) != null,
 				run: (context) => {

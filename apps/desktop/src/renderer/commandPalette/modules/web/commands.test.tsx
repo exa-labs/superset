@@ -576,6 +576,9 @@ describe("web command provider", () => {
 						(command) => [command.id, command.shortcutLabel] as const,
 					),
 				);
+				const hotkeyById = new Map(
+					commands.map((command) => [command.id, command.hotkeyId] as const),
+				);
 				const commandIds = new Set(commands.map((command) => command.id));
 
 				expect(commandIds.has(`web.tab.${tab.id}.togglePin`)).toBe(true);
@@ -587,6 +590,7 @@ describe("web command provider", () => {
 					true,
 				);
 				expect(shortcutById.get("web.current.pin")).toBe("p");
+				expect(hotkeyById.get("web.current.pin")).toBe("BROWSER_TOGGLE_PIN");
 				expect(commandIds.has("web.current.unpin")).toBe(false);
 				expect(shortcutById.get(`web.tab.${tab.id}.togglePin`)).toBe("p");
 				expect(shortcutById.get(`web.tab.${tab.id}.close`)).toBe("x");
@@ -606,6 +610,10 @@ describe("web command provider", () => {
 					pinnedCommands.find((command) => command.id === "web.current.unpin")
 						?.shortcutLabel,
 				).toBe("p");
+				expect(
+					pinnedCommands.find((command) => command.id === "web.current.unpin")
+						?.hotkeyId,
+				).toBe("BROWSER_TOGGLE_PIN");
 				pinnedCommands
 					.find((command) => command.id === "web.current.unpin")
 					?.run?.(commandContext(`/web-tabs/${tab.id}`));
@@ -740,6 +748,9 @@ describe("web command provider", () => {
 		const shortcutById = new Map(
 			commands.map((command) => [command.id, command.shortcutLabel] as const),
 		);
+		const hotkeyById = new Map(
+			commands.map((command) => [command.id, command.hotkeyId] as const),
+		);
 		const reload = commands.find(
 			(command) => command.id === "web.current.reload",
 		);
@@ -773,6 +784,36 @@ describe("web command provider", () => {
 		expect(shortcutById.get("web.current.widenActiveSplit")).toBe("]");
 		expect(shortcutById.get("web.current.equalizeSplit")).toBe("=");
 		expect(shortcutById.get("web.current.close")).toBe("x");
+		expect(hotkeyById.get("web.current.reload")).toBe("BROWSER_RELOAD");
+		expect(hotkeyById.get("web.current.goBack")).toBe("BROWSER_GO_BACK");
+		expect(hotkeyById.get("web.current.goForward")).toBe("BROWSER_GO_FORWARD");
+		expect(hotkeyById.get("web.current.openExternal")).toBe(
+			"BROWSER_OPEN_EXTERNAL",
+		);
+		expect(hotkeyById.get("web.current.previousTab")).toBe(
+			"BROWSER_PREVIOUS_TAB",
+		);
+		expect(hotkeyById.get("web.current.nextTab")).toBe("BROWSER_NEXT_TAB");
+		expect(hotkeyById.get("web.current.newFromCurrent")).toBe(
+			"BROWSER_NEW_TAB",
+		);
+		expect(hotkeyById.get("web.current.toggleSplit")).toBe(
+			"BROWSER_TOGGLE_SPLIT",
+		);
+		expect(hotkeyById.get("web.current.swapSplit")).toBe("BROWSER_SWAP_SPLIT");
+		expect(hotkeyById.get("web.current.closeSplit")).toBe(
+			"BROWSER_CLOSE_SPLIT",
+		);
+		expect(hotkeyById.get("web.current.narrowActiveSplit")).toBe(
+			"BROWSER_NARROW_SPLIT",
+		);
+		expect(hotkeyById.get("web.current.widenActiveSplit")).toBe(
+			"BROWSER_WIDEN_SPLIT",
+		);
+		expect(hotkeyById.get("web.current.equalizeSplit")).toBe(
+			"BROWSER_EQUALIZE_SPLIT",
+		);
+		expect(hotkeyById.get("web.current.close")).toBe("BROWSER_CLOSE_TAB");
 		expect(reload?.when?.(webContext)).toBe(true);
 		expect(reload?.when?.(nativeContext)).toBe(false);
 	});
