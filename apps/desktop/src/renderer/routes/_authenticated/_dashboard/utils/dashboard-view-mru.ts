@@ -1,4 +1,5 @@
 export type DashboardViewMruDirection = "next" | "previous";
+export type DashboardViewMruRouteScope = "dashboard" | "settings";
 
 export interface DashboardViewMruEntry {
 	path: string;
@@ -81,6 +82,14 @@ export function normalizeDashboardViewMruPath(pathname: string): string | null {
 	if (path.startsWith("/root-terminal/")) return path;
 	if (path === "/settings" || path.startsWith("/settings/")) return path;
 	return null;
+}
+
+export function dashboardViewMruRouteScope(
+	pathname: string,
+): DashboardViewMruRouteScope | null {
+	const path = normalizeDashboardViewMruPath(pathname);
+	if (!path) return null;
+	return segmentAt(path, 0) === "settings" ? "settings" : "dashboard";
 }
 
 export function resolveDashboardViewMruPathname(input: {

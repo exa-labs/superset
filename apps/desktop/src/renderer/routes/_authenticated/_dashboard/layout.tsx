@@ -164,6 +164,7 @@ function DashboardLayout() {
 		};
 
 		const handleMruSwitch = (event: Event) => {
+			if (event.defaultPrevented) return;
 			const detail = (event as CustomEvent<{ direction?: unknown }>).detail;
 			const direction = detail?.direction === "previous" ? "previous" : "next";
 			const activeSwitch = activeMruSwitchRef.current;

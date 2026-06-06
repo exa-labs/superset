@@ -36,6 +36,7 @@ import {
 	DASHBOARD_VIEW_MRU_SWITCH_TTL_MS,
 	type DashboardViewMruDirection,
 	type DashboardViewMruEntry,
+	dashboardViewMruRouteScope,
 	dashboardViewMruTargetPath,
 	normalizeDashboardViewMruPath,
 	readDashboardViewMruEntries,
@@ -209,6 +210,10 @@ function AuthenticatedLayout() {
 
 	useEffect(() => {
 		const handleSwitch = (event: Event) => {
+			if (event.defaultPrevented) return;
+			if (dashboardViewMruRouteScope(dashboardViewMruPathname) !== "settings") {
+				return;
+			}
 			const detail = (event as CustomEvent<{ direction?: unknown }>).detail;
 			if (detail?.direction !== "next" && detail?.direction !== "previous") {
 				return;
@@ -221,7 +226,7 @@ function AuthenticatedLayout() {
 		window.addEventListener("dashboard-view-mru-switch", handleSwitch);
 		return () =>
 			window.removeEventListener("dashboard-view-mru-switch", handleSwitch);
-	}, [switchDashboardViewMru]);
+	}, [dashboardViewMruPathname, switchDashboardViewMru]);
 
 	// Update workspace-run pane state on terminal exit
 	electronTrpc.notifications.subscribe.useSubscription(undefined, {

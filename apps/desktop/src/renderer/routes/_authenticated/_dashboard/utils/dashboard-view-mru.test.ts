@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import {
 	DASHBOARD_VIEW_MRU_STORAGE_KEY,
 	dashboardViewMruEntryLabel,
+	dashboardViewMruRouteScope,
 	dashboardViewMruSwitchTarget,
 	dashboardViewMruTargetPath,
 	dashboardViewMruVisibleEntries,
@@ -42,6 +43,16 @@ describe("dashboard view MRU", () => {
 		expect(normalizeDashboardViewMruPath("/settings/keyboard")).toBe(
 			"/settings/keyboard",
 		);
+	});
+
+	it("separates settings MRU switching from dashboard-shell MRU switching", () => {
+		expect(dashboardViewMruRouteScope("/settings/keyboard")).toBe("settings");
+		expect(dashboardViewMruRouteScope("/web-tabs/chrome-1")).toBe("dashboard");
+		expect(dashboardViewMruRouteScope("/native/devin/session-1")).toBe(
+			"dashboard",
+		);
+		expect(dashboardViewMruRouteScope("/root-terminal/stag")).toBe("dashboard");
+		expect(dashboardViewMruRouteScope("/login")).toBeNull();
 	});
 
 	it("resolves hash-backed dashboard paths for MRU tracking", () => {
