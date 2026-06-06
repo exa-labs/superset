@@ -213,8 +213,8 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.focusLast")).toBe("End/G");
 		expect(shortcutById.get("actions.sidebar.activate")).toBe("Enter");
 		expect(shortcutById.get("actions.sidebar.toggleExpansion")).toBe("Space");
-		expect(shortcutById.get("actions.sidebar.collapse")).toBe("h");
-		expect(shortcutById.get("actions.sidebar.expand")).toBe("l");
+		expect(shortcutById.get("actions.sidebar.collapse")).toBe("←/h");
+		expect(shortcutById.get("actions.sidebar.expand")).toBe("→/l");
 		expect(shortcutById.get("actions.sidebar.create")).toBe("n");
 		expect(shortcutById.get("actions.sidebar.createFolder")).toBe("N");
 		expect(shortcutById.get("actions.sidebar.menu")).toBe(".");
@@ -262,6 +262,14 @@ describe("actions command provider", () => {
 			commands.find((command) => command.id === "actions.sidebar.markRead")
 				?.title,
 		).toBe("Mark focused native reply read");
+		expect(
+			commands.find((command) => command.id === "actions.sidebar.collapse")
+				?.keywords,
+		).toContain("left");
+		expect(
+			commands.find((command) => command.id === "actions.sidebar.expand")
+				?.keywords,
+		).toContain("right");
 		expect(
 			commands.find((command) => command.id === "actions.sidebar.archive")
 				?.title,
