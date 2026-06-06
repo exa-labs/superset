@@ -482,6 +482,78 @@ describe("web command provider", () => {
 		expect(equalizeSplit?.hotkeyId).toBe("BROWSER_EQUALIZE_SPLIT");
 	});
 
+	it("keeps the keyboard-native command palette surface discoverable", () => {
+		const commands = webProvider.provide(
+			commandContext("/native/devin/session-1"),
+		);
+		const commandById = new Map(
+			commands.map((command) => [command.id, command] as const),
+		);
+
+		expect(commandById.get("native.capy.open")).toMatchObject({
+			hotkeyId: "OPEN_CAPY",
+			title: "Open Capy",
+		});
+		expect(commandById.get("native.capy.create")).toMatchObject({
+			hotkeyId: "CREATE_CAPY",
+			shortcutLabel: "⌥C n",
+			title: "Create Capy thread",
+		});
+		expect(commandById.get("native.devin.open")).toMatchObject({
+			hotkeyId: "OPEN_DEVIN",
+			title: "Open Devin",
+		});
+		expect(commandById.get("native.devin.create")).toMatchObject({
+			hotkeyId: "CREATE_DEVIN",
+			shortcutLabel: "⌥D n",
+			title: "Create Devin session",
+		});
+		expect(commandById.get("web.chrome.new")).toMatchObject({
+			hotkeyId: "OPEN_CHROME",
+			title: "Create new Chrome tab",
+		});
+		expect(commandById.get("terminal.root.stag")).toMatchObject({
+			hotkeyId: "OPEN_ROOT_TERMINAL_STAG",
+			title: "Open stag kr9",
+		});
+		expect(commandById.get("terminal.root.prod")).toMatchObject({
+			hotkeyId: "OPEN_ROOT_TERMINAL_PROD",
+			title: "Open prod kr9",
+		});
+		expect(commandById.get("terminal.root.heph")).toMatchObject({
+			hotkeyId: "OPEN_ROOT_TERMINAL_HEPH",
+			title: "Open heph kr9",
+		});
+		expect(commandById.get("native.current.reply")).toMatchObject({
+			hotkeyId: "SIDEBAR_ACTION_REPLY",
+			shortcutLabel: "r/i",
+		});
+		expect(commandById.get("native.current.pin")).toMatchObject({
+			hotkeyId: "SIDEBAR_ACTION_PIN",
+			shortcutLabel: "p",
+		});
+		expect(commandById.get("native.current.hide")).toMatchObject({
+			hotkeyId: "SIDEBAR_ACTION_ARCHIVE",
+			shortcutLabel: "a",
+		});
+		expect(commandById.get("native.current.archive")).toMatchObject({
+			hotkeyId: "SIDEBAR_ACTION_HARD_ARCHIVE",
+			shortcutLabel: "x/X",
+		});
+		expect(commandById.get("native.folder.moveCurrent")).toMatchObject({
+			hotkeyId: "SIDEBAR_ACTION_MOVE",
+			shortcutLabel: "m",
+		});
+		expect(commandById.get("native.current.toggleBrowser")).toMatchObject({
+			hotkeyId: "TOGGLE_NATIVE_BROWSER_VIEW",
+			shortcutLabel: "b",
+		});
+		expect(commandById.get("native.current.toggleSplit")).toMatchObject({
+			hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
+			shortcutLabel: "s",
+		});
+	});
+
 	it("uses provider-specific global create shortcuts for current native commands", () => {
 		const capyCommands = webProvider.provide(commandContext("/native/capy"));
 		const devinCommands = webProvider.provide(

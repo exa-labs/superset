@@ -43,10 +43,15 @@ mock.module("renderer/stores/theme/store", () => ({
 }));
 
 mock.module("renderer/stores/workspace-sidebar-state", () => ({
+	COLLAPSED_WORKSPACE_SIDEBAR_WIDTH: 52,
+	DEFAULT_WORKSPACE_SIDEBAR_WIDTH: 280,
 	useWorkspaceSidebarStore: {
 		getState: () => ({
 			isOpen: true,
+			isCollapsed: () => false,
+			lastExpandedWidth: 280,
 			setOpen: () => undefined,
+			setWidth: () => undefined,
 			toggleCollapsed: () => undefined,
 		}),
 	},
