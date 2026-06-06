@@ -91,10 +91,10 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 		return "r Reply, o Browser, b View, m Move, e Rename";
 	}
 	if (hint === "r/o/b/m/e/u/U/x/X/f/?") {
-		return "r Reply, o Browser, b View, m Move, e Rename, u Unread, U Read, x Hide, X Archive, f Hints, ? Map";
+		return "r Reply, o Browser, b View, m Move, e Rename, u Unread, U Read, x/X Archive, f Hints, ? Map";
 	}
 	if (hint === "r/o/b/m/F/e/u/U/x/X/f/?") {
-		return "r Reply, o Browser, b View, m/F Folder, e Rename, u Unread, U Read, x Hide, X Archive, f Hints, ? Map";
+		return "r Reply, o Browser, b View, m/F Folder, e Rename, u Unread, U Read, x/X Archive, f Hints, ? Map";
 	}
 	if (hint === "r/o/b/p/m/F/e/u/U/a/x/X/f/?") {
 		return "r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, a Hide, x/X Archive, f Hints, ? Map";
@@ -105,10 +105,10 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === GLOBAL_ROW_ACTIONS_HINT) return "⌥. Actions · ⌥P/A/M/E";
 	if (hint === "u/U") return "u Open unread, U Mark read";
 	if (hint === "u/U/x/X/f/?") {
-		return "u Unread, U Read, x Hide, X Archive, f Hints, ? Map";
+		return "u Unread, U Read, x/X Archive, f Hints, ? Map";
 	}
-	if (hint === "x/X") return "x Hide, X Archive";
-	if (hint === "x/X/f/?") return "x Hide, X Archive, f Hints, ? Map";
+	if (hint === "x/X") return "x/X Archive";
+	if (hint === "x/X/f/?") return "x/X Archive, f Hints, ? Map";
 	if (hint === "f") return "f Hints";
 	if (hint === "f/?") return "f Hints, ? Map";
 	if (hint === "h/l/r/s/p/x/u/U/f/?") {

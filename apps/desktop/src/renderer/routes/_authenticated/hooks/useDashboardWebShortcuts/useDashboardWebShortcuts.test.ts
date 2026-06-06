@@ -143,7 +143,42 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		expect(dashboardSidebarKeyboardCommandFromVimKey("space")).toBe(
 			"toggle-expansion",
 		);
-		expect(dashboardSidebarKeyboardCommandFromVimKey("x")).toBeNull();
+		expect(dashboardSidebarKeyboardCommandFromVimKey(".")).toBe("action-menu");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("n")).toBe(
+			"action-create",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("N")).toBe(
+			"action-create-folder",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("p")).toBe("action-pin");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("r")).toBe("action-reply");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("o")).toBe(
+			"action-open-browser",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("b")).toBe(
+			"action-toggle-browser",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("m")).toBe("action-move");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("F")).toBe(
+			"action-remove-from-folder",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("x")).toBe(
+			"action-hard-archive",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("X")).toBe(
+			"action-hard-archive",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("a")).toBe(
+			"action-archive",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("e")).toBe(
+			"action-rename",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("c")).toBe("action-color");
+		expect(dashboardSidebarKeyboardCommandFromVimKey("d")).toBe(
+			"action-delete",
+		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("z")).toBeNull();
 	});
 
 	it("maps embedded-browser sidebar action shortcuts to shared sidebar commands", () => {

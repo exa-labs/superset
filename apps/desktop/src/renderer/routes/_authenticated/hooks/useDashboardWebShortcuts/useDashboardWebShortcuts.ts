@@ -275,6 +275,20 @@ export function dashboardSidebarKeyboardCommandFromVimKey(
 	if (key === " " || key === "space" || key === "spacebar") {
 		return "toggle-expansion";
 	}
+	if (key === ".") return "action-menu";
+	if (key === "n") return "action-create";
+	if (key === "N") return "action-create-folder";
+	if (key === "p") return "action-pin";
+	if (key === "r") return "action-reply";
+	if (key === "o") return "action-open-browser";
+	if (key === "b") return "action-toggle-browser";
+	if (key === "m") return "action-move";
+	if (key === "F") return "action-remove-from-folder";
+	if (key === "x" || key === "X") return "action-hard-archive";
+	if (key === "a") return "action-archive";
+	if (key === "e") return "action-rename";
+	if (key === "c") return "action-color";
+	if (key === "d") return "action-delete";
 	return null;
 }
 

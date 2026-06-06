@@ -66,8 +66,8 @@ export function dashboardSidebarKeyboardActionFromKey(
 	if (key === "m") return "move";
 	if (key === "F") return "remove-from-folder";
 	if (key === "U") return "mark-read";
-	if (key === "X") return "hard-archive";
-	if (key === "a" || key === "x") return "archive";
+	if (key === "x" || key === "X") return "hard-archive";
+	if (key === "a") return "archive";
 	if (key === "e") return "rename";
 	if (key === "c") return "color";
 	if (key === "d") return "delete";
