@@ -1,5 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 import { EventEmitter } from "node:events";
+import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
+import type { FocusedDashboardGlobalActionShortcut } from "./focused-control-plane-shortcut";
 
 mock.module("electron", () => ({
 	app: new EventEmitter(),
@@ -72,6 +74,61 @@ function createHarness() {
 		},
 	};
 }
+
+function macChordForHotkey(hotkeyId: HotkeyId): string {
+	const binding = HOTKEYS_REGISTRY[hotkeyId].key.mac;
+	if (binding === null) throw new Error(`${hotkeyId} has no macOS shortcut`);
+	return typeof binding === "string" ? binding : binding.chord;
+}
+
+function electronKeyTokenFromMacChordToken(token: string): string {
+	if (/^[a-z]$/i.test(token)) return token.toUpperCase();
+	if (/^[0-9]$/.test(token)) return token;
+
+	const keyTokens: Record<string, string> = {
+		comma: "Comma",
+		left: "Left",
+		period: "Period",
+		right: "Right",
+		slash: "Slash",
+		tab: "Tab",
+	};
+	const electronToken = keyTokens[token];
+	if (!electronToken) {
+		throw new Error(`Unsupported Electron accelerator token: ${token}`);
+	}
+	return electronToken;
+}
+
+function electronAcceleratorFromMacChord(chord: string): string {
+	const parts = chord.toLowerCase().split("+");
+	const terminalToken = parts.at(-1);
+	if (!terminalToken) throw new Error(`Invalid chord: ${chord}`);
+
+	const modifiers = parts.slice(0, -1).map((part) => {
+		if (part === "alt") return "Alt";
+		if (part === "ctrl" || part === "control") return "Ctrl";
+		if (part === "meta" || part === "cmd") return "Command";
+		if (part === "shift") return "Shift";
+		throw new Error(`Unsupported Electron accelerator modifier: ${part}`);
+	});
+
+	return [...modifiers, electronKeyTokenFromMacChordToken(terminalToken)].join(
+		"+",
+	);
+}
+
+const GLOBAL_ACTION_HOTKEY_IDS: Partial<
+	Record<FocusedDashboardGlobalActionShortcut["action"], HotkeyId>
+> = {
+	MARK_LATEST_NATIVE_REPLY_READ: "MARK_LATEST_NATIVE_REPLY_READ",
+	OPEN_UNREAD_NATIVE_REPLY: "OPEN_UNREAD_NATIVE_REPLY",
+	SHOW_DASHBOARD_ACTION_HINTS: "SHOW_DASHBOARD_ACTION_HINTS",
+	SHOW_DASHBOARD_KEYBOARD_HELP: "SHOW_DASHBOARD_KEYBOARD_HELP",
+	SWITCH_DASHBOARD_VIEW_NEXT: "SWITCH_DASHBOARD_VIEW_NEXT",
+	SWITCH_DASHBOARD_VIEW_PREVIOUS: "SWITCH_DASHBOARD_VIEW_PREVIOUS",
+	TOGGLE_VIM_MODE: "TOGGLE_VIM_MODE",
+};
 
 describe("focused control plane shortcut", () => {
 	it("registers Option+K only while an app window is focused", () => {
@@ -207,6 +264,19 @@ describe("focused control plane shortcut", () => {
 });
 
 describe("focusedDashboardGlobalActionShortcuts", () => {
+	it("keeps focused global accelerators aligned with visible renderer hotkeys", () => {
+		for (const shortcut of focusedDashboardGlobalActionShortcuts("darwin")) {
+			const hotkeyId = GLOBAL_ACTION_HOTKEY_IDS[shortcut.action];
+			if (!hotkeyId) {
+				throw new Error(`${shortcut.action} should have a visible hotkey`);
+			}
+			expect(
+				shortcut.accelerator,
+				`${shortcut.action} should use the visible registry shortcut in the Electron globalShortcut bridge`,
+			).toBe(electronAcceleratorFromMacChord(macChordForHotkey(hotkeyId)));
+		}
+	});
+
 	it("maps macOS Option shortcuts to dashboard global actions", () => {
 		expect(focusedDashboardGlobalActionShortcuts("darwin")).toEqual([
 			{ accelerator: "Alt+V", action: "TOGGLE_VIM_MODE" },
@@ -241,6 +311,34 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 });
 
 describe("focusedDashboardWebShortcuts", () => {
+	it("keeps focused web accelerators aligned with visible renderer hotkeys", () => {
+		for (const shortcut of focusedDashboardWebShortcuts("darwin")) {
+			const hotkeyId = shortcut.shortcut as HotkeyId;
+			expect(
+				HOTKEYS_REGISTRY[hotkeyId],
+				`${shortcut.shortcut} should be visible in the hotkey registry`,
+			).toBeDefined();
+			expect(
+				shortcut.accelerator,
+				`${shortcut.shortcut} should use the visible registry shortcut in the Electron globalShortcut bridge`,
+			).toBe(electronAcceleratorFromMacChord(macChordForHotkey(hotkeyId)));
+		}
+	});
+
+	it("keeps focused dashboard accelerators unique", () => {
+		const accelerators = [
+			"Alt+K",
+			...focusedDashboardGlobalActionShortcuts("darwin").map(
+				(shortcut) => shortcut.accelerator,
+			),
+			...focusedDashboardWebShortcuts("darwin").map(
+				(shortcut) => shortcut.accelerator,
+			),
+		];
+
+		expect(new Set(accelerators).size).toBe(accelerators.length);
+	});
+
 	it("maps macOS Option shortcuts to high-impact dashboard web shortcuts", () => {
 		expect(focusedDashboardWebShortcuts("darwin")).toEqual([
 			{ accelerator: "Alt+1", shortcut: "OPEN_WEB_PAGE_1" },
