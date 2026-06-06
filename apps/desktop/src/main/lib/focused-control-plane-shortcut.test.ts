@@ -2,6 +2,10 @@ import { describe, expect, it, mock } from "bun:test";
 import { EventEmitter } from "node:events";
 import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
 import { DASHBOARD_KEYBOARD_HELP_SECTIONS } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
+import {
+	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
+	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+} from "renderer/routes/_authenticated/hooks/useDashboardWebShortcuts/useDashboardWebShortcuts";
 import type { FocusedDashboardGlobalActionShortcut } from "./focused-control-plane-shortcut";
 
 mock.module("electron", () => ({
@@ -275,6 +279,19 @@ describe("focused control plane shortcut", () => {
 });
 
 describe("focusedDashboardGlobalActionShortcuts", () => {
+	it("keeps focused global shortcuts subscribed in normal renderer routes", () => {
+		const rendererActions = new Set<string>(
+			Object.values(DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS),
+		);
+
+		for (const shortcut of focusedDashboardGlobalActionShortcuts("darwin")) {
+			expect(
+				rendererActions.has(shortcut.action),
+				`${shortcut.action} is registered in Electron/main and must remain subscribed outside webviews`,
+			).toBe(true);
+		}
+	});
+
 	it("keeps focused global accelerators aligned with visible renderer hotkeys", () => {
 		for (const shortcut of focusedDashboardGlobalActionShortcuts("darwin")) {
 			const hotkeyId = GLOBAL_ACTION_HOTKEY_IDS[shortcut.action];
@@ -322,6 +339,19 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 });
 
 describe("focusedDashboardWebShortcuts", () => {
+	it("keeps focused web shortcuts subscribed in normal renderer routes", () => {
+		const rendererHotkeyIds = new Set<string>(
+			DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
+		);
+
+		for (const shortcut of focusedDashboardWebShortcuts("darwin")) {
+			expect(
+				rendererHotkeyIds.has(shortcut.shortcut),
+				`${shortcut.shortcut} is registered in Electron/main and must remain subscribed outside webviews`,
+			).toBe(true);
+		}
+	});
+
 	it("keeps focused main-process shortcuts discoverable in keyboard help", () => {
 		const documentedHotkeyIds = documentedDashboardKeyboardHelpHotkeyIds();
 		const focusedHotkeyIds = [
