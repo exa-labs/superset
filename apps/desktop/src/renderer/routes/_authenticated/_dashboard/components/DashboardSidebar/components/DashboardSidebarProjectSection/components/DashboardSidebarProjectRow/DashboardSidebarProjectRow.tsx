@@ -111,6 +111,7 @@ export const DashboardSidebarProjectRow = forwardRef<
 								<button
 									type="button"
 									data-dashboard-sidebar-action="create"
+									aria-keyshortcuts="n"
 									onClick={(event) => {
 										event.stopPropagation();
 										onNewWorkspace();
@@ -118,13 +119,14 @@ export const DashboardSidebarProjectRow = forwardRef<
 									onKeyDown={(event) => event.stopPropagation()}
 									onContextMenu={(event) => event.stopPropagation()}
 									aria-label="New workspace"
+									title="New workspace (n)"
 									className="hidden size-full items-center justify-center rounded transition-colors hover:bg-muted group-hover:flex group-has-[:focus]:flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 								>
 									<HiMiniPlus className="size-4 text-muted-foreground" />
 								</button>
 							</TooltipTrigger>
 							<TooltipContent side="bottom" sideOffset={4}>
-								New workspace
+								New workspace (n)
 							</TooltipContent>
 						</Tooltip>
 						<span className="text-[10px] font-normal tabular-nums text-muted-foreground group-hover:hidden group-has-[:focus]:hidden">
@@ -137,6 +139,8 @@ export const DashboardSidebarProjectRow = forwardRef<
 						type="button"
 						data-dashboard-sidebar-action="rename"
 						tabIndex={-1}
+						aria-keyshortcuts="e"
+						aria-label={`Rename ${projectName}`}
 						onClick={(event) => {
 							event.stopPropagation();
 							onStartRename();

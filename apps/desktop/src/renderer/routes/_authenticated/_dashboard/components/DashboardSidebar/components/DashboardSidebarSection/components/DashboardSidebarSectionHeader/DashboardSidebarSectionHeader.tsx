@@ -51,8 +51,14 @@ export const DashboardSidebarSectionHeader = forwardRef<
 				data-dashboard-sidebar-expanded={
 					isRenaming ? undefined : String(!section.isCollapsed)
 				}
+				aria-keyshortcuts={isRenaming ? undefined : "Space h l"}
 				role={isRenaming ? undefined : "button"}
 				tabIndex={isRenaming ? undefined : 0}
+				title={
+					isRenaming
+						? undefined
+						: `${section.isCollapsed ? "Expand" : "Collapse"} ${section.name} (Space, h, l)`
+				}
 				onClick={isRenaming ? undefined : onToggleCollapse}
 				onKeyDown={
 					isRenaming
