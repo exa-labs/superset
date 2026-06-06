@@ -230,6 +230,12 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.markRead")).toBe("U");
 		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("x/X");
 		expect(shortcutById.get("actions.sidebar.archive")).toBe("a");
+		expect(hotkeyById.get("actions.sidebar.create")).toBe(
+			"SIDEBAR_ACTION_CREATE",
+		);
+		expect(hotkeyById.get("actions.sidebar.createFolder")).toBe(
+			"SIDEBAR_ACTION_CREATE_FOLDER",
+		);
 		expect(hotkeyById.get("actions.sidebar.menu")).toBe("SIDEBAR_ACTION_MENU");
 		expect(hotkeyById.get("actions.sidebar.pin")).toBe("SIDEBAR_ACTION_PIN");
 		expect(hotkeyById.get("actions.sidebar.reply")).toBe(
@@ -244,6 +250,12 @@ describe("actions command provider", () => {
 		);
 		expect(hotkeyById.get("actions.sidebar.rename")).toBe(
 			"SIDEBAR_ACTION_RENAME",
+		);
+		expect(hotkeyById.get("actions.sidebar.color")).toBe(
+			"SIDEBAR_ACTION_COLOR",
+		);
+		expect(hotkeyById.get("actions.sidebar.delete")).toBe(
+			"SIDEBAR_ACTION_DELETE",
 		);
 		expect(hotkeyById.get("actions.sidebar.markRead")).toBe(
 			"SIDEBAR_ACTION_MARK_READ",

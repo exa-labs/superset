@@ -657,10 +657,22 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Create a session, workspace, or tab from focus",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_CREATE",
+					label: "Create from selected section from anywhere",
+					description:
+						"Run the focused sidebar group's create action from trapped focus when assigned, or through the control plane",
+				},
+				{
 					keys: ["N"],
 					label: "Create folder or group",
 					description:
 						"Create a folder/group for the focused provider, Chrome section, or workspace",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_CREATE_FOLDER",
+					label: "Create folder from anywhere",
+					description:
+						"Run the focused sidebar group's create-folder action from trapped focus when assigned, or through the control plane",
 				},
 				{
 					keys: ["p"],
@@ -758,8 +770,14 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 					description: "Change the focused native or Chrome folder color",
 				},
 				{
-					keys: ["⌥K", "type color"],
+					hotkeyId: "SIDEBAR_ACTION_COLOR",
 					label: "Color selected folder from anywhere",
+					description:
+						"Run the focused folder color action from trapped focus when assigned, or through the control plane",
+				},
+				{
+					keys: ["⌥K", "type color"],
+					label: "Color selected folder through control plane",
 					description:
 						"Open the control plane and run the focused folder color action when focus is trapped in a terminal, editor, or native view",
 				},
@@ -770,8 +788,14 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open confirmation for the focused native or Chrome folder",
 				},
 				{
-					keys: ["⌥K", "type delete folder"],
+					hotkeyId: "SIDEBAR_ACTION_DELETE",
 					label: "Delete selected folder from anywhere",
+					description:
+						"Run the focused folder delete action from trapped focus when assigned, or through the control plane",
+				},
+				{
+					keys: ["⌥K", "type delete folder"],
+					label: "Delete selected folder through control plane",
 					description:
 						"Open the control plane and run the focused folder delete action when focus is trapped in a terminal, editor, or native view",
 				},

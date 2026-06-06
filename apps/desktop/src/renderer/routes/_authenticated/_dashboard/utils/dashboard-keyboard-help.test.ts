@@ -206,14 +206,20 @@ describe("dashboard keyboard help", () => {
 			expect.objectContaining({ keys: ["c"] }),
 		);
 		expect(entryByLabel.get("Color selected folder from anywhere")).toEqual(
-			expect.objectContaining({ keys: ["⌥K", "type color"] }),
+			expect.objectContaining({ hotkeyId: "SIDEBAR_ACTION_COLOR" }),
 		);
+		expect(
+			entryByLabel.get("Color selected folder through control plane"),
+		).toEqual(expect.objectContaining({ keys: ["⌥K", "type color"] }));
 		expect(entryByLabel.get("Delete selected folder")).toEqual(
 			expect.objectContaining({ keys: ["d"] }),
 		);
 		expect(entryByLabel.get("Delete selected folder from anywhere")).toEqual(
-			expect.objectContaining({ keys: ["⌥K", "type delete folder"] }),
+			expect.objectContaining({ hotkeyId: "SIDEBAR_ACTION_DELETE" }),
 		);
+		expect(
+			entryByLabel.get("Delete selected folder through control plane"),
+		).toEqual(expect.objectContaining({ keys: ["⌥K", "type delete folder"] }));
 		expect(entryByLabel.get("Reply")).toEqual(
 			expect.objectContaining({ keys: ["r"] }),
 		);

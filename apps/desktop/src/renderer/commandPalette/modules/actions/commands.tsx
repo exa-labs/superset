@@ -197,6 +197,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-create",
 		description: "Create a new item from the focused sidebar group",
+		hotkeyId: "SIDEBAR_ACTION_CREATE",
 		icon: PlusIcon,
 		id: "create",
 		keywords: ["new", "create", "sidebar", "workspace", "thread", "session"],
@@ -206,6 +207,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-create-folder",
 		description: "Create a folder in the focused sidebar group",
+		hotkeyId: "SIDEBAR_ACTION_CREATE_FOLDER",
 		icon: FolderInputIcon,
 		id: "createFolder",
 		keywords: ["new", "create", "folder", "group", "sidebar", "organize"],
@@ -309,6 +311,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-color",
 		description: "Change the focused folder color",
+		hotkeyId: "SIDEBAR_ACTION_COLOR",
 		icon: PaletteIcon,
 		id: "color",
 		keywords: ["color", "folder", "palette", "sidebar", "focused"],
@@ -318,6 +321,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-delete",
 		description: "Delete the focused sidebar folder or removable item",
+		hotkeyId: "SIDEBAR_ACTION_DELETE",
 		icon: Trash2Icon,
 		id: "delete",
 		keywords: ["delete", "remove", "trash", "folder", "sidebar", "focused"],

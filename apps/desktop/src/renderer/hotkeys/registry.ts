@@ -267,6 +267,20 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Show or hide the side-by-side native chat/browser view",
 	},
+	SIDEBAR_ACTION_CREATE: {
+		key: { mac: null, windows: null, linux: null },
+		label: "Sidebar Create",
+		category: "Navigation",
+		description:
+			"Create from the focused sidebar group; defaults to local n in sidebar/Vim mode",
+	},
+	SIDEBAR_ACTION_CREATE_FOLDER: {
+		key: { mac: null, windows: null, linux: null },
+		label: "Sidebar Create Folder",
+		category: "Navigation",
+		description:
+			"Create a folder in the focused sidebar group; defaults to local N in sidebar/Vim mode",
+	},
 	SIDEBAR_ACTION_MENU: {
 		key: {
 			mac: L("alt+period"),
@@ -327,6 +341,13 @@ export const HOTKEYS_REGISTRY = {
 		category: "Navigation",
 		description: "Move the focused sidebar item out of its folder",
 	},
+	SIDEBAR_ACTION_COLOR: {
+		key: { mac: null, windows: null, linux: null },
+		label: "Sidebar Folder Color",
+		category: "Navigation",
+		description:
+			"Change the focused folder color; defaults to local c in sidebar/Vim mode",
+	},
 	SIDEBAR_ACTION_RENAME: {
 		key: {
 			mac: L("alt+e"),
@@ -366,6 +387,13 @@ export const HOTKEYS_REGISTRY = {
 		label: "Sidebar Mark Read",
 		category: "Navigation",
 		description: "Mark the focused native agent reply as read",
+	},
+	SIDEBAR_ACTION_DELETE: {
+		key: { mac: null, windows: null, linux: null },
+		label: "Sidebar Delete",
+		category: "Navigation",
+		description:
+			"Delete the focused folder or removable sidebar item; defaults to local d in sidebar/Vim mode",
 	},
 	BROWSER_NEW_TAB: {
 		key: {
