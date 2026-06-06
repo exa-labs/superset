@@ -40,6 +40,14 @@ function segmentAt(path: string, index: number): string | null {
 	return path.split("/").filter(Boolean)[index] ?? null;
 }
 
+function titleCaseSegment(value: string): string {
+	return decodeURIComponent(value)
+		.replace(/[-_]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim()
+		.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function isNativeAgentProvider(
 	value: string | null,
 ): value is NativeAgentProvider {
@@ -148,12 +156,40 @@ export function resolveDashboardViewMruRegistryLabel(
 		};
 	}
 
+	if (first === "workspace" || first === "v2-workspace") {
+		return {
+			subtitle: second ?? "Local workspace",
+			title: "Workspace",
+		};
+	}
+
 	if (first === "root-terminal" && second) {
 		const title = context.getQuickTerminalTitle?.(second);
 		if (!title) return null;
 		return {
 			subtitle: "Root terminal",
 			title: `${title} kr9`,
+		};
+	}
+
+	if (first === "tasks") {
+		return {
+			subtitle: second ? `Task ${second}` : "Dashboard",
+			title: "Tasks & PRs",
+		};
+	}
+
+	if (first === "automations") {
+		return {
+			subtitle: second ? `Automation ${second}` : "Dashboard",
+			title: "Automations",
+		};
+	}
+
+	if (first === "settings") {
+		return {
+			subtitle: "Settings",
+			title: second ? `${titleCaseSegment(second)} settings` : "Settings",
 		};
 	}
 

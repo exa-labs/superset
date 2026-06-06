@@ -74,6 +74,35 @@ describe("dashboard view MRU registry labels", () => {
 		});
 	});
 
+	it("labels workspace, tasks, automations, and settings routes", () => {
+		expect(resolveDashboardViewMruRegistryLabel("/v2-workspace/ws-1")).toEqual({
+			subtitle: "ws-1",
+			title: "Workspace",
+		});
+		expect(resolveDashboardViewMruRegistryLabel("/tasks")).toEqual({
+			subtitle: "Dashboard",
+			title: "Tasks & PRs",
+		});
+		expect(resolveDashboardViewMruRegistryLabel("/tasks/task-1")).toEqual({
+			subtitle: "Task task-1",
+			title: "Tasks & PRs",
+		});
+		expect(resolveDashboardViewMruRegistryLabel("/automations")).toEqual({
+			subtitle: "Dashboard",
+			title: "Automations",
+		});
+		expect(resolveDashboardViewMruRegistryLabel("/automations/auto-1")).toEqual(
+			{
+				subtitle: "Automation auto-1",
+				title: "Automations",
+			},
+		);
+		expect(resolveDashboardViewMruRegistryLabel("/settings/keyboard")).toEqual({
+			subtitle: "Settings",
+			title: "Keyboard settings",
+		});
+	});
+
 	it("labels quick root terminals by target", () => {
 		expect(resolveDashboardViewMruRegistryLabel("/root-terminal/heph")).toEqual(
 			{
