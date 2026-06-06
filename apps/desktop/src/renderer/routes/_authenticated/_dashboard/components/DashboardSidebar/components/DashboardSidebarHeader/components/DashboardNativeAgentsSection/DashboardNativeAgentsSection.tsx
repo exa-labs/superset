@@ -2207,6 +2207,21 @@ export function DashboardNativeAgentsSection({
 											] ?? FOLDER_COLORS[0],
 										);
 									};
+									const moveActiveSessionToFolder = () => {
+										const activeItem =
+											activeRoute.provider === folder.provider && activeRoute.id
+												? itemsByProvider[folder.provider].find(
+														(item) => item.id === activeRoute.id,
+													)
+												: null;
+										if (!activeItem) {
+											toast.error(
+												`Open a ${nativeAgentConversationLabel(folder.provider)} before moving it to ${folder.title}`,
+											);
+											return;
+										}
+										moveToFolder(activeItem, folder.id);
+									};
 									return (
 										<div
 											key={folder.id}
@@ -2339,6 +2354,32 @@ export function DashboardNativeAgentsSection({
 														onClick={(event) => {
 															event.stopPropagation();
 															setCreateProvider(providerConfig.id);
+														}}
+														className="sr-only"
+													/>
+													<button
+														type="button"
+														data-dashboard-sidebar-action="create-folder"
+														tabIndex={-1}
+														aria-keyshortcuts="N"
+														aria-label={`Create ${providerConfig.title} folder`}
+														title="Create folder (N)"
+														onClick={(event) => {
+															event.stopPropagation();
+															createFolder(providerConfig.id);
+														}}
+														className="sr-only"
+													/>
+													<button
+														type="button"
+														data-dashboard-sidebar-action="move"
+														tabIndex={-1}
+														aria-keyshortcuts="m"
+														aria-label={`Move current ${providerConfig.title} ${nativeAgentConversationLabel(providerConfig.id)} to ${folder.title}`}
+														title="Move current session to this folder (m)"
+														onClick={(event) => {
+															event.stopPropagation();
+															moveActiveSessionToFolder();
 														}}
 														className="sr-only"
 													/>

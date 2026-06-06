@@ -645,6 +645,16 @@ describe("getDashboardSidebarFocusableItems", () => {
 		create.id = "create";
 		makeVisible(create);
 
+		const createFolder = document.createElement("button");
+		createFolder.dataset.dashboardSidebarAction = "create-folder";
+		createFolder.id = "create-folder";
+		makeVisible(createFolder);
+
+		const move = document.createElement("button");
+		move.dataset.dashboardSidebarAction = "move";
+		move.id = "move";
+		makeVisible(move);
+
 		const deleteButton = document.createElement("button");
 		deleteButton.dataset.dashboardSidebarAction = "delete";
 		deleteButton.id = "delete";
@@ -655,7 +665,15 @@ describe("getDashboardSidebarFocusableItems", () => {
 		menu.id = "menu";
 		makeVisible(menu);
 
-		folderScope.append(folder, menu, create, color, deleteButton);
+		folderScope.append(
+			folder,
+			menu,
+			create,
+			createFolder,
+			move,
+			color,
+			deleteButton,
+		);
 		root.append(folderScope);
 
 		expect(
@@ -671,6 +689,14 @@ describe("getDashboardSidebarFocusableItems", () => {
 				dashboardSidebarKeyboardActionSelector("create"),
 			),
 		).toBe(create);
+		expect(
+			folderScope.querySelector(
+				dashboardSidebarKeyboardActionSelector("create-folder"),
+			),
+		).toBe(createFolder);
+		expect(
+			folderScope.querySelector(dashboardSidebarKeyboardActionSelector("move")),
+		).toBe(move);
 		expect(
 			folderScope.querySelector(
 				dashboardSidebarKeyboardActionSelector("delete"),
