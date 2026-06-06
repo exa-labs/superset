@@ -815,15 +815,19 @@ describe("web command provider", () => {
 				.find((command) => command.id === "native.devin.open")
 				?.run?.(context);
 			commands
+				.find((command) => command.id === "native.capy.sync")
+				?.run?.(context);
+			commands
 				.find((command) => command.id === "terminal.root.heph")
 				?.run?.(context);
 
 			expect(navigations).toEqual([
 				"/web/overseer",
 				"/native/devin",
+				"/native/capy",
 				"/root-terminal/heph",
 			]);
-			expect(timerCalls).toEqual([0, 120, 0, 120]);
+			expect(timerCalls).toEqual([0, 120, 0, 120, 0, 120, 0, 150]);
 		});
 	});
 

@@ -800,7 +800,7 @@ export const webProvider: CommandProvider = {
 					"native",
 				],
 				run: (context) => {
-					context.navigate("/native/capy");
+					navigateDashboardCommand(context, "/native/capy");
 					window.setTimeout(
 						() =>
 							window.dispatchEvent(
