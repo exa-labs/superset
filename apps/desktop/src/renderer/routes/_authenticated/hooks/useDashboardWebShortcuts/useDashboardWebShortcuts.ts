@@ -767,6 +767,14 @@ export function useDashboardWebShortcuts() {
 					toggleDashboardNavigationSidebar();
 					return;
 				}
+				if (globalAction === "focus-navigation-shell") {
+					updatePendingVimPrefix(null);
+					event.preventDefault();
+					event.stopPropagation();
+					event.stopImmediatePropagation();
+					handleDashboardGlobalKeyboardAction("FOCUS_DASHBOARD_SHELL");
+					return;
+				}
 				if (
 					globalAction === "open-unread-native-reply" &&
 					!localVimScopeActive

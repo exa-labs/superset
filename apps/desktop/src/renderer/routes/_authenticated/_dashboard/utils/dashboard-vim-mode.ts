@@ -4,6 +4,7 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
 export type DashboardVimSequence = "g b" | "g c" | "g d" | "g g" | "g w";
 export type DashboardVimGlobalAction =
+	| "focus-navigation-shell"
 	| "mark-latest-native-reply-read"
 	| "none"
 	| "open-unread-native-reply"
@@ -157,6 +158,7 @@ export function dashboardVimKey(event: KeyboardEvent): string {
 export function dashboardVimGlobalActionFromKey(
 	key: string,
 ): DashboardVimGlobalAction {
+	if (key === "escape") return "focus-navigation-shell";
 	if (key === "f") return "show-action-hints";
 	if (key === "?") return "show-keyboard-help";
 	if (key === "H") return "toggle-sidebar";
