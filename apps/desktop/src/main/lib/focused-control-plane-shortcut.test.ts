@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 import { EventEmitter } from "node:events";
 import { HOTKEYS_REGISTRY, type HotkeyId } from "renderer/hotkeys/registry";
+import { DASHBOARD_KEYBOARD_HELP_SECTIONS } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-keyboard-help";
 import type { FocusedDashboardGlobalActionShortcut } from "./focused-control-plane-shortcut";
 
 mock.module("electron", () => ({
@@ -115,6 +116,16 @@ function electronAcceleratorFromMacChord(chord: string): string {
 
 	return [...modifiers, electronKeyTokenFromMacChordToken(terminalToken)].join(
 		"+",
+	);
+}
+
+function documentedDashboardKeyboardHelpHotkeyIds(): Set<string> {
+	return new Set(
+		DASHBOARD_KEYBOARD_HELP_SECTIONS.flatMap((section) =>
+			section.entries.flatMap((entry) =>
+				entry.hotkeyId ? [entry.hotkeyId] : [],
+			),
+		),
 	);
 }
 
@@ -311,6 +322,28 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 });
 
 describe("focusedDashboardWebShortcuts", () => {
+	it("keeps focused main-process shortcuts discoverable in keyboard help", () => {
+		const documentedHotkeyIds = documentedDashboardKeyboardHelpHotkeyIds();
+		const focusedHotkeyIds = [
+			"OPEN_CONTROL_PLANE",
+			...focusedDashboardGlobalActionShortcuts("darwin").map((shortcut) => {
+				const hotkeyId = GLOBAL_ACTION_HOTKEY_IDS[shortcut.action];
+				if (!hotkeyId) {
+					throw new Error(`${shortcut.action} should have a visible hotkey`);
+				}
+				return hotkeyId;
+			}),
+			...focusedDashboardWebShortcuts("darwin").map(
+				(shortcut) => shortcut.shortcut,
+			),
+		];
+		const missingHotkeyIds = focusedHotkeyIds.filter(
+			(hotkeyId) => !documentedHotkeyIds.has(hotkeyId),
+		);
+
+		expect(missingHotkeyIds).toEqual([]);
+	});
+
 	it("keeps focused web accelerators aligned with visible renderer hotkeys", () => {
 		for (const shortcut of focusedDashboardWebShortcuts("darwin")) {
 			const hotkeyId = shortcut.shortcut as HotkeyId;
