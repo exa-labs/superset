@@ -190,7 +190,7 @@ function AuthenticatedLayout() {
 						entries,
 					});
 
-			if (!target) return;
+			if (!target) return false;
 			dashboardViewMruSwitchRef.current = {
 				entries,
 				index: target.index,
@@ -202,6 +202,7 @@ function AuthenticatedLayout() {
 				entries,
 			});
 			void navigate({ to: target.path });
+			return true;
 		},
 		[dashboardViewMruPathname, navigate, showDashboardViewMruOverlay],
 	);
@@ -212,7 +213,9 @@ function AuthenticatedLayout() {
 			if (detail?.direction !== "next" && detail?.direction !== "previous") {
 				return;
 			}
-			switchDashboardViewMru(detail.direction);
+			if (switchDashboardViewMru(detail.direction)) {
+				event.preventDefault();
+			}
 		};
 
 		window.addEventListener("dashboard-view-mru-switch", handleSwitch);

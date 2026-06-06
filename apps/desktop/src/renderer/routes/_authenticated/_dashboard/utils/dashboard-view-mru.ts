@@ -43,6 +43,26 @@ function stripUrlNoise(pathname: string): string {
 	return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
+function segmentAt(path: string, index: number): string | null {
+	return path.split("/").filter(Boolean)[index] ?? null;
+}
+
+function shouldUseHashBackedMruPath(input: {
+	hashPath: string;
+	locationPathname: string;
+}): boolean {
+	const locationPath = normalizeDashboardViewMruPath(input.locationPathname);
+	if (!locationPath) return true;
+
+	const hashRoot = segmentAt(input.hashPath, 0);
+	const locationRoot = segmentAt(locationPath, 0);
+	if (hashRoot !== locationRoot) return false;
+	if (hashRoot === "native") {
+		return segmentAt(input.hashPath, 1) === segmentAt(locationPath, 1);
+	}
+	return true;
+}
+
 export function normalizeDashboardViewMruPath(pathname: string): string | null {
 	const path = stripUrlNoise(pathname);
 	if (path === "/workspace" || path.startsWith("/workspace/")) return path;
@@ -59,6 +79,7 @@ export function normalizeDashboardViewMruPath(pathname: string): string | null {
 	if (path === "/tasks" || path.startsWith("/tasks/")) return path;
 	if (path === "/automations" || path.startsWith("/automations/")) return path;
 	if (path.startsWith("/root-terminal/")) return path;
+	if (path === "/settings" || path.startsWith("/settings/")) return path;
 	return null;
 }
 
@@ -69,7 +90,13 @@ export function resolveDashboardViewMruPathname(input: {
 	const hashMruPath = input.hashPathname
 		? normalizeDashboardViewMruPath(input.hashPathname)
 		: null;
-	return hashMruPath ?? input.locationPathname;
+	return hashMruPath &&
+		shouldUseHashBackedMruPath({
+			hashPath: hashMruPath,
+			locationPathname: input.locationPathname,
+		})
+		? hashMruPath
+		: input.locationPathname;
 }
 
 export function readDashboardViewMruEntries(
@@ -191,10 +218,6 @@ function titleCase(value: string): string {
 		.replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function segmentAt(path: string, index: number): string | null {
-	return path.split("/").filter(Boolean)[index] ?? null;
-}
-
 export function dashboardViewMruEntryLabel(
 	path: string,
 ): DashboardViewMruEntryLabel {
@@ -238,6 +261,12 @@ export function dashboardViewMruEntryLabel(
 		return {
 			subtitle: second ?? "Root terminal",
 			title: "Root terminal",
+		};
+	}
+	if (first === "settings") {
+		return {
+			subtitle: "Settings",
+			title: second ? `${titleCase(second)} settings` : "Settings",
 		};
 	}
 	if (first === "tasks") return { subtitle: "Dashboard", title: "Tasks & PRs" };

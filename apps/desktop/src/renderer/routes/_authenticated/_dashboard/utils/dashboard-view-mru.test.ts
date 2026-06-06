@@ -39,7 +39,9 @@ describe("dashboard view MRU", () => {
 		expect(normalizeDashboardViewMruPath("/v2-workspace/ws-1/")).toBe(
 			"/v2-workspace/ws-1",
 		);
-		expect(normalizeDashboardViewMruPath("/settings/keyboard")).toBeNull();
+		expect(normalizeDashboardViewMruPath("/settings/keyboard")).toBe(
+			"/settings/keyboard",
+		);
 	});
 
 	it("resolves hash-backed dashboard paths for MRU tracking", () => {
@@ -67,6 +69,18 @@ describe("dashboard view MRU", () => {
 				locationPathname: "/web/overseer",
 			}),
 		).toBe("/web/overseer");
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/settings/keyboard",
+				locationPathname: "/settings/account",
+			}),
+		).toBe("/settings/keyboard");
+		expect(
+			resolveDashboardViewMruPathname({
+				hashPathname: "/native/devin/devin-123",
+				locationPathname: "/native/capy",
+			}),
+		).toBe("/native/capy");
 	});
 
 	it("records hash-backed views through the resolved MRU pathname", () => {
@@ -105,6 +119,7 @@ describe("dashboard view MRU", () => {
 		recordDashboardViewMruPath("/settings/account", storage, 5);
 
 		expect(readDashboardViewMruEntries(storage)).toEqual([
+			{ path: "/settings/account", viewedAt: 5 },
 			{ path: "/v2-workspaces", viewedAt: 4 },
 			{ path: "/web/overseer", viewedAt: 3 },
 			{ path: "/native/devin/session-1", viewedAt: 2 },
@@ -114,16 +129,18 @@ describe("dashboard view MRU", () => {
 	it("ignores invalid persisted entries", () => {
 		const storage = memoryStorage({
 			[DASHBOARD_VIEW_MRU_STORAGE_KEY]: JSON.stringify([
-				{ path: "/settings/account", viewedAt: 1 },
+				{ path: "/bad-route", viewedAt: 1 },
 				{ path: "/web/overseer", viewedAt: 2 },
 				{ path: "/web/overseer", viewedAt: 3 },
 				{ path: "/native/capy/thread-1", viewedAt: "bad" },
+				{ path: "/settings/keyboard", viewedAt: 4 },
 			]),
 		});
 
 		expect(readDashboardViewMruEntries(storage)).toEqual([
 			{ path: "/web/overseer", viewedAt: 2 },
 			{ path: "/native/capy/thread-1", viewedAt: 0 },
+			{ path: "/settings/keyboard", viewedAt: 4 },
 		]);
 	});
 
@@ -216,6 +233,10 @@ describe("dashboard view MRU", () => {
 		expect(dashboardViewMruEntryLabel("/root-terminal/stag")).toEqual({
 			subtitle: "stag",
 			title: "Root terminal",
+		});
+		expect(dashboardViewMruEntryLabel("/settings/keyboard")).toEqual({
+			subtitle: "Settings",
+			title: "Keyboard settings",
 		});
 	});
 
