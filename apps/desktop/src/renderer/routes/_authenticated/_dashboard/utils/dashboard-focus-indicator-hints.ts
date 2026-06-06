@@ -5,15 +5,22 @@ interface DashboardFocusIndicatorHintOptions {
 	vimModeEnabled?: boolean;
 }
 
+const GLOBAL_NAV_HINT = "⌥K/Tab/1-6/C/D/G/V";
+
 const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
-	app: ["Esc", "⌥K/Tab/V", "?"],
-	browser: ["Esc", "⌥K/Tab/V", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
+	app: ["Esc", GLOBAL_NAV_HINT, "?"],
+	browser: ["Esc", GLOBAL_NAV_HINT, "j/k /", "h/l/r/s/p/x/u/U/f/?"],
 	"command-palette": ["type", "↑↓", "↵", "Esc"],
-	editor: ["Esc", "⌥K/Tab/V"],
+	editor: ["Esc", GLOBAL_NAV_HINT],
 	"keyboard-help": ["type", "Esc"],
-	"native-agent": ["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
-	sidebar: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
-	terminal: ["Esc", "⌥K/Tab/V"],
+	"native-agent": [
+		"Esc",
+		GLOBAL_NAV_HINT,
+		"⌥N/⌥⇧N",
+		"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
+	],
+	sidebar: [GLOBAL_NAV_HINT, "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
+	terminal: ["Esc", GLOBAL_NAV_HINT],
 };
 
 const GLOBAL_ROW_ACTIONS_HINT = "⌥./P/A/M/E";
@@ -127,12 +134,22 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 	options: DashboardFocusIndicatorHintOptions = {},
 ): string[] {
 	const showCommandsHint = hints.some(
-		(hint) => hint === "⌥K" || hint === "⌥K/Tab" || hint === "⌥K/Tab/V",
+		(hint) =>
+			hint === "⌥K" ||
+			hint === "⌥K/Tab" ||
+			hint === "⌥K/Tab/V" ||
+			hint === GLOBAL_NAV_HINT,
 	);
 	const showMruHint = hints.some(
-		(hint) => hint === "⌥Tab" || hint === "⌥K/Tab" || hint === "⌥K/Tab/V",
+		(hint) =>
+			hint === "⌥Tab" ||
+			hint === "⌥K/Tab" ||
+			hint === "⌥K/Tab/V" ||
+			hint === GLOBAL_NAV_HINT,
 	);
-	const showVimToggleHint = hints.includes("⌥K/Tab/V");
+	const showVimToggleHint =
+		hints.includes("⌥K/Tab/V") || hints.includes(GLOBAL_NAV_HINT);
+	const showFastSwitcherHint = hints.includes(GLOBAL_NAV_HINT);
 	const showVimShortcutsHint = hints.includes("?");
 	const hasLocalKeyboardMapHint = hints.some(
 		dashboardFocusHintIncludesKeyboardMap,
@@ -149,7 +166,9 @@ export function dashboardFocusIndicatorVisibleHintLabels(
 		showCommandsHint
 			? showMruHint
 				? showVimToggleHint
-					? "⌥K Commands · ⌥Tab MRU · ⌥V Vim"
+					? showFastSwitcherHint
+						? "⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim"
+						: "⌥K Commands · ⌥Tab MRU · ⌥V Vim"
 					: "⌥K Commands · ⌥Tab MRU"
 				: "⌥K Commands"
 			: null,
@@ -163,6 +182,9 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "⌥K") return "Option+K";
 	if (hint === "⌥K/Tab") return "Option+K/Option+Tab";
 	if (hint === "⌥K/Tab/V") return "Option+K/Option+Tab/Option+V";
+	if (hint === GLOBAL_NAV_HINT) {
+		return "Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V";
+	}
 	if (hint === "⌥/") return "Option+/";
 	if (hint === "↑↓") return "Up/Down";
 	if (hint === "↑↓ /") return "Up/Down, /";

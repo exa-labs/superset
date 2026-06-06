@@ -6,9 +6,11 @@ import {
 } from "./dashboard-focus-indicator-hints";
 
 describe("dashboardFocusIndicatorHints", () => {
+	const GLOBAL_NAV_HINT = "⌥K/Tab/1-6/C/D/G/V";
+
 	it("surfaces sidebar movement, activation, create/search, and action keys", () => {
 		expect(dashboardFocusIndicatorHints("sidebar")).toEqual([
-			"⌥K/Tab/V",
+			GLOBAL_NAV_HINT,
 			"↑↓ /",
 			"↵/Space/h/l",
 			"n/N/p/m/F/e/U/a/x/X/?",
@@ -18,34 +20,39 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("surfaces global and Vim action hints from browser focus", () => {
 		expect(
 			dashboardFocusIndicatorHints("browser", { vimModeEnabled: true }),
-		).toEqual(["Esc", "⌥K/Tab/V", "j/k /", "h/l/r/s/p/x/u/U/f/?"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "j/k /", "h/l/r/s/p/x/u/U/f/?"]);
 	});
 
 	it("hides Vim-only action hints when Vim mode is disabled", () => {
 		expect(
 			dashboardFocusIndicatorHints("app", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("browser", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("editor", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("native-agent", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "⌥./P/A/M/E"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "⌥./P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
-		).toEqual(["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"]);
+		).toEqual([
+			GLOBAL_NAV_HINT,
+			"↑↓ /",
+			"↵/Space/h/l",
+			"n/N/p/m/F/e/U/a/x/X/?",
+		]);
 		expect(
 			dashboardFocusIndicatorHints("terminal", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"]);
+		).toEqual(["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
 		expect(dashboardFocusIndicatorHints("native-agent")).toEqual([
 			"Esc",
-			"⌥K/Tab/V",
+			GLOBAL_NAV_HINT,
 			"⌥N/⌥⇧N",
 			"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
 		]);
@@ -98,100 +105,110 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("advertises the shortcut that works in the current keyboard mode", () => {
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
-				hints: ["Esc", "⌥K/Tab/V", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
+				hints: ["Esc", GLOBAL_NAV_HINT, "j/k /", "h/l/r/s/p/x/u/U/f/?"],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K/Option+Tab/Option+V, j/k, /, h/l, r, s, p, x, u, U, f, ?. Press ? for full keyboard shortcuts.",
+			"Browser focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, j/k, /, h/l, r, s, p, x, u, U, f, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
-				hints: ["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"],
+				hints: ["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K/Option+Tab/Option+V, Option+period actions menu and Option+P/A/M/E row actions. Press Option+/ for full keyboard shortcuts.",
+			"Browser focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+period actions menu and Option+P/A/M/E row actions. Press Option+/ for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
-				hints: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
+				hints: [
+					GLOBAL_NAV_HINT,
+					"↑↓ /",
+					"↵/Space/h/l",
+					"n/N/p/m/F/e/U/a/x/X/?",
+				],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Sidebar focus. Keys: Option+K/Option+Tab/Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, ?. Press ? for full keyboard shortcuts.",
+			"Sidebar focus. Keys: Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
-				hints: ["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
+				hints: [
+					"Esc",
+					GLOBAL_NAV_HINT,
+					"⌥N/⌥⇧N",
+					"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
+				],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Native agent focus. Keys: Esc, Option+K/Option+Tab/Option+V, Option+N/Option+Shift+N, r, o, b, p, m, F, e, u, U, a, x, X, f, ?. Press ? for full keyboard shortcuts.",
+			"Native agent focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+N/Option+Shift+N, r, o, b, p, m, F, e, u, U, a, x, X, f, ?. Press ? for full keyboard shortcuts.",
 		);
 	});
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K/Tab/V", "j/k /", "h/l/r/s/p/x/u/U/f/?"],
+				["Esc", GLOBAL_NAV_HINT, "j/k /", "h/l/r/s/p/x/u/U/f/?"],
 				{
 					vimModeEnabled: true,
 				},
 			),
 		).toEqual([
-			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
+			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"Esc Sidebar",
 			"j/k Move, / Search",
 			"h/l Tabs, r Reload, s Split, p/x Tab, u/U Unread, f Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"],
+				["Esc", GLOBAL_NAV_HINT, "⌥./P/A/M/E"],
 				{
 					vimModeEnabled: false,
 				},
 			),
 		).toEqual([
-			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
+			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"Esc Sidebar",
 			"⌥. Actions · ⌥P/A/M/E",
 			"⌥/ Shortcuts",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
+				[GLOBAL_NAV_HINT, "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
 				{
 					vimModeEnabled: false,
 				},
 			),
 		).toEqual([
-			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
+			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"↑↓ Move · / Search",
 			"↵ Open · Space Toggle · h/l Expand",
 			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
+				["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
 				{
 					vimModeEnabled: true,
 				},
 			),
 		).toEqual([
-			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
+			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"Esc Sidebar",
 			"⌥N Unread, ⌥⇧N Read",
 			"r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, a Hide, x/X Archive, f Hints, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "⌥./P/A/M/E"],
+				["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "⌥./P/A/M/E"],
 				{
 					vimModeEnabled: false,
 				},
 			),
 		).toEqual([
-			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
+			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"Esc Sidebar",
 			"⌥N Unread, ⌥⇧N Read",
 			"⌥. Actions · ⌥P/A/M/E",
