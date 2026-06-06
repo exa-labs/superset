@@ -6,6 +6,7 @@ import {
 	DASHBOARD_RENDERER_GLOBAL_SHORTCUT_ACTIONS,
 	DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
 } from "renderer/routes/_authenticated/hooks/useDashboardWebShortcuts/useDashboardWebShortcuts";
+import { DASHBOARD_WEB_SHORTCUTS } from "./dashboard-web-shortcut";
 import type { FocusedDashboardGlobalActionShortcut } from "./focused-control-plane-shortcut";
 
 mock.module("electron", () => ({
@@ -379,6 +380,17 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 });
 
 describe("focusedDashboardWebShortcuts", () => {
+	it("keeps focused web shortcut dispatches in the canonical main shortcut registry", () => {
+		const mainShortcutIds = new Set<string>(DASHBOARD_WEB_SHORTCUTS);
+
+		for (const shortcut of focusedDashboardWebShortcuts("darwin")) {
+			expect(
+				mainShortcutIds.has(shortcut.shortcut),
+				`${shortcut.shortcut} is dispatched by Electron/globalShortcut and must stay in DASHBOARD_WEB_SHORTCUTS`,
+			).toBe(true);
+		}
+	});
+
 	it("keeps focused web shortcuts subscribed in normal renderer routes", () => {
 		const rendererHotkeyIds = new Set<string>(
 			DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS,
