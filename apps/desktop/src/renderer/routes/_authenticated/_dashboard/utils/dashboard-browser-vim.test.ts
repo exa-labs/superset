@@ -18,6 +18,7 @@ describe("dashboard browser vim", () => {
 		expect(dashboardBrowserVimActionFromKey("p")).toBe("toggle-tab-pin");
 		expect(dashboardBrowserVimActionFromKey("H")).toBe("go-back");
 		expect(dashboardBrowserVimActionFromKey("L")).toBe("go-forward");
+		expect(dashboardBrowserVimActionFromKey("O")).toBe("open-external");
 		expect(dashboardBrowserVimActionFromKey("h")).toBe("previous-tab");
 		expect(dashboardBrowserVimActionFromKey("l")).toBe("next-tab");
 		expect(dashboardBrowserVimActionFromKey("j")).toBe("none");

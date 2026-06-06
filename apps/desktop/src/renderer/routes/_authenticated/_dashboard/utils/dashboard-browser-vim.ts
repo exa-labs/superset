@@ -8,6 +8,7 @@ export type DashboardBrowserVimAction =
 	| "narrow-active-split"
 	| "next-tab"
 	| "none"
+	| "open-external"
 	| "previous-tab"
 	| "reload"
 	| "swap-split"
@@ -30,6 +31,7 @@ export function dashboardBrowserVimActionFromKey(
 	if (key === "p") return "toggle-tab-pin";
 	if (key === "H") return "go-back";
 	if (key === "L") return "go-forward";
+	if (key === "O") return "open-external";
 	if (key === "h") return "previous-tab";
 	if (key === "l") return "next-tab";
 	return "none";

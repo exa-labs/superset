@@ -1053,6 +1053,11 @@ export function DashboardWebView({
 				return;
 			}
 
+			if (action === "open-external") {
+				openExternal.mutate(currentUrl);
+				return;
+			}
+
 			if (action === "toggle-split") {
 				toggleSplitView();
 				return;
@@ -1113,10 +1118,12 @@ export function DashboardWebView({
 		browserTabIds,
 		closeBrowserTab,
 		createTabFromCurrentUrl,
+		currentUrl,
 		equalizeSplitPanes,
 		goBack,
 		goForward,
 		isActive,
+		openExternal,
 		reload,
 		resizeActiveSplitPane,
 		swapSplitFocus,
