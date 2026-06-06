@@ -765,6 +765,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open the focused native agent sidebar session in its browser view",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_TOGGLE_BROWSER",
+					label: "Toggle selected native/browser from anywhere",
+					description:
+						"Switch the focused native agent sidebar session between chat and browser from trapped focus",
+				},
+				{
 					keys: ["c"],
 					label: "Color selected folder",
 					description: "Change the focused native or Chrome folder color",
