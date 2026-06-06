@@ -13,7 +13,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			GLOBAL_NAV_HINT,
 			"↑↓ /",
 			"↵/Space/h/l",
-			"n/N/p/m/F/e/U/a/x/X/?",
+			"n/N/p/m/F/e/U/a/x/X/c/d/?",
 		]);
 	});
 
@@ -42,7 +42,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			GLOBAL_NAV_HINT,
 			"↑↓ /",
 			"↵/Space/h/l",
-			"n/N/p/m/F/e/U/a/x/X/?",
+			"n/N/p/m/F/e/U/a/x/X/c/d/?",
 		]);
 		expect(
 			dashboardFocusIndicatorHints("terminal", { vimModeEnabled: false }),
@@ -125,12 +125,12 @@ describe("dashboardFocusIndicatorHints", () => {
 					GLOBAL_NAV_HINT,
 					"↑↓ /",
 					"↵/Space/h/l",
-					"n/N/p/m/F/e/U/a/x/X/?",
+					"n/N/p/m/F/e/U/a/x/X/c/d/?",
 				],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Sidebar focus. Keys: Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, ?. Press ? for full keyboard shortcuts.",
+			"Sidebar focus. Keys: Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, c, d, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
@@ -171,7 +171,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				[GLOBAL_NAV_HINT, "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
+				[GLOBAL_NAV_HINT, "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/c/d/?"],
 				{
 					vimModeEnabled: false,
 				},
@@ -180,7 +180,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"↑↓ Move · / Search",
 			"↵ Open · Space Toggle · h/l Expand",
-			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, ? Map",
+			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, c/d Folder, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(

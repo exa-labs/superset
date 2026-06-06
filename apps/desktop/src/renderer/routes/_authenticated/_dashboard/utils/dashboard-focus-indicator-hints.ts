@@ -14,7 +14,12 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", GLOBAL_NAV_HINT],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "j/k/gg/G/actions/?"],
-	sidebar: [GLOBAL_NAV_HINT, "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
+	sidebar: [
+		GLOBAL_NAV_HINT,
+		"↑↓ /",
+		"↵/Space/h/l",
+		"n/N/p/m/F/e/U/a/x/X/c/d/?",
+	],
 	terminal: ["Esc", GLOBAL_NAV_HINT],
 };
 
@@ -81,8 +86,8 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "n/N/p/m/e/a/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, a/x Away, ? Map";
 	}
-	if (hint === "n/N/p/m/F/e/U/a/x/X/?") {
-		return "n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, ? Map";
+	if (hint === "n/N/p/m/F/e/U/a/x/X/c/d/?") {
+		return "n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, c/d Folder, ? Map";
 	}
 	if (hint === "n/N/p/m/e/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, x Hide, ? Map";
@@ -194,8 +199,8 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "h/l") return "h/l";
 	if (hint === "n/p/x/?") return "n, p, x, ?";
 	if (hint === "n/N/p/m/e/a/x/?") return "n, N, p, m, e, a/x, ?";
-	if (hint === "n/N/p/m/F/e/U/a/x/X/?") {
-		return "n, N, p, m, F, e, U, a, x, X, ?";
+	if (hint === "n/N/p/m/F/e/U/a/x/X/c/d/?") {
+		return "n, N, p, m, F, e, U, a, x, X, c, d, ?";
 	}
 	if (hint === "n/N/p/m/e/x/?") return "n, N, p, m, e, x, ?";
 	if (hint === "p/x") return "p, x";
