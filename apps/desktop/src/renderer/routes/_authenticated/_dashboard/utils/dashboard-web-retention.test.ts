@@ -51,6 +51,7 @@ function dashboardWebFolder(
 		appId: "chrome",
 		title: id,
 		isCollapsed: false,
+		color: "#38bdf8",
 		createdAt: 0,
 		updatedAt: 0,
 		...overrides,

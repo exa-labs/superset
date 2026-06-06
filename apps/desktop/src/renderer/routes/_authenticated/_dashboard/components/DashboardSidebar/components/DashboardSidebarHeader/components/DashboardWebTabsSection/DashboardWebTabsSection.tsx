@@ -2,6 +2,7 @@ import { cn } from "@superset/ui/utils";
 import { useState, useSyncExternalStore } from "react";
 import {
 	createDashboardWebTabFolder,
+	cycleDashboardWebTabFolderColor,
 	DASHBOARD_WEB_TAB_APPS,
 	type DashboardWebTabAppId,
 	deleteDashboardWebTabFolder,
@@ -131,6 +132,7 @@ export function DashboardWebTabsSection({
 					onMoveTabToFolder={moveDashboardWebTabToFolder}
 					onRenameFolder={renameDashboardWebTabFolder}
 					onDeleteFolder={deleteDashboardWebTabFolder}
+					onCycleFolderColor={cycleDashboardWebTabFolderColor}
 					onFolderCollapsedChange={setDashboardWebTabFolderCollapsed}
 					onCollapsedChange={setAppCollapsed}
 				/>

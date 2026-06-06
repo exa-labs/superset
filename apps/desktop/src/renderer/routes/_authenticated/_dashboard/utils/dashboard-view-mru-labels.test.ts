@@ -27,6 +27,7 @@ describe("dashboard view MRU registry labels", () => {
 				}),
 				getWebTabFolder: () => ({
 					appId: "chrome",
+					color: "#38bdf8",
 					createdAt: 1,
 					id: "folder-1",
 					isCollapsed: false,

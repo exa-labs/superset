@@ -24,6 +24,7 @@ import {
 	LuFolder,
 	LuFolderPlus,
 	LuFolderX,
+	LuPalette,
 	LuPencil,
 	LuPlus,
 } from "react-icons/lu";
@@ -59,6 +60,7 @@ interface DashboardWebTabAppGroupProps {
 	onMoveTabToFolder: (tabId: string, folderId: string | null) => void;
 	onRenameFolder: (folderId: string, title: string) => void;
 	onDeleteFolder: (folderId: string) => void;
+	onCycleFolderColor: (folderId: string) => void;
 	onFolderCollapsedChange: (folderId: string, isCollapsed: boolean) => void;
 	onCollapsedChange: (
 		appId: DashboardWebTabAppId,
@@ -82,6 +84,7 @@ export function DashboardWebTabAppGroup({
 	onMoveTabToFolder,
 	onRenameFolder,
 	onDeleteFolder,
+	onCycleFolderColor,
 	onFolderCollapsedChange,
 	onCollapsedChange,
 }: DashboardWebTabAppGroupProps) {
@@ -332,7 +335,12 @@ export function DashboardWebTabAppGroup({
 								<div
 									data-dashboard-sidebar-action-scope
 									className="group/folder flex h-7 min-w-0 items-center gap-1 rounded-md border border-transparent px-2 text-xs font-medium text-muted-foreground transition-colors hover:border-border/50 hover:bg-accent/25 hover:text-foreground"
+									style={{ borderColor: `${folder.color}33` }}
 								>
+									<span
+										className="size-2 shrink-0 rounded-full"
+										style={{ backgroundColor: folder.color }}
+									/>
 									<LuFolder className="size-3 shrink-0 text-muted-foreground/70" />
 									{isEditingFolder ? (
 										<input
@@ -416,6 +424,12 @@ export function DashboardWebTabAppGroup({
 												Rename folder
 												<DropdownMenuShortcut>e</DropdownMenuShortcut>
 											</DropdownMenuItem>
+											<DropdownMenuItem
+												onSelect={() => onCycleFolderColor(folder.id)}
+											>
+												Cycle color
+												<DropdownMenuShortcut>c</DropdownMenuShortcut>
+											</DropdownMenuItem>
 											<DropdownMenuSeparator />
 											<DropdownMenuItem
 												onSelect={() => setDeleteFolderTarget(folder)}
@@ -435,6 +449,17 @@ export function DashboardWebTabAppGroup({
 										className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
 									>
 										<LuPencil className="size-3" />
+									</button>
+									<button
+										type="button"
+										data-dashboard-sidebar-action="color"
+										aria-keyshortcuts="c"
+										aria-label={`Cycle ${folder.title} color`}
+										title="Cycle folder color (c)"
+										onClick={() => onCycleFolderColor(folder.id)}
+										className="flex size-5 items-center justify-center rounded opacity-0 transition hover:bg-accent group-hover/folder:opacity-100 group-focus-within/folder:opacity-100"
+									>
+										<LuPalette className="size-3" />
 									</button>
 									<button
 										type="button"

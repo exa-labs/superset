@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import {
 	createDashboardWebTabFolder,
+	cycleDashboardWebTabFolderColor,
+	DASHBOARD_WEB_TAB_FOLDER_COLORS,
 	deleteDashboardWebTabFolder,
 	getDashboardWebTab,
 	getDashboardWebTabFolder,
@@ -10,6 +12,7 @@ import {
 	renameDashboardWebTabFolder,
 	resetDashboardWebTabsForTests,
 	setDashboardWebTabFolderCollapsed,
+	setDashboardWebTabFolderColor,
 	setDashboardWebTabPinned,
 	setDashboardWebTabUrl,
 	subscribeDashboardWebTabs,
@@ -68,6 +71,9 @@ describe("dashboard web tabs", () => {
 		expect(notificationCount).toBe(4);
 		expect(getDashboardWebTabFolders()).toHaveLength(1);
 		expect(getDashboardWebTabFolder(folder.id)?.isCollapsed).toBe(true);
+		expect(getDashboardWebTabFolder(folder.id)?.color).toBe(
+			DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+		);
 		expect(getDashboardWebTab("chrome-default")).toMatchObject({
 			folderId: folder.id,
 			isPinned: true,
@@ -123,6 +129,37 @@ describe("dashboard web tabs", () => {
 		expect(getDashboardWebTab("chrome-default")).toMatchObject({
 			folderId: null,
 		});
+
+		unsubscribe();
+	});
+
+	it("persists and safely cycles folder colors", () => {
+		let notificationCount = 0;
+		const unsubscribe = subscribeDashboardWebTabs(() => {
+			notificationCount += 1;
+		});
+		const folder = createDashboardWebTabFolder("chrome", "Research");
+
+		expect(getDashboardWebTabFolder(folder.id)?.color).toBe(
+			DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+		);
+
+		setDashboardWebTabFolderColor(folder.id, "#AABBCC");
+		setDashboardWebTabFolderColor(folder.id, "not-a-color");
+
+		expect(notificationCount).toBe(2);
+		expect(getDashboardWebTabFolder(folder.id)?.color).toBe("#aabbcc");
+
+		cycleDashboardWebTabFolderColor(folder.id);
+		expect(notificationCount).toBe(3);
+		expect(getDashboardWebTabFolder(folder.id)?.color).toBe(
+			DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+		);
+
+		resetDashboardWebTabsForTests();
+		expect(getDashboardWebTabFolder(folder.id)?.color).toBe(
+			DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+		);
 
 		unsubscribe();
 	});

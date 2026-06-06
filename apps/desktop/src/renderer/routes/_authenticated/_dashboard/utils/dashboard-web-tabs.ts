@@ -12,6 +12,18 @@ const CLOSED_DEFAULT_TABS_STORAGE_KEY = "dashboard-web-tabs-closed-defaults-v1";
 const FOLDERS_STORAGE_KEY = "dashboard-web-tab-folders-v1";
 const CHANGE_EVENT = "dashboard-web-tabs-change";
 
+export const DASHBOARD_WEB_TAB_FOLDER_COLORS = [
+	"#38bdf8",
+	"#a78bfa",
+	"#f472b6",
+	"#34d399",
+	"#fbbf24",
+	"#fb7185",
+	"#f97316",
+	"#14b8a6",
+	"#6366f1",
+] as const;
+
 export type DashboardWebTabApp = (typeof DASHBOARD_WEB_TAB_APPS)[number];
 export type DashboardWebTabAppId = DashboardWebTabApp["id"];
 
@@ -34,6 +46,7 @@ export interface DashboardWebTabFolder {
 	appId: DashboardWebTabAppId;
 	title: string;
 	isCollapsed: boolean;
+	color: string;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -122,6 +135,16 @@ function normalizeTab(tab: unknown): DashboardWebTab | null {
 	};
 }
 
+function normalizeDashboardWebTabFolderColor(
+	value: unknown,
+	fallback: string = DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
+): string {
+	if (typeof value !== "string") return fallback;
+	const trimmed = value.trim();
+	if (!/^#[0-9a-fA-F]{6}$/.test(trimmed)) return fallback;
+	return trimmed.toLowerCase();
+}
+
 function normalizeFolder(folder: unknown): DashboardWebTabFolder | null {
 	if (!folder || typeof folder !== "object" || Array.isArray(folder)) {
 		return null;
@@ -138,6 +161,7 @@ function normalizeFolder(folder: unknown): DashboardWebTabFolder | null {
 		appId: record.appId,
 		title: title || "Folder",
 		isCollapsed: record.isCollapsed === true,
+		color: normalizeDashboardWebTabFolderColor(record.color),
 		createdAt:
 			typeof record.createdAt === "number" && Number.isFinite(record.createdAt)
 				? record.createdAt
@@ -415,6 +439,7 @@ export function createDashboardWebTabFolder(
 		appId,
 		title: trimmedTitle || "Folder",
 		isCollapsed: false,
+		color: DASHBOARD_WEB_TAB_FOLDER_COLORS[0],
 		createdAt: now,
 		updatedAt: now,
 	};
@@ -438,6 +463,36 @@ export function renameDashboardWebTabFolder(folderId: string, title: string) {
 		),
 	);
 	notifyStoreChanged();
+}
+
+export function setDashboardWebTabFolderColor(folderId: string, color: string) {
+	const folders = readStoredFolders();
+	const folder = folders.find((item) => item.id === folderId);
+	if (!folder) return;
+	const nextColor = normalizeDashboardWebTabFolderColor(color, folder.color);
+	if (folder.color === nextColor) return;
+
+	writeStoredFolders(
+		folders.map((item) =>
+			item.id === folderId
+				? { ...item, color: nextColor, updatedAt: Date.now() }
+				: item,
+		),
+	);
+	notifyStoreChanged();
+}
+
+export function cycleDashboardWebTabFolderColor(folderId: string) {
+	const folder = getDashboardWebTabFolder(folderId);
+	if (!folder) return;
+	const currentIndex = DASHBOARD_WEB_TAB_FOLDER_COLORS.indexOf(
+		folder.color as (typeof DASHBOARD_WEB_TAB_FOLDER_COLORS)[number],
+	);
+	const nextColor =
+		DASHBOARD_WEB_TAB_FOLDER_COLORS[
+			(currentIndex + 1) % DASHBOARD_WEB_TAB_FOLDER_COLORS.length
+		] ?? DASHBOARD_WEB_TAB_FOLDER_COLORS[0];
+	setDashboardWebTabFolderColor(folder.id, nextColor);
 }
 
 export function setDashboardWebTabFolderCollapsed(
