@@ -230,6 +230,16 @@ function navigateDashboardCommand(context: CommandContext, path: string) {
 	scheduleDashboardNavigationShellFocus();
 }
 
+function createNativeProviderSessionFromCommand(
+	context: CommandContext,
+	provider: NativeAgentProvider,
+) {
+	context.navigate(nativeProviderPath(provider));
+	const dispatchCreate = () => dispatchNativeAgentCreate(provider);
+	window.setTimeout(dispatchCreate, 0);
+	window.setTimeout(dispatchCreate, 150);
+}
+
 const NATIVE_FILTER_COMMANDS: Array<{
 	filter: NativeOverviewFilter;
 	keywords: string[];
@@ -755,12 +765,8 @@ export const webProvider: CommandProvider = {
 				description: "Open Capy Native and start a thread",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["capy", "capi", "native", "new", "thread", "agent"],
-				run: (context) => {
-					context.navigate("/native/capy");
-					window.setTimeout(() => {
-						dispatchNativeAgentCreate("capy");
-					}, 0);
-				},
+				run: (context) =>
+					createNativeProviderSessionFromCommand(context, "capy"),
 			},
 			{
 				id: "native.devin.create",
@@ -773,12 +779,8 @@ export const webProvider: CommandProvider = {
 				description: "Open Devin Native and start a session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCreate,
 				keywords: ["devin", "native", "new", "session", "agent"],
-				run: (context) => {
-					context.navigate("/native/devin");
-					window.setTimeout(() => {
-						dispatchNativeAgentCreate("devin");
-					}, 0);
-				},
+				run: (context) =>
+					createNativeProviderSessionFromCommand(context, "devin"),
 			},
 			{
 				id: "native.capy.sync",

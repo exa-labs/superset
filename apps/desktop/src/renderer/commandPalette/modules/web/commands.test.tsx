@@ -257,6 +257,42 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.devin.create")).toBe("⌥D n");
 	});
 
+	it("retries top-level native create events after navigating from the palette", () => {
+		withWindowEvents((events) => {
+			const navigations: string[] = [];
+			const context = commandContextWithNavigate(
+				"/web-tabs/chrome-default",
+				(path) => {
+					navigations.push(path);
+				},
+			);
+			const commands = webProvider.provide(context);
+
+			commands
+				.find((command) => command.id === "native.capy.create")
+				?.run?.(context);
+			commands
+				.find((command) => command.id === "native.devin.create")
+				?.run?.(context);
+
+			expect(navigations).toEqual(["/native/capy", "/native/devin"]);
+			expect(
+				events.filter(
+					(event) =>
+						event.type === "dashboard-native-agent-create" &&
+						(event.detail as { provider?: unknown }).provider === "capy",
+				),
+			).toHaveLength(2);
+			expect(
+				events.filter(
+					(event) =>
+						event.type === "dashboard-native-agent-create" &&
+						(event.detail as { provider?: unknown }).provider === "devin",
+				),
+			).toHaveLength(2);
+		});
+	});
+
 	it("exposes visible native sidebar slot shortcuts in the control plane", () => {
 		const commands = webProvider.provide(commandContext("/native/capy"));
 		const shortcutById = new Map(
