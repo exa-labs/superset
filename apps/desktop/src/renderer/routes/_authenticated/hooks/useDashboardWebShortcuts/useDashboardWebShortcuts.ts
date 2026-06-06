@@ -256,6 +256,7 @@ export function dashboardSidebarKeyboardCommandFromVimKey(
 	if (key === "b") return "action-toggle-browser";
 	if (key === "m") return "action-move";
 	if (key === "F") return "action-remove-from-folder";
+	if (key === "U") return "action-mark-read";
 	if (key === "x" || key === "X") return "action-hard-archive";
 	if (key === "a") return "action-archive";
 	if (key === "e") return "action-rename";

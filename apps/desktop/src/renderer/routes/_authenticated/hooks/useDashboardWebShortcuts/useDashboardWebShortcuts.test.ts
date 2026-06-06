@@ -162,6 +162,9 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		expect(dashboardSidebarKeyboardCommandFromVimKey("F")).toBe(
 			"action-remove-from-folder",
 		);
+		expect(dashboardSidebarKeyboardCommandFromVimKey("U")).toBe(
+			"action-mark-read",
+		);
 		expect(dashboardSidebarKeyboardCommandFromVimKey("x")).toBe(
 			"action-hard-archive",
 		);
