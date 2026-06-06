@@ -47,12 +47,12 @@ export function dispatchDashboardViewMruSwitch(
 	direction: DashboardMruSwitchDirection,
 ): boolean {
 	if (typeof window === "undefined") return false;
-	window.dispatchEvent(
-		new CustomEvent("dashboard-view-mru-switch", {
-			detail: { direction },
-		}),
-	);
-	return true;
+	const event = new CustomEvent("dashboard-view-mru-switch", {
+		cancelable: true,
+		detail: { direction },
+	});
+	window.dispatchEvent(event);
+	return event.defaultPrevented;
 }
 
 export function dispatchDashboardOpenUnreadNativeReply(): boolean {

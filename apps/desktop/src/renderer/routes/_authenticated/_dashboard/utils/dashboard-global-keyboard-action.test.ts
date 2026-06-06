@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
 	type DashboardGlobalKeyboardAction,
+	dispatchDashboardViewMruSwitch,
 	handleDashboardGlobalKeyboardAction,
 	shouldFocusDashboardShellFromEscapeKey,
 } from "./dashboard-global-keyboard-action";
@@ -51,6 +52,58 @@ function keyEvent(
 }
 
 describe("handleDashboardGlobalKeyboardAction", () => {
+	it("reports MRU switch dispatch as unhandled when no switch target accepts it", () => {
+		const originalWindow = globalThis.window;
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: new EventTarget(),
+		});
+
+		try {
+			expect(dispatchDashboardViewMruSwitch("next")).toBe(false);
+		} finally {
+			if (originalWindow) {
+				Object.defineProperty(globalThis, "window", {
+					configurable: true,
+					value: originalWindow,
+				});
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+	});
+
+	it("reports MRU switch dispatch as handled only when the dashboard listener accepts it", () => {
+		const originalWindow = globalThis.window;
+		const testWindow = new EventTarget();
+		Object.defineProperty(globalThis, "window", {
+			configurable: true,
+			value: testWindow,
+		});
+		const directions: string[] = [];
+		const listener = (event: Event) => {
+			const detail = (event as CustomEvent<{ direction: string }>).detail;
+			directions.push(detail.direction);
+			event.preventDefault();
+		};
+		window.addEventListener("dashboard-view-mru-switch", listener);
+
+		try {
+			expect(dispatchDashboardViewMruSwitch("previous")).toBe(true);
+			expect(directions).toEqual(["previous"]);
+		} finally {
+			window.removeEventListener("dashboard-view-mru-switch", listener);
+			if (originalWindow) {
+				Object.defineProperty(globalThis, "window", {
+					configurable: true,
+					value: originalWindow,
+				});
+			} else {
+				delete (globalThis as { window?: unknown }).window;
+			}
+		}
+	});
+
 	it("toggles and announces Vim mode from the global main-process action", () => {
 		let toggled = false;
 		const announcements: boolean[] = [];
