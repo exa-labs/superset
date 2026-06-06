@@ -12,7 +12,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	editor: ["Esc", "⌥K/Tab/V"],
 	"keyboard-help": ["type", "Esc"],
 	"native-agent": ["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
-	sidebar: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+	sidebar: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
 	terminal: ["Esc", "⌥K/Tab/V"],
 };
 
@@ -78,8 +78,8 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "n/N/p/m/e/a/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, a/x Away, ? Map";
 	}
-	if (hint === "n/N/p/m/F/e/U/a/x/?") {
-		return "n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a/x Away, ? Map";
+	if (hint === "n/N/p/m/F/e/U/a/x/X/?") {
+		return "n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, ? Map";
 	}
 	if (hint === "n/N/p/m/e/x/?") {
 		return "n New, N Folder, p Pin, m Move, e Rename, x Hide, ? Map";
@@ -173,8 +173,8 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "h/l") return "h/l";
 	if (hint === "n/p/x/?") return "n, p, x, ?";
 	if (hint === "n/N/p/m/e/a/x/?") return "n, N, p, m, e, a/x, ?";
-	if (hint === "n/N/p/m/F/e/U/a/x/?") {
-		return "n, N, p, m, F, e, U, a/x, ?";
+	if (hint === "n/N/p/m/F/e/U/a/x/X/?") {
+		return "n, N, p, m, F, e, U, a, x, X, ?";
 	}
 	if (hint === "n/N/p/m/e/x/?") return "n, N, p, m, e, x, ?";
 	if (hint === "p/x") return "p, x";

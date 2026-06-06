@@ -221,7 +221,7 @@ describe("actions command provider", () => {
 		expect(shortcutById.get("actions.sidebar.delete")).toBe("d");
 		expect(shortcutById.get("actions.sidebar.markRead")).toBe("U");
 		expect(shortcutById.get("actions.sidebar.hardArchive")).toBe("x/X");
-		expect(shortcutById.get("actions.sidebar.archive")).toBe("a/x");
+		expect(shortcutById.get("actions.sidebar.archive")).toBe("a");
 		expect(hotkeyById.get("actions.sidebar.menu")).toBe("SIDEBAR_ACTION_MENU");
 		expect(hotkeyById.get("actions.sidebar.pin")).toBe("SIDEBAR_ACTION_PIN");
 		expect(hotkeyById.get("actions.sidebar.reply")).toBe(

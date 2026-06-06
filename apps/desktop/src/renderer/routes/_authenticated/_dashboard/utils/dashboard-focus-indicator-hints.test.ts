@@ -11,7 +11,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥K/Tab/V",
 			"↑↓ /",
 			"↵/Space/h/l",
-			"n/N/p/m/F/e/U/a/x/?",
+			"n/N/p/m/F/e/U/a/x/X/?",
 		]);
 	});
 
@@ -36,7 +36,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toEqual(["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "⌥./P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
-		).toEqual(["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"]);
+		).toEqual(["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"]);
 		expect(
 			dashboardFocusIndicatorHints("terminal", { vimModeEnabled: false }),
 		).toEqual(["Esc", "⌥K/Tab/V", "⌥./P/A/M/E"]);
@@ -114,11 +114,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
-				hints: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+				hints: ["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Sidebar focus. Keys: Option+K/Option+Tab/Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a/x, ?. Press ? for full keyboard shortcuts.",
+			"Sidebar focus. Keys: Option+K/Option+Tab/Option+V, Up/Down, /, Enter/Space/h/l, n, N, p, m, F, e, U, a, x, X, ?. Press ? for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
@@ -159,7 +159,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"],
+				["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/X/?"],
 				{
 					vimModeEnabled: false,
 				},
@@ -168,7 +168,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
 			"↑↓ Move · / Search",
 			"↵ Open · Space Toggle · h/l Expand",
-			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a/x Away, ? Map",
+			"n New, N Folder, p Pin, m/F Folder, e Rename, U Read, a Away, x/X Archive, ? Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(

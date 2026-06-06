@@ -353,7 +353,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 		icon: ArchiveIcon,
 		id: "archive",
 		keywords: ["away", "hide", "overview", "remove", "sidebar", "focused"],
-		shortcutLabel: "a/x",
+		shortcutLabel: "a",
 		title: "Move focused sidebar item away",
 	},
 ];
