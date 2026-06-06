@@ -45,6 +45,18 @@ describe("dashboard browser webview bridge", () => {
 			"SHOW_DASHBOARD_KEYBOARD_HELP",
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"hasDashboardShortcutModifiers",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"Mac|iPhone|iPad|iPod",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			"isMacLikePlatform() ? event.ctrlKey : !event.ctrlKey",
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
+			'!hasDashboardShortcutModifiers(event, "optional")',
+		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
 			'if (key === "Escape")',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(

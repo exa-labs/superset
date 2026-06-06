@@ -24,6 +24,15 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 	const invokeShortcut = (shortcut) => {
 		console.info(prefix + shortcut);
 	};
+	const isMacLikePlatform = () =>
+		/Mac|iPhone|iPad|iPod/i.test(String(navigator.platform || ""));
+	const hasDashboardShortcutModifiers = (event, shift = "none") => {
+		if (!event.altKey || event.metaKey) return false;
+		if (isMacLikePlatform() ? event.ctrlKey : !event.ctrlKey) return false;
+		if (shift === "none" && event.shiftKey) return false;
+		if (shift === "required" && !event.shiftKey) return false;
+		return true;
+	};
 	const clearDashboardVimPrefix = () => {
 		if (pendingDashboardVimPrefixTimeout) {
 			clearTimeout(pendingDashboardVimPrefixTimeout);
@@ -189,7 +198,9 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 				return "FOCUS_DASHBOARD_SHELL";
 			}
 		}
-		if (!event.altKey || event.ctrlKey || event.metaKey || event.repeat) return null;
+		if (event.repeat || !hasDashboardShortcutModifiers(event, "optional")) {
+			return null;
+		}
 		const key = String(event.key || "").toLowerCase();
 		const shiftedCode = String(event.code || "").toLowerCase();
 		if (shiftedCode === "tab") {
