@@ -42,6 +42,7 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			"SIDEBAR_ACTION_RENAME",
 			"SIDEBAR_ACTION_REPLY",
 			"SIDEBAR_ACTION_OPEN_BROWSER",
+			"SIDEBAR_ACTION_TOGGLE_BROWSER",
 			"SIDEBAR_ACTION_MARK_READ",
 			"SIDEBAR_ACTION_DELETE",
 			"BROWSER_NEW_TAB",
@@ -221,6 +222,11 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		expect(
 			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_REPLY"),
 		).toBe("action-reply");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut(
+				"SIDEBAR_ACTION_TOGGLE_BROWSER",
+			),
+		).toBe("action-toggle-browser");
 		expect(
 			dashboardSidebarKeyboardCommandFromShortcut(
 				"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",

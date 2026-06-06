@@ -257,6 +257,7 @@ const FOCUSED_SIDEBAR_COMMANDS: Array<{
 	{
 		command: "action-toggle-browser",
 		description: "Switch the focused agent session between native and browser",
+		hotkeyId: "SIDEBAR_ACTION_TOGGLE_BROWSER",
 		icon: PanelRightIcon,
 		id: "toggleBrowser",
 		keywords: [

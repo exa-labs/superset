@@ -244,6 +244,9 @@ describe("actions command provider", () => {
 		expect(hotkeyById.get("actions.sidebar.openBrowser")).toBe(
 			"SIDEBAR_ACTION_OPEN_BROWSER",
 		);
+		expect(hotkeyById.get("actions.sidebar.toggleBrowser")).toBe(
+			"SIDEBAR_ACTION_TOGGLE_BROWSER",
+		);
 		expect(hotkeyById.get("actions.sidebar.move")).toBe("SIDEBAR_ACTION_MOVE");
 		expect(hotkeyById.get("actions.sidebar.removeFromFolder")).toBe(
 			"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",

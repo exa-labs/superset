@@ -378,6 +378,13 @@ export const HOTKEYS_REGISTRY = {
 		category: "Navigation",
 		description: "Open the focused sidebar item in its browser view",
 	},
+	SIDEBAR_ACTION_TOGGLE_BROWSER: {
+		key: { mac: null, windows: null, linux: null },
+		label: "Sidebar Toggle Native Browser",
+		category: "Navigation",
+		description:
+			"Switch the focused native agent sidebar session between native and browser; defaults to local b in sidebar/Vim mode",
+	},
 	SIDEBAR_ACTION_MARK_READ: {
 		key: {
 			mac: L("alt+u"),
