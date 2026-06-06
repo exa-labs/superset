@@ -334,14 +334,20 @@ export function DashboardSidebar({
 											className="h-7 flex-1 px-0 py-0 text-xs placeholder:text-muted-foreground/65 focus-visible:ring-0"
 										/>
 										{sidebarSearchQuery.length > 0 ? (
-											<button
-												type="button"
-												aria-label="Clear sidebar search"
-												onClick={clearSidebarSearch}
-												className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-											>
-												<LuX className="size-3.5" />
-											</button>
+											<>
+												<span className="shrink-0 rounded border border-border/70 px-1 font-mono text-[10px] leading-4 text-muted-foreground/60">
+													Esc
+												</span>
+												<button
+													type="button"
+													aria-label="Clear sidebar search"
+													aria-keyshortcuts="Escape"
+													onClick={clearSidebarSearch}
+													className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+												>
+													<LuX className="size-3.5" />
+												</button>
+											</>
 										) : (
 											<span className="shrink-0 rounded border border-border/70 px-1 font-mono text-[10px] leading-4 text-muted-foreground/60">
 												/
