@@ -600,6 +600,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open a keyboard-navigable action menu for the focused session or folder",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_MENU",
+					label: "Show selected item actions from anywhere",
+					description:
+						"Open the focused sidebar row's action menu from browsers, terminals, and native views",
+				},
+				{
 					keys: ["Space"],
 					label: "Toggle selected item",
 					description: "Collapse or expand the focused folder or sidebar group",
@@ -656,10 +662,22 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Toggle selected Capy, Devin, or Chrome sidebar persistence",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_PIN",
+					label: "Pin or unpin selected from anywhere",
+					description:
+						"Toggle focused sidebar persistence while focus is trapped in another view",
+				},
+				{
 					keys: ["e"],
 					label: "Rename selected",
 					description:
 						"Rename the focused workspace, native session, folder, or Chrome tab",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_RENAME",
+					label: "Rename selected from anywhere",
+					description:
+						"Rename the focused sidebar item while focus is in a browser, terminal, or native view",
 				},
 				{
 					keys: ["m"],
@@ -668,10 +686,22 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Move the focused native session, Chrome tab, or workspace into a folder/group",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_MOVE",
+					label: "Move selected to folder from anywhere",
+					description:
+						"Move the focused sidebar item into a folder without first returning focus to the sidebar",
+				},
+				{
 					keys: ["F"],
 					label: "Remove selected from folder",
 					description:
 						"Move the focused native session, Chrome tab, or workspace out of its folder/group",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+					label: "Remove selected from folder from anywhere",
+					description:
+						"Move the focused sidebar item out of its folder without leaving the current view",
 				},
 				{
 					keys: ["U"],
@@ -680,10 +710,40 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Acknowledge the focused native Capy or Devin sidebar session's latest reply",
 				},
 				{
+					hotkeyId: "SIDEBAR_ACTION_MARK_READ",
+					label: "Mark selected reply read from anywhere",
+					description:
+						"Acknowledge the focused native Capy or Devin sidebar session's latest reply from trapped focus",
+				},
+				{
 					keys: ["a", "x"],
 					label: "Move selected away",
 					description:
 						"Move the focused Chrome tab or workspace away from the active sidebar; native sessions use a to hide and x/X to archive",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_ARCHIVE",
+					label: "Move selected away from anywhere",
+					description:
+						"Hide the focused sidebar item from the active list while focus stays in another view",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_HARD_ARCHIVE",
+					label: "Archive selected from anywhere",
+					description:
+						"Archive the focused native agent sidebar session from trapped focus",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_REPLY",
+					label: "Reply to selected from anywhere",
+					description:
+						"Focus reply for the focused native agent sidebar session from browsers, terminals, or workspace views",
+				},
+				{
+					hotkeyId: "SIDEBAR_ACTION_OPEN_BROWSER",
+					label: "Open selected in browser from anywhere",
+					description:
+						"Open the focused native agent sidebar session in its browser view",
 				},
 				{
 					keys: ["c"],

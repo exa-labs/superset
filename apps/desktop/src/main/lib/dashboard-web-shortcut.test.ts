@@ -138,6 +138,34 @@ describe("dashboardWebShortcutFromInput", () => {
 				hotkeyId: "TOGGLE_NATIVE_SPLIT_VIEW",
 				shortcut: "TOGGLE_NATIVE_SPLIT_VIEW",
 			},
+			{ hotkeyId: "SIDEBAR_ACTION_MENU", shortcut: "SIDEBAR_ACTION_MENU" },
+			{ hotkeyId: "SIDEBAR_ACTION_PIN", shortcut: "SIDEBAR_ACTION_PIN" },
+			{
+				hotkeyId: "SIDEBAR_ACTION_ARCHIVE",
+				shortcut: "SIDEBAR_ACTION_ARCHIVE",
+			},
+			{
+				hotkeyId: "SIDEBAR_ACTION_HARD_ARCHIVE",
+				shortcut: "SIDEBAR_ACTION_HARD_ARCHIVE",
+			},
+			{ hotkeyId: "SIDEBAR_ACTION_MOVE", shortcut: "SIDEBAR_ACTION_MOVE" },
+			{
+				hotkeyId: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+				shortcut: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+			},
+			{
+				hotkeyId: "SIDEBAR_ACTION_RENAME",
+				shortcut: "SIDEBAR_ACTION_RENAME",
+			},
+			{ hotkeyId: "SIDEBAR_ACTION_REPLY", shortcut: "SIDEBAR_ACTION_REPLY" },
+			{
+				hotkeyId: "SIDEBAR_ACTION_OPEN_BROWSER",
+				shortcut: "SIDEBAR_ACTION_OPEN_BROWSER",
+			},
+			{
+				hotkeyId: "SIDEBAR_ACTION_MARK_READ",
+				shortcut: "SIDEBAR_ACTION_MARK_READ",
+			},
 			{ hotkeyId: "BROWSER_NEW_TAB", shortcut: "BROWSER_NEW_TAB" },
 			{ hotkeyId: "BROWSER_RELOAD", shortcut: "BROWSER_RELOAD" },
 			{ hotkeyId: "BROWSER_GO_BACK", shortcut: "BROWSER_GO_BACK" },
@@ -224,6 +252,53 @@ describe("dashboardWebShortcutFromInput", () => {
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyS", key: "Dead" })),
 		).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
+	});
+
+	it("matches current sidebar row Option shortcuts while preserving browser precedence", () => {
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyP", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_PIN");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyA", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_ARCHIVE");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyA", key: "Dead", shift: true }),
+			),
+		).toBe("SIDEBAR_ACTION_HARD_ARCHIVE");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyM", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_MOVE");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyM", key: "Dead", shift: true }),
+			),
+		).toBe("SIDEBAR_ACTION_REMOVE_FROM_FOLDER");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyE", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_RENAME");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyR", key: "Dead", shift: true }),
+			),
+		).toBe("SIDEBAR_ACTION_REPLY");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyO", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_OPEN_BROWSER");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyU", key: "Dead" })),
+		).toBe("SIDEBAR_ACTION_MARK_READ");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "Period", key: "." })),
+		).toBe("SIDEBAR_ACTION_MENU");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyR", key: "Dead" })),
+		).toBe("BROWSER_RELOAD");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyO", key: "Dead", shift: true }),
+			),
+		).toBe("BROWSER_OPEN_EXTERNAL");
 	});
 
 	it("matches raw key down events emitted by focused webviews", () => {

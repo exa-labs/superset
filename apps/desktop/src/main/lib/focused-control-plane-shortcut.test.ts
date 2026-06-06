@@ -269,6 +269,22 @@ describe("focusedDashboardWebShortcuts", () => {
 			},
 			{ accelerator: "Alt+B", shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
 			{ accelerator: "Alt+S", shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
+			{ accelerator: "Alt+Period", shortcut: "SIDEBAR_ACTION_MENU" },
+			{ accelerator: "Alt+P", shortcut: "SIDEBAR_ACTION_PIN" },
+			{ accelerator: "Alt+A", shortcut: "SIDEBAR_ACTION_ARCHIVE" },
+			{
+				accelerator: "Alt+Shift+A",
+				shortcut: "SIDEBAR_ACTION_HARD_ARCHIVE",
+			},
+			{ accelerator: "Alt+M", shortcut: "SIDEBAR_ACTION_MOVE" },
+			{
+				accelerator: "Alt+Shift+M",
+				shortcut: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+			},
+			{ accelerator: "Alt+E", shortcut: "SIDEBAR_ACTION_RENAME" },
+			{ accelerator: "Alt+Shift+R", shortcut: "SIDEBAR_ACTION_REPLY" },
+			{ accelerator: "Alt+O", shortcut: "SIDEBAR_ACTION_OPEN_BROWSER" },
+			{ accelerator: "Alt+U", shortcut: "SIDEBAR_ACTION_MARK_READ" },
 			{ accelerator: "Alt+T", shortcut: "BROWSER_NEW_TAB" },
 			{ accelerator: "Alt+R", shortcut: "BROWSER_RELOAD" },
 			{ accelerator: "Alt+Left", shortcut: "BROWSER_GO_BACK" },
@@ -295,6 +311,10 @@ describe("focusedDashboardWebShortcuts", () => {
 		expect(focusedDashboardWebShortcuts("win32").at(-1)).toEqual({
 			accelerator: "Ctrl+Alt+Shift+0",
 			shortcut: "BROWSER_EQUALIZE_SPLIT",
+		});
+		expect(focusedDashboardWebShortcuts("linux")).toContainEqual({
+			accelerator: "Ctrl+Alt+P",
+			shortcut: "SIDEBAR_ACTION_PIN",
 		});
 	});
 });

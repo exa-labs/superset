@@ -242,6 +242,36 @@ function dashboardWebBrowserShortcutFromInput(
 	return null;
 }
 
+function dashboardWebSidebarActionShortcutFromInput(
+	input: DashboardWebShortcutInput,
+): DashboardWebShortcut | null {
+	if (!isShortcutKeyDownType(input.type)) return null;
+	if (input.isAutoRepeat) return null;
+	if (!input.alt || input.control || input.meta) return null;
+
+	const code = input.code.toLowerCase();
+	const key = input.key.toLowerCase();
+
+	if (!input.shift) {
+		if (code === "keyp" || key === "p") return "SIDEBAR_ACTION_PIN";
+		if (code === "keya" || key === "a") return "SIDEBAR_ACTION_ARCHIVE";
+		if (code === "keym" || key === "m") return "SIDEBAR_ACTION_MOVE";
+		if (code === "keye" || key === "e") return "SIDEBAR_ACTION_RENAME";
+		if (code === "keyo" || key === "o") return "SIDEBAR_ACTION_OPEN_BROWSER";
+		if (code === "keyu" || key === "u") return "SIDEBAR_ACTION_MARK_READ";
+		if (code === "period" || key === ".") return "SIDEBAR_ACTION_MENU";
+		return null;
+	}
+
+	if (code === "keya" || key === "a") return "SIDEBAR_ACTION_HARD_ARCHIVE";
+	if (code === "keyr" || key === "r") return "SIDEBAR_ACTION_REPLY";
+	if (code === "keym" || key === "m") {
+		return "SIDEBAR_ACTION_REMOVE_FROM_FOLDER";
+	}
+
+	return null;
+}
+
 function isPendingShortcutInput(input: DashboardWebShortcutInput): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
@@ -295,6 +325,10 @@ export function dashboardWebShortcutFromInput(
 
 	const browserShortcut = dashboardWebBrowserShortcutFromInput(input);
 	if (browserShortcut) return browserShortcut;
+
+	const sidebarActionShortcut =
+		dashboardWebSidebarActionShortcutFromInput(input);
+	if (sidebarActionShortcut) return sidebarActionShortcut;
 
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;

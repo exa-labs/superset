@@ -199,5 +199,35 @@ describe("HOTKEYS_REGISTRY shape", () => {
 			mode: "logical",
 			chord: "alt+shift+h",
 		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_PIN.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+p",
+		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_MENU.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+period",
+		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_ARCHIVE.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+a",
+		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_HARD_ARCHIVE.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+a",
+		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_MOVE.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+m",
+		});
+		expect(
+			HOTKEYS_REGISTRY.SIDEBAR_ACTION_REMOVE_FROM_FOLDER.key.mac,
+		).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+m",
+		});
+		expect(HOTKEYS_REGISTRY.SIDEBAR_ACTION_REPLY.key.mac).toMatchObject({
+			mode: "logical",
+			chord: "alt+shift+r",
+		});
 	});
 });

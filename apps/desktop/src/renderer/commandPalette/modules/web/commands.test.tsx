@@ -366,6 +366,9 @@ describe("web command provider", () => {
 		const shortcutById = new Map(
 			commands.map((command) => [command.id, command.shortcutLabel] as const),
 		);
+		const hotkeyById = new Map(
+			commands.map((command) => [command.id, command.hotkeyId] as const),
+		);
 
 		expect(shortcutById.get("native.current.new")).toBe("n");
 		expect(shortcutById.get("native.current.refresh")).toBe("R");
@@ -402,6 +405,29 @@ describe("web command provider", () => {
 		expect(shortcutById.get("native.folder.delete")).toBe("d");
 		expect(shortcutById.get("native.folder.moveCurrent")).toBe("m");
 		expect(shortcutById.get("native.folder.removeCurrent")).toBe("F");
+		expect(hotkeyById.get("native.current.reply")).toBe("SIDEBAR_ACTION_REPLY");
+		expect(hotkeyById.get("native.current.markRead")).toBe(
+			"SIDEBAR_ACTION_MARK_READ",
+		);
+		expect(hotkeyById.get("native.current.openBrowser")).toBe(
+			"SIDEBAR_ACTION_OPEN_BROWSER",
+		);
+		expect(hotkeyById.get("native.folder.moveCurrent")).toBe(
+			"SIDEBAR_ACTION_MOVE",
+		);
+		expect(hotkeyById.get("native.current.pin")).toBe("SIDEBAR_ACTION_PIN");
+		expect(hotkeyById.get("native.current.rename")).toBe(
+			"SIDEBAR_ACTION_RENAME",
+		);
+		expect(hotkeyById.get("native.current.hide")).toBe(
+			"SIDEBAR_ACTION_ARCHIVE",
+		);
+		expect(hotkeyById.get("native.current.archive")).toBe(
+			"SIDEBAR_ACTION_HARD_ARCHIVE",
+		);
+		expect(hotkeyById.get("native.folder.removeCurrent")).toBe(
+			"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+		);
 		expect(
 			commands.find((command) => command.id === "native.current.hide")
 				?.keywords,

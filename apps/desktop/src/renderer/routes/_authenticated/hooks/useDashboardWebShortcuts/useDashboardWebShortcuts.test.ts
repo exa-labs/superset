@@ -28,6 +28,16 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			"OPEN_ROOT_TERMINAL_HEPH",
 			"TOGGLE_NATIVE_BROWSER_VIEW",
 			"TOGGLE_NATIVE_SPLIT_VIEW",
+			"SIDEBAR_ACTION_MENU",
+			"SIDEBAR_ACTION_PIN",
+			"SIDEBAR_ACTION_ARCHIVE",
+			"SIDEBAR_ACTION_HARD_ARCHIVE",
+			"SIDEBAR_ACTION_MOVE",
+			"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+			"SIDEBAR_ACTION_RENAME",
+			"SIDEBAR_ACTION_REPLY",
+			"SIDEBAR_ACTION_OPEN_BROWSER",
+			"SIDEBAR_ACTION_MARK_READ",
 			"BROWSER_NEW_TAB",
 			"BROWSER_RELOAD",
 			"BROWSER_GO_BACK",
@@ -93,6 +103,20 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		expect(
 			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_MARK_READ"),
 		).toBe("action-mark-read");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_PIN"),
+		).toBe("action-pin");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_MOVE"),
+		).toBe("action-move");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut("SIDEBAR_ACTION_REPLY"),
+		).toBe("action-reply");
+		expect(
+			dashboardSidebarKeyboardCommandFromShortcut(
+				"SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
+			),
+		).toBe("action-remove-from-folder");
 		expect(
 			dashboardSidebarKeyboardCommandFromShortcut(
 				"SIDEBAR_ACTION_HARD_ARCHIVE",

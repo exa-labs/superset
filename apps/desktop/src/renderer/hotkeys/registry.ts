@@ -267,6 +267,106 @@ export const HOTKEYS_REGISTRY = {
 		category: "Web Pages",
 		description: "Show or hide the side-by-side native chat/browser view",
 	},
+	SIDEBAR_ACTION_MENU: {
+		key: {
+			mac: L("alt+period"),
+			windows: L("ctrl+alt+period"),
+			linux: L("ctrl+alt+period"),
+		},
+		label: "Sidebar Actions Menu",
+		category: "Navigation",
+		description: "Open the focused sidebar row's action menu from any view",
+	},
+	SIDEBAR_ACTION_PIN: {
+		key: {
+			mac: L("alt+p"),
+			windows: L("ctrl+alt+p"),
+			linux: L("ctrl+alt+p"),
+		},
+		label: "Sidebar Pin",
+		category: "Navigation",
+		description: "Pin or unpin the focused sidebar item",
+	},
+	SIDEBAR_ACTION_ARCHIVE: {
+		key: {
+			mac: L("alt+a"),
+			windows: L("ctrl+alt+a"),
+			linux: L("ctrl+alt+a"),
+		},
+		label: "Sidebar Hide",
+		category: "Navigation",
+		description: "Move the focused sidebar item away from the active list",
+	},
+	SIDEBAR_ACTION_HARD_ARCHIVE: {
+		key: {
+			mac: L("alt+shift+a"),
+			windows: L("ctrl+alt+shift+a"),
+			linux: L("ctrl+alt+shift+a"),
+		},
+		label: "Sidebar Archive",
+		category: "Navigation",
+		description: "Archive the focused native agent sidebar item",
+	},
+	SIDEBAR_ACTION_MOVE: {
+		key: {
+			mac: L("alt+m"),
+			windows: L("ctrl+alt+m"),
+			linux: L("ctrl+alt+m"),
+		},
+		label: "Sidebar Move to Folder",
+		category: "Navigation",
+		description: "Move the focused sidebar item into a folder",
+	},
+	SIDEBAR_ACTION_REMOVE_FROM_FOLDER: {
+		key: {
+			mac: L("alt+shift+m"),
+			windows: L("ctrl+alt+shift+m"),
+			linux: L("ctrl+alt+shift+m"),
+		},
+		label: "Sidebar Remove from Folder",
+		category: "Navigation",
+		description: "Move the focused sidebar item out of its folder",
+	},
+	SIDEBAR_ACTION_RENAME: {
+		key: {
+			mac: L("alt+e"),
+			windows: L("ctrl+alt+e"),
+			linux: L("ctrl+alt+e"),
+		},
+		label: "Sidebar Rename",
+		category: "Navigation",
+		description: "Rename the focused sidebar item",
+	},
+	SIDEBAR_ACTION_REPLY: {
+		key: {
+			mac: L("alt+shift+r"),
+			windows: L("ctrl+alt+shift+r"),
+			linux: L("ctrl+alt+shift+r"),
+		},
+		label: "Sidebar Reply",
+		category: "Navigation",
+		description: "Reply to the focused native agent sidebar session",
+	},
+	SIDEBAR_ACTION_OPEN_BROWSER: {
+		key: {
+			mac: L("alt+o"),
+			windows: L("ctrl+alt+o"),
+			linux: L("ctrl+alt+o"),
+		},
+		label: "Sidebar Open Browser",
+		category: "Navigation",
+		description: "Open the focused sidebar item in its browser view",
+	},
+	SIDEBAR_ACTION_MARK_READ: {
+		key: {
+			mac: L("alt+u"),
+			windows: L("ctrl+alt+u"),
+			linux: L("ctrl+alt+u"),
+		},
+		label: "Sidebar Mark Read",
+		category: "Navigation",
+		description: "Mark the focused native agent reply as read",
+	},
 	BROWSER_NEW_TAB: {
 		key: {
 			mac: L("alt+t"),

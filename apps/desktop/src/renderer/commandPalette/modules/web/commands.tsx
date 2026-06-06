@@ -979,6 +979,7 @@ export const webProvider: CommandProvider = {
 					"message",
 					"native",
 				],
+				hotkeyId: "SIDEBAR_ACTION_REPLY",
 				shortcutLabel: "r/i",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1006,6 +1007,7 @@ export const webProvider: CommandProvider = {
 					"notification",
 					"native",
 				],
+				hotkeyId: "SIDEBAR_ACTION_MARK_READ",
 				shortcutLabel: "U",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1023,6 +1025,7 @@ export const webProvider: CommandProvider = {
 				description: "Switch the current Capy/Devin session to browser view",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "open", "browser", "native", "session"],
+				hotkeyId: "SIDEBAR_ACTION_OPEN_BROWSER",
 				shortcutLabel: "o",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1067,6 +1070,7 @@ export const webProvider: CommandProvider = {
 					"Move the current Capy/Devin session to the last selected folder",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "folder", "move", "native"],
+				hotkeyId: "SIDEBAR_ACTION_MOVE",
 				shortcutLabel: "m",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1090,6 +1094,7 @@ export const webProvider: CommandProvider = {
 						: "Keep the current Capy/Devin conversation in the sidebar",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "pin", "unpin", "sidebar", "native"],
+				hotkeyId: "SIDEBAR_ACTION_PIN",
 				shortcutLabel: "p",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1107,6 +1112,7 @@ export const webProvider: CommandProvider = {
 				description: "Set a local title for the current Capy/Devin session",
 				priority: CONTROL_PLANE_PRIORITY.nativeCurrentPrimary,
 				keywords: ["capy", "devin", "rename", "title", "session", "native"],
+				hotkeyId: "SIDEBAR_ACTION_RENAME",
 				shortcutLabel: "e",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1141,6 +1147,10 @@ export const webProvider: CommandProvider = {
 								"sidebar",
 							]
 						: ["capy", "devin", "hide", "move", "overview", "sidebar"],
+				hotkeyId:
+					currentNativeVisibilityAction === "hide"
+						? "SIDEBAR_ACTION_ARCHIVE"
+						: undefined,
 				shortcutLabel: currentNativeVisibilityAction === "show" ? "p" : "a",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1169,6 +1179,7 @@ export const webProvider: CommandProvider = {
 					"session",
 					"thread",
 				],
+				hotkeyId: "SIDEBAR_ACTION_HARD_ARCHIVE",
 				shortcutLabel: "x/X",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
@@ -1393,6 +1404,7 @@ export const webProvider: CommandProvider = {
 					"overview",
 					"native",
 				],
+				hotkeyId: "SIDEBAR_ACTION_REMOVE_FROM_FOLDER",
 				shortcutLabel: "F",
 				when: (context) =>
 					/\/native\/(?:capy|devin)\//.test(context.route.pathname),
