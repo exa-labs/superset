@@ -24,16 +24,22 @@ describe("dashboardFocusIndicatorHints", () => {
 	it("hides Vim-only action hints when Vim mode is disabled", () => {
 		expect(
 			dashboardFocusIndicatorHints("app", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V"]);
+		).toEqual(["Esc", "⌥K/Tab/V", "⌥P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("browser", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V"]);
+		).toEqual(["Esc", "⌥K/Tab/V", "⌥P/A/M/E"]);
+		expect(
+			dashboardFocusIndicatorHints("editor", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K/Tab/V", "⌥P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("native-agent", { vimModeEnabled: false }),
-		).toEqual(["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N"]);
+		).toEqual(["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "⌥P/A/M/E"]);
 		expect(
 			dashboardFocusIndicatorHints("sidebar", { vimModeEnabled: false }),
 		).toEqual(["⌥K/Tab/V", "↑↓ /", "↵/Space/h/l", "n/N/p/m/F/e/U/a/x/?"]);
+		expect(
+			dashboardFocusIndicatorHints("terminal", { vimModeEnabled: false }),
+		).toEqual(["Esc", "⌥K/Tab/V", "⌥P/A/M/E"]);
 	});
 
 	it("surfaces native agent inbox actions", () => {
@@ -100,11 +106,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Browser focus", {
-				hints: ["Esc", "⌥K/Tab/V"],
+				hints: ["Esc", "⌥K/Tab/V", "⌥P/A/M/E"],
 				vimModeEnabled: false,
 			}),
 		).toBe(
-			"Browser focus. Keys: Esc, Option+K/Option+Tab/Option+V. Press Option+/ for full keyboard shortcuts.",
+			"Browser focus. Keys: Esc, Option+K/Option+Tab/Option+V, Option+P/A/M/E row actions. Press Option+/ for full keyboard shortcuts.",
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Sidebar focus", {
@@ -139,12 +145,16 @@ describe("dashboardFocusIndicatorHints", () => {
 			"h/l Tabs, r Reload, s Split, p/x Tab, u/U Unread, f Map",
 		]);
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K/Tab/V"], {
-				vimModeEnabled: false,
-			}),
+			dashboardFocusIndicatorVisibleHintLabels(
+				["Esc", "⌥K/Tab/V", "⌥P/A/M/E"],
+				{
+					vimModeEnabled: false,
+				},
+			),
 		).toEqual([
 			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
 			"Esc Sidebar",
+			"⌥P/A/M/E Row Actions",
 			"⌥/ Shortcuts",
 		]);
 		expect(
@@ -174,13 +184,17 @@ describe("dashboardFocusIndicatorHints", () => {
 			"r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, a Hide, x/X Archive, f Hints, ? Map",
 		]);
 		expect(
-			dashboardFocusIndicatorVisibleHintLabels(["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N"], {
-				vimModeEnabled: false,
-			}),
+			dashboardFocusIndicatorVisibleHintLabels(
+				["Esc", "⌥K/Tab/V", "⌥N/⌥⇧N", "⌥P/A/M/E"],
+				{
+					vimModeEnabled: false,
+				},
+			),
 		).toEqual([
 			"⌥K Commands · ⌥Tab MRU · ⌥V Vim",
 			"Esc Sidebar",
 			"⌥N Unread, ⌥⇧N Read",
+			"⌥P/A/M/E Row Actions",
 			"⌥/ Shortcuts",
 		]);
 		expect(
