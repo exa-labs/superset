@@ -9,6 +9,10 @@ import { dispatchDashboardNativeAgentOpenIndex } from "renderer/routes/_authenti
 import type { NativeAgentProvider } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-ui";
 import { openDashboardActionHints } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-action-hints";
 import {
+	type DashboardBrowserCurrentAction,
+	dispatchDashboardBrowserCurrentAction,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-current-actions";
+import {
 	type DashboardGlobalKeyboardAction,
 	handleDashboardGlobalKeyboardAction,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-global-keyboard-action";
@@ -39,22 +43,6 @@ import {
 	getDashboardWebTabs,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-web-tabs";
 
-type DashboardBrowserCurrentAction =
-	| "close-current-tab"
-	| "close-split"
-	| "equalize-split"
-	| "go-back"
-	| "go-forward"
-	| "narrow-active-split"
-	| "new-current-url-tab"
-	| "next-tab"
-	| "open-external"
-	| "previous-tab"
-	| "reload"
-	| "swap-split"
-	| "toggle-tab-pin"
-	| "toggle-split"
-	| "widen-active-split";
 type DashboardNativeSplitCurrentAction =
 	| "close-split"
 	| "equalize-split"
@@ -217,14 +205,6 @@ function digitIndexFromEvent(event: KeyboardEvent): number | null {
 
 function isModifierOnlyEvent(event: KeyboardEvent): boolean {
 	return ["Alt", "Control", "Meta", "Shift"].includes(event.key);
-}
-
-function dispatchBrowserCurrentAction(action: DashboardBrowserCurrentAction) {
-	window.dispatchEvent(
-		new CustomEvent("dashboard-browser-current-action", {
-			detail: { action },
-		}),
-	);
 }
 
 function isNativeAgentPathname(pathname: string): boolean {
@@ -488,7 +468,7 @@ export function useDashboardWebShortcuts() {
 
 			const browserAction = BROWSER_SHORTCUT_ACTIONS[shortcut];
 			if (browserAction) {
-				dispatchBrowserCurrentAction(browserAction);
+				dispatchDashboardBrowserCurrentAction({ action: browserAction });
 				return;
 			}
 

@@ -22,6 +22,11 @@ import {
 } from "react-icons/lu";
 import { electronTrpc } from "renderer/lib/electron-trpc";
 import {
+	DASHBOARD_BROWSER_CURRENT_ACTION_EVENT,
+	type DashboardBrowserCurrentAction,
+	dashboardBrowserCurrentActionEventDetail,
+} from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-current-actions";
+import {
 	recordDashboardBrowserPaneEvent,
 	removeDashboardBrowserPaneDiagnostics,
 } from "renderer/routes/_authenticated/_dashboard/utils/dashboard-browser-diagnostics";
@@ -69,12 +74,6 @@ const COMMON_NEW_TAB_DESTINATIONS = [
 	{ label: "ChatGPT", url: "https://chatgpt.com/", title: "ChatGPT" },
 	{ label: "Claude", url: "https://claude.ai/", title: "Claude" },
 ] as const;
-
-type DashboardBrowserCurrentAction =
-	| DashboardBrowserShortcutAction
-	| "new-chatgpt-tab"
-	| "new-claude-tab"
-	| "new-google-tab";
 
 const BROWSER_SHORTCUT_SECTION_LABELS = {
 	navigation: "Navigation",
@@ -834,24 +833,32 @@ export function DashboardWebView({
 		[],
 	);
 
-	const goBack = useCallback(() => {
+	const goBack = useCallback((): boolean => {
 		const webview = getActiveWebview();
-		if (!isActiveWebviewReady() || !webview) return;
+		if (!isActiveWebviewReady() || !webview) return false;
 		try {
-			if (webview.canGoBack()) webview.goBack();
+			if (!webview.canGoBack()) return false;
+			webview.goBack();
+			return true;
 		} catch {}
+		return false;
 	}, [getActiveWebview, isActiveWebviewReady]);
 
-	const goForward = useCallback(() => {
+	const goForward = useCallback((): boolean => {
 		const webview = getActiveWebview();
-		if (!isActiveWebviewReady() || !webview) return;
+		if (!isActiveWebviewReady() || !webview) return false;
 		try {
-			if (webview.canGoForward()) webview.goForward();
+			if (!webview.canGoForward()) return false;
+			webview.goForward();
+			return true;
 		} catch {}
+		return false;
 	}, [getActiveWebview, isActiveWebviewReady]);
 
-	const reload = useCallback(() => {
-		if (!isActiveWebviewReady()) return;
+	const reload = useCallback((): boolean => {
+		if (!isActiveWebviewReady()) return false;
+		const webview = getActiveWebview();
+		if (!webview) return false;
 		recordDashboardBrowserPaneEvent({
 			paneId: `dashboard-web:${id}:${activeBrowserTabIdRef.current}`,
 			tabId: activeBrowserTabIdRef.current,
@@ -861,7 +868,8 @@ export function DashboardWebView({
 			title: pageTitle,
 		});
 		try {
-			getActiveWebview()?.reload();
+			webview.reload();
+			return true;
 		} catch (error) {
 			recordDashboardBrowserPaneEvent({
 				paneId: `dashboard-web:${id}:${activeBrowserTabIdRef.current}`,
@@ -873,6 +881,7 @@ export function DashboardWebView({
 				detail: error instanceof Error ? error.message : String(error),
 			});
 		}
+		return false;
 	}, [
 		cacheKey,
 		currentUrl,
@@ -888,61 +897,64 @@ export function DashboardWebView({
 		createBrowserTab({ title, url: currentUrl });
 	}, [createBrowserTab, currentUrl, label, pageTitle]);
 
-	const toggleDashboardWebTabPinned = useCallback(() => {
+	const toggleDashboardWebTabPinned = useCallback((): boolean => {
 		const tab = getDashboardWebTab(id);
-		if (!tab) return;
+		if (!tab) return false;
 		setDashboardWebTabPinned(tab.id, !tab.isPinned);
+		return true;
 	}, [id]);
 
 	const runBrowserCurrentAction = useCallback(
-		(action: DashboardBrowserCurrentAction) => {
+		(action: DashboardBrowserCurrentAction): boolean => {
 			if (action === "reload") {
-				reload();
-				return;
+				return reload();
 			}
 			if (action === "go-back") {
-				goBack();
-				return;
+				return goBack();
 			}
 			if (action === "go-forward") {
-				goForward();
-				return;
+				return goForward();
 			}
 			if (action === "open-external") {
 				openExternal.mutate(currentUrl);
-				return;
+				return true;
 			}
 			if (action === "toggle-split") {
 				toggleSplitView();
-				return;
+				return true;
 			}
 			if (action === "close-split") {
+				if (!splitBrowserTabIdRef.current) return false;
 				setSplitBrowserTabId(null);
-				return;
+				return true;
 			}
 			if (action === "swap-split") {
+				if (!splitBrowserTabIdRef.current) return false;
 				swapSplitFocus();
-				return;
+				return true;
 			}
 			if (action === "narrow-active-split") {
+				if (!splitBrowserTabIdRef.current) return false;
 				resizeActiveSplitPane(-SPLIT_BROWSER_RATIO_STEP);
-				return;
+				return true;
 			}
 			if (action === "widen-active-split") {
+				if (!splitBrowserTabIdRef.current) return false;
 				resizeActiveSplitPane(SPLIT_BROWSER_RATIO_STEP);
-				return;
+				return true;
 			}
 			if (action === "equalize-split") {
+				if (!splitBrowserTabIdRef.current) return false;
 				equalizeSplitPanes();
-				return;
+				return true;
 			}
 			if (action === "close-current-tab") {
+				if (browserTabIds.length <= 1) return false;
 				closeBrowserTab(activeBrowserTabIdRef.current);
-				return;
+				return true;
 			}
 			if (action === "toggle-tab-pin") {
-				toggleDashboardWebTabPinned();
-				return;
+				return toggleDashboardWebTabPinned();
 			}
 			if (action === "previous-tab" || action === "next-tab") {
 				const nextTabId = nextDashboardBrowserTabId(
@@ -952,12 +964,13 @@ export function DashboardWebView({
 				);
 				if (nextTabId && nextTabId !== activeBrowserTabIdRef.current) {
 					activateBrowserTab(nextTabId);
+					return true;
 				}
-				return;
+				return false;
 			}
 			if (action === "new-current-url-tab") {
 				createTabFromCurrentUrl();
-				return;
+				return true;
 			}
 
 			const destination = COMMON_NEW_TAB_DESTINATIONS.find((item) => {
@@ -965,7 +978,9 @@ export function DashboardWebView({
 				if (action === "new-chatgpt-tab") return item.label === "ChatGPT";
 				return item.label === "Claude";
 			});
-			if (destination) createBrowserTab(destination);
+			if (!destination) return false;
+			createBrowserTab(destination);
+			return true;
 		},
 		[
 			activateBrowserTab,
@@ -990,20 +1005,18 @@ export function DashboardWebView({
 		if (!isActive) return;
 
 		const handleBrowserAction = (event: Event) => {
-			const action = (
-				event as CustomEvent<{ action?: DashboardBrowserCurrentAction }>
-			).detail?.action;
-			if (!action) return;
-			runBrowserCurrentAction(action);
+			const detail = dashboardBrowserCurrentActionEventDetail(event);
+			if (!detail) return;
+			if (runBrowserCurrentAction(detail.action)) event.preventDefault();
 		};
 
 		window.addEventListener(
-			"dashboard-browser-current-action",
+			DASHBOARD_BROWSER_CURRENT_ACTION_EVENT,
 			handleBrowserAction,
 		);
 		return () => {
 			window.removeEventListener(
-				"dashboard-browser-current-action",
+				DASHBOARD_BROWSER_CURRENT_ACTION_EVENT,
 				handleBrowserAction,
 			);
 		};
