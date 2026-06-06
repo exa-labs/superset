@@ -16,7 +16,7 @@ const HINTS_BY_SCOPE: Record<DashboardFocusScopeId, string[]> = {
 	terminal: ["Esc", "⌥K/Tab/V"],
 };
 
-const GLOBAL_ROW_ACTIONS_HINT = "⌥P/A/M/E";
+const GLOBAL_ROW_ACTIONS_HINT = "⌥./P/A/M/E";
 const GLOBAL_ROW_ACTIONS_HINT_SCOPES = new Set<DashboardFocusScopeId>([
 	"app",
 	"browser",
@@ -102,7 +102,7 @@ function visibleDashboardFocusHintLabel(hint: string): string | null {
 	if (hint === "r/u/U") return "r Reply, u Unread, U Read";
 	if (hint === "b/p/x") return "b View, p Pin, x Hide";
 	if (hint === "⌥N/⌥⇧N") return "⌥N Unread, ⌥⇧N Read";
-	if (hint === GLOBAL_ROW_ACTIONS_HINT) return "⌥P/A/M/E Row Actions";
+	if (hint === GLOBAL_ROW_ACTIONS_HINT) return "⌥. Actions · ⌥P/A/M/E";
 	if (hint === "u/U") return "u Open unread, U Mark read";
 	if (hint === "u/U/x/X/f/?") {
 		return "u Unread, U Read, x Hide, X Archive, f Hints, ? Map";
@@ -196,7 +196,7 @@ function readableDashboardFocusHint(hint: string): string {
 	if (hint === "r/u/U") return "r, u, U";
 	if (hint === "⌥N/⌥⇧N") return "Option+N/Option+Shift+N";
 	if (hint === GLOBAL_ROW_ACTIONS_HINT) {
-		return "Option+P/A/M/E row actions";
+		return "Option+period actions menu and Option+P/A/M/E row actions";
 	}
 	if (hint === "u/U") return "u, U";
 	if (hint === "u/U/x/X/f/?") return "u, U, x, X, f, ?";
