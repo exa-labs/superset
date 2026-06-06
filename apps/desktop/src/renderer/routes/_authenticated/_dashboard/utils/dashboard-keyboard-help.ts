@@ -851,6 +851,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Jump to the first or last visible Capy/Devin overview card",
 				},
 				{
+					keys: ["g", "g", "G", "Home", "End"],
+					label: "Jump selected native chat",
+					description:
+						"Jump to the top or bottom of the selected Capy/Devin chat",
+				},
+				{
 					keys: ["1", "2", "3", "4", "5", "6"],
 					label: "Filter native overview",
 					description:

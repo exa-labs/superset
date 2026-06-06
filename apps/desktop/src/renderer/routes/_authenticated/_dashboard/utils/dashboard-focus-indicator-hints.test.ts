@@ -54,7 +54,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"Esc",
 			GLOBAL_NAV_HINT,
 			"⌥N/⌥⇧N",
-			"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
+			"j/k/gg/G/actions/?",
 		]);
 	});
 
@@ -134,16 +134,11 @@ describe("dashboardFocusIndicatorHints", () => {
 		);
 		expect(
 			dashboardFocusIndicatorShortcutTitle("Native agent focus", {
-				hints: [
-					"Esc",
-					GLOBAL_NAV_HINT,
-					"⌥N/⌥⇧N",
-					"r/o/b/p/m/F/e/u/U/a/x/X/f/?",
-				],
+				hints: ["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "j/k/gg/G/actions/?"],
 				vimModeEnabled: true,
 			}),
 		).toBe(
-			"Native agent focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+N/Option+Shift+N, r, o, b, p, m, F, e, u, U, a, x, X, f, ?. Press ? for full keyboard shortcuts.",
+			"Native agent focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+N/Option+Shift+N, j/k, gg/G, action keys, ?. Press ? for full keyboard shortcuts.",
 		);
 	});
 
@@ -189,7 +184,7 @@ describe("dashboardFocusIndicatorHints", () => {
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(
-				["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "r/o/b/p/m/F/e/u/U/a/x/X/f/?"],
+				["Esc", GLOBAL_NAV_HINT, "⌥N/⌥⇧N", "j/k/gg/G/actions/?"],
 				{
 					vimModeEnabled: true,
 				},
@@ -198,7 +193,7 @@ describe("dashboardFocusIndicatorHints", () => {
 			"⌥K Commands · ⌥Tab MRU · ⌥1-6/C/D/G Fast · ⌥V Vim",
 			"Esc Sidebar",
 			"⌥N Unread, ⌥⇧N Read",
-			"r Reply, o Browser, b View, p Pin, m/F Folder, e Rename, u Unread, U Read, a Hide, x/X Archive, f Hints, ? Map",
+			"j/k Move · gg/G Jump · f Map",
 		]);
 		expect(
 			dashboardFocusIndicatorVisibleHintLabels(

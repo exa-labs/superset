@@ -217,6 +217,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Jump native overview")).toEqual(
 			expect.objectContaining({ keys: ["g", "g", "G", "Home", "End"] }),
 		);
+		expect(entryByLabel.get("Jump selected native chat")).toEqual(
+			expect.objectContaining({ keys: ["g", "g", "G", "Home", "End"] }),
+		);
 		expect(entryByLabel.get("Filter native overview")).toEqual(
 			expect.objectContaining({ keys: ["1", "2", "3", "4", "5", "6"] }),
 		);
