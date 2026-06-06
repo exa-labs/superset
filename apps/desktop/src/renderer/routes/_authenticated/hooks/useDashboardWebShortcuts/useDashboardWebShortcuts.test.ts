@@ -215,13 +215,26 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 		).toBeNull();
 	});
 
-	it("clears stale Capy/Devin prefixes for unrelated delivered shortcuts", () => {
+	it("preserves Capy/Devin prefixes for indexed follow-up shortcuts", () => {
 		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_CAPY")).toBe(
 			true,
 		);
 		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_DEVIN")).toBe(
 			true,
 		);
+		for (const shortcut of [
+			"OPEN_WEB_PAGE_1",
+			"OPEN_WEB_PAGE_2",
+			"OPEN_WEB_PAGE_3",
+			"OPEN_WEB_PAGE_4",
+			"OPEN_WEB_PAGE_5",
+			"OPEN_WEB_PAGE_6",
+		] as const) {
+			expect(
+				dashboardWebShortcutKeepsNativeProviderPrefix(shortcut),
+				`${shortcut} must let Option+C/D numeric chains resolve before falling back to top links`,
+			).toBe(true);
+		}
 		expect(dashboardWebShortcutKeepsNativeProviderPrefix("OPEN_CAPY_1")).toBe(
 			false,
 		);
@@ -229,7 +242,13 @@ describe("DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS", () => {
 			false,
 		);
 		for (const shortcut of DASHBOARD_RENDERER_WEB_SHORTCUT_HOTKEYS) {
-			if (shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN") continue;
+			if (
+				shortcut === "OPEN_CAPY" ||
+				shortcut === "OPEN_DEVIN" ||
+				shortcut.startsWith("OPEN_WEB_PAGE_")
+			) {
+				continue;
+			}
 			expect(
 				dashboardWebShortcutKeepsNativeProviderPrefix(shortcut),
 				`${shortcut} should clear a pending Capy/Devin prefix before it runs`,

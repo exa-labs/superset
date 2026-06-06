@@ -282,7 +282,11 @@ export function dashboardRootTerminalTargetFromShortcut(
 export function dashboardWebShortcutKeepsNativeProviderPrefix(
 	shortcut: DashboardWebShortcut,
 ): boolean {
-	return shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN";
+	return (
+		shortcut === "OPEN_CAPY" ||
+		shortcut === "OPEN_DEVIN" ||
+		WEB_PAGE_SHORTCUTS.includes(shortcut)
+	);
 }
 
 export function useDashboardWebShortcuts() {
