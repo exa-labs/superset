@@ -211,6 +211,9 @@ describe("dashboard keyboard help", () => {
 		expect(
 			entryByLabel.get("Color selected folder through control plane"),
 		).toEqual(expect.objectContaining({ keys: ["⌥K", "type color"] }));
+		expect(
+			entryByLabel.get("Manage Chrome folders through control plane"),
+		).toEqual(expect.objectContaining({ keys: ["⌥K", "type chrome folder"] }));
 		expect(entryByLabel.get("Delete selected folder")).toEqual(
 			expect.objectContaining({ keys: ["d"] }),
 		);
@@ -624,9 +627,16 @@ describe("dashboard keyboard help", () => {
 				"Create folder or group",
 				"Move selected to folder",
 				"Color selected folder from anywhere",
+				"Manage Chrome folders through control plane",
 				"Delete folder",
 				"Delete selected folder from anywhere",
 			]),
+		);
+		expect(labelsForQuery("chrome rename folder")).toEqual(
+			expect.arrayContaining(["Manage Chrome folders through control plane"]),
+		);
+		expect(labelsForQuery("chrome exact color")).toEqual(
+			expect.arrayContaining(["Manage Chrome folders through control plane"]),
 		);
 		expect(labelsForQuery("native reply")).toEqual(
 			expect.arrayContaining([

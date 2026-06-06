@@ -782,6 +782,12 @@ export const DASHBOARD_KEYBOARD_HELP_SECTIONS: DashboardKeyboardHelpSection[] =
 						"Open the control plane and run the focused folder color action when focus is trapped in a terminal, editor, or native view",
 				},
 				{
+					keys: ["⌥K", "type chrome folder"],
+					label: "Manage Chrome folders through control plane",
+					description:
+						"Rename, delete, recolor, or set exact colors for Chrome folders without first focusing the sidebar row",
+				},
+				{
 					keys: ["d"],
 					label: "Delete selected folder",
 					description:
