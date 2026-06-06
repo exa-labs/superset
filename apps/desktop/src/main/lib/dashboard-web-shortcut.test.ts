@@ -254,6 +254,36 @@ describe("dashboardWebShortcutFromInput", () => {
 		).toBe("TOGGLE_NATIVE_SPLIT_VIEW");
 	});
 
+	it("matches Ctrl+Alt dashboard shortcuts on non-macOS webview bridges", () => {
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "Digit2", control: true, key: "2" }),
+				"linux",
+			),
+		).toBe("OPEN_WEB_PAGE_2");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyC", control: true, key: "c" }),
+				"linux",
+			),
+		).toBe("OPEN_CAPY");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyD", control: true, key: "d", shift: true }),
+				"win32",
+			),
+		).toBe("CREATE_DEVIN");
+		expect(
+			dashboardWebShortcutFromInput(
+				input({ code: "KeyP", control: true, key: "p" }),
+				"linux",
+			),
+		).toBe("SIDEBAR_ACTION_PIN");
+		expect(
+			dashboardWebShortcutFromInput(input({ code: "KeyC", key: "c" }), "linux"),
+		).toBeNull();
+	});
+
 	it("matches current sidebar row Option shortcuts while preserving browser precedence", () => {
 		expect(
 			dashboardWebShortcutFromInput(input({ code: "KeyP", key: "Dead" })),

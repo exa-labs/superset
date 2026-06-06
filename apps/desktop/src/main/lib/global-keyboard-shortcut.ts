@@ -45,28 +45,56 @@ function isShortcutKeyDownType(type: string): boolean {
 	return type === "keyDown" || type === "rawKeyDown" || type === "char";
 }
 
-function isBareOptionChord(input: GlobalKeyboardShortcutInput): boolean {
-	if (!isShortcutKeyDownType(input.type)) return false;
-	if (input.isAutoRepeat) return false;
-	return input.alt && !input.control && !input.meta && !input.shift;
+type ShortcutShiftState = "none" | "optional" | "required";
+
+function hasDashboardGlobalShortcutModifiers(
+	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform,
+	shift: ShortcutShiftState,
+): boolean {
+	if (!input.alt || input.meta) return false;
+	if (platform === "darwin" ? input.control : !input.control) return false;
+	if (shift === "none" && input.shift) return false;
+	if (shift === "required" && !input.shift) return false;
+	return true;
 }
 
-function isOptionTabChord(input: GlobalKeyboardShortcutInput): boolean {
+function isBareOptionChord(
+	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform,
+): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
-	return input.alt && !input.control && !input.meta;
+	return hasDashboardGlobalShortcutModifiers(input, platform, "none");
 }
 
-function isOptionShiftChord(input: GlobalKeyboardShortcutInput): boolean {
+function isOptionTabChord(
+	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform,
+): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
-	return input.alt && input.shift && !input.control && !input.meta;
+	return hasDashboardGlobalShortcutModifiers(input, platform, "optional");
 }
 
-function isOptionHelpChord(input: GlobalKeyboardShortcutInput): boolean {
+function isOptionShiftChord(
+	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform,
+): boolean {
 	if (!isShortcutKeyDownType(input.type)) return false;
 	if (input.isAutoRepeat) return false;
-	if (!input.alt || input.control || input.meta) return false;
+	return hasDashboardGlobalShortcutModifiers(input, platform, "required");
+}
+
+function isOptionHelpChord(
+	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform,
+): boolean {
+	if (!isShortcutKeyDownType(input.type)) return false;
+	if (input.isAutoRepeat) return false;
+	if (!hasDashboardGlobalShortcutModifiers(input, platform, "optional")) {
+		return false;
+	}
 	const code = input.code.toLowerCase();
 	const key = input.key.toLowerCase();
 	return code === "slash" || key === "/" || key === "?";
@@ -83,11 +111,12 @@ function isBareEscape(input: GlobalKeyboardShortcutInput): boolean {
 
 export function globalKeyboardActionFromInput(
 	input: GlobalKeyboardShortcutInput,
+	platform: NodeJS.Platform = process.platform,
 ): GlobalKeyboardAction | null {
 	if (isBareEscape(input)) return "FOCUS_DASHBOARD_SHELL";
-	if (isOptionHelpChord(input)) return "SHOW_DASHBOARD_KEYBOARD_HELP";
+	if (isOptionHelpChord(input, platform)) return "SHOW_DASHBOARD_KEYBOARD_HELP";
 
-	if (isOptionTabChord(input)) {
+	if (isOptionTabChord(input, platform)) {
 		const code = input.code.toLowerCase();
 		const key = input.key.toLowerCase();
 		if (code === "tab" || key === "tab") {
@@ -97,7 +126,7 @@ export function globalKeyboardActionFromInput(
 		}
 	}
 
-	if (isOptionShiftChord(input)) {
+	if (isOptionShiftChord(input, platform)) {
 		const code = input.code.toLowerCase();
 		if (code === "keyn") return "MARK_LATEST_NATIVE_REPLY_READ";
 
@@ -105,7 +134,7 @@ export function globalKeyboardActionFromInput(
 		if (key === "n") return "MARK_LATEST_NATIVE_REPLY_READ";
 	}
 
-	if (!isBareOptionChord(input)) return null;
+	if (!isBareOptionChord(input, platform)) return null;
 
 	const code = input.code.toLowerCase();
 	if (code === "keyf") return "SHOW_DASHBOARD_ACTION_HINTS";

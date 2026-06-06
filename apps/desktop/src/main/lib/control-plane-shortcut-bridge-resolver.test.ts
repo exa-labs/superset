@@ -23,12 +23,13 @@ function input(overrides: Partial<ResolverInput>): ResolverInput {
 	};
 }
 
-function createResolverHarness() {
+function createResolverHarness(platform?: NodeJS.Platform) {
 	const cleared: unknown[] = [];
 	return {
 		cleared,
 		resolver: createControlPlaneShortcutBridgeInputResolver({
 			clearTimeout: (timeout) => cleared.push(timeout),
+			platform,
 			setTimeout: (_callback, ms) => ({ ms, timer: cleared.length + 1 }),
 		}),
 	};
@@ -236,6 +237,35 @@ describe("control plane shortcut bridge resolver", () => {
 				type: "dashboard-web-shortcut",
 			});
 		}
+	});
+
+	it("routes non-macOS Ctrl+Alt dashboard shortcuts through the bridge", () => {
+		const { resolver } = createResolverHarness("linux");
+
+		expect(
+			resolver.resolve(input({ code: "KeyK", control: true, key: "k" })),
+		).toEqual({
+			preventDefault: true,
+			type: "open-control-plane",
+		});
+		expect(
+			resolver.resolve(input({ code: "KeyV", control: true, key: "v" })),
+		).toEqual({
+			action: "TOGGLE_VIM_MODE",
+			preventDefault: true,
+			type: "global-keyboard-action",
+		});
+		expect(
+			resolver.resolve(input({ code: "KeyG", control: true, key: "g" })),
+		).toEqual({
+			preventDefault: true,
+			shortcut: "OPEN_CHROME",
+			type: "dashboard-web-shortcut",
+		});
+		expect(resolver.resolve(input({ code: "KeyK", key: "k" }))).toEqual({
+			preventDefault: false,
+			type: "none",
+		});
 	});
 
 	it("routes direct native create shortcuts through the main bridge", () => {

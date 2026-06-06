@@ -215,6 +215,42 @@ describe("globalKeyboardActionFromInput", () => {
 		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
 	});
 
+	it("matches Ctrl+Alt global actions on non-macOS webview bridges", () => {
+		expect(
+			globalKeyboardActionFromInput(
+				{
+					...baseInput,
+					control: true,
+					code: "KeyV",
+					key: "v",
+				},
+				"linux",
+			),
+		).toBe("TOGGLE_VIM_MODE");
+		expect(
+			globalKeyboardActionFromInput(
+				{
+					...baseInput,
+					control: true,
+					code: "Tab",
+					key: "Tab",
+					shift: true,
+				},
+				"win32",
+			),
+		).toBe("SWITCH_DASHBOARD_VIEW_PREVIOUS");
+		expect(
+			globalKeyboardActionFromInput(
+				{
+					...baseInput,
+					code: "KeyV",
+					key: "v",
+				},
+				"linux",
+			),
+		).toBeNull();
+	});
+
 	it("matches Option+/ dashboard keyboard help by physical code and question key", () => {
 		expect(
 			globalKeyboardActionFromInput({

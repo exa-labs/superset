@@ -49,6 +49,7 @@ export type ControlPlaneShortcutBridgeResult =
 interface ControlPlaneShortcutBridgeResolverOptions {
 	clearTimeout?: (timeout: unknown) => void;
 	pendingWebAppShortcutMs?: number;
+	platform?: NodeJS.Platform;
 	setTimeout?: (callback: () => void, ms: number) => unknown;
 }
 
@@ -79,6 +80,7 @@ export function createControlPlaneShortcutBridgeInputResolver(
 			clearTimeout(timeout as ReturnType<typeof setTimeout>));
 	const pendingWebAppShortcutMs =
 		options.pendingWebAppShortcutMs ?? DEFAULT_PENDING_WEB_APP_SHORTCUT_MS;
+	const platform = options.platform ?? process.platform;
 	let pendingDashboardWebAppShortcut: PendingDashboardWebAppShortcut | null =
 		null;
 
@@ -126,7 +128,7 @@ export function createControlPlaneShortcutBridgeInputResolver(
 			}
 		}
 
-		const shortcut = dashboardWebShortcutFromInput(input);
+		const shortcut = dashboardWebShortcutFromInput(input, platform);
 		if (shortcut === "OPEN_CAPY" || shortcut === "OPEN_DEVIN") {
 			armPending(shortcut);
 			return shortcut;
@@ -140,7 +142,7 @@ export function createControlPlaneShortcutBridgeInputResolver(
 		armPendingDashboardWebShortcut,
 		clearPending,
 		resolve: (input) => {
-			if (isOpenControlPlaneShortcutInput(input)) {
+			if (isOpenControlPlaneShortcutInput(input, platform)) {
 				clearPending();
 				return { preventDefault: true, type: "open-control-plane" };
 			}
@@ -156,7 +158,10 @@ export function createControlPlaneShortcutBridgeInputResolver(
 				};
 			}
 
-			const globalKeyboardAction = globalKeyboardActionFromInput(input);
+			const globalKeyboardAction = globalKeyboardActionFromInput(
+				input,
+				platform,
+			);
 			if (globalKeyboardAction) {
 				clearPending();
 				return {

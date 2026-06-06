@@ -154,6 +154,20 @@ function isShortcutKeyDownType(type: string): boolean {
 	return type === "keyDown" || type === "rawKeyDown" || type === "char";
 }
 
+type ShortcutShiftState = "none" | "optional" | "required";
+
+function hasDashboardWebShortcutModifiers(
+	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform,
+	shift: ShortcutShiftState,
+): boolean {
+	if (!input.alt || input.meta) return false;
+	if (platform === "darwin" ? input.control : !input.control) return false;
+	if (shift === "none" && input.shift) return false;
+	if (shift === "required" && !input.shift) return false;
+	return true;
+}
+
 export function shouldCancelDashboardWebPendingShortcut(
 	input: DashboardWebShortcutInput,
 ): boolean {
@@ -173,10 +187,13 @@ export function shouldCancelDashboardWebPendingShortcut(
 
 function dashboardWebDirectCreateShortcutFromInput(
 	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform,
 ): DashboardWebShortcut | null {
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
-	if (!input.alt || input.control || input.meta || !input.shift) return null;
+	if (!hasDashboardWebShortcutModifiers(input, platform, "required")) {
+		return null;
+	}
 
 	const code = input.code.toLowerCase();
 	if (code === "keyc") return "CREATE_CAPY";
@@ -197,10 +214,13 @@ function dashboardWebDirectCreateShortcutFromInput(
 
 function dashboardWebBrowserShortcutFromInput(
 	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform,
 ): DashboardWebShortcut | null {
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
-	if (!input.alt || input.control || input.meta) return null;
+	if (!hasDashboardWebShortcutModifiers(input, platform, "optional")) {
+		return null;
+	}
 
 	const code = input.code.toLowerCase();
 	const key = input.key.toLowerCase();
@@ -244,10 +264,13 @@ function dashboardWebBrowserShortcutFromInput(
 
 function dashboardWebSidebarActionShortcutFromInput(
 	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform,
 ): DashboardWebShortcut | null {
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
-	if (!input.alt || input.control || input.meta) return null;
+	if (!hasDashboardWebShortcutModifiers(input, platform, "optional")) {
+		return null;
+	}
 
 	const code = input.code.toLowerCase();
 	const key = input.key.toLowerCase();
@@ -280,10 +303,11 @@ function isPendingShortcutInput(input: DashboardWebShortcutInput): boolean {
 
 export function dashboardWebDigitIndexFromInput(
 	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform = process.platform,
 ): number | null {
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
-	if (!input.alt || input.control || input.meta || input.shift) return null;
+	if (!hasDashboardWebShortcutModifiers(input, platform, "none")) return null;
 	return digitIndexFromInputToken(input);
 }
 
@@ -319,22 +343,28 @@ export function dashboardWebCreateShortcutFromInput(
 
 export function dashboardWebShortcutFromInput(
 	input: DashboardWebShortcutInput,
+	platform: NodeJS.Platform = process.platform,
 ): DashboardWebShortcut | null {
-	const directCreateShortcut = dashboardWebDirectCreateShortcutFromInput(input);
+	const directCreateShortcut = dashboardWebDirectCreateShortcutFromInput(
+		input,
+		platform,
+	);
 	if (directCreateShortcut) return directCreateShortcut;
 
-	const browserShortcut = dashboardWebBrowserShortcutFromInput(input);
+	const browserShortcut = dashboardWebBrowserShortcutFromInput(input, platform);
 	if (browserShortcut) return browserShortcut;
 
-	const sidebarActionShortcut =
-		dashboardWebSidebarActionShortcutFromInput(input);
+	const sidebarActionShortcut = dashboardWebSidebarActionShortcutFromInput(
+		input,
+		platform,
+	);
 	if (sidebarActionShortcut) return sidebarActionShortcut;
 
 	if (!isShortcutKeyDownType(input.type)) return null;
 	if (input.isAutoRepeat) return null;
-	if (!input.alt || input.control || input.meta || input.shift) return null;
+	if (!hasDashboardWebShortcutModifiers(input, platform, "none")) return null;
 
-	const digitIndex = dashboardWebDigitIndexFromInput(input);
+	const digitIndex = dashboardWebDigitIndexFromInput(input, platform);
 	if (digitIndex !== null && digitIndex < DIGIT_SHORTCUTS.length) {
 		return DIGIT_SHORTCUTS[digitIndex] ?? null;
 	}
