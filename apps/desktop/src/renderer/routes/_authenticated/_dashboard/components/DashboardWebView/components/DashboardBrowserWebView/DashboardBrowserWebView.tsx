@@ -380,7 +380,7 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "MARK_LATEST_NATIVE_REPLY_READ";
 		}
-		if (key === "x" || key === "X") {
+		if (key === "X") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTION_HARD_ARCHIVE";
 		}

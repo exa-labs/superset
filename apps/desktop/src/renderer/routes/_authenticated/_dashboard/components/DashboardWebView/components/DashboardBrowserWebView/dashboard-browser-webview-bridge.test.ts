@@ -148,8 +148,9 @@ describe("dashboard browser webview bridge", () => {
 			'return "SIDEBAR_ACTION_ARCHIVE"',
 		);
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
-			'if (key === "x" || key === "X")',
+			'if (key === "x") return "BROWSER_CLOSE_TAB"',
 		);
+		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "X")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "U")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain('if (key === "a")');
 		expect(DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT).toContain(
