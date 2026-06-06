@@ -93,6 +93,30 @@ export function DashboardMruSwitcherOverlay({
 						);
 					})}
 				</div>
+				<div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-border/70 border-t px-2 pt-2 text-[11px] text-muted-foreground">
+					<span className="inline-flex items-center gap-1">
+						<KbdGroup>
+							<Kbd>Option</Kbd>
+							<Kbd>Tab</Kbd>
+						</KbdGroup>
+						<span>next</span>
+					</span>
+					<span className="inline-flex items-center gap-1">
+						<KbdGroup>
+							<Kbd>Option</Kbd>
+							<Kbd>Shift</Kbd>
+							<Kbd>Tab</Kbd>
+						</KbdGroup>
+						<span>previous</span>
+					</span>
+					<span className="inline-flex items-center gap-1">
+						<KbdGroup>
+							<Kbd>Esc</Kbd>
+						</KbdGroup>
+						<span>sidebar</span>
+					</span>
+					<span className="text-muted-foreground/80">Pause to settle</span>
+				</div>
 			</div>
 		</div>
 	);
