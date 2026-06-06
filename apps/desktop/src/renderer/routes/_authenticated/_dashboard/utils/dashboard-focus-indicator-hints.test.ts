@@ -140,6 +140,22 @@ describe("dashboardFocusIndicatorHints", () => {
 		).toBe(
 			"Native agent focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, Option+N/Option+Shift+N, j/k, gg/G, action keys, ?. Press ? for full keyboard shortcuts.",
 		);
+		expect(
+			dashboardFocusIndicatorShortcutTitle("Terminal focus", {
+				hints: ["Esc", GLOBAL_NAV_HINT],
+				vimModeEnabled: true,
+			}),
+		).toBe(
+			"Terminal focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V. Press Option+/ for full keyboard shortcuts.",
+		);
+		expect(
+			dashboardFocusIndicatorShortcutTitle("App focus", {
+				hints: ["Esc", GLOBAL_NAV_HINT, "?"],
+				vimModeEnabled: false,
+			}),
+		).toBe(
+			"App focus. Keys: Esc, Option+K, Option+Tab, Option+1-6, Option+C/D/G, Option+V, ?. Press ? for full keyboard shortcuts.",
+		);
 	});
 
 	it("shows visible command and shortcut labels without Vim-only clutter", () => {

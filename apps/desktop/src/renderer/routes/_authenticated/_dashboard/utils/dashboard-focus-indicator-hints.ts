@@ -240,10 +240,7 @@ export function dashboardFocusIndicatorShortcutTitle(
 ): string {
 	const hasLocalKeyboardMapHint =
 		options.hints?.some(dashboardFocusHintIncludesKeyboardMap) ?? false;
-	const shortcut =
-		options.vimModeEnabled === false && !hasLocalKeyboardMapHint
-			? "Option+/"
-			: "?";
+	const shortcut = hasLocalKeyboardMapHint ? "?" : "Option+/";
 	const hints = options.hints
 		?.map(readableDashboardFocusHint)
 		.filter((hint) => hint.trim().length > 0);
