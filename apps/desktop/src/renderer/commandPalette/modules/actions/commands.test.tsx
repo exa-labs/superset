@@ -70,7 +70,10 @@ const { DASHBOARD_ACTION_HINTS_OPEN_EVENT } = await import(
 const { DASHBOARD_SIDEBAR_SEARCH_FOCUS_EVENT } = await import(
 	"renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-search-focus"
 );
-const { DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT } = await import(
+const {
+	DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS,
+	DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT,
+} = await import(
 	"renderer/routes/_authenticated/_dashboard/utils/dashboard-sidebar-keyboard-command"
 );
 const { actionsProvider } = await import("./commands");
@@ -423,34 +426,15 @@ describe("actions command provider", () => {
 		window.addEventListener(DASHBOARD_SIDEBAR_KEYBOARD_COMMAND_EVENT, listener);
 		try {
 			const providedCommands = actionsProvider.provide(commandContext());
-			for (const id of [
-				"actions.sidebar.focusNext",
-				"actions.sidebar.focusPrevious",
-				"actions.sidebar.focusFirst",
-				"actions.sidebar.focusLast",
-				"actions.sidebar.activate",
-				"actions.sidebar.toggleExpansion",
-				"actions.sidebar.collapse",
-				"actions.sidebar.expand",
-				"actions.sidebar.create",
-				"actions.sidebar.createFolder",
-				"actions.sidebar.menu",
-				"actions.sidebar.pin",
-				"actions.sidebar.reply",
-				"actions.sidebar.openBrowser",
-				"actions.sidebar.toggleBrowser",
-				"actions.sidebar.move",
-				"actions.sidebar.removeFromFolder",
-				"actions.sidebar.rename",
-				"actions.sidebar.color",
-				"actions.sidebar.delete",
-				"actions.sidebar.markRead",
-				"actions.sidebar.hardArchive",
-				"actions.sidebar.archive",
-			]) {
-				providedCommands
-					.find((candidate) => candidate.id === id)
-					?.run?.(commandContext());
+			const sidebarCommands = providedCommands.filter((candidate) =>
+				candidate.id.startsWith("actions.sidebar."),
+			);
+			expect(sidebarCommands.length).toBe(
+				DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS.length,
+			);
+			for (const command of sidebarCommands) {
+				expect(command.shortcutLabel?.length ?? 0).toBeGreaterThan(0);
+				command.run?.(commandContext());
 			}
 		} finally {
 			window.removeEventListener(
@@ -459,31 +443,9 @@ describe("actions command provider", () => {
 			);
 		}
 
-		expect(commands).toEqual([
-			"focus-next",
-			"focus-previous",
-			"focus-first",
-			"focus-last",
-			"activate",
-			"toggle-expansion",
-			"collapse",
-			"expand",
-			"action-create",
-			"action-create-folder",
-			"action-menu",
-			"action-pin",
-			"action-reply",
-			"action-open-browser",
-			"action-toggle-browser",
-			"action-move",
-			"action-remove-from-folder",
-			"action-rename",
-			"action-color",
-			"action-delete",
-			"action-mark-read",
-			"action-hard-archive",
-			"action-archive",
-		]);
+		expect(new Set(commands)).toEqual(
+			new Set(DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS),
+		);
 	});
 
 	it("falls the control-plane native archive action back to generic move-away when hard archive is unhandled", () => {

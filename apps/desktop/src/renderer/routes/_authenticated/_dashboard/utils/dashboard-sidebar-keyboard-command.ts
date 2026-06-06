@@ -26,7 +26,7 @@ export type DashboardSidebarKeyboardCommand =
 	| "focus-previous"
 	| "toggle-expansion";
 
-const DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS: readonly DashboardSidebarKeyboardCommand[] =
+export const DASHBOARD_SIDEBAR_KEYBOARD_COMMANDS: readonly DashboardSidebarKeyboardCommand[] =
 	[
 		"action-archive",
 		"action-color",
