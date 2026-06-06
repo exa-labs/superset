@@ -89,13 +89,16 @@ function isElementDisabled(element: HTMLElement): boolean {
 	return element.getAttribute("aria-disabled") === "true";
 }
 
-function isVisibleTarget(element: HTMLElement): boolean {
-	if (element.closest(DASHBOARD_ACTION_HINT_EXCLUDED_ANCESTOR_SELECTOR)) {
-		return false;
-	}
-	if (isElementDisabled(element)) return false;
-	const rect = element.getBoundingClientRect();
-	if (rect.width <= 0 || rect.height <= 0) return false;
+function isScopedScreenReaderOnlySidebarAction(element: HTMLElement): boolean {
+	return (
+		element.matches(".sr-only[data-dashboard-sidebar-action]") &&
+		closestDashboardActionHintScope(element) != null
+	);
+}
+
+function isRectInViewport(
+	rect: Pick<DOMRect, "bottom" | "left" | "right" | "top">,
+) {
 	const viewportWidth =
 		typeof window === "undefined"
 			? Number.POSITIVE_INFINITY
@@ -110,6 +113,66 @@ function isVisibleTarget(element: HTMLElement): boolean {
 		rect.top <= viewportHeight &&
 		rect.left <= viewportWidth
 	);
+}
+
+function scopedSidebarActionFallbackRect(
+	element: HTMLElement,
+): Pick<DOMRect, "height" | "left" | "top" | "width"> | null {
+	const scope = closestDashboardActionHintScope(element);
+	if (!scope) return null;
+	const scopeRect = scope.getBoundingClientRect();
+	if (
+		scopeRect.width <= 0 ||
+		scopeRect.height <= 0 ||
+		!isRectInViewport(scopeRect)
+	) {
+		return null;
+	}
+
+	const scopedActions = Array.from(
+		scope.querySelectorAll<HTMLElement>("[data-dashboard-sidebar-action]"),
+	);
+	const actionIndex = Math.max(0, scopedActions.indexOf(element));
+	const badgeSize = 18;
+	const gap = 4;
+	const left = Math.min(
+		scopeRect.right - badgeSize,
+		scopeRect.left + gap + actionIndex * (badgeSize + gap),
+	);
+	return {
+		height: badgeSize,
+		left: Math.max(scopeRect.left, left),
+		top: scopeRect.top + Math.max(2, (scopeRect.height - badgeSize) / 2),
+		width: badgeSize,
+	};
+}
+
+function dashboardActionHintRectForElement(
+	element: HTMLElement,
+): Pick<DOMRect, "height" | "left" | "top" | "width"> | null {
+	const rect = element.getBoundingClientRect();
+	if (rect.width > 0 && rect.height > 0 && isRectInViewport(rect)) return rect;
+	if (isScopedScreenReaderOnlySidebarAction(element)) {
+		return scopedSidebarActionFallbackRect(element);
+	}
+	return null;
+}
+
+function isVisibleTarget(element: HTMLElement): boolean {
+	const excludedAncestor = element.closest(
+		DASHBOARD_ACTION_HINT_EXCLUDED_ANCESTOR_SELECTOR,
+	);
+	if (
+		excludedAncestor &&
+		!(
+			excludedAncestor === element &&
+			isScopedScreenReaderOnlySidebarAction(element)
+		)
+	) {
+		return false;
+	}
+	if (isElementDisabled(element)) return false;
+	return dashboardActionHintRectForElement(element) != null;
 }
 
 export function dashboardActionHintRootForElement(
@@ -181,6 +244,24 @@ const SIDEBAR_ACTION_HINT_TITLES: Record<string, string> = {
 	"toggle-browser": "Native/browser",
 };
 
+const SIDEBAR_FOLDER_ACTION_HINT_TITLES: Record<string, string> = {
+	color: "Change folder color",
+	create: "New session",
+	"create-folder": "New folder",
+	delete: "Delete folder",
+	menu: "Folder actions",
+	move: "Move current session here",
+	rename: "Rename folder",
+};
+
+function isNativeAgentFolderAction(element: HTMLElement): boolean {
+	return (
+		element
+			.closest("[data-dashboard-sidebar-action-scope]")
+			?.querySelector("[data-native-agent-folder-row-id]") != null
+	);
+}
+
 function isNativeAgentSidebarAction(element: HTMLElement): boolean {
 	return (
 		element
@@ -223,6 +304,13 @@ export function dashboardActionHintDisplayTitle(
 	const sidebarAction = target.element.getAttribute(
 		"data-dashboard-sidebar-action",
 	);
+	if (
+		sidebarAction &&
+		isNativeAgentFolderAction(target.element) &&
+		sidebarAction in SIDEBAR_FOLDER_ACTION_HINT_TITLES
+	) {
+		return SIDEBAR_FOLDER_ACTION_HINT_TITLES[sidebarAction] ?? target.title;
+	}
 	if (sidebarAction && sidebarAction in SIDEBAR_ACTION_HINT_TITLES) {
 		return SIDEBAR_ACTION_HINT_TITLES[sidebarAction] ?? target.title;
 	}
@@ -346,7 +434,8 @@ export function collectDashboardActionHintTargets(
 		for (const usedLabel of labels) {
 			usedLabels.add(usedLabel);
 		}
-		const rect = candidate.getBoundingClientRect();
+		const rect = dashboardActionHintRectForElement(candidate);
+		if (!rect) continue;
 		targets.push({
 			displayLabel,
 			element: candidate,

@@ -228,6 +228,54 @@ describe("dashboard action hints", () => {
 		]);
 	});
 
+	it("includes scoped screen-reader-only sidebar actions in action hints", () => {
+		if (typeof document === "undefined") return;
+		const root = document.createElement("div");
+		const scope = document.createElement("div");
+		scope.setAttribute("data-dashboard-sidebar-action-scope", "");
+		setRect(scope, visibleRect({ height: 28, width: 220 }));
+		const folder = document.createElement("button");
+		folder.setAttribute("data-native-agent-folder-row-id", "folder-1");
+		folder.textContent = "Folder";
+		setRect(folder, visibleRect({ height: 24, width: 140 }));
+		const create = document.createElement("button");
+		create.className = "sr-only";
+		create.setAttribute("data-dashboard-sidebar-action", "create");
+		create.setAttribute("aria-label", "New Capy thread");
+		setRect(create, visibleRect({ height: 0, width: 0 }));
+		const move = document.createElement("button");
+		move.className = "sr-only";
+		move.setAttribute("data-dashboard-sidebar-action", "move");
+		move.setAttribute("aria-label", "Move current session here");
+		setRect(move, visibleRect({ height: 0, width: 0 }));
+		const deleteButton = document.createElement("button");
+		deleteButton.className = "sr-only";
+		deleteButton.setAttribute("data-dashboard-sidebar-action", "delete");
+		deleteButton.setAttribute("aria-label", "Delete folder");
+		setRect(deleteButton, visibleRect({ height: 0, width: 0 }));
+		scope.append(folder, create, move, deleteButton);
+		root.append(scope);
+
+		const targets = collectDashboardActionHintTargets(root);
+
+		expect(targets.map((target) => target.label)).toEqual([
+			"enter",
+			"n",
+			"m",
+			"d",
+		]);
+		expect(targets.map(dashboardActionHintDisplayTitle)).toEqual([
+			"Open",
+			"New session",
+			"Move current session here",
+			"Delete folder",
+		]);
+		for (const target of targets.slice(1)) {
+			expect(target.rect.width).toBeGreaterThan(0);
+			expect(target.rect.height).toBeGreaterThan(0);
+		}
+	});
+
 	it("keeps generic sidebar archive hints on a/x outside native agent rows", () => {
 		if (typeof document === "undefined") return;
 		const root = document.createElement("div");
