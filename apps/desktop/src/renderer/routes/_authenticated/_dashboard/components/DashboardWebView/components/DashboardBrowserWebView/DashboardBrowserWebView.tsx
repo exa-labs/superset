@@ -311,6 +311,14 @@ export const DASHBOARD_WEB_SHORTCUT_BRIDGE_SCRIPT = `
 			clearDashboardVimPrefix();
 			return "SIDEBAR_FOCUS_LAST";
 		}
+		if (key === "ArrowLeft") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_COLLAPSE";
+		}
+		if (key === "ArrowRight") {
+			clearDashboardVimPrefix();
+			return "SIDEBAR_EXPAND";
+		}
 		if (key === "Enter") {
 			clearDashboardVimPrefix();
 			return "SIDEBAR_ACTIVATE";

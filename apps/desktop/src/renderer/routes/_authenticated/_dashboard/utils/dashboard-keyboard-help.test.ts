@@ -337,6 +337,9 @@ describe("dashboard keyboard help", () => {
 		expect(entryByLabel.get("Browser: Toggle focused sidebar item")).toEqual(
 			expect.objectContaining({ keys: ["Space"] }),
 		);
+		expect(
+			entryByLabel.get("Browser: Collapse or expand focused sidebar item"),
+		).toEqual(expect.objectContaining({ keys: ["←", "→"] }));
 		expect(entryByLabel.get("Browser: Search sidebar")).toEqual(
 			expect.objectContaining({ keys: ["/"] }),
 		);
@@ -454,6 +457,7 @@ describe("dashboard keyboard help", () => {
 			"Browser: Move sidebar focus",
 			"Browser: Open focused sidebar item",
 			"Browser: Toggle focused sidebar item",
+			"Browser: Collapse or expand focused sidebar item",
 			"Browser: Search sidebar",
 			"Browser: Run sidebar row actions",
 			"Browser: Jump to dashboard sections",

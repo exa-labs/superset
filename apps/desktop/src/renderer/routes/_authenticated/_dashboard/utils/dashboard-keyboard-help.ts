@@ -183,6 +183,12 @@ export function dashboardKeyboardHelpBrowserSidebarEntries(): DashboardKeyboardH
 				"Collapse or expand the focused sidebar row while embedded Chrome keeps focus",
 		},
 		{
+			keys: ["←", "→"],
+			label: "Browser: Collapse or expand focused sidebar item",
+			description:
+				"Collapse or expand the focused sidebar row from embedded Chrome in Vim mode",
+		},
+		{
 			keys: ["/"],
 			label: "Browser: Search sidebar",
 			description: "Jump to sidebar search from embedded Chrome in Vim mode",
