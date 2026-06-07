@@ -2,6 +2,7 @@ import { Spinner } from "@superset/ui/spinner";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { electronTrpc } from "renderer/lib/electron-trpc";
+import { getDashboardHashPathname } from "renderer/routes/_authenticated/lib/dashboardHashPathname";
 
 export const Route = createFileRoute("/_authenticated/_dashboard/workspace/")({
 	component: WorkspaceIndexPage,
@@ -25,6 +26,7 @@ function WorkspaceIndexPage() {
 
 	useEffect(() => {
 		if (isLoading || !workspaces) return;
+		if (getDashboardHashPathname() !== "/workspace") return;
 
 		if (allWorkspaces.length === 0) {
 			// Redirect to clean onboarding screen (no sidebar/topbar)

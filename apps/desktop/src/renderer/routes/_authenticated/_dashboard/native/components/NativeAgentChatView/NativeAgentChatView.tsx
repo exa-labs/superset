@@ -920,6 +920,21 @@ export function NativeAgentChatView({
 	const sourceLabel =
 		provider === "capy" ? credentials?.capy.source : credentials?.devin.source;
 
+	useEffect(() => {
+		if (!isConfigured || !selectedId) return;
+		if (provider === "capy") {
+			void utils.nativeAgents.capy.getThread.prefetch({ threadId: selectedId });
+			void utils.nativeAgents.capy.listMessages.prefetch({
+				limit: 100,
+				threadId: selectedId,
+			});
+			return;
+		}
+		void utils.nativeAgents.devin.getSession.prefetch({
+			sessionId: selectedId,
+		});
+	}, [isConfigured, provider, selectedId, utils]);
+
 	const capyThreadsQuery = electronTrpc.nativeAgents.capy.listThreads.useQuery(
 		{
 			limit: 50,

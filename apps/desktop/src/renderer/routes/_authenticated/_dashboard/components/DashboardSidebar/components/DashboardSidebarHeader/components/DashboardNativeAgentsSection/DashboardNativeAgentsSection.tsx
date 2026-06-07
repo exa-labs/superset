@@ -106,6 +106,10 @@ import {
 	writeNativeAgentReadState,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-notifications";
 import {
+	activeNativeAgentRoute,
+	isNativeAgentProviderOverviewRoute,
+} from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-routes";
+import {
 	DASHBOARD_NATIVE_AGENT_OPEN_INDEX_EVENT,
 	dashboardNativeAgentOpenIndexDetail,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-shortcut-events";
@@ -303,23 +307,6 @@ function makeFolderId(provider: NativeAgentProvider): string {
 		return `${provider}-native-folder-${crypto.randomUUID()}`;
 	}
 	return `${provider}-native-folder-${Date.now().toString(36)}`;
-}
-
-function activeNativeRoute(pathname: string): {
-	provider: NativeAgentProvider | null;
-	id: string | null;
-} {
-	const capyMatch = /\/native\/capy\/([^/]+)/.exec(pathname);
-	if (capyMatch?.[1])
-		return { id: decodeURIComponent(capyMatch[1]), provider: "capy" };
-	const devinMatch = /\/native\/devin\/([^/]+)/.exec(pathname);
-	if (devinMatch?.[1]) {
-		return { id: decodeURIComponent(devinMatch[1]), provider: "devin" };
-	}
-	if (pathname.includes("/native/capy")) return { id: null, provider: "capy" };
-	if (pathname.includes("/native/devin"))
-		return { id: null, provider: "devin" };
-	return { id: null, provider: null };
 }
 
 function dispatchNativeAgentCurrentAction(
@@ -795,7 +782,7 @@ export function DashboardNativeAgentsSection({
 		getDashboardHashPathname,
 	);
 	const activePathname = hashPathname ?? location.pathname;
-	const activeRoute = activeNativeRoute(activePathname);
+	const activeRoute = activeNativeAgentRoute(activePathname);
 	const capyShortcut = useHotkeyDisplay("OPEN_CAPY").text;
 	const capyCreateShortcut = useHotkeyDisplay("CREATE_CAPY").text;
 	const devinShortcut = useHotkeyDisplay("OPEN_DEVIN").text;
@@ -1111,6 +1098,20 @@ export function DashboardNativeAgentsSection({
 		},
 		[navigate],
 	);
+	const prefetchNativeSession = useCallback(
+		(item: { id: string; provider: NativeAgentProvider }) => {
+			if (item.provider === "capy") {
+				void utils.nativeAgents.capy.getThread.prefetch({ threadId: item.id });
+				void utils.nativeAgents.capy.listMessages.prefetch({
+					limit: 100,
+					threadId: item.id,
+				});
+				return;
+			}
+			void utils.nativeAgents.devin.getSession.prefetch({ sessionId: item.id });
+		},
+		[utils],
+	);
 
 	const moveDraggedSessionToFolder = useCallback(
 		(event: DragEvent, items: NativeAgentItem[], folderId: string | null) => {
@@ -1236,6 +1237,7 @@ export function DashboardNativeAgentsSection({
 
 	const handleOpen = useCallback(
 		(item: NativeAgentItem) => {
+			prefetchNativeSession(item);
 			const latestTime = latestAgentMessageTime(item);
 			if (latestTime != null) {
 				setReadState((current) => {
@@ -1249,7 +1251,7 @@ export function DashboardNativeAgentsSection({
 			}
 			navigateToNativeSession(item);
 		},
-		[navigateToNativeSession],
+		[navigateToNativeSession, prefetchNativeSession],
 	);
 
 	const handleSessionAction = useCallback(
@@ -1361,6 +1363,7 @@ export function DashboardNativeAgentsSection({
 		id: string;
 		provider: NativeAgentProvider;
 	}) => {
+		prefetchNativeSession(item);
 		navigateToNativeSession(item);
 		void Promise.all([
 			utils.nativeAgents.capy.listThreads.invalidate(),
@@ -1526,7 +1529,10 @@ export function DashboardNativeAgentsSection({
 					{
 						action: {
 							label: "Open",
-							onClick: () => navigateToNativeSession(notification),
+							onClick: () => {
+								prefetchNativeSession(notification);
+								navigateToNativeSession(notification);
+							},
 						},
 						description: `${notification.title}: ${notification.preview}`,
 						id: `native-agent-reply:${notification.key}:${notification.latestTime}`,
@@ -1544,6 +1550,7 @@ export function DashboardNativeAgentsSection({
 		itemsByProvider,
 		navigateToNativeSession,
 		notifiedState,
+		prefetchNativeSession,
 		readState,
 	]);
 
@@ -1897,6 +1904,7 @@ export function DashboardNativeAgentsSection({
 				if (!unreadItem) return;
 				event.preventDefault();
 				event.stopPropagation();
+				prefetchNativeSession(unreadItem);
 				navigateToNativeSession(unreadItem);
 				return;
 			}
@@ -2028,6 +2036,7 @@ export function DashboardNativeAgentsSection({
 		moveToFolder,
 		navigateToNativeSession,
 		openFolderEditor,
+		prefetchNativeSession,
 		readState,
 		rememberFolder,
 		setFolderCollapsed,
@@ -2059,7 +2068,10 @@ export function DashboardNativeAgentsSection({
 							nativeAgentSessionFolderKey(item.provider, item.id)
 						],
 				);
-				const isActive = activeRoute.provider === providerConfig.id;
+				const isActive = isNativeAgentProviderOverviewRoute(
+					activeRoute,
+					providerConfig.id,
+				);
 				const providerShortcut =
 					providerConfig.id === "capy" ? capyShortcut : devinShortcut;
 				const providerShortcutLabel =
