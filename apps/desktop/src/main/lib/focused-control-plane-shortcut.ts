@@ -178,7 +178,7 @@ export function focusedDashboardGlobalActionShortcuts(
 		{ accelerator: "Escape", action: "FOCUS_DASHBOARD_SHELL" },
 		{ accelerator: `${prefix}+V`, action: "TOGGLE_VIM_MODE" },
 		{
-			accelerator: `${prefix}+Slash`,
+			accelerator: `${prefix}+/`,
 			action: "SHOW_DASHBOARD_KEYBOARD_HELP",
 		},
 		{ accelerator: `${prefix}+F`, action: "SHOW_DASHBOARD_ACTION_HINTS" },
@@ -226,7 +226,7 @@ export function focusedDashboardWebShortcuts(
 		},
 		{ accelerator: `${prefix}+B`, shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
 		{ accelerator: `${prefix}+S`, shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
-		{ accelerator: `${prefix}+Period`, shortcut: "SIDEBAR_ACTION_MENU" },
+		{ accelerator: `${prefix}+.`, shortcut: "SIDEBAR_ACTION_MENU" },
 		{ accelerator: `${prefix}+P`, shortcut: "SIDEBAR_ACTION_PIN" },
 		{ accelerator: `${prefix}+A`, shortcut: "SIDEBAR_ACTION_ARCHIVE" },
 		{
@@ -254,8 +254,8 @@ export function focusedDashboardWebShortcuts(
 		{ accelerator: `${prefix}+Shift+B`, shortcut: "BROWSER_TOGGLE_SPLIT" },
 		{ accelerator: `${prefix}+Shift+X`, shortcut: "BROWSER_CLOSE_SPLIT" },
 		{ accelerator: `${prefix}+Shift+F`, shortcut: "BROWSER_SWAP_SPLIT" },
-		{ accelerator: `${prefix}+Shift+Comma`, shortcut: "BROWSER_NARROW_SPLIT" },
-		{ accelerator: `${prefix}+Shift+Period`, shortcut: "BROWSER_WIDEN_SPLIT" },
+		{ accelerator: `${prefix}+Shift+,`, shortcut: "BROWSER_NARROW_SPLIT" },
+		{ accelerator: `${prefix}+Shift+.`, shortcut: "BROWSER_WIDEN_SPLIT" },
 		{ accelerator: `${prefix}+Shift+0`, shortcut: "BROWSER_EQUALIZE_SPLIT" },
 	];
 }

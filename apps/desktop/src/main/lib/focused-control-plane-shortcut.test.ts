@@ -92,11 +92,11 @@ function electronKeyTokenFromMacChordToken(token: string): string {
 	if (/^[0-9]$/.test(token)) return token;
 
 	const keyTokens: Record<string, string> = {
-		comma: "Comma",
+		comma: ",",
 		left: "Left",
-		period: "Period",
+		period: ".",
 		right: "Right",
-		slash: "Slash",
+		slash: "/",
 		tab: "Tab",
 	};
 	const electronToken = keyTokens[token];
@@ -346,7 +346,7 @@ describe("focusedDashboardGlobalActionShortcuts", () => {
 			{ accelerator: "Escape", action: "FOCUS_DASHBOARD_SHELL" },
 			{ accelerator: "Alt+V", action: "TOGGLE_VIM_MODE" },
 			{
-				accelerator: "Alt+Slash",
+				accelerator: "Alt+/",
 				action: "SHOW_DASHBOARD_KEYBOARD_HELP",
 			},
 			{ accelerator: "Alt+F", action: "SHOW_DASHBOARD_ACTION_HINTS" },
@@ -487,7 +487,7 @@ describe("focusedDashboardWebShortcuts", () => {
 			},
 			{ accelerator: "Alt+B", shortcut: "TOGGLE_NATIVE_BROWSER_VIEW" },
 			{ accelerator: "Alt+S", shortcut: "TOGGLE_NATIVE_SPLIT_VIEW" },
-			{ accelerator: "Alt+Period", shortcut: "SIDEBAR_ACTION_MENU" },
+			{ accelerator: "Alt+.", shortcut: "SIDEBAR_ACTION_MENU" },
 			{ accelerator: "Alt+P", shortcut: "SIDEBAR_ACTION_PIN" },
 			{ accelerator: "Alt+A", shortcut: "SIDEBAR_ACTION_ARCHIVE" },
 			{
@@ -515,8 +515,8 @@ describe("focusedDashboardWebShortcuts", () => {
 			{ accelerator: "Alt+Shift+B", shortcut: "BROWSER_TOGGLE_SPLIT" },
 			{ accelerator: "Alt+Shift+X", shortcut: "BROWSER_CLOSE_SPLIT" },
 			{ accelerator: "Alt+Shift+F", shortcut: "BROWSER_SWAP_SPLIT" },
-			{ accelerator: "Alt+Shift+Comma", shortcut: "BROWSER_NARROW_SPLIT" },
-			{ accelerator: "Alt+Shift+Period", shortcut: "BROWSER_WIDEN_SPLIT" },
+			{ accelerator: "Alt+Shift+,", shortcut: "BROWSER_NARROW_SPLIT" },
+			{ accelerator: "Alt+Shift+.", shortcut: "BROWSER_WIDEN_SPLIT" },
 			{ accelerator: "Alt+Shift+0", shortcut: "BROWSER_EQUALIZE_SPLIT" },
 		]);
 	});
