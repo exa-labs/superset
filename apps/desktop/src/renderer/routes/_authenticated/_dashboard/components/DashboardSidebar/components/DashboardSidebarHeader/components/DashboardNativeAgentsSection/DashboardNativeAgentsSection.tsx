@@ -91,7 +91,6 @@ import {
 	nativeAgentSidebarInclusionReasons,
 	resolveNativeAgentSidebarState,
 	restoreNativeAgentOptimisticSidebarState,
-	selectNativeAgentIndexedShortcutItem,
 	selectNativeAgentProviderActiveRows,
 	selectNativeAgentSidebarItems,
 } from "renderer/routes/_authenticated/_dashboard/native/utils/native-agent-listing";
@@ -832,6 +831,10 @@ export function DashboardNativeAgentsSection({
 	const [deleteFolderTarget, setDeleteFolderTarget] =
 		useState<NativeAgentFolder | null>(null);
 	const [folderTitleDraft, setFolderTitleDraft] = useState("");
+	const stableSidebarIdsRef = useRef<Record<NativeAgentProvider, string[]>>({
+		capy: [],
+		devin: [],
+	});
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -1370,27 +1373,67 @@ export function DashboardNativeAgentsSection({
 	};
 
 	const isNativeSidebarSearchActive = searchQuery.trim().length > 0;
-	const displayedItemsForProvider = (items: NativeAgentItem[]) => {
-		return selectNativeAgentSidebarItems(items, {
-			activeId: activeRoute.id,
-			isLiveStatus: isNativeAgentLiveStatus,
-			isUnread: (item) => hasUnreadAgentResponse(item, readState),
-			searchQuery,
-		});
-	};
-
-	const indexedShortcutItemForProvider = useCallback(
-		(provider: NativeAgentProvider, index: number) => {
-			return selectNativeAgentIndexedShortcutItem(itemsByProvider[provider], {
-				activeId: activeRoute.id,
-				index,
+	const activeIdForProvider = useCallback(
+		(provider: NativeAgentProvider) =>
+			activeRoute.provider === provider ? activeRoute.id : null,
+		[activeRoute.id, activeRoute.provider],
+	);
+	const displayedItemsByProvider = useMemo(() => {
+		const selectForProvider = (provider: NativeAgentProvider) =>
+			selectNativeAgentSidebarItems(itemsByProvider[provider], {
+				activeId: activeIdForProvider(provider),
 				isLiveStatus: isNativeAgentLiveStatus,
 				isUnread: (item) => hasUnreadAgentResponse(item, readState),
 				searchQuery,
+				stickyIds: stableSidebarIdsRef.current[provider],
 			});
+		return {
+			capy: selectForProvider("capy"),
+			devin: selectForProvider("devin"),
+		};
+	}, [activeIdForProvider, itemsByProvider, readState, searchQuery]);
+
+	useEffect(() => {
+		if (isNativeSidebarSearchActive) return;
+		stableSidebarIdsRef.current = {
+			capy: displayedItemsByProvider.capy.map((item) => item.id),
+			devin: displayedItemsByProvider.devin.map((item) => item.id),
+		};
+	}, [displayedItemsByProvider, isNativeSidebarSearchActive]);
+
+	const indexedShortcutItemForProvider = useCallback(
+		(provider: NativeAgentProvider, index: number) => {
+			return displayedItemsByProvider[provider][index] ?? null;
 		},
-		[activeRoute.id, itemsByProvider, readState, searchQuery],
+		[displayedItemsByProvider],
 	);
+
+	const shortcutHintForDisplayedItem = (
+		item: NativeAgentItem,
+		displayedItems: NativeAgentItem[],
+		providerShortcutLabel: string | null,
+	) => {
+		const index = displayedItems.findIndex(
+			(candidate) => candidate.id === item.id,
+		);
+		return nativeAgentIndexedShortcutHint({
+			index,
+			providerShortcutLabel,
+		});
+	};
+
+	const compareFolderItems = (a: NativeAgentItem, b: NativeAgentItem) => {
+		const aActive = a.isProviderActive || isNativeAgentLiveStatus(a.status);
+		const bActive = b.isProviderActive || isNativeAgentLiveStatus(b.status);
+		if (aActive !== bActive) return aActive ? -1 : 1;
+		const timeDelta =
+			(nativeAgentTimestampMs(b.updatedAt) ?? 0) -
+			(nativeAgentTimestampMs(a.updatedAt) ?? 0);
+		if (timeDelta !== 0) return timeDelta;
+		const titleDelta = a.title.localeCompare(b.title);
+		if (titleDelta !== 0) return titleDelta;
+		return a.id.localeCompare(b.id);
+	};
 
 	useEffect(() => {
 		if (!activeRoute.provider || !activeRoute.id) return;
@@ -2001,7 +2044,8 @@ export function DashboardNativeAgentsSection({
 		>
 			{PROVIDERS.map((providerConfig) => {
 				const items = itemsByProvider[providerConfig.id];
-				const displayedItems = displayedItemsForProvider(items);
+				const displayedItems = displayedItemsByProvider[providerConfig.id];
+				const activeProviderId = activeIdForProvider(providerConfig.id);
 				const displayedItemCount = displayedItems.length;
 				const isCollapsed =
 					!isNativeSidebarSearchActive &&
@@ -2030,15 +2074,6 @@ export function DashboardNativeAgentsSection({
 				);
 				const providerCreateShortcutTitleSuffix =
 					nativeAgentShortcutTitleSuffix("n", providerCreateShortcut);
-				const shortcutHintForItem = (item: NativeAgentItem) => {
-					const index = displayedItems.findIndex(
-						(candidate) => candidate.id === item.id,
-					);
-					return nativeAgentIndexedShortcutHint({
-						index,
-						providerShortcutLabel,
-					});
-				};
 
 				if (variant === "collapsed") {
 					return (
@@ -2184,17 +2219,7 @@ export function DashboardNativeAgentsSection({
 													nativeAgentSessionFolderKey(item.provider, item.id)
 												] === folder.id,
 										)
-										.sort((a, b) => {
-											const aActive =
-												a.isProviderActive || isNativeAgentLiveStatus(a.status);
-											const bActive =
-												b.isProviderActive || isNativeAgentLiveStatus(b.status);
-											if (aActive !== bActive) return aActive ? -1 : 1;
-											return (
-												(nativeAgentTimestampMs(b.updatedAt) ?? 0) -
-												(nativeAgentTimestampMs(a.updatedAt) ?? 0)
-											);
-										});
+										.sort(compareFolderItems);
 									const folderHasUnread = folderItems.some((item) =>
 										hasUnreadAgentResponse(item, readState),
 									);
@@ -2436,7 +2461,7 @@ export function DashboardNativeAgentsSection({
 														{folderItems.map((item) => (
 															<SessionRow
 																key={item.id}
-																activeId={activeRoute.id}
+																activeId={activeProviderId}
 																createShortcutLabel={
 																	providerCreateShortcutLabel
 																}
@@ -2452,7 +2477,11 @@ export function DashboardNativeAgentsSection({
 																onSessionAction={handleSessionAction}
 																onSidebarVisible={handleSidebarVisible}
 																readState={readState}
-																shortcutHint={shortcutHintForItem(item)}
+																shortcutHint={shortcutHintForDisplayedItem(
+																	item,
+																	displayedItems,
+																	providerShortcutLabel,
+																)}
 																variant={variant}
 															/>
 														))}
@@ -2464,7 +2493,7 @@ export function DashboardNativeAgentsSection({
 								{unfolderedItems.map((item) => (
 									<SessionRow
 										key={item.id}
-										activeId={activeRoute.id}
+										activeId={activeProviderId}
 										createShortcutLabel={providerCreateShortcutLabel}
 										createShortcutTitleSuffix={
 											providerCreateShortcutTitleSuffix
@@ -2478,7 +2507,11 @@ export function DashboardNativeAgentsSection({
 										onSessionAction={handleSessionAction}
 										onSidebarVisible={handleSidebarVisible}
 										readState={readState}
-										shortcutHint={shortcutHintForItem(item)}
+										shortcutHint={shortcutHintForDisplayedItem(
+											item,
+											displayedItems,
+											providerShortcutLabel,
+										)}
 										variant={variant}
 									/>
 								))}

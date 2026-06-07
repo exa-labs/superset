@@ -47,9 +47,11 @@ export interface SelectNativeAgentSidebarItemsInput<
 	isLiveStatus: (status: string | null) => boolean;
 	isUnread: (item: T) => boolean;
 	maxPriorityItems?: number;
+	maxStableItems?: number;
 	recentFallbackWhenEmpty?: number;
 	recentFallbackWhenPriorityExists?: number;
 	searchQuery?: string;
+	stickyIds?: readonly string[];
 }
 
 export function nativeAgentMetadataKey(
@@ -204,6 +206,32 @@ function timestampMs(value: number | string | null | undefined): number {
 	return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function compareNativeAgentSidebarItems<T extends NativeAgentSidebarListRow>(
+	left: T,
+	right: T,
+	input: Pick<
+		SelectNativeAgentSidebarItemsInput<T>,
+		"isLiveStatus" | "isUnread"
+	>,
+): number {
+	const leftUnread = input.isUnread(left);
+	const rightUnread = input.isUnread(right);
+	if (leftUnread !== rightUnread) return leftUnread ? -1 : 1;
+	const leftPinned = left.sidebarPinned === true;
+	const rightPinned = right.sidebarPinned === true;
+	if (leftPinned !== rightPinned) return leftPinned ? -1 : 1;
+	const leftLive =
+		left.isProviderActive || input.isLiveStatus(left.status ?? null);
+	const rightLive =
+		right.isProviderActive || input.isLiveStatus(right.status ?? null);
+	if (leftLive !== rightLive) return leftLive ? -1 : 1;
+	const timeDelta = timestampMs(right.updatedAt) - timestampMs(left.updatedAt);
+	if (timeDelta !== 0) return timeDelta;
+	const titleDelta = (left.title ?? "").localeCompare(right.title ?? "");
+	if (titleDelta !== 0) return titleDelta;
+	return left.id.localeCompare(right.id);
+}
+
 function nativeAgentSidebarSearchTokens(query: string | undefined): string[] {
 	return query?.toLowerCase().trim().split(/\s+/).filter(Boolean) ?? [];
 }
@@ -234,24 +262,18 @@ export function selectNativeAgentSidebarItems<
 	T extends NativeAgentSidebarListRow,
 >(items: readonly T[], input: SelectNativeAgentSidebarItemsInput<T>): T[] {
 	const maxPriorityItems = input.maxPriorityItems ?? 10;
+	const stickyIds = input.stickyIds ?? [];
+	const stickyIdSet = new Set(stickyIds);
+	const maxStableItems =
+		input.maxStableItems ??
+		Math.max(maxPriorityItems + (input.recentFallbackWhenEmpty ?? 1), 1);
 	const recentFallbackWhenEmpty = input.recentFallbackWhenEmpty ?? 1;
 	const recentFallbackWhenPriorityExists =
 		input.recentFallbackWhenPriorityExists ?? 1;
 	const searchTokens = nativeAgentSidebarSearchTokens(input.searchQuery);
 	const visibleItems = items
 		.filter((item) => item.sidebarHidden !== true)
-		.toSorted((a, b) => {
-			const aUnread = input.isUnread(a);
-			const bUnread = input.isUnread(b);
-			if (aUnread !== bUnread) return aUnread ? -1 : 1;
-			const aPinned = a.sidebarPinned === true;
-			const bPinned = b.sidebarPinned === true;
-			if (aPinned !== bPinned) return aPinned ? -1 : 1;
-			const aLive = a.isProviderActive || input.isLiveStatus(a.status ?? null);
-			const bLive = b.isProviderActive || input.isLiveStatus(b.status ?? null);
-			if (aLive !== bLive) return aLive ? -1 : 1;
-			return timestampMs(b.updatedAt) - timestampMs(a.updatedAt);
-		});
+		.toSorted((a, b) => compareNativeAgentSidebarItems(a, b, input));
 
 	if (searchTokens.length > 0) {
 		return visibleItems.filter((item) =>
@@ -259,6 +281,10 @@ export function selectNativeAgentSidebarItems<
 		);
 	}
 
+	const visibleItemsById = new Map(visibleItems.map((item) => [item.id, item]));
+	const stickyItems = stickyIds
+		.map((id) => visibleItemsById.get(id))
+		.filter((item): item is T => item != null);
 	const activeItem = visibleItems.find((item) => item.id === input.activeId);
 	const pinnedItems = visibleItems.filter(
 		(item) => item.sidebarPinned === true,
@@ -267,21 +293,22 @@ export function selectNativeAgentSidebarItems<
 	const liveItems = visibleItems.filter(
 		(item) => item.isProviderActive || input.isLiveStatus(item.status ?? null),
 	);
-	const selectedItems: T[] = [];
+	const priorityItems: T[] = [];
 	for (const item of [...unreadItems, ...pinnedItems, ...liveItems]) {
-		if (selectedItems.length >= maxPriorityItems) break;
-		if (!selectedItems.some((candidate) => candidate.id === item.id)) {
-			selectedItems.push(item);
+		if (priorityItems.length >= maxPriorityItems) break;
+		if (!priorityItems.some((candidate) => candidate.id === item.id)) {
+			priorityItems.push(item);
 		}
 	}
-	if (activeItem && !selectedItems.some((item) => item.id === activeItem.id)) {
-		selectedItems.push(activeItem);
-	}
+	const selectedItems: T[] = [...priorityItems];
+	if (activeItem) selectedItems.push(activeItem);
 
 	const recentFallbackLimit =
-		selectedItems.length === 0
-			? recentFallbackWhenEmpty
-			: recentFallbackWhenPriorityExists;
+		stickyItems.length > 0
+			? 0
+			: selectedItems.length === 0
+				? recentFallbackWhenEmpty
+				: recentFallbackWhenPriorityExists;
 	let fallbackCount = 0;
 	for (const item of visibleItems) {
 		if (fallbackCount >= recentFallbackLimit) break;
@@ -291,7 +318,36 @@ export function selectNativeAgentSidebarItems<
 		}
 	}
 
-	return selectedItems;
+	if (stickyIds.length === 0) {
+		return selectedItems.filter(
+			(item, index) =>
+				selectedItems.findIndex((candidate) => candidate.id === item.id) ===
+				index,
+		);
+	}
+
+	const nextPriorityItems = priorityItems.filter(
+		(item) => !stickyIdSet.has(item.id),
+	);
+	const nextActiveItem =
+		activeItem && !stickyIdSet.has(activeItem.id) ? activeItem : null;
+	const fallbackItems = selectedItems.filter(
+		(item) =>
+			!stickyIdSet.has(item.id) &&
+			!nextPriorityItems.some((candidate) => candidate.id === item.id) &&
+			item.id !== nextActiveItem?.id,
+	);
+	const stabilizedItems: T[] = [];
+	const pushUnique = (item: T | null | undefined) => {
+		if (!item || stabilizedItems.length >= maxStableItems) return;
+		if (stabilizedItems.some((candidate) => candidate.id === item.id)) return;
+		stabilizedItems.push(item);
+	};
+	for (const item of nextPriorityItems) pushUnique(item);
+	pushUnique(nextActiveItem);
+	for (const item of stickyItems) pushUnique(item);
+	for (const item of fallbackItems) pushUnique(item);
+	return stabilizedItems;
 }
 
 export function selectNativeAgentIndexedShortcutItem<

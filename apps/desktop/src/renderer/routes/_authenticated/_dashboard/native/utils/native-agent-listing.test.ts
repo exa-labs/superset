@@ -301,6 +301,33 @@ describe("selectNativeAgentSidebarItems", () => {
 		).toEqual(["reply", "stale-active"]);
 	});
 
+	it("preserves visible order when opening an unread row marks it read", () => {
+		const beforeOpen: TestSidebarRow[] = [
+			{ id: "recent", status: "ready", updatedAt: 40 },
+			{ id: "reply", status: "ready", unread: true, updatedAt: 20 },
+			{ id: "pinned", status: "ready", sidebarPinned: true, updatedAt: 1 },
+		];
+		const stickyIds = selectNativeAgentSidebarItems(beforeOpen, {
+			isLiveStatus,
+			isUnread,
+		}).map((item) => item.id);
+
+		const afterOpen: TestSidebarRow[] = [
+			{ id: "recent", status: "ready", updatedAt: 40 },
+			{ id: "reply", status: "ready", updatedAt: 20 },
+			{ id: "pinned", status: "ready", sidebarPinned: true, updatedAt: 1 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(afterOpen, {
+				activeId: "reply",
+				isLiveStatus,
+				isUnread,
+				stickyIds,
+			}).map((item) => item.id),
+		).toEqual(["reply", "pinned", "recent"]);
+	});
+
 	it("keeps the active route visible even when it would not be selected", () => {
 		const items: TestSidebarRow[] = Array.from({ length: 8 }, (_, index) => ({
 			id: `ready-${index}`,
@@ -315,6 +342,51 @@ describe("selectNativeAgentSidebarItems", () => {
 				isUnread,
 			}).map((item) => item.id),
 		).toEqual(["ready-7", "ready-0"]);
+	});
+
+	it("keeps the previous fallback row stable across polling updates", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "newer-ready", status: "ready", updatedAt: 100 },
+			{ id: "previous-ready", status: "ready", updatedAt: 10 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				isLiveStatus,
+				isUnread,
+				stickyIds: ["previous-ready"],
+			}).map((item) => item.id),
+		).toEqual(["previous-ready"]);
+	});
+
+	it("surfaces new unread rows ahead of stable fallback rows", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "new-reply", status: "ready", unread: true, updatedAt: 5 },
+			{ id: "previous-ready", status: "ready", updatedAt: 10 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				isLiveStatus,
+				isUnread,
+				stickyIds: ["previous-ready"],
+			}).map((item) => item.id),
+		).toEqual(["new-reply", "previous-ready"]);
+	});
+
+	it("falls back to deterministic title and id ordering for equal timestamps", () => {
+		const items: TestSidebarRow[] = [
+			{ id: "b", status: "ready", title: "Same", updatedAt: 10 },
+			{ id: "a", status: "ready", title: "Same", updatedAt: 10 },
+		];
+
+		expect(
+			selectNativeAgentSidebarItems(items, {
+				isLiveStatus,
+				isUnread,
+				recentFallbackWhenEmpty: 2,
+			}).map((item) => item.id),
+		).toEqual(["a", "b"]);
 	});
 
 	it("searches all visible native rows instead of only the priority sidebar subset", () => {
